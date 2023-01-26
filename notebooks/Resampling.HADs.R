@@ -3,6 +3,9 @@
 ## Hads data from CEDA, Readme file for the data available in vmfileshare/ClimateData/HadUKData
 ## HADs data is on a 1 km grid OSGB projection (so should be the same as teh reprojected UKCD files )
 
+#Libs
+library(raster)
+
 setwd("/Volumes/vmfileshare/ClimateData/")
 
 #data directory
@@ -20,25 +23,27 @@ HADs.nc.files <- HADs.files[grepl("*.nc$", HADs.files)] #744 files
 
 ##For recalibration, only need years 1980-2000 
 s <- paste0("day_",1981:2000, collapse="|")
-HADs.nc.files.slice1 <- HADs.nc.files[grepl(s, HADs.nc.files)] 
-
-
-### Updated to here 24.01.23 - to be continued 
+HADs.nc.files.slice1 <- HADs.nc.files[grepl(s, HADs.nc.files)]
 
 #One brick for each year 
-HADbrickL <- lapply(HAD.tmax.slice1, brick)
-
+a <- Sys.time()
+B <- lapply(v, function(x){
+  HAD.slice <- HADs.nc.files.slice1[grepl(x, HADs.nc.files.slice1)]
+  vd_v <- vd[grepl(x, vd)] 
+  HAD.slice.d <- paste0(vd_v, HAD.slice)
+  HADbrickL <- lapply(HAD.slice.d, brick)
+})
+b <- Sys.time()
+a - b
 
 #HADbrickL is a list of 240 bricks
 #Each brick represents a month, with each raster layer within each brick representing the Hads grid for a day 
 
 #Confirming numbers are correct
-##length(HADbrickL)
-##HB1 <- HADbrickL[[25]]
-##nlayers(HB1)
 
-#To get the correct extent (ie the sames as above in UKCD, rather than the MSOA group extent) going to first create the grid frame which is used for the reprojection of Hads data, and then use this total extent to crop Hads
 
+#To get the correct extent (ie the sames as above in UKCD, rather than the MSOA group extent) 
+# going to first create the grid frame which is used for the reprojection of Hads data, and then use this total extent to crop Hads
 
 #### Create Grid from UKCP data 
 
