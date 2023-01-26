@@ -23,10 +23,11 @@ s <- paste0("day_",1981:2000, collapse="|")
 HADs.nc.files.slice1 <- HADs.nc.files[grepl(s, HADs.nc.files)] 
 
 
-### Updated to here 24.01.22 - to be cont - split into vars 
+### Updated to here 24.01.23 - to be continued 
 
 #One brick for each year 
 HADbrickL <- lapply(HAD.tmax.slice1, brick)
+
 
 #HADbrickL is a list of 240 bricks
 #Each brick represents a month, with each raster layer within each brick representing the Hads grid for a day 
