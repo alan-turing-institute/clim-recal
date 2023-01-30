@@ -1,0 +1,4 @@
+name: clim-recal
+channels:
+  - r
+  - defaults
