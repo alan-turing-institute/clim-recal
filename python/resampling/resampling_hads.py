@@ -16,6 +16,11 @@ def resample_hadukgrid(x):
         y_grid = x[2]
         output_dir = x[3]
 
+        output_name = f"{os.path.basename(file).split('.')[0]}_2.2km_resampled.nc"
+        if os.path.exists(os.path.join(output_dir,output_name)):
+            print(f"File: {output_name} already exists in this directory. Skipping.")
+            return 0
+
         # files have the variable name as input (e.g. tasmax_hadukgrid_uk_1km_day_20211101-20211130.nc)
         variable = os.path.basename(file).split('_')[0]
 
@@ -25,9 +30,6 @@ def resample_hadukgrid(x):
         resampled = data[[variable]].interp(projection_x_coordinate=x_grid, projection_y_coordinate=y_grid, method="linear")
 
         # save resampled file
-        output_name = f"{os.path.basename(file).split('.')[0]}_2.2km_resampled.nc"
-
-        print (os.path.join(output_dir,output_name))
         resampled.to_netcdf(os.path.join(output_dir,output_name))
 
     except Exception as e:
