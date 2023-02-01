@@ -53,3 +53,4 @@ dependencies:
     - tqdm==4.64.1
     - xarray==2022.10.0
     - matplotlib==3.6.1
+    - scipy==1.10.0
