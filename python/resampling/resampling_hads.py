@@ -46,9 +46,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # Adding arguments
-    parser.add_argument("--input", help="Path where the CEDA data to download is located", required=True, type=str)
-    parser.add_argument("--output", help="Path to save the downloaded data", required=False, default=".", type=str)
-    parser.add_argument("--grid_data", help="Path where the NC file with the grid to resample is located", required=False,
+    parser.add_argument("--input", help="Path where the .nc files to resample is located", required=True, type=str)
+    parser.add_argument("--output", help="Path to save the resampled data data", required=False, default=".", type=str)
+    parser.add_argument("--grid_data", help="Path where the .nc file with the grid to resample is located", required=False,
                         type=str, default='../../data/rcp85_land-cpm_uk_2.2km_grid.nc')
 
     parser_args = parser.parse_args()
