@@ -4,7 +4,7 @@ library(sf)
 library(terra) 
 library(raster)
 
-dir.create("data_")
+setwd("~/Desktop/clim-recal/clim-recal/data2")
 
 dd <- "/mnt/vmfileshare/ClimateData"
 
