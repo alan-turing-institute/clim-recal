@@ -44,6 +44,7 @@ In resampling it resampled the Sea as xx so replacing those vals as NA
 
 ```{r load data 1}
 
+r1 <- rast("Resampled_HADs_tasmax.2000.01.tif")
 ```
 
 **1b. HadUK grid resampled in python**

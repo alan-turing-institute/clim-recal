@@ -59,5 +59,6 @@ x <- List.Rast$HADbrickL_tasmax[[1]]
 y <- terra::resample(x, r, method="bilinear", threads=TRUE)
 beepr::beep(sound=7) #Lets know when is finished - rem when done
 
-### Save output
-writeRaster("Resampled_HADs_")
+### Save output -- just for testing reasons going to save a geotiff and a netcd
+writeRaster(y, "Resampled_HADs_tasmax.2000.01.tif")
+saveRDS(y, "Resampled_HADs_tasmax.2000.01.RDS") 
