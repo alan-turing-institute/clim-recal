@@ -1,0 +1,65 @@
+---
+title: "Comparing-Reprojections-HADs"
+output: 
+  github_document:
+    keep_html: true
+  html_document:
+    theme: cosmo
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 4
+    df_print: paged
+  date: "`r format(Sys.Date())`"
+---
+
+```{r libs message=FALSE, warning=F}
+
+library(terra)
+library(sp)
+
+```
+
+
+## **0. About**
+
+Bias correction techniques in general require observational data to compare with climate projections in order to appropriately correct the bias. 
+
+The [HadUK grid](https://catalogue.ceda.ac.uk/uuid/bbca3267dc7d4219af484976734c9527) is a 1km x 1km gridded dataset derived from meterological station observations. 
+
+The first UKCP product for review is the UCKP convection-permitting dataset, on a 2.2km grid. Therefore, we are resmapling the 1km grid using bilenear interpolation to 2.2km grid extent. 
+
+We have ran this seperately in both ```r``` and ```python```. The aim of this doc is to:
+
+ - Ensure both methods produce the same result
+ - Ensure the grid has been resampled to the correct extent and CRS 
+
+## **1. Data** 
+
+**1a. HadUK grid resampled in R**
+    Resampling script [here](https://github.com/alan-turing-institute/clim-recal/blob/main/R/Resampling.HADs.inR.R)
+    The 2.2km grid was derived from a reprojected (to BNG) UKCP 2.2km .nc file
+
+
+In resampling it resampled the Sea as xx so replacing those vals as NA 
+
+```{r load data 1}
+
+```
+
+**1b. HadUK grid resampled in python**
+  Resampling script [here](https://github.com/alan-turing-institute/clim-recal/blob/main/python/resampling/resampling_hads.py)
+
+```{r load data 2}
+
+```
+
+**1b. Cropped extent**
+  Just comparing by cropping to Scotland (bbox created [here](https://github.com/alan-turing-institute/clim-recal/tree/main/data/Scotland))
+
+```{r}
+
+```
+
+## **2. Comparisons **
+
+Crop extents to be the same 
