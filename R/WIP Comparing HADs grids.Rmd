@@ -12,10 +12,15 @@ output:
   date: "`r format(Sys.Date())`"
 ---
 
-```{r libs message=FALSE, warning=F}
+```{r libs and setup, message=FALSE, warning=F}
+rm(list=ls())
+
+knitr::opts_knit$set(root.dir="/Volumes/vmfileshare/ClimateData/")
 
 library(terra)
 library(sp)
+
+dd <- "/Volumes/vmfileshare/ClimateData/"
 
 ```
 
@@ -44,7 +49,18 @@ In resampling it resampled the Sea as xx so replacing those vals as NA
 
 ```{r load data 1}
 
-r1 <- rast("Resampled_HADs_tasmax.2000.01.tif")
+r1 <- paste0(dd,"TestData.R-python/Resampled_HADs_tasmax.2000.01.tif")
+r1 <- rast(r1)#Contains 31 layers for each day of Jan
+
+#In the resampling, the method used seemed to have relable all Sea values as '1.000000e+20' so relabelling them here (but to be checked as to why they've been valued like this in the resampling)
+r1[r1 > 200] = NA
+
+#check the crs
+crs(r1, proj=T)
+
+#Plot to check
+plot(r1$tasmax_1)
+
 ```
 
 **1b. HadUK grid resampled in python**
@@ -52,15 +68,23 @@ r1 <- rast("Resampled_HADs_tasmax.2000.01.tif")
 
 ```{r load data 2}
 
+py.pros.tasmax <- list.files(paste0(dd, "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"))
+r2 <- py.pros.tasmax[grepl("200001", py.pros.tasmax)]
+
 ```
 
 **1b. Cropped extent**
   Just comparing by cropping to Scotland (bbox created [here](https://github.com/alan-turing-institute/clim-recal/tree/main/data/Scotland))
 
 ```{r}
-
+scotland <- vect("~/Library/CloudStorage/OneDrive-TheAlanTuringInstitute/CLIM-RECAL/clim-recal/data/Scotland/Scotland.bbox.shp")
 ```
 
 ## **2. Comparisons **
 
 Crop extents to be the same 
+
+```{r}
+
+```
+
