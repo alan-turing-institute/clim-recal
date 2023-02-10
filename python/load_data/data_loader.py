@@ -28,7 +28,7 @@ def load_hads(input_path, date_range, variable, shapefile_path=None, extension='
 
     files = glob.glob(f"{input_path}/*.{extension}", recursive=True)
 
-    xa = load_and_merge(date_range, files)
+    xa = load_and_merge(date_range, files,variable)
 
     if shapefile_path:
         print ('clipping',datetime.now())
@@ -65,8 +65,26 @@ def clip_dataset(xa, variable, shapefile):
 
     return xa
 
+def reformat_file(file, variable):
+    print(f"File: {file} is needs rasterio library, trying...")
+    x = xr.open_rasterio(file)
+    st, sp = file.rsplit("_")[-1][:-4].split('-')
+    start = f"{st[:4]}-{st[4:6]}-{st[6:]}"
+    stop = f"{sp[:4]}-{sp[4:6]}-{sp[6:]}"
+    time_index = xr.cftime_range(start, stop, freq='D', calendar='360_day')
 
-def load_and_merge(date_range, files):
+    x = xr.DataArray(x.values,
+                     dims=('time', 'projection_y_coordinate', 'projection_x_coordinate'),
+                     coords={'time': time_index, 'projection_y_coordinate': x['y'][:].values,
+                             'projection_x_coordinate': x['x'][:].values},
+                     attrs={'units': '°C'}, ).transpose('time', 'projection_y_coordinate',
+                                                        'projection_x_coordinate').to_dataset(
+        name=variable)
+
+    return x
+
+
+def load_and_merge(date_range, files, variable):
     # Create an empty list to store xarrays
     xarray_list = []
     # Iterate through the variables
@@ -77,13 +95,8 @@ def load_and_merge(date_range, files):
             try:
                 x = xr.open_dataset(file).sel(time=slice(*date_range))
             except Exception as e:
-                print(f"File: {file} is needs rasterio library, trying...")
-                x = xr.open_rasterio(file)
-                st, sp = file.rsplit("_")[-1][:-4].split('-')
-                start = f"{st[:4]}-{st[4:6]}-{st[6:]}"
-                stop = f"{sp[:4]}-{sp[4:6]}-{sp[6:]}"
-                dates = np.linspace(0, 1, len(x['band'])) * (np.datetime64(stop) - np.datetime64(start)) + np.datetime64(start)
-                x= x.expand_dims(dim={"time":dates}, axis=0).sel(time=slice(*date_range))
+                x = reformat_file(file,variable).sel(time=slice(*date_range))
+
             # Select the date range
             if x.time.size != 0:
                 # Append the xarray to the list
@@ -108,7 +121,5 @@ if __name__ == "__main__":
     Load xarrays
     """
 
-
-    input = '../../data/pr'
-    hads = load_hads(input, ('1980-01-01', '2000-01-01'), 'pr', extension='tif')#, '../../data/Scotland/Scotland.bbox.shp')
-
+    input = '../../data/tasmax'
+    hads = load_hads(input, ('1980-01-01', '2000-01-01'), 'tasmax', extension='tif')#, '../../data/Scotland/Scotland.bbox.shp')
