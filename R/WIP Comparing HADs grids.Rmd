@@ -19,6 +19,7 @@ knitr::opts_knit$set(root.dir="/Volumes/vmfileshare/ClimateData/")
 
 library(terra)
 library(sp)
+library(exactextractr)
 
 dd <- "/Volumes/vmfileshare/ClimateData/"
 
@@ -69,11 +70,32 @@ plot(r1$tasmax_1)
 ```{r load data 2}
 
 py.pros.tasmax <- list.files(paste0(dd, "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"))
-r2 <- py.pros.tasmax[grepl("200001", py.pros.tasmax)]
+r2 <- py.pros.tasmax[grepl("200001", py.pros.tasmax)] #Same file as resampled above
+r2 <- paste0(paste0(dd, "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"),"/",r2)
+r2 <- rast(r2)
+crs(r2) #check crs 
+## Ok so interesting is missing a crs slot on read - I wonder why this is? This could cause future problem potentially? 
+
+plot(r2$tasmax_1)
 
 ```
 
-**1b. Cropped extent**
+**1c. Original HADUK grid**
+```{r}
+f <- paste0(dd, "Raw/HadsUKgrid/tasmax/day/")
+hads.tasmax <- list.files(f)
+
+hads.tasmax2 <- hads.tasmax[grepl("200001", hads.tasmax )] #Same file as resampled above
+og <- paste0(f, hads.tasmax2)
+
+og <- rast(og)
+crs(og, proj=T)
+
+plot(og$tasmax_1)
+```
+
+
+**1d. Cropped extent**
   Just comparing by cropping to Scotland (bbox created [here](https://github.com/alan-turing-institute/clim-recal/tree/main/data/Scotland))
 
 ```{r}
@@ -85,6 +107,54 @@ scotland <- vect("~/Library/CloudStorage/OneDrive-TheAlanTuringInstitute/CLIM-RE
 Crop extents to be the same 
 
 ```{r}
+#Noticed the crop takes longer on r2_c - for investigation!
+
+b <- Sys.time()
+r1_c <- terra::crop(r1, scotland, snap="in") 
+e <- Sys.time()
+e-b
+
+plot(r1_c$tasmax_1)
+```
+
+```{r}
+
+b <- Sys.time()
+r2_c <- terra::crop(r2, scotland, snap="in") 
+e <- Sys.time()
+e-b
+
+plot(r2_c$tasmax_1)
+```
+
+```{r}
+og_c <- terra::crop(og, scotland, snap="in") 
+plot(og_c$tasmax_1)
+```
+Ok there are some differences that I can see from the plot between the two resampled files! 
+
+```{r}
+## Cropping to a small area to compare with the same orginal HADS file 
+i <- rast()
+ext(i) <- c(200000, 210000, 700000, 710000)
+
+r1_ci <- crop(r1_c, i)
+plot(r1_ci$tasmax_1)
+```
+
+```{r}
+
+r2_ci <- crop(r2_c, i)
+plot(r2_ci$tasmax_1)
+```
+
+```{r}
+og_ci <- crop(og_c, i)
+plot(og_ci$tasmax_1)
 
 ```
 
+
+The resampled grids also align differently 
+
+I'm going to also pull a UKCP file in here to check
