@@ -79,8 +79,11 @@ def load_and_merge(date_range, files):
             except Exception as e:
                 print(f"File: {file} is needs rasterio library, trying...")
                 x = xr.open_rasterio(file)
-                time = np.fromstring(x.attrs['NETCDF_DIM_time_VALUES'][1:-1], sep=',')
-                x= x.expand_dims(dim={"time":[datetime.fromtimestamp(i*3600) for i in time]}, axis=0).sel(time=slice(*date_range))
+                st, sp = file.rsplit("_")[-1][:-4].split('-')
+                start = f"{st[:4]}-{st[4:6]}-{st[6:]}"
+                stop = f"{sp[:4]}-{sp[4:6]}-{sp[6:]}"
+                dates = np.linspace(0, 1, len(x['band'])) * (np.datetime64(stop) - np.datetime64(start)) + np.datetime64(start)
+                x= x.expand_dims(dim={"time":dates}, axis=0).sel(time=slice(*date_range))
             # Select the date range
             if x.time.size != 0:
                 # Append the xarray to the list
@@ -96,6 +99,7 @@ def load_and_merge(date_range, files):
     else:
         merged_xarray = xr.concat(xarray_list, dim="time")
         return merged_xarray.sortby('time')
+
 
 
 
