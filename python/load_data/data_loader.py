@@ -1,10 +1,6 @@
 import xarray as xr
 import glob
 import geopandas as gp
-from datetime import datetime
-from functools import partial
-import dask
-
 
 def load_data(input_path, date_range, variable, shapefile_path=None, extension='nc'):
     '''
@@ -38,15 +34,17 @@ def load_data(input_path, date_range, variable, shapefile_path=None, extension='
     if len(files)==0:
         raise Exception(f"No files found in {input_path} with {extension}")
 
-    try:
+
+    #TODO: Load using mfdataset avoiding errors from HDF5
+    #try:
         # loading files with dedicated function
-        xa = xr.open_mfdataset(
-            files).sel(time=slice(*date_range)).sortby('time')
-    except Exception as e:
-        print(f"Not able to load using open_mfdataset, with errors: {e}. "
-              f"Looping and loading individual files.")
-        # files with wrong format wont load with open_mfdataset, need to be reformated.
-        xa = load_and_merge(date_range, files, variable)
+    #    xa = xr.open_mfdataset(files).sel(time=slice(*date_range)).sortby('time')
+    #except Exception as e:
+    #    print(f"Not able to load using open_mfdataset, with errors: {e}. "
+    #          f"Looping and loading individual files.")
+    #    # files with wrong format wont load with open_mfdataset, need to be reformated.
+
+    xa = load_and_merge(date_range, files, variable)
 
     # clipping
     if shapefile_path:
@@ -84,11 +82,12 @@ def clip_dataset(xa, variable, shapefile):
         "y": "projection_y_coordinate",
     })
 
-    # this is creating issues after clipping
     try:
+        # this is creating issues after clipping for hads
         del xa[variable].attrs['grid_mapping']
     except:
-        print('')
+        pass
+
 
     return xa
 
@@ -141,7 +140,6 @@ def load_and_merge(date_range, files, variable):
     for file in files:
         # Load the xarray
         try:
-            print (file, datetime.now())
             try:
                 x = xr.open_dataset(file).sel(time=slice(*date_range))
             except Exception as e:
@@ -156,25 +154,9 @@ def load_and_merge(date_range, files, variable):
             print(f"File: {file} produced errors: {e}")
 
     # Merge all xarrays in the list
-    print ('merging', datetime.now())
     if len(xarray_list) == 0:
         raise RuntimeError('No files passed the time selection. No merged output produced.')
     else:
         merged_xarray = xr.concat(xarray_list, dim="time").sortby('time')
 
     return merged_xarray
-
-
-
-
-if __name__ == "__main__":
-    """
-    Load xarrays
-    """
-
-    input = '/Users/crangelsmith/Projects/DyME_sandbox/tasmax/tasmax/day'
-    #input = '../../data/tasmax'
-
-    hads = load_data(input, ('1980-01-01', '2000-01-01'), 'tasmax',shapefile_path='../../data/Scotland/Scotland.bbox.shp')
-
-    print(hads)
