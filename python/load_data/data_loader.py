@@ -2,36 +2,54 @@ import xarray as xr
 import glob
 import geopandas as gp
 from datetime import datetime
-import numpy as np 
+from functools import partial
+import dask
 
 
-def load_hads(input_path, date_range, variable, shapefile_path=None, extension='.nc'):
+def load_data(input_path, date_range, variable, shapefile_path=None, extension='nc'):
     '''
-    This function takes a date range and a list of variables and loads and merges xarrays based on those parameters.
+    This function takes a date range and a variable and loads and merges xarrays based on those parameters.
+    If shapefile is provided it crops the data to that region.
 
     Parameters
     ----------
     input_path: str
-        Path to where .nc files are found
+        Path to where .nc or .tif files are found
     date_range : tuple
         A tuple of datetime objects representing the start and end date
     variable : string
-        A strings representing the variables to be loaded
+        A string representing the variable to be loaded
     shapefile_path: str
         Path to a shape file used to clip resulting dataset.
+    extension: str
+        Extension of the files to be loaded, it can be .nc or .tif files.
 
     Returns
     -------
     merged_xarray : xarray
-        An xarray containing all loaded and merged and clipped variables
+        An xarray containing all loaded and merged and clipped data
     '''
+
+    if extension not in ('nc', 'tif'):
+        raise Exception("We only accept .nc or .tif extension for the input data")
 
     files = glob.glob(f"{input_path}/*.{extension}", recursive=True)
 
-    xa = load_and_merge(date_range, files,variable)
+    if len(files)==0:
+        raise Exception(f"No files found in {input_path} with {extension}")
 
+    try:
+        # loading files with dedicated function
+        xa = xr.open_mfdataset(
+            files).sel(time=slice(*date_range)).sortby('time')
+    except Exception as e:
+        print(f"Not able to load using open_mfdataset, with errors: {e}. "
+              f"Looping and loading individual files.")
+        # files with wrong format wont load with open_mfdataset, need to be reformated.
+        xa = load_and_merge(date_range, files, variable)
+
+    # clipping
     if shapefile_path:
-        print ('clipping',datetime.now())
         xa = clip_dataset(xa, variable, shapefile_path)
 
     return xa
@@ -48,6 +66,11 @@ def clip_dataset(xa, variable, shapefile):
     shapefile: str
         Path to a shape file used to clip resulting dataset, must be in the same CRS of the input xArray.
 
+     Returns
+    -------
+    xa : xarray
+        A clipped xarray dataset
+
     """
     geodf = gp.read_file(shapefile)
 
@@ -61,11 +84,19 @@ def clip_dataset(xa, variable, shapefile):
         "y": "projection_y_coordinate",
     })
 
-    del xa[variable].attrs['grid_mapping']
+    # this is creating issues after clipping
+    try:
+        del xa[variable].attrs['grid_mapping']
+    except:
+        print('')
 
     return xa
 
 def reformat_file(file, variable):
+    """
+    Load tif file and reformat xarray into expected format.
+
+    """
     print(f"File: {file} is needs rasterio library, trying...")
     x = xr.open_rasterio(file)
     st, sp = file.rsplit("_")[-1][:-4].split('-')
@@ -73,18 +104,37 @@ def reformat_file(file, variable):
     stop = f"{sp[:4]}-{sp[4:6]}-{sp[6:]}"
     time_index = xr.cftime_range(start, stop, freq='D', calendar='360_day')
 
-    x = xr.DataArray(x.values,
-                     dims=('time', 'projection_y_coordinate', 'projection_x_coordinate'),
-                     coords={'time': time_index, 'projection_y_coordinate': x['y'][:].values,
-                             'projection_x_coordinate': x['x'][:].values},
-                     attrs={'units': '°C'}, ).transpose('time', 'projection_y_coordinate',
+    x_renamed = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time"}) \
+        .rio.write_crs('epsg:27700')
+    x_renamed.coords['time'] = time_index
+
+    xa = x_renamed.transpose('time', 'projection_y_coordinate',
                                                         'projection_x_coordinate').to_dataset(
         name=variable)
 
-    return x
+    return xa
 
 
 def load_and_merge(date_range, files, variable):
+    """
+    Load files into xarrays, select a time range and a variable and merge into a sigle xarray.
+
+    Parameters
+    ----------
+
+    date_range : tuple
+        A tuple of datetime objects representing the start and end date
+    files: list (str)
+        List of strings with path to files to be loaded.
+    variable : string
+        A string representing the variable to be loaded
+
+    Returns
+    -------
+    merged_xarray : xarray
+        An xarray containing all loaded and merged data
+    """
+
     # Create an empty list to store xarrays
     xarray_list = []
     # Iterate through the variables
@@ -110,8 +160,9 @@ def load_and_merge(date_range, files, variable):
     if len(xarray_list) == 0:
         raise RuntimeError('No files passed the time selection. No merged output produced.')
     else:
-        merged_xarray = xr.concat(xarray_list, dim="time")
-        return merged_xarray.sortby('time')
+        merged_xarray = xr.concat(xarray_list, dim="time").sortby('time')
+
+    return merged_xarray
 
 
 
@@ -121,5 +172,9 @@ if __name__ == "__main__":
     Load xarrays
     """
 
-    input = '../../data/tasmax'
-    hads = load_hads(input, ('1980-01-01', '2000-01-01'), 'tasmax', extension='tif')#, '../../data/Scotland/Scotland.bbox.shp')
+    input = '/Users/crangelsmith/Projects/DyME_sandbox/tasmax/tasmax/day'
+    #input = '../../data/tasmax'
+
+    hads = load_data(input, ('1980-01-01', '2000-01-01'), 'tasmax',shapefile_path='../../data/Scotland/Scotland.bbox.shp')
+
+    print(hads)
