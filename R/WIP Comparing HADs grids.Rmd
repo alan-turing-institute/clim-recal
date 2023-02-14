@@ -41,7 +41,7 @@ We have ran this seperately in both ```r``` and ```python```. The aim of this do
 
 ## **1. Data** 
 
-**1a. HadUK grid resampled in R**
+### **1a. HadUK grid resampled in R**
     Resampling script [here](https://github.com/alan-turing-institute/clim-recal/blob/main/R/Resampling.HADs.inR.R)
     The 2.2km grid was derived from a reprojected (to BNG) UKCP 2.2km .nc file
 
@@ -64,7 +64,7 @@ plot(r1$tasmax_1)
 
 ```
 
-**1b. HadUK grid resampled in python**
+### **1b. HadUK grid resampled in python**
   Resampling script [here](https://github.com/alan-turing-institute/clim-recal/blob/main/python/resampling/resampling_hads.py)
 
 ```{r load data 2}
@@ -80,7 +80,8 @@ plot(r2$tasmax_1)
 
 ```
 
-**1c. Original HADUK grid**
+### **1c. Original HADUK grid**
+
 ```{r}
 f <- paste0(dd, "Raw/HadsUKgrid/tasmax/day/")
 hads.tasmax <- list.files(f)
@@ -93,9 +94,23 @@ crs(og, proj=T)
 
 plot(og$tasmax_1)
 ```
+### **1d. UKCP example**
+
+For comparing the grids
+
+```{r}
+
+f <- paste0(dd,"Processed/UKCP2.2_Reproj/tasmax_bng2/01/latest/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19991201-20001130.tif")
+ukcp <- rast(f)
+ukcp.r <- ukcp$`tasmax_rcp85_land-cpm_uk_2.2km_01_day_19991201-20001130_31`
+
+crs(ukcp.r, proj=T)
+
+#plot(ukcp.r)
+```
 
 
-**1d. Cropped extent**
+### **1e. Cropped extent**
   Just comparing by cropping to Scotland (bbox created [here](https://github.com/alan-turing-institute/clim-recal/tree/main/data/Scotland))
 
 ```{r}
@@ -140,6 +155,14 @@ ext(i) <- c(200000, 210000, 700000, 710000)
 
 r1_ci <- crop(r1_c, i)
 plot(r1_ci$tasmax_1)
+
+#Get number of cells in cropped extent
+cells <- cells(r1_ci)
+
+#get coords for all cells (for comparing above)
+r.reproj_c_xy <- sapply(cells, function(i){xyFromCell(r1_ci, i)})
+
+r.reproj_c_xy
 ```
 
 ```{r}
@@ -154,7 +177,23 @@ plot(og_ci$tasmax_1)
 
 ```
 
+```{r}
+ukcp_c <- terra::crop(ukcp.r, i) 
+plot(ukcp_c$`tasmax_rcp85_land-cpm_uk_2.2km_01_day_19991201-20001130_31`)
+```
 
-The resampled grids also align differently 
+```{r}
+#Get number of cells in cropped extent
+cells <- cells(ukcp_c)
 
-I'm going to also pull a UKCP file in here to check
+#get coords for all cells (for comparing above)
+ukcp_c_xy <- sapply(cells, function(i){xyFromCell(ukcp_c, i)})
+
+ukcp_c_xy
+```
+
+```{r}
+all(ukcp_c_xy, r.reproj_c_xy)
+
+```
+
