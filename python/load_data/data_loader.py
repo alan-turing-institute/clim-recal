@@ -1,6 +1,7 @@
 import xarray as xr
 import glob
 import geopandas as gp
+import os
 
 def load_data(input_path, date_range, variable, shapefile_path=None, extension='nc'):
     '''
@@ -98,9 +99,10 @@ def reformat_file(file, variable):
     """
     print(f"File: {file} is needs rasterio library, trying...")
     x = xr.open_rasterio(file)
-    st, sp = file.rsplit("_")[-1][:-4].split('-')
-    start = f"{st[:4]}-{st[4:6]}-{st[6:]}"
-    stop = f"{sp[:4]}-{sp[4:6]}-{sp[6:]}"
+    filename = os.path.basename(file).split('_')
+
+    start = filename[-1].split('-')[0]
+    stop = filename[-1].split('-')[1].split('.')[0]
     time_index = xr.cftime_range(start, stop, freq='D', calendar='360_day')
 
     x_renamed = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time"}) \
@@ -149,6 +151,7 @@ def load_and_merge(date_range, files, variable):
             if x.time.size != 0:
                 # Append the xarray to the list
                 xarray_list.append(x)
+            x.close()
             del x
         except Exception as e:
             print(f"File: {file} produced errors: {e}")
@@ -157,6 +160,6 @@ def load_and_merge(date_range, files, variable):
     if len(xarray_list) == 0:
         raise RuntimeError('No files passed the time selection. No merged output produced.')
     else:
-        merged_xarray = xr.concat(xarray_list, dim="time").sortby('time')
+        merged_xarray = xr.concat(xarray_list, dim="time",coords='minimal').sortby('time')
 
     return merged_xarray
