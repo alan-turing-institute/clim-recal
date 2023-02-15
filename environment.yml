@@ -3,7 +3,6 @@ channels:
   - r
   - defaults
   - conda-forge
-  - defaults
 dependencies:
   - appdirs=1.4.4
   - appnope=0.1.3
