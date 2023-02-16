@@ -16,7 +16,8 @@ def resample_hadukgrid(x):
         y_grid = x[2]
         output_dir = x[3]
 
-        output_name = f"{os.path.basename(file).split('.')[0]}_2.2km_resampled.nc"
+        name = os.path.basename(file)
+        output_name = f"{'_'.join(name.split('_')[:-1])}_2.2km_resampled_{name.split('_')[-1]}"
         if os.path.exists(os.path.join(output_dir,output_name)):
             print(f"File: {output_name} already exists in this directory. Skipping.")
             return 0
