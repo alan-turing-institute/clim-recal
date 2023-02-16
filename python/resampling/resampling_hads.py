@@ -24,10 +24,13 @@ def resample_hadukgrid(x):
         # files have the variable name as input (e.g. tasmax_hadukgrid_uk_1km_day_20211101-20211130.nc)
         variable = os.path.basename(file).split('_')[0]
 
-        data = xr.open_dataset(file)
+        data = xr.open_dataset(file, decode_coords="all")
 
         # the dataset to be resample must have dimensions named projection_x_coordinate and projection_y_coordinate .
         resampled = data[[variable]].interp(projection_x_coordinate=x_grid, projection_y_coordinate=y_grid, method="linear")
+
+        #make sure we keep the original CRS
+        resampled.rio.write_crs(data.rio.crs,inplace=True)
 
         # save resampled file
         resampled.to_netcdf(os.path.join(output_dir,output_name))
