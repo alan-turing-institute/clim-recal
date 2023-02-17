@@ -68,15 +68,17 @@ plot(r1$tasmax_1)
 Resampling script
 [here](https://github.com/alan-turing-institute/clim-recal/blob/main/python/resampling/resampling_hads.py)
 
+**THIS UPDATED 17/02/23**
+
 ``` r
-py.pros.tasmax <- list.files(paste0(dd, "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"))
+py.pros.tasmax <- list.files(paste0(dd,"Processed/HadsUKgrid/resampled_2.2km_newgrid/tasmax/day"))
 r2 <- py.pros.tasmax[grepl("200001", py.pros.tasmax)] #Same file as resampled above
-r2 <- paste0(paste0(dd, "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"),"/",r2)
+r2 <- paste0(paste0(dd, "Processed/HadsUKgrid/resampled_2.2km_newgrid/tasmax/day"),"/",r2)
 r2 <- rast(r2)
-crs(r2) #check crs 
+crs(r2, proj=T) #check crs 
 ```
 
-    ## [1] ""
+    ## [1] "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +a=6377563.396 +rf=299.324961266495 +units=m +no_defs"
 
 ``` r
 ## Ok so interesting is missing a crs slot on read - I wonder why this is? This could cause future problem potentially? 
@@ -146,7 +148,7 @@ e <- Sys.time()
 e-b
 ```
 
-    ## Time difference of 0.02500701 secs
+    ## Time difference of 0.02198005 secs
 
 ``` r
 plot(r1_c$tasmax_1)
@@ -161,7 +163,7 @@ e <- Sys.time()
 e-b
 ```
 
-    ## Time difference of 30.27387 secs
+    ## Time difference of 33.57785 secs
 
 ``` r
 plot(r2_c$tasmax_1)
@@ -182,12 +184,14 @@ two resampled files!
 ## Cropping to a small area to compare with the same orginal HADS file 
 i <- rast()
 ext(i) <- c(200000, 210000, 700000, 710000)
+```
 
+``` r
 r1_ci <- crop(r1_c, i)
 plot(r1_ci$tasmax_1)
 ```
 
-![](WIP-Comparing-HADs-grids_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](WIP-Comparing-HADs-grids_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 ``` r
 #Get number of cells in cropped extent
@@ -210,25 +214,49 @@ r.reproj_c_xy
     ## [2,] 702931.7 700731.7 700731.7 700731.7
 
 ``` r
+ext(r1_ci)
+```
+
+    ## SpatExtent : 199835.67457102, 210835.67457102, 699631.658882901, 710631.658882901 (xmin, xmax, ymin, ymax)
+
+``` r
 r2_ci <- crop(r2_c, i)
 plot(r2_ci$tasmax_1)
 ```
 
-![](WIP-Comparing-HADs-grids_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](WIP-Comparing-HADs-grids_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+``` r
+ext(r2_ci)
+```
+
+    ## SpatExtent : 199842.521629267, 210842.521629267, 699702.676089679, 710702.676089679 (xmin, xmax, ymin, ymax)
 
 ``` r
 og_ci <- crop(og_c, i)
+ext(og_c)
+```
+
+    ## SpatExtent : 6000, 470000, 531000, 1220000 (xmin, xmax, ymin, ymax)
+
+``` r
 plot(og_ci$tasmax_1)
 ```
 
-![](WIP-Comparing-HADs-grids_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](WIP-Comparing-HADs-grids_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 ``` r
 ukcp_c <- terra::crop(ukcp.r, i) 
 plot(ukcp_c$`tasmax_rcp85_land-cpm_uk_2.2km_01_day_19991201-20001130_31`)
 ```
 
-![](WIP-Comparing-HADs-grids_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](WIP-Comparing-HADs-grids_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+``` r
+ext(ukcp_c)
+```
+
+    ## SpatExtent : 199835.67457102, 210835.67457102, 699631.658882901, 710631.658882901 (xmin, xmax, ymin, ymax)
 
 ``` r
 #Get number of cells in cropped extent
