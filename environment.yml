@@ -52,7 +52,8 @@ dependencies:
     - six==1.16.0
     - snuggs==1.4.7
     - tqdm==4.64.1
-    - xarray==2022.10.0
+    - xarray==2023.2.0
     - matplotlib==3.6.1
     - scipy==1.10.0
     - pillow==9.4.0
+    - python-cmethods==-0.6.1
