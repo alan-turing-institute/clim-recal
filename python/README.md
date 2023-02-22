@@ -47,3 +47,9 @@ as there is not a `--grid_data` flag, the default file described above is used.
 
 In [python/load_data/data_loader.py] we have written a few functions for loading and concatenating data into a single xarray which
 can be used for running debiasing methods. Instructions in how to use these functions can be found in [python/notebooks/load_data_python.ipynb](../notebooks/load_data_python.ipynb).
+
+## Bias Corrections 
+
+The `debiasing` folder contains a series of scripts which can be used
+independently or via the `debias.py` script for ease of use and running multiple
+methods 

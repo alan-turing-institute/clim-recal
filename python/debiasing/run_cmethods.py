@@ -32,7 +32,7 @@ parser.add_argument('--shp', '--shapefile', dest='shapefile_fpath', type=str, he
 
 parser.add_argument('-m', '--method', dest='method', type=str, help='Correction method',default='linear_scaling')
 parser.add_argument('-v', '--variable', dest='var', type=str, default='tas', help='Variable to adjust')
-parser.add_argument('-u', '--unit', dest='unit', type=str, default='°C', help='Unit of the varible')
+parser.add_argument('-u', '--unit', dest='unit', type=str, default='°C', help='Unit of the variable')
 
 parser.add_argument('-g', '--group', dest='group', type=str, default='time.dayofyear', help='Value grouping, default: time, (options: time.month, time.dayofyear, time.year')
 parser.add_argument('-k', '--kind', dest='kind', type=str, default='+', help='+ or *, default: +')
