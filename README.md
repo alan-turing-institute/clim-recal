@@ -3,7 +3,9 @@
 ## About
 Open repository of methods for recalibrating and bias correcting UKCP18 climate projections data
 
+
 Our working table of methods is [here](https://docs.google.com/spreadsheets/d/18LIc8omSMTzOWM60aFNv1EZUl1qQN_DG8HFy1_0NdWk/edit?usp=sharing) for now 
+
 
 ## Setup 
 Methods can be used with a custom environment, here we provide a Anaconda
@@ -35,5 +37,3 @@ and installing with:
 
 ```
 pip install -r requirements.txt
-```
-
