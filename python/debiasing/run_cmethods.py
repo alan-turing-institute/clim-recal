@@ -6,8 +6,10 @@
 import argparse
 import logging, sys
 
-from cmethods.CMethods import CMethods
-from ..load_data.data_loader import load_data
+from CMethods import CMethods_climrecal
+
+sys.path.insert(1, '../load_data')
+from data_loader import load_data
 
 # * ----- L O G G I N G -----
 formatter = logging.Formatter(
@@ -30,13 +32,13 @@ parser.add_argument('--scen', '--scenario', dest='scen_fpath', type=str, help='S
 parser.add_argument('--shp', '--shapefile', dest='shapefile_fpath', type=str, help='Path to shapefile', default=None)
 
 
-parser.add_argument('-m', '--method', dest='method', type=str, help='Correction method',default='linear_scaling')
+parser.add_argument('-m', '--method', dest='method', type=str, help='Correction method', default='quantile_delta_mapping')
 parser.add_argument('-v', '--variable', dest='var', type=str, default='tas', help='Variable to adjust')
 parser.add_argument('-u', '--unit', dest='unit', type=str, default='°C', help='Unit of the varible')
 
-parser.add_argument('-g', '--group', dest='group', type=str, default='time.dayofyear', help='Value grouping, default: time, (options: time.month, time.dayofyear, time.year')
+parser.add_argument('-g', '--group', dest='group', type=str, default=None, help='Value grouping, default: time, (options: time.month, time.dayofyear, time.year')
 parser.add_argument('-k', '--kind', dest='kind', type=str, default='+', help='+ or *, default: +')
-parser.add_argument('-n', '--nquantiles', dest='n_quantiles', type=int, default=100, help='Nr. of Quantiles to use')
+parser.add_argument('-n', '--nquantiles', dest='n_quantiles', type=int, default=1000, help='Nr. of Quantiles to use')
 
 parser.add_argument('-p', '--processes', dest='p', type=int, default=1, help='Multiprocessing with n processes, default: 1')
 params = vars(parser.parse_args())
@@ -54,19 +56,19 @@ kind = params['kind']
 n_quantiles = params['n_quantiles']
 n_jobs = params['p']
 
-h_date_period = ('1980-01-01', '2000-01-01')
-f_date_period = ('2020-01-01', '2080-01-01')
+h_date_period = ('1980-12-01', '1981-11-30')
+f_date_period = ('2020-01-01', '2021-11-30')
 
 # * ----- ----- -----M A I N ----- ----- -----
 def main() -> None:
-    cm = CMethods()
+    cm = CMethods_climrecal()
 
     if method not in cm.get_available_methods(): raise ValueError(f'Unknown method {method}. Available methods: {cm.get_available_methods()}')
 
     # data loader
     ds_obs = load_data(obs_fpath, date_range=h_date_period, variable=var, shapefile_path=shape_fpath)[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
     ds_simh = load_data(contr_fpath, date_range=h_date_period, variable=var, shapefile_path=shape_fpath, extension='tif')[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
-    ds_simp = load_data(contr_fpath, date_range=h_date_period, variable=var, shapefile_path=shape_fpath, extension='tif')[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
+    ds_simp = load_data(scen_fpath, date_range=f_date_period, variable=var, shapefile_path=shape_fpath, extension='tif')[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
 
     log.info('Data Loaded')
 
