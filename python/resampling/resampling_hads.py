@@ -27,6 +27,9 @@ def resample_hadukgrid(x):
 
         data = xr.open_dataset(file, decode_coords="all")
 
+        # convert to 360 day calendar.
+        data = data.convert_calendar(dim='time', calendar='360_day', align_on='year')
+
         # the dataset to be resample must have dimensions named projection_x_coordinate and projection_y_coordinate .
         resampled = data[[variable]].interp(projection_x_coordinate=x_grid, projection_y_coordinate=y_grid, method="linear")
 
