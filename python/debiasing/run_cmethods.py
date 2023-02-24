@@ -5,6 +5,9 @@
 
 import argparse
 import logging, sys
+import time
+import numpy as np
+import matplotlib.pyplot as plt
 
 from CMethods import CMethods_climrecal
 
@@ -56,11 +59,14 @@ kind = params['kind']
 n_quantiles = params['n_quantiles']
 n_jobs = params['p']
 
-h_date_period = ('1980-12-01', '1981-11-30')
-f_date_period = ('2020-01-01', '2021-11-30')
+h_date_period = ('1980-12-01', '1999-11-30')
+f_date_period = ('2020-01-01', '2080-11-30')
 
 # * ----- ----- -----M A I N ----- ----- -----
 def main() -> None:
+    import time
+
+    start = time.time()
     cm = CMethods_climrecal()
 
     if method not in cm.get_available_methods(): raise ValueError(f'Unknown method {method}. Available methods: {cm.get_available_methods()}')
@@ -71,6 +77,14 @@ def main() -> None:
     ds_simp = load_data(scen_fpath, date_range=f_date_period, variable=var, shapefile_path=shape_fpath, extension='tif')[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
 
     log.info('Data Loaded')
+
+    ds_simh = ds_simh.where(~np.isnan(ds_obs.isel(time=0)))
+    ds_simp = ds_simp.where(~np.isnan(ds_obs.isel(time=0)))
+
+    ds_simh = ds_simh.where(ds_simh.values<1000)
+    ds_simp = ds_simp.where(ds_simp.values<1000)
+
+    log.info('Data Masked')
 
     ds_obs.attrs['unit'] = unit
     ds_simh.attrs['unit'] = unit
@@ -98,8 +112,27 @@ def main() -> None:
     log.info('Saving now')
     result.name = var
     result['time'] = ds_simp['time']
+    result = result.rename({"lon": "projection_x_coordinate", "lat": "projection_y_coordinate"})
     result.to_netcdf(f'{method}_result_var-{var}{descr1}_kind-{kind}_group-{group}{descr2}_{start_date}_{end_date}.nc')
+    end = time.time()
+    print(end - start)
     log.info('Done')
+
+    plt.figure(figsize=(10, 5), dpi=216)
+    ds_simh.groupby('time.dayofyear').mean(...).plot(label='$T_{sim,h}$')
+    ds_obs.groupby('time.dayofyear').mean(...).plot(label='$T_{obs,h}$')
+    ds_simp.groupby('time.dayofyear').mean(...).plot(label='$T_{sim,p}$')
+    result.groupby('time.dayofyear').mean(...).plot(label='$T^{*Debiased}_{sim,p}$')
+    plt.title(
+        f'Historical modeled and obseved temperatures between December {start_date} and {end_date}')  # ; and predicted temperatures')
+    plt.gca().grid(alpha=.3)
+    plt.legend();
+    plt.savefig('time-series.png')
+
+    index = list(np.linspace(0, len(result.time.values) - 1, 6, dtype=int))
+    plt.figure(figsize=(10, 5), dpi=216)
+    g_simple = result.isel(time=index).plot(x='projection_x_coordinate', y='projection_y_coordinate', col='time', col_wrap=3)
+    plt.savefig('maps.png')
 
 
 if __name__ == '__main__':
