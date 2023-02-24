@@ -60,7 +60,12 @@ n_quantiles = params['n_quantiles']
 n_jobs = params['p']
 
 h_date_period = ('1980-12-01', '1999-11-30')
-f_date_period = ('2020-01-01', '2080-11-30')
+
+future_time_periods = [('2020-12-01', '2030-11-30'),('2030-12-01', '2040-11-30'),('2040-12-01', '2050-11-30'),
+               ('2050-12-01', '2060-11-30'),('2060-12-01', '2070-11-30'),('2070-12-01', '2080-11-30')]
+
+#for testing
+#future_time_periods = [('2020-12-01', '2021-01-01'),('2021-01-02', '2021-05-01'),('2021-06-02', '2021-12-01')]
 
 # * ----- ----- -----M A I N ----- ----- -----
 def main() -> None:
@@ -74,66 +79,76 @@ def main() -> None:
     # data loader
     ds_obs = load_data(obs_fpath, date_range=h_date_period, variable=var, shapefile_path=shape_fpath)[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
     ds_simh = load_data(contr_fpath, date_range=h_date_period, variable=var, shapefile_path=shape_fpath, extension='tif')[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
-    ds_simp = load_data(scen_fpath, date_range=f_date_period, variable=var, shapefile_path=shape_fpath, extension='tif')[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
-
-    log.info('Data Loaded')
+    log.info('Historical data Loaded')
 
     ds_simh = ds_simh.where(~np.isnan(ds_obs.isel(time=0)))
-    ds_simp = ds_simp.where(~np.isnan(ds_obs.isel(time=0)))
-
     ds_simh = ds_simh.where(ds_simh.values<1000)
-    ds_simp = ds_simp.where(ds_simp.values<1000)
 
-    log.info('Data Masked')
+    log.info('Historical data Masked')
 
     ds_obs.attrs['unit'] = unit
     ds_simh.attrs['unit'] = unit
-    ds_simp.attrs['unit'] = unit
 
-    start_date: str = ds_simp['time'][0].dt.strftime('%Y%m%d').values.ravel()[0]
-    end_date: str = ds_simp['time'][-1].dt.strftime('%Y%m%d').values.ravel()[0]
 
-    descr1, descr2 = '', ''
-    if method in cm.DISTRIBUTION_METHODS:
-        descr1 = f'_quantiles-{n_quantiles}'
+    for f_date_period in future_time_periods:
 
-    # ----- Adjustment -----
-    log.info(f'Starting {method} adjustment')
-    result = cm.adjust_3d(
-        method = method,
-        obs = ds_obs,
-        simh = ds_simh,
-        simp = ds_simp,
-        n_quantiles = n_quantiles,
-        kind = kind,
-        group = group,
-        n_jobs = n_jobs
-    )
-    log.info('Saving now')
-    result.name = var
-    result['time'] = ds_simp['time']
-    result = result.rename({"lon": "projection_x_coordinate", "lat": "projection_y_coordinate"})
-    result.to_netcdf(f'{method}_result_var-{var}{descr1}_kind-{kind}_group-{group}{descr2}_{start_date}_{end_date}.nc')
+        try:
+            ds_simp = load_data(scen_fpath, date_range=f_date_period, variable=var, shapefile_path=shape_fpath, extension='tif')[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
+        except Exception as e:
+            print ('No data available for time period',f_date_period)
+            pass
+
+
+        ds_simp = ds_simp.where(~np.isnan(ds_obs.isel(time=0)))
+        ds_simp = ds_simp.where(ds_simp.values<1000)
+
+        ds_simp.attrs['unit'] = unit
+
+        start_date: str = ds_simp['time'][0].dt.strftime('%Y%m%d').values.ravel()[0]
+        end_date: str = ds_simp['time'][-1].dt.strftime('%Y%m%d').values.ravel()[0]
+
+        descr1, descr2 = '', ''
+        if method in cm.DISTRIBUTION_METHODS:
+            descr1 = f'_quantiles-{n_quantiles}'
+
+        # ----- Adjustment -----
+        log.info(f'Starting {method} adjustment')
+        result = cm.adjust_3d(
+            method = method,
+            obs = ds_obs,
+            simh = ds_simh,
+            simp = ds_simp,
+            n_quantiles = n_quantiles,
+            kind = kind,
+            group = group,
+            n_jobs = n_jobs
+        )
+        log.info('Saving now')
+        result.name = var
+        result['time'] = ds_simp['time']
+        result = result.rename({"lon": "projection_x_coordinate", "lat": "projection_y_coordinate"})
+        result.to_netcdf(f'{method}_result_var-{var}{descr1}_kind-{kind}_group-{group}{descr2}_{start_date}_{end_date}.nc')
+
+
+        plt.figure(figsize=(10, 5), dpi=216)
+        ds_simh.groupby('time.dayofyear').mean(...).plot(label='$T_{sim,h}$')
+        ds_obs.groupby('time.dayofyear').mean(...).plot(label='$T_{obs,h}$')
+        ds_simp.groupby('time.dayofyear').mean(...).plot(label='$T_{sim,p}$')
+        result.groupby('time.dayofyear').mean(...).plot(label='$T^{*Debiased}_{sim,p}$')
+        plt.title(
+            f'Historical modeled and obseved temperatures between December {start_date} and {end_date}')  # ; and predicted temperatures')
+        plt.gca().grid(alpha=.3)
+        plt.legend();
+        plt.savefig(f'time-series-{method}_result_var-{var}{descr1}_kind-{kind}_group-{group}{descr2}_{start_date}_{end_date}.png')
+
+        index = list(np.linspace(0, len(result.time.values) - 1, 6, dtype=int))
+        plt.figure(figsize=(10, 5), dpi=216)
+        g_simple = result.isel(time=index).plot(x='projection_x_coordinate', y='projection_y_coordinate', col='time', col_wrap=3)
+        plt.savefig(f'maps-{method}_result_var-{var}{descr1}_kind-{kind}_group-{group}{descr2}_{start_date}_{end_date}.png')
+
     end = time.time()
-    print(end - start)
+    print('total time in seconds',end - start)
     log.info('Done')
-
-    plt.figure(figsize=(10, 5), dpi=216)
-    ds_simh.groupby('time.dayofyear').mean(...).plot(label='$T_{sim,h}$')
-    ds_obs.groupby('time.dayofyear').mean(...).plot(label='$T_{obs,h}$')
-    ds_simp.groupby('time.dayofyear').mean(...).plot(label='$T_{sim,p}$')
-    result.groupby('time.dayofyear').mean(...).plot(label='$T^{*Debiased}_{sim,p}$')
-    plt.title(
-        f'Historical modeled and obseved temperatures between December {start_date} and {end_date}')  # ; and predicted temperatures')
-    plt.gca().grid(alpha=.3)
-    plt.legend();
-    plt.savefig('time-series.png')
-
-    index = list(np.linspace(0, len(result.time.values) - 1, 6, dtype=int))
-    plt.figure(figsize=(10, 5), dpi=216)
-    g_simple = result.isel(time=index).plot(x='projection_x_coordinate', y='projection_y_coordinate', col='time', col_wrap=3)
-    plt.savefig('maps.png')
-
 
 if __name__ == '__main__':
     main()
