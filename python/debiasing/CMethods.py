@@ -172,7 +172,7 @@ class CMethods_climrecal():
         ''' Adjustment along longitude for one specific latitude
             used by cls.adjust_3d as callbackfunction for multiprocessing.Pool
         '''
-        for key in ['method', 'obs', 'simh', 'simp']: assert params[key]
+        #for key in ['method', 'obs', 'simh', 'simp']: assert params[key]
         kwargs = params.get('kwargs', {})
 
         result = params['simp'].copy(deep=True).load()
@@ -482,41 +482,45 @@ class CMethods_climrecal():
         res = simp.copy(deep=True)
         obs, simh, simp = np.array(obs), np.array(simh), np.array(simp)
 
-        global_max = max(np.amax(obs), np.amax(simh))
-        global_min = min(np.amin(obs), np.amin(simh))
-        wide = abs(global_max - global_min) / n_quantiles
-        xbins = np.arange(global_min, global_max + wide, wide)
+        try:
+            global_max = max(np.amax(obs), np.amax(simh))
+            global_min = min(np.amin(obs), np.amin(simh))
+            wide = abs(global_max - global_min) / n_quantiles
+            xbins = np.arange(global_min, global_max + wide, wide)
 
-        cdf_obs = cls.get_cdf(obs, xbins)
-        cdf_simh = cls.get_cdf(simh, xbins)
+            cdf_obs = cls.get_cdf(obs, xbins)
+            cdf_simh = cls.get_cdf(simh, xbins)
 
-        if kwargs.get('detrended', False):
-            # detrended => shift mean of $X_{sim,p}$ to range of $X_{sim,h}$ to adjust extremes
-            for _, idxs in res.groupby('time.month').groups.items():
-                m_simh, m_simp = [], []
-                for idx in idxs:
-                    m_simh.append(simh[idx])
-                    m_simp.append(simp[idx])
+            if kwargs.get('detrended', False):
+                # detrended => shift mean of $X_{sim,p}$ to range of $X_{sim,h}$ to adjust extremes
+                for _, idxs in res.groupby('time.month').groups.items():
+                    m_simh, m_simp = [], []
+                    for idx in idxs:
+                        m_simh.append(simh[idx])
+                        m_simp.append(simp[idx])
 
-                m_simh = np.array(m_simh)
-                m_simp = np.array(m_simp)
-                m_simh_mean = np.nanmean(m_simh)
-                m_simp_mean = np.nanmean(m_simp)
+                    m_simh = np.array(m_simh)
+                    m_simp = np.array(m_simp)
+                    m_simh_mean = np.nanmean(m_simh)
+                    m_simp_mean = np.nanmean(m_simp)
 
-                if kind in cls.ADDITIVE:
-                    epsilon = np.interp(m_simp - m_simp_mean + m_simh_mean, xbins, cdf_simh)  # Eq. 1
-                    X = cls.get_inverse_of_cdf(cdf_obs, epsilon, xbins) + m_simp_mean - m_simh_mean  # Eq. 1
+                    if kind in cls.ADDITIVE:
+                        epsilon = np.interp(m_simp - m_simp_mean + m_simh_mean, xbins, cdf_simh)  # Eq. 1
+                        X = cls.get_inverse_of_cdf(cdf_obs, epsilon, xbins) + m_simp_mean - m_simh_mean  # Eq. 1
 
-                elif kind in cls.MULTIPLICATIVE:
-                    epsilon = np.interp(  # Eq. 2
-                        (m_simh_mean * m_simp) / m_simp_mean,
-                        xbins, cdf_simh,
-                        left=kwargs.get('val_min', 0.0),
-                        right=kwargs.get('val_max', None)
-                    )
-                    X = np.interp(epsilon, cdf_obs, xbins) * (m_simp_mean / m_simh_mean)  # Eq. 2
-                for i, idx in enumerate(idxs): res.values[idx] = X[i]
-            return res
+                    elif kind in cls.MULTIPLICATIVE:
+                        epsilon = np.interp(  # Eq. 2
+                            (m_simh_mean * m_simp) / m_simp_mean,
+                            xbins, cdf_simh,
+                            left=kwargs.get('val_min', 0.0),
+                            right=kwargs.get('val_max', None)
+                        )
+                        X = np.interp(epsilon, cdf_obs, xbins) * (m_simp_mean / m_simh_mean)  # Eq. 2
+                    for i, idx in enumerate(idxs): res.values[idx] = X[i]
+        except Exception as e:
+            print(f"Not able to run debiasing method in this grid cell, returning array of NaN.")
+            res = res.where(res.values == np.nan)
+        return res
 
         if kind in cls.ADDITIVE:
             epsilon = np.interp(simp, xbins, cdf_simh)  # Eq. 1
@@ -641,7 +645,7 @@ class CMethods_climrecal():
                 delta = simp - cls.get_inverse_of_cdf(cdf_simh, epsilon, xbins)  # Eq. 1.3
                 res.values = QDM1 + delta  # Eq. 1.4
             except Exception as e:
-                print(f"Not able to debias, returning nans.")
+                print(f"Not able to run debiasing method in this grid cell, returning array of NaN.")
                 res = res.where(res.values == np.nan)
 
             return res
