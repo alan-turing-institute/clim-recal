@@ -66,14 +66,16 @@ plot(r1$tasmax_1)
 
 ### **1b. HadUK grid resampled in python**
   Resampling script [here](https://github.com/alan-turing-institute/clim-recal/blob/main/python/resampling/resampling_hads.py)
+  
+**THIS UPDATED 17/02/23**
 
 ```{r load data 2}
 
-py.pros.tasmax <- list.files(paste0(dd, "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"))
+py.pros.tasmax <- list.files(paste0(dd,"Processed/HadsUKgrid/resampled_2.2km_newgrid/tasmax/day"))
 r2 <- py.pros.tasmax[grepl("200001", py.pros.tasmax)] #Same file as resampled above
-r2 <- paste0(paste0(dd, "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"),"/",r2)
+r2 <- paste0(paste0(dd, "Processed/HadsUKgrid/resampled_2.2km_newgrid/tasmax/day"),"/",r2)
 r2 <- rast(r2)
-crs(r2) #check crs 
+crs(r2, proj=T) #check crs 
 ## Ok so interesting is missing a crs slot on read - I wonder why this is? This could cause future problem potentially? 
 
 plot(r2$tasmax_1)
@@ -152,7 +154,11 @@ Ok there are some differences that I can see from the plot between the two resam
 ## Cropping to a small area to compare with the same orginal HADS file 
 i <- rast()
 ext(i) <- c(200000, 210000, 700000, 710000)
+```
 
+
+
+```{r}
 r1_ci <- crop(r1_c, i)
 plot(r1_ci$tasmax_1)
 
@@ -163,16 +169,21 @@ cells <- cells(r1_ci)
 r.reproj_c_xy <- sapply(cells, function(i){xyFromCell(r1_ci, i)})
 
 r.reproj_c_xy
+
+ext(r1_ci)
 ```
 
 ```{r}
 
 r2_ci <- crop(r2_c, i)
 plot(r2_ci$tasmax_1)
+
+ext(r2_ci)
 ```
 
 ```{r}
 og_ci <- crop(og_c, i)
+ext(og_c)
 plot(og_ci$tasmax_1)
 
 ```
@@ -180,6 +191,8 @@ plot(og_ci$tasmax_1)
 ```{r}
 ukcp_c <- terra::crop(ukcp.r, i) 
 plot(ukcp_c$`tasmax_rcp85_land-cpm_uk_2.2km_01_day_19991201-20001130_31`)
+
+ext(ukcp_c)
 ```
 
 ```{r}
