@@ -518,8 +518,8 @@ class CMethods_climrecal():
                         X = np.interp(epsilon, cdf_obs, xbins) * (m_simp_mean / m_simh_mean)  # Eq. 2
                     for i, idx in enumerate(idxs): res.values[idx] = X[i]
         except Exception as e:
-            print(f"Not able to run debiasing method in this grid cell, returning array of NaN.")
-            res = res.where(res.values == np.nan)
+            print(f"Not able to run debiasing method in this grid cell, returning original array.")
+            pass
         return res
 
         if kind in cls.ADDITIVE:
@@ -646,7 +646,6 @@ class CMethods_climrecal():
                 res.values = QDM1 + delta  # Eq. 1.4
             except Exception as e:
                 print(f"Not able to run debiasing method in this grid cell, returning array of NaN.")
-                res = res.where(res.values == np.nan)
 
             return res
 
