@@ -76,8 +76,8 @@ def main() -> None:
     if method not in cm.get_available_methods(): raise ValueError(f'Unknown method {method}. Available methods: {cm.get_available_methods()}')
 
     # data loader
-    ds_obs = load_data(obs_fpath, date_range=h_date_period, variable=var, shapefile_path=shape_fpath)[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
     ds_simh = load_data(contr_fpath, date_range=h_date_period, variable=var, shapefile_path=shape_fpath, extension='tif')[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
+    ds_obs = load_data(obs_fpath, date_range=h_date_period, variable=var, shapefile_path=shape_fpath)[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
     log.info('Historical data Loaded.')
 
     if len(ds_obs.shape)!=len(ds_simh.shape):

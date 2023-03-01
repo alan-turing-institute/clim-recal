@@ -114,9 +114,9 @@ def reformat_file(file, variable):
 
     xa.coords['time'] = time_index
 
-    xa = xa.transpose('time', 'projection_y_coordinate',
-                                                        'projection_x_coordinate').to_dataset(
-        name=variable)
+    #xa = xa.transpose('time', 'projection_y_coordinate',
+    #                                                    'projection_x_coordinate').to_dataset(
+    #   name=variable)
     return xa
 
 
