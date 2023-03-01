@@ -2,6 +2,7 @@ import xarray as xr
 import glob
 import geopandas as gp
 import os
+from datetime import datetime
 
 def load_data(input_path, date_range, variable, shapefile_path=None, extension='nc'):
     '''
@@ -98,7 +99,9 @@ def reformat_file(file, variable):
 
     """
     print(f"File: {file} is needs rasterio library, trying...")
-    x = xr.open_rasterio(file)
+    with xr.open_dataset(file, engine='rasterio') as ds:
+        x = ds.load()
+
     filename = os.path.basename(file).split('_')
 
     start = filename[-1].split('-')[0]
@@ -141,11 +144,14 @@ def load_and_merge(date_range, files, variable):
     xarray_list = []
     # Iterate through the variables
     for file in files:
+
         # Load the xarray
         try:
             try:
-                print ('Loading and selecting ',file)
-                x = xr.open_dataset(file,engine='netcdf4').sel(time=slice(*date_range))
+                print ('Loading and selecting ', file)
+                with xr.open_dataset(file, engine='netcdf4') as ds:
+                    x = ds.load()
+                    x = x.sel(time=slice(*date_range))
             except Exception as e:
                 x = reformat_file(file,variable).sel(time=slice(*date_range))
 
@@ -153,7 +159,6 @@ def load_and_merge(date_range, files, variable):
             if x.time.size != 0:
                 # Append the xarray to the list
                 xarray_list.append(x)
-            x.close()
             del x
         except Exception as e:
             print(f"File: {file} produced errors: {e}")
