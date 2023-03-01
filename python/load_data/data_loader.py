@@ -99,24 +99,18 @@ def reformat_file(file, variable):
 
     """
     print(f"File: {file} is needs rasterio library, trying...")
-    with xr.open_dataset(file, engine='rasterio') as ds:
-        x = ds.load()
-
     filename = os.path.basename(file).split('_')
 
     start = filename[-1].split('-')[0]
     stop = filename[-1].split('-')[1].split('.')[0]
     time_index = xr.cftime_range(start, stop, freq='D', calendar='360_day')
 
-    xa = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time"}) \
-        .rio.write_crs('epsg:27700')
-    x.close()
+    with xr.open_dataset(file, engine='rasterio') as x:
+        xa = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time",'band_data':variable}) \
+            .rio.write_crs('epsg:27700')
 
     xa.coords['time'] = time_index
 
-    #xa = xa.transpose('time', 'projection_y_coordinate',
-    #                                                    'projection_x_coordinate').to_dataset(
-    #   name=variable)
     return xa
 
 
