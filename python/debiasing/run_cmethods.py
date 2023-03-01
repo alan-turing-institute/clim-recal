@@ -61,14 +61,12 @@ kind = params['kind']
 n_quantiles = params['n_quantiles']
 n_jobs = params['p']
 
-#h_date_period = ('1980-12-01', '1982-11-29')
 h_date_period = ('1980-12-01', '1999-11-30')
-
-#future_time_periods = [('2020-12-01', '2030-11-30'),('2030-12-01', '2040-11-30'),('2040-12-01', '2050-11-30'),('2050-12-01', '2060-11-30'),('2060-12-01', '2070-11-30'),('2070-12-01', '2080-11-30')]
+future_time_periods = [('2020-12-01', '2030-11-30'),('2030-12-01', '2040-11-30'),('2040-12-01', '2050-11-30'),('2050-12-01', '2060-11-30'),('2060-12-01', '2070-11-30'),('2070-12-01', '2080-11-30')]
 
 #for testing
-future_time_periods = [('2020-12-01', '2022-11-30'),('2022-12-01', '2023-11-30')]
-
+#future_time_periods = [('2020-12-01', '2022-11-30'),('2022-12-01', '2023-11-30')]
+#h_date_period = ('1980-12-01', '1982-11-29')
 # * ----- ----- -----M A I N ----- ----- -----
 def main() -> None:
 
@@ -80,10 +78,12 @@ def main() -> None:
     # data loader
     ds_obs = load_data(obs_fpath, date_range=h_date_period, variable=var, shapefile_path=shape_fpath)[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
     ds_simh = load_data(contr_fpath, date_range=h_date_period, variable=var, shapefile_path=shape_fpath, extension='tif')[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
-    log.info('Historical data Loaded')
+    log.info('Historical data Loaded.')
 
     if len(ds_obs.shape)!=len(ds_simh.shape):
         raise RuntimeError('Error, observed and simulated historical data must have same dimensions.')
+
+    log.info('Resulting datasets with shape', ds_obs.shape)
 
     ds_simh = ds_simh.where(~np.isnan(ds_obs.isel(time=0)))
     ds_simh = ds_simh.where(ds_simh.values<1000)
