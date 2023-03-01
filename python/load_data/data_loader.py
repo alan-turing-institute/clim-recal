@@ -105,14 +105,15 @@ def reformat_file(file, variable):
     stop = filename[-1].split('-')[1].split('.')[0]
     time_index = xr.cftime_range(start, stop, freq='D', calendar='360_day')
 
-    x_renamed = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time"}) \
+    xa = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time"}) \
         .rio.write_crs('epsg:27700')
-    x_renamed.coords['time'] = time_index
+    x.close()
 
-    xa = x_renamed.transpose('time', 'projection_y_coordinate',
+    xa.coords['time'] = time_index
+
+    xa = xa.transpose('time', 'projection_y_coordinate',
                                                         'projection_x_coordinate').to_dataset(
         name=variable)
-
     return xa
 
 
@@ -143,7 +144,8 @@ def load_and_merge(date_range, files, variable):
         # Load the xarray
         try:
             try:
-                x = xr.open_dataset(file).sel(time=slice(*date_range))
+                print ('Loading and selecting ',file)
+                x = xr.open_dataset(file,engine='netcdf4').sel(time=slice(*date_range))
             except Exception as e:
                 x = reformat_file(file,variable).sel(time=slice(*date_range))
 
