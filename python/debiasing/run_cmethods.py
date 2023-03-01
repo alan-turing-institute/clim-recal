@@ -8,7 +8,7 @@ import logging, sys
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-
+import os
 from CMethods import CMethods_climrecal
 
 sys.path.insert(1, '../load_data')
@@ -33,6 +33,7 @@ parser.add_argument('--contr', '--control', dest='contr_fpath', type=str, help='
 parser.add_argument('--scen', '--scenario', dest='scen_fpath', type=str, help='Scenario dataset (data to adjust)')
 
 parser.add_argument('--shp', '--shapefile', dest='shapefile_fpath', type=str, help='Path to shapefile', default=None)
+parser.add_argument('--out', '--output', dest='output_fpath', type=str, help='Path to save output files', default='.')
 
 
 parser.add_argument('-m', '--method', dest='method', type=str, help='Correction method', default='quantile_delta_mapping')
@@ -50,6 +51,7 @@ obs_fpath = params['obs_fpath']
 contr_fpath = params['contr_fpath']
 scen_fpath = params['scen_fpath']
 shape_fpath = params['shapefile_fpath']
+out_fpath = params['output_fpath']
 
 method = params['method']
 var = params['var']
@@ -59,17 +61,16 @@ kind = params['kind']
 n_quantiles = params['n_quantiles']
 n_jobs = params['p']
 
+#h_date_period = ('1980-12-01', '1982-11-29')
 h_date_period = ('1980-12-01', '1999-11-30')
 
-future_time_periods = [('2020-12-01', '2030-11-30'),('2030-12-01', '2040-11-30'),('2040-12-01', '2050-11-30'),
-               ('2050-12-01', '2060-11-30'),('2060-12-01', '2070-11-30'),('2070-12-01', '2080-11-30')]
+#future_time_periods = [('2020-12-01', '2030-11-30'),('2030-12-01', '2040-11-30'),('2040-12-01', '2050-11-30'),('2050-12-01', '2060-11-30'),('2060-12-01', '2070-11-30'),('2070-12-01', '2080-11-30')]
 
 #for testing
-#future_time_periods = [('2020-12-01', '2021-01-01'),('2021-01-02', '2021-05-01'),('2021-06-02', '2021-12-01')]
+future_time_periods = [('2020-12-01', '2022-11-30'),('2022-12-01', '2023-11-30')]
 
 # * ----- ----- -----M A I N ----- ----- -----
 def main() -> None:
-    import time
 
     start = time.time()
     cm = CMethods_climrecal()
@@ -81,6 +82,9 @@ def main() -> None:
     ds_simh = load_data(contr_fpath, date_range=h_date_period, variable=var, shapefile_path=shape_fpath, extension='tif')[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
     log.info('Historical data Loaded')
 
+    if len(ds_obs.shape)!=len(ds_simh.shape):
+        raise RuntimeError('Error, observed and simulated historical data must have same dimensions.')
+
     ds_simh = ds_simh.where(~np.isnan(ds_obs.isel(time=0)))
     ds_simh = ds_simh.where(ds_simh.values<1000)
 
@@ -91,6 +95,8 @@ def main() -> None:
 
 
     for f_date_period in future_time_periods:
+
+        print ('Running time period: ',f_date_period)
 
         try:
             ds_simp = load_data(scen_fpath, date_range=f_date_period, variable=var, shapefile_path=shape_fpath, extension='tif')[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
@@ -111,6 +117,11 @@ def main() -> None:
         if method in cm.DISTRIBUTION_METHODS:
             descr1 = f'_quantiles-{n_quantiles}'
 
+        # If output file do not exist create it
+        result_path = os.path.join(out_fpath, var)
+        if not os.path.exists(result_path):
+            os.makedirs(result_path)
+
         # ----- Adjustment -----
         log.info(f'Starting {method} adjustment')
         result = cm.adjust_3d(
@@ -127,7 +138,13 @@ def main() -> None:
         result.name = var
         result['time'] = ds_simp['time']
         result = result.rename({"lon": "projection_x_coordinate", "lat": "projection_y_coordinate"})
-        result.to_netcdf(f'{method}_result_var-{var}{descr1}_kind-{kind}_group-{group}{descr2}_{start_date}_{end_date}.nc')
+
+        # define output name
+        output_name = f'{method}_result_var-{var}{descr1}_kind-{kind}_group-{group}{descr2}_{start_date}_{end_date}'
+        file_name = os.path.join(result_path,f'debiased_{output_name}.nc')
+
+        print ('Saving to', file_name)
+        result.to_netcdf(file_name)
 
 
         plt.figure(figsize=(10, 5), dpi=216)
@@ -139,12 +156,14 @@ def main() -> None:
             f'Historical modeled and obseved temperatures between December {start_date} and {end_date}')  # ; and predicted temperatures')
         plt.gca().grid(alpha=.3)
         plt.legend();
-        plt.savefig(f'time-series-{method}_result_var-{var}{descr1}_kind-{kind}_group-{group}{descr2}_{start_date}_{end_date}.png')
+        fig_name = os.path.join(result_path,f'time-series-{output_name}.png')
+        plt.savefig(fig_name)
 
         index = list(np.linspace(0, len(result.time.values) - 1, 6, dtype=int))
         plt.figure(figsize=(10, 5), dpi=216)
         g_simple = result.isel(time=index).plot(x='projection_x_coordinate', y='projection_y_coordinate', col='time', col_wrap=3)
-        plt.savefig(f'maps-{method}_result_var-{var}{descr1}_kind-{kind}_group-{group}{descr2}_{start_date}_{end_date}.png')
+        fig_name = os.path.join(result_path, f'maps-{output_name}.png')
+        plt.savefig(fig_name)
 
     end = time.time()
     print('total time in seconds',end - start)
