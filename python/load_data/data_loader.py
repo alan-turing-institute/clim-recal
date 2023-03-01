@@ -145,6 +145,16 @@ def load_and_merge(date_range, files, variable):
     # Iterate through the variables
     for file in files:
 
+        filename = os.path.basename(file).split('_')
+        start_file = datetime.strptime(filename[-1].split('-')[0], '%Y%m%d')
+        stop_file = datetime.strptime(filename[-1].split('-')[1].split('.')[0], '%Y%m%d')
+
+        start_range = datetime.strptime(date_range[0], '%Y-%m-%d')
+        stop_range = datetime.strptime(date_range[1], '%Y-%m-%d')
+
+        if (stop_file < start_range) | (start_file> stop_range):
+            continue
+
         # Load the xarray
         try:
             try:
