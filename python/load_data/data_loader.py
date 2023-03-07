@@ -103,13 +103,25 @@ def reformat_file(file, variable):
 
     start = filename[-1].split('-')[0]
     stop = filename[-1].split('-')[1].split('.')[0]
-    time_index = xr.cftime_range(start, stop, freq='D', calendar='360_day')
+    time_index = xr.cftime_range(start, stop, freq='D', calendar='360_day', inclusive='both')
 
-    with xr.open_dataset(file, engine='rasterio') as x:
-        xa = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time",'band_data':variable}) \
-            .rio.write_crs('epsg:27700')
+    try:
+        with xr.open_dataset(file, engine='rasterio') as x:
+            xa = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time",'band_data':variable}) \
+                .rio.write_crs('epsg:27700')
+            xa.coords['time'] = time_index
 
-    xa.coords['time'] = time_index
+    except Exception as e:
+        with xr.open_rasterio(file) as x:
+            xa = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time"}) \
+                .rio.write_crs('epsg:27700')
+        xa.coords['time'] = time_index
+
+        xa = xa.transpose('time', 'projection_y_coordinate',
+                                     'projection_x_coordinate').to_dataset(
+                name=variable)
+
+
 
     return xa
 
