@@ -224,6 +224,7 @@ class CMethods_climrecal():
         func_adjustment = cls.get_function(method)
         result = simp.copy(deep=True).load()
         groups = simh.groupby(group).groups
+        groups_p = simp.groupby(group).groups
 
         for month in groups.keys():
             m_obs, m_simh, m_simp = [], [], []
@@ -231,10 +232,12 @@ class CMethods_climrecal():
             for i in groups[month]:
                 m_obs.append(obs[i])
                 m_simh.append(simh[i])
+
+            for i in groups_p[month]:
                 m_simp.append(simp[i])
 
             computed_result = func_adjustment(obs=m_obs, simh=m_simh, simp=m_simp, kind=kind, group=None, **kwargs)
-            for i, index in enumerate(groups[month]): result[index] = computed_result[i]
+            for i, index in enumerate(groups_p[month]): result[index] = computed_result[i]
 
         return result
 
