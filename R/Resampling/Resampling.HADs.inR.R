@@ -46,8 +46,8 @@ f <- "/Volumes/vmfileshare/ClimateData/Processed/UKCP2.2_Reproj/tasmax_bng2/01/l
 r <- rast(f)
 r <- r$`tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130_1`
 
-#Resample -- Transfer values of a SpatRaster to another one with a different geometry
-
+# Resample -- Transfer values of a SpatRaster to another one with a different geometry
+## Not run - lapply to run over all
 #Resampled.HADs<- lapply(List.Rast, function(L){
  # lapply(L, function(x){
     #Bilinear resampling appropriate for continious vars 
@@ -55,9 +55,10 @@ r <- r$`tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130_1`
   #  })
   #})
 
+## Example for 17.50
 x <- List.Rast$HADbrickL_tasmax[[1]]
 y <- terra::resample(x, r, method="bilinear", threads=TRUE)
-beepr::beep(sound=7) #Lets know when is finished - rem when done
+
 
 ### Save output -- just for testing reasons going to save a geotiff and a netcd
 writeRaster(y, "Resampled_HADs_tasmax.2000.01.tif")

@@ -1,0 +1,55 @@
+---
+title: "WIP Assessing bias corrected data"
+author: "Ruth C E Bowyer"
+output: 
+  github_document:
+    keep_html: true
+  html_document:
+    theme: cosmo
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 4
+    df_print: paged
+  date: "`r format(Sys.Date())`"
+---
+
+```{r libs and setup, message=FALSE, warning=F}
+rm(list=ls())
+
+knitr::opts_knit$set(root.dir="/Volumes/vmfileshare/ClimateData/")
+
+library(terra)
+library(sp)
+library(exactextractr)
+
+dd <- "/Volumes/vmfileshare/ClimateData/"
+
+```
+
+
+## **0. About**
+
+Assessing the bias correction applied using the ```cmethods``` package. 
+
+Methods dested so far are quantile mapping and quantile delta mapping 
+
+##**1. Quantile Mapping (QM)**
+
+```{r load data 1}
+# Read in as list of quantile mapping data
+## Each decade is seperated out - but potential should we brick these together?
+p <- paste0(dd, "Debiased/tasmax/")
+files <- list.files(p)
+qm.files <- files[grepl("debiased_quantile_mapping", files)]
+qm.files.p <- paste0(p, qm.files)
+qm.dat <- lapply(qm.files.p, rast) 
+
+plot(qm.dat[[1]]$tasmax_1)
+ext(qm.dat[[1]])
+
+#Load all together
+qm.files.r <- rast(qm.files.p)
+nlyr(qm.files.r) #144000 - 40 x 12 x 30 day months
+```
+
+###**Assessing the bias correction**

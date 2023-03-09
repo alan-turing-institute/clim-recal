@@ -1,0 +1,155 @@
+---
+title: "WIP MBC in R"
+author: "Ruth C E Bowyer"
+date: '2023-02-28'
+output: 
+  github_document:
+    keep_html: true
+  html_document:
+    theme: cosmo
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 4
+    df_print: paged
+  date: "`r format(Sys.Date())`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 0. About
+
+Testing Bias Correction methods from the MBC package in R
+
+- For univariate methods, just replicating for a subset the same methods applied in python
+- For multivariate methods, will try on all geographical locations 
+
+```{r libraries dd}
+rm(list=ls())
+
+library(MBC)
+library(terra)
+library(sf)
+library(exactextractr)
+
+#Loaded package versions
+x <- c("MBC", "terra", "sf", "exactextractr")
+lapply(x,packageVersion)
+
+dd <- "/Volumes/vmfileshare/ClimateData/"
+
+
+```
+
+
+## Observational data
+
+Reprojected HADs data 
+
+First going to subset to a specific area 
+
+```{r}
+### Observational HADs
+ HADbrickL_crop_Y_2.2km$Y1988$X1988.02.16.12.00.00
+
+#Subset to first 360 days per year 
+ HADbrickL_crop_Y_2.2km360 <- lapply(HADbrickL_crop_Y_2.2km, function(x){
+   x[[1:360]]
+ })
+```
+
+```{r}
+n <- names(UKCP_R2)[1:20]
+
+# Returns a list of dataframes for each year by rows of the raster cells
+ObsL <- lapply(n, function(i){
+    Sp <- HADbrickL_crop_Y_2.2km360[[i]]
+    Obs <- as(Sp, 'SpatialPolygonsDataFrame')
+    Obs <- Obs@data
+  })
+
+#Reduce to one df
+Obs_df <- ObsL %>% reduce(cbind)
+Obs_oc <-  unlist(Obs_df)
+```
+
+##### Model outputs - calibration
+
+```{r}
+### Rename the Model years 
+#First running on one run to test and then will loop
+UKCP_R2 <- Lewisham.Bricks.AllYears$Run02
+
+names(UKCP_R2) <- paste0("Y",c(1981:2000, 2021:2040, 2061:2080))
+
+n <- names(UKCP_R2)[1:20]
+
+# Returns a list of dataframes for each year by rows of the raster cells
+CalL <- lapply(n, function(i){
+    Sp <- UKCP_R2[[i]]
+    Cal <- as(Sp, 'SpatialPolygonsDataFrame')
+    Cal <- Cal@data
+  })
+
+#Reduce to one df
+Cal_df <- CalL %>% reduce(cbind)
+Cal_oc <- unlist(Cal_df)
+```
+
+##### Model outputs - projection
+
+```{r}
+### Rename the Model years 
+#First running on one run to test and then will loop
+
+n <- names(UKCP_R2)[21:60]
+
+# Returns a list of dataframes for each year by rows of the raster cells
+ProjL <- lapply(n, function(i){
+    Sp <- UKCP_R2[[i]]
+    Proj <- as(Sp, 'SpatialPolygonsDataFrame')
+    Proj <- Proj@data
+  })
+
+#Reduce to one df
+Proj_df <- ProjL %>% reduce(cbind)
+Proj_oc <- unlist(Proj_df)
+```
+
+
+#### Univariate quantile mapping
+
+This package for univar mapping but soon to be multivar
+
+Following the vignette here (first using the test data) https://cran.r-project.org/web/packages/MBC/MBC.pdf 
+
+Do this seperately for each run
+
+Below method is univariate quanitle mapping
+
+Next step multivariate mapping in same package 
+
+```{r}
+library(MBC)
+
+# Univariate
+  fit.qdm <- 
+    QDM(o.c=Obs_oc, #vector of observed samples during the calibration period.
+        m.c=Cal_oc, #vector of model outputs during the calibration period.
+        m.p=Proj_oc, #vector of model outputs during the projected period.
+        ratio=FALSE, #logical value indicating if samples are of a ratio quantity (e.g., precipitation) -- false as is temp
+        trace=Inf) #numeric value indicating the threshold below which values of a ratio quantity (e.g., ratio=TRUE) should be considered exact zeros. -- need to read up on this 
+
+  
+mhat.c  <- fit.qdm$mhat.c
+mhat.p   <- fit.qdm$mhat.p  
+  
+```
+
+-- To do -- 
+
+Next repopulate the dataframe as above, add back to the dataslots, and compare!
+Then write in a loop
+Then see how long it takes 
+Then think about the next way of doing it
