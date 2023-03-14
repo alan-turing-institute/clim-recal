@@ -21,7 +21,9 @@ HADs.files<- unlist(lapply(vd,list.files))
 HADs.nc.files <- HADs.files[grepl("*.nc$", HADs.files)]  
 
 ##For recalibration, only need years 1980-2000 
-s <- paste0("day_",1981:2000, collapse="|")
+##Updating to just be for one year because it keeps crashing out below 
+##and this is being run to compare python methods
+s <- paste0("day_", 2000, collapse="|")
 HADs.nc.files.slice1 <- HADs.nc.files[grepl(s, HADs.nc.files)] 
 
 #Nested list of variables by terra rasts - One SpatRaster for each year 
@@ -32,7 +34,6 @@ List.Rast <- lapply(v, function(x){
   HADbrickL <- lapply(v.files.d, rast) #is a list of 240 bricks
   ##Each brick represents a month, with each raster layer within each brick representing the Hads grid for a day
   })
-
 
 n.names <- paste0("HADbrickL_", v)
 names(List.Rast) <- n.names
@@ -45,19 +46,20 @@ f <- "/Volumes/vmfileshare/ClimateData/Processed/UKCP2.2_Reproj/tasmax_bng2/01/l
 r <- rast(f)
 r <- r$`tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130_1`
 
-#Resample -- Transfer values of a SpatRaster to another one with a different geometry
-
-#save.image("~/Library/CloudStorage/OneDrive-TheAlanTuringInstitute/CLIM-RECAL/ResamplingHADS.03.02.22.RData")
-
-Resampled.HADs<- lapply(List.Rast, function(L){
-  lapply(L, function(x){
+# Resample -- Transfer values of a SpatRaster to another one with a different geometry
+## Not run - lapply to run over all
+#Resampled.HADs<- lapply(List.Rast, function(L){
+ # lapply(L, function(x){
     #Bilinear resampling appropriate for continious vars 
-  terra::resample(x, r, method="bilinear", threads=TRUE)
-    })
-  })
-beepr::beep(sound=6)
+  #terra::resample(x, r, method="bilinear", threads=TRUE)
+  #  })
+  #})
 
-### Trim the ocean - this has been resampled as 1e + 20, when I assumed it would be NA?
-### Should at least be able to trim based on this however!
+## Example for 17.50
+x <- List.Rast$HADbrickL_tasmax[[1]]
+y <- terra::resample(x, r, method="bilinear", threads=TRUE)
 
-### Save output
+
+### Save output -- just for testing reasons going to save a geotiff and a netcd
+writeRaster(y, "Resampled_HADs_tasmax.2000.01.tif")
+saveRDS(y, "Resampled_HADs_tasmax.2000.01.RDS") 
