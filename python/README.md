@@ -47,3 +47,34 @@ as there is not a `--grid_data` flag, the default file described above is used.
 
 In [python/load_data/data_loader.py] we have written a few functions for loading and concatenating data into a single xarray which
 can be used for running debiasing methods. Instructions in how to use these functions can be found in [python/notebooks/load_data_python.ipynb](../notebooks/load_data_python.ipynb).
+
+## Running debiasing methods 
+
+The code in the [debiasing](debiasing) directory contains scripts that interface with implementations of the debiasing methods 
+implemented by different libraries (up to now we are using the [python-cmethods]()).
+
+## python-cmethods library
+
+This repository contains a Python script used to adjust biases in 3D climate data using a fork of the original python-cmethods module written by Benjamin Thomas Schwertfeger's , which has 
+been modified to function with the dataset used in the clim-recal project. 
+
+The script requires two input datasets: an observation dataset and a control dataset. It also requires a scenario dataset 
+to be adjusted, as well as a shapefile for the geographical region. The user can specify a correction method, 
+the variable to be adjusted, the unit of the variable and the value grouping (i.e. time, time.month, time.dayofyear, time.year). 
+The user can also specify the number of quantiles to use for the correction, and the kind of correction (‘+’ or ‘*’). 
+
+The script will run the correction method to adjust the climate data from the scenario dataset, and produce an output file
+with the adjusted data. It will also produce a time-series plot and a map plot of the adjusted data. 
+
+Usage:
+
+```python3 run_cmethods.py.py --obs <path to observation dataset> --contr <path to control dataset> --scen <path to scenario dataset> --shp <shapefile> 
+--out <output file path> -m <method> -v <variable> -u <unit> -g <group> -k <kind> -n <number of quantiles> -p <number of processes>
+```
+Example:
+```
+python run_cmethods.py --scen /Volumes/vmfileshare/ClimateData/Reprojected/UKCP2.2/tasmax/01/latest --contr /Volumes/vmfileshare/ClimateData/Reprojected/UKCP2.2/tasmax/01/latest/  --obs /Volumes/vmfileshare/ClimateData/Processed/HadsUKgrid/resampled_2.2km/tasmax/day/ --shape ../../data/Scotland/Scotland.bbox.shp -v tasmax --method delta_method --group time.month -p 5
+```
+
+
+
