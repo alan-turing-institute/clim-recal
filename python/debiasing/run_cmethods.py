@@ -1,7 +1,9 @@
 #!/bin/python3
 
-#Script to adjust climate biases in 3D Climate data using cmethods library
-#inspired in script by Benjamin Thomas Schwertfeger script https://github.com/btschwertfeger/python-cmethods/blob/master/examples/do_bias_correction.py
+#Script to adjust climate biases in climate data using the python-cmethods library
+#This script is inspired in the script by Benjamin Thomas Schwertfeger (https://github.com/btschwertfeger/python-cmethods/blob/master/examples/do_bias_correction.py)
+# and adapted to function with UKCP and HADs data.
+
 
 import argparse
 import logging, sys
@@ -9,8 +11,8 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from CMethods import CMethods_climrecal
-
+sys.path.insert(1, 'python-cmethods')
+from cmethods.CMethods import CMethods
 sys.path.insert(1, '../load_data')
 from data_loader import load_data
 
@@ -62,16 +64,16 @@ n_quantiles = params['n_quantiles']
 n_jobs = params['p']
 
 h_date_period = ('1980-12-01', '1999-11-30')
-future_time_periods = [('2020-12-01', '2030-11-30'),('2030-12-01', '2040-11-30'),('2040-12-01', '2050-11-30'),('2050-12-01', '2060-11-30'),('2060-12-01', '2070-11-30'),('2070-12-01', '2080-11-30')]
+future_time_periods = [('2020-12-01', '2030-11-30'),('2030-12-01', '2040-11-30'),('2060-12-01', '2070-11-30'),('2070-12-01', '2080-11-30')]
 
 #for testing
 #future_time_periods = [('2020-12-01', '2022-11-30'),('2022-12-01', '2023-11-30')]
-#h_date_period = ('1980-12-01', '1982-11-29')
+#h_date_period = ('1980-12-01', '1983-11-30')
 # * ----- ----- -----M A I N ----- ----- -----
-def main() -> None:
+def run_debiasing() -> None:
 
     start = time.time()
-    cm = CMethods_climrecal()
+    cm = CMethods()
 
     if method not in cm.get_available_methods(): raise ValueError(f'Unknown method {method}. Available methods: {cm.get_available_methods()}')
 
@@ -80,31 +82,37 @@ def main() -> None:
     ds_obs = load_data(obs_fpath, date_range=h_date_period, variable=var, shapefile_path=shape_fpath)[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
     log.info('Historical data Loaded.')
 
-    if len(ds_obs.shape)!=len(ds_simh.shape):
-        raise RuntimeError('Error, observed and simulated historical data must have same dimensions.')
 
-    log.info('Resulting datasets with shape', ds_obs.shape)
+    # aligning calendars
+    ds_simh = ds_simh.sel(time=ds_obs.time, method='nearest')
 
+
+    if ds_obs.shape!= ds_simh.shape:
+          raise RuntimeError('Error, observed and simulated historical data must have same dimensions.')
+
+    log.info('Resulting datasets with shape')
+    log.info(ds_obs.shape)
+
+    # masking coordinates where the observed data has no values
     ds_simh = ds_simh.where(~np.isnan(ds_obs.isel(time=0)))
     ds_simh = ds_simh.where(ds_simh.values<1000)
-
     log.info('Historical data Masked')
 
     ds_obs.attrs['unit'] = unit
     ds_simh.attrs['unit'] = unit
 
-
+    # looping over time periods
     for f_date_period in future_time_periods:
 
-        print ('Running time period: ',f_date_period)
+        log.info('Running time period: ',f_date_period)
 
         try:
             ds_simp = load_data(scen_fpath, date_range=f_date_period, variable=var, shapefile_path=shape_fpath, extension='tif')[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
         except Exception as e:
             print ('No data available for time period',f_date_period)
-            pass
+            continue
 
-
+        # masking coordinates where the observed data has no values
         ds_simp = ds_simp.where(~np.isnan(ds_obs.isel(time=0)))
         ds_simp = ds_simp.where(ds_simp.values<1000)
 
@@ -143,9 +151,8 @@ def main() -> None:
         output_name = f'{method}_result_var-{var}{descr1}_kind-{kind}_group-{group}{descr2}_{start_date}_{end_date}'
         file_name = os.path.join(result_path,f'debiased_{output_name}.nc')
 
-        print ('Saving to', file_name)
-        result.to_netcdf(file_name)
-
+        log.info('Results')
+        log.info(result.head())
 
         plt.figure(figsize=(10, 5), dpi=216)
         ds_simh.groupby('time.dayofyear').mean(...).plot(label='$T_{sim,h}$')
@@ -153,9 +160,10 @@ def main() -> None:
         ds_simp.groupby('time.dayofyear').mean(...).plot(label='$T_{sim,p}$')
         result.groupby('time.dayofyear').mean(...).plot(label='$T^{*Debiased}_{sim,p}$')
         plt.title(
-            f'Historical modeled and obseved temperatures between December {start_date} and {end_date}')  # ; and predicted temperatures')
+            f'Historical modeled and obseved temperatures between December {start_date} and {end_date} and projected '
+            f'into {f_date_period[0]} {f_date_period(1)}')
         plt.gca().grid(alpha=.3)
-        plt.legend();
+        plt.legend()
         fig_name = os.path.join(result_path,f'time-series-{output_name}.png')
         plt.savefig(fig_name)
 
@@ -165,12 +173,15 @@ def main() -> None:
         fig_name = os.path.join(result_path, f'maps-{output_name}.png')
         plt.savefig(fig_name)
 
+        print('Saving to', file_name)
+        result.to_netcdf(file_name)
+
     end = time.time()
-    print('total time in seconds',end - start)
+    log.info('total time in seconds',end - start)
     log.info('Done')
 
 if __name__ == '__main__':
-    main()
+    run_debiasing()
 
 
 # * ----- ----- E O F ----- -----
