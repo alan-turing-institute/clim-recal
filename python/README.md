@@ -51,14 +51,23 @@ can be used for running debiasing methods. Instructions in how to use these func
 ## Running debiasing methods 
 
 The code in the [debiasing](debiasing) directory contains scripts that interface with implementations of the debiasing methods 
-implemented by different libraries (up to now we are using the [python-cmethods]()).
+implemented by different libraries.
 
-## python-cmethods library
+Note: By March 2023 we have only implemented the [python-cmethods](https://github.com/alan-turing-institute/python-cmethods) library.
 
-This repository contains a Python script used to adjust biases in 3D climate data using a fork of the original python-cmethods module written by Benjamin Thomas Schwertfeger's , which has 
-been modified to function with the dataset used in the clim-recal project. 
 
-The script requires two input datasets: an observation dataset and a control dataset. It also requires a scenario dataset 
+### The cmethods library
+
+This repository contains a python script used to run debiasing in climate data using a fork of the [original python-cmethods](https://github.com/btschwertfeger/python-cmethods) module written by Benjamin Thomas Schwertfeger's , which has 
+been modified to function with the dataset used in the clim-recal project. This library has been included as a 
+submodule to this project, so you must run the following command to pull the submodules required.
+
+```
+cd debiasing
+git submodule update --init --recursive
+```
+
+The [run_cmethods.py](debiasing/run_cmethods.py) script requires two input datasets: an observation dataset and a control dataset. It also requires a scenario dataset 
 to be adjusted, as well as a shapefile for the geographical region. The user can specify a correction method, 
 the variable to be adjusted, the unit of the variable and the value grouping (i.e. time, time.month, time.dayofyear, time.year). 
 The user can also specify the number of quantiles to use for the correction, and the kind of correction (‘+’ or ‘*’). 
