@@ -72,8 +72,8 @@ future_time_periods = [('2020-12-01', '2030-11-30'), ('2030-12-01', '2040-11-30'
 
 
 # for testing
-# future_time_periods = [('2020-12-01', '2022-11-30'),('2022-12-01', '2023-11-30')]
-# h_date_period = ('1980-12-01', '1983-11-30')
+future_time_periods = [('2020-12-01', '2022-11-30'),('2022-12-01', '2023-11-30')]
+h_date_period = ('1980-12-01', '1981-11-30')
 # * ----- ----- -----M A I N ----- ----- -----
 def run_debiasing() -> None:
     start = time.time()
@@ -112,7 +112,7 @@ def run_debiasing() -> None:
     # this is done because the full time period for the scenario dataset is too large for memory.
     for f_date_period in future_time_periods:
 
-        log.info('Running time period: ', f_date_period)
+        log.info(f'Running for {f_date_period} time period')
 
         try:
             ds_simp = \
@@ -120,7 +120,7 @@ def run_debiasing() -> None:
                           extension='tif')[
                     var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
         except Exception as e:
-            log.info('No data available for time period: ', f_date_period)
+            log.info(f'No data available for {f_date_period} time period')
             continue
 
         # masking coordinates where the observed data has no values
@@ -171,8 +171,7 @@ def run_debiasing() -> None:
         ds_simp.groupby('time.dayofyear').mean(...).plot(label='$T_{sim,p}$')
         result.groupby('time.dayofyear').mean(...).plot(label='$T^{*Debiased}_{sim,p}$')
         plt.title(
-            f'Historical modeled and obseved temperatures between December {start_date} and {end_date} and projected '
-            f'into {f_date_period[0]} - {f_date_period[1]}')
+            f'Debiased {var} projected to {start_date} and {end_date}')
         plt.gca().grid(alpha=.3)
         plt.legend()
         fig_name = os.path.join(result_path, f'time-series-{output_name}.png')
@@ -189,7 +188,7 @@ def run_debiasing() -> None:
         result.to_netcdf(file_name)
 
     end = time.time()
-    log.info('total time in seconds', end - start)
+    log.info(f'total time in seconds: {end - start}')
     log.info('Done')
 
 
