@@ -2,6 +2,7 @@ import xarray as xr
 import glob
 import geopandas as gp
 import os
+from datetime import datetime
 
 def load_data(input_path, date_range, variable, shapefile_path=None, extension='nc'):
     '''
@@ -98,20 +99,29 @@ def reformat_file(file, variable):
 
     """
     print(f"File: {file} is needs rasterio library, trying...")
-    x = xr.open_rasterio(file)
     filename = os.path.basename(file).split('_')
 
     start = filename[-1].split('-')[0]
     stop = filename[-1].split('-')[1].split('.')[0]
-    time_index = xr.cftime_range(start, stop, freq='D', calendar='360_day')
+    time_index = xr.cftime_range(start, stop, freq='D', calendar='360_day', inclusive='both')
 
-    x_renamed = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time"}) \
-        .rio.write_crs('epsg:27700')
-    x_renamed.coords['time'] = time_index
+    try:
+        with xr.open_dataset(file, engine='rasterio') as x:
+            xa = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time",'band_data':variable}) \
+                .rio.write_crs('epsg:27700')
+            xa.coords['time'] = time_index
 
-    xa = x_renamed.transpose('time', 'projection_y_coordinate',
-                                                        'projection_x_coordinate').to_dataset(
-        name=variable)
+    except Exception as e:
+        with xr.open_rasterio(file) as x:
+            xa = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time"}) \
+                .rio.write_crs('epsg:27700')
+        xa.coords['time'] = time_index
+
+        xa = xa.transpose('time', 'projection_y_coordinate',
+                                     'projection_x_coordinate').to_dataset(
+                name=variable)
+
+
 
     return xa
 
@@ -140,10 +150,24 @@ def load_and_merge(date_range, files, variable):
     xarray_list = []
     # Iterate through the variables
     for file in files:
+
+        filename = os.path.basename(file).split('_')
+        start_file = datetime.strptime(filename[-1].split('-')[0], '%Y%m%d')
+        stop_file = datetime.strptime(filename[-1].split('-')[1].split('.')[0], '%Y%m%d')
+
+        start_range = datetime.strptime(date_range[0], '%Y-%m-%d')
+        stop_range = datetime.strptime(date_range[1], '%Y-%m-%d')
+
+        if (stop_file < start_range) | (start_file> stop_range):
+            continue
+
         # Load the xarray
         try:
             try:
-                x = xr.open_dataset(file).sel(time=slice(*date_range))
+                print ('Loading and selecting ', file)
+                with xr.open_dataset(file, engine='netcdf4') as ds:
+                    x = ds.load()
+                    x = x.sel(time=slice(*date_range))
             except Exception as e:
                 x = reformat_file(file,variable).sel(time=slice(*date_range))
 
@@ -151,7 +175,6 @@ def load_and_merge(date_range, files, variable):
             if x.time.size != 0:
                 # Append the xarray to the list
                 xarray_list.append(x)
-            x.close()
             del x
         except Exception as e:
             print(f"File: {file} produced errors: {e}")
