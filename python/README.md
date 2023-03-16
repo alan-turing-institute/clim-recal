@@ -1,6 +1,5 @@
 # Methods implemented in Python
 
-
 ## Resampling HADs grid from 1 km to 2.2 km
 
 The raw [UKHAD observational data](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km) 
@@ -10,7 +9,7 @@ grid and uses to resample the data using [linear interpolation](https://docs.xar
 default grid in `data/rcp85_land-cpm_uk_2.2km_grid.nc`).
 
 
-The script runs under the conda environment created on [../README.md] and has several options that can be understood by 
+The script runs under the conda environment created on the main [README.md](../README.md) and has several options that can be understood by 
 running the following from the `resampling` directory:
 
 ```
@@ -37,7 +36,7 @@ For example, to run the resampling on `tasmax` daily data found in the fileshare
 
 ```
 cd python/resampling
-python resampling_hads.py --input /mnt/vmfileshare/ClimateData/Raw/HadsUKgrid/tasmax/day --output <local-directory-path>
+python resampling_hads.py --input /Volumes/vmfileshare/ClimateData/Raw/HadsUKgrid/tasmax/day --output <local-directory-path>
 ```
 
 as there is not a `--grid_data` flag, the default file described above is used. 
@@ -67,22 +66,70 @@ cd debiasing
 git submodule update --init --recursive
 ```
 
-The [run_cmethods.py](debiasing/run_cmethods.py) script requires two input datasets: an observation dataset and a control dataset. It also requires a scenario dataset 
-to be adjusted, as well as a shapefile for the geographical region. The user can specify a correction method, 
-the variable to be adjusted, the unit of the variable and the value grouping (i.e. time, time.month, time.dayofyear, time.year). 
-The user can also specify the number of quantiles to use for the correction, and the kind of correction (‘+’ or ‘*’). 
+The [run_cmethods.py](debiasing/run_cmethods.py) allow us to adjusts climate biases in climate data using the python-cmethods library. 
+It takes as input observation data (HADs data), control data (historical UKCP data), and scenario data (future UKCP data), 
+and applies a correction method to the scenario data. The resulting output is saved as a `.nc` to a specified directory.
+The script will also produce a time-series and a map plot of the debiased data.
 
-The script will run the correction method to adjust the climate data from the scenario dataset, and produce an output file
-with the adjusted data. It will also produce a time-series plot and a map plot of the adjusted data. 
+**Usage**:
 
-Usage:
+The script can be run from the command line using the following arguments:
 
-```python3 run_cmethods.py.py --obs <path to observation dataset> --contr <path to control dataset> --scen <path to scenario dataset> --shp <shapefile> 
+```
+python3 run_cmethods.py.py --obs <path to observation datasets> --contr <path to control datasets> --scen <path to scenario datasets> --shp <shapefile> 
 --out <output file path> -m <method> -v <variable> -u <unit> -g <group> -k <kind> -n <number of quantiles> -p <number of processes>
 ```
-Example:
+
+where:
+
+where:
+
+- `--obs` specifies the path to the observation datasets
+- `--contr` specifies the path to the control datasets
+- `--scen`  specifies the path to the scenario datasets (data to adjust)
+- `--shp`  specifies the path to a shapefile, in case we want to select a smaller region (default: None)
+- `--out` specifies the path to save the output files (default: current directory)
+- `--method` specifies the correction method to use (default: quantile_delta_mapping)
+- `-v` specifies the variable to adjust (default: tas)
+- `-u`  specifies the unit of the variable (default: °C)
+- `-g`  specifies the value grouping (default: time)
+- `-k`  specifies the method kind (+ or *, default: +)
+- `-n`  specifies the number of quantiles to use (default: 1000)
+- `-p`  specifies the number of processes to use for multiprocessing (default: 1)
+
+For more details on the script and options you can run:
+
 ```
-python run_cmethods.py --scen /Volumes/vmfileshare/ClimateData/Reprojected/UKCP2.2/tasmax/01/latest --contr /Volumes/vmfileshare/ClimateData/Reprojected/UKCP2.2/tasmax/01/latest/  --obs /Volumes/vmfileshare/ClimateData/Processed/HadsUKgrid/resampled_2.2km/tasmax/day/ --shape ../../data/Scotland/Scotland.bbox.shp -v tasmax --method delta_method --group time.month -p 5
+python run_cmethods.py --help
+```
+**Main Functionality**:
+
+The script applies corrections extracted from historical observed and simulated data between `1980-12-01` and `1999-11-30`.
+Corrections are applied to future scenario data between `2020` and `2080` (however there is no available scenario data between `2040` to `2060`, so this time
+period is skipped.
+
+
+The script performs the following steps:
+
+- Parses the input arguments.
+- Loads, merges and clips (if shapefile is provided) the all input datasets and merges them into two distinct datasets: the observation and control datasets.
+- Aligns the calendars of the historical simulation data and observed data, ensuring that they have the same time dimension 
+and checks that the observed and simulated historical data have the same dimensions.
+- Loops over the future time periods specified in the `future_time_periods` variable and performs the following steps:
+  - Loads the scenario data for the current time period.
+  - Applies the specified correction method to the scenario data.
+  - Saves the resulting output to the specified directory.
+  - Creates diagnotic figues of the output dataset (time series and time dependent maps) and saves it into the specified directory.
+
+In this script 
+datasets are debiased in periods of 10 years, in a consecutive loop, for each time period it will produce an `.nc` output file
+with the adjusted data and a time-series plot and a time dependent map plot of the adjusted data. 
+
+**Working example**.
+
+Example of code working on the **clim-recal** dataset:
+```
+python run_cmethods.py --scen /Volumes/vmfileshare/ClimateData/Reprojected/UKCP2.2/tasmax/01/latest --contr /Volumes/vmfileshare/ClimateData/Reprojected/UKCP2.2/tasmax/01/latest/ --obs /Volumes/vmfileshare/ClimateData/Processed/HadsUKgrid/resampled_2.2km/tasmax/day/ --shape ../../data/Scotland/Scotland.bbox.shp -v tasmax --method delta_method --group time.month -p 5
 ```
 
 
