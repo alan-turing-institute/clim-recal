@@ -31,25 +31,65 @@ dd <- "/Volumes/vmfileshare/ClimateData/"
 
 Assessing the bias correction applied using the ```cmethods``` package. 
 
-Methods dested so far are quantile mapping and quantile delta mapping 
+## **0. Raw data**
 
-##**1. Quantile Mapping (QM)**
+Comparing to the 'Raw' (but reprojecte CPM data) 
 
-```{r load data 1}
+```{r load raw data}
 # Read in as list of quantile mapping data
 ## Each decade is seperated out - but potential should we brick these together?
-p <- paste0(dd, "Debiased/tasmax/")
+p <- paste0(dd, "Reprojected/UKCP2.2/tasmax/01/latest/")
 files <- list.files(p)
-qm.files <- files[grepl("debiased_quantile_mapping", files)]
+
+raw.files <- files[!grepl("aux.xml", files)]
+raw.files.p <- paste0(p, raw.files)
+raw.dat <- lapply(raw.files.p, rast) 
+
+#Crop to Scotland extent 
+scot <- vect("~/Library/CloudStorage/OneDrive-TheAlanTuringInstitute/CLIM-RECAL/clim-recal/data/Scotland/Scotland.bbox.shp")
+
+raw.dat_c <- lapply(raw.dat, function(i){ crop(i, scot) })
+
+raw.dat_r <- rast(raw.dat_c)
+```
+
+
+
+##**1. Bias corrected data **
+
+Load and check files 
+
+```{r load data 1}
+
+# Each method is a sep file per decade 
+p <- paste0(dd, "Debiased/tasmax/")
+m <- list.files(p)
+
+cmethods <- gsubc("")
+
+debaised_data <- lapply()
+
+files <- list.files(p)
+qm.files <- files[grepl(i, files)]
 qm.files.p <- paste0(p, qm.files)
 qm.dat <- lapply(qm.files.p, rast) 
 
-plot(qm.dat[[1]]$tasmax_1)
-ext(qm.dat[[1]])
-
 #Load all together
 qm.files.r <- rast(qm.files.p)
+
+
 nlyr(qm.files.r) #144000 - 40 x 12 x 30 day months
 ```
 
-###**Assessing the bias correction**
+## **2. Assessing the bias correction methods**
+
+### **2a. Time series**
+
+Check the time series over the whole dataset makes sense
+
+```{r}
+
+```
+
+
+
