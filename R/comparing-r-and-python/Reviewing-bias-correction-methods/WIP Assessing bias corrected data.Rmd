@@ -62,21 +62,21 @@ Load and check files
 ```{r load data 1}
 
 # Each method is a sep file per decade 
+# Create a character vector listing the methods 
+
 p <- paste0(dd, "Debiased/tasmax/")
-m <- list.files(p)
+f <- list.files(p)
+i <- c("debiased_delta_method_result", "debiased_linear_scaling_result", "debiased_quantile_delta_mapping", "debiased_quantile_mapping", "debiased_variance_scaling")
 
-cmethods <- gsubc("")
-
-debaised_data <- lapply()
-
-files <- list.files(p)
-qm.files <- files[grepl(i, files)]
-qm.files.p <- paste0(p, qm.files)
-qm.dat <- lapply(qm.files.p, rast) 
-
-#Load all together
-qm.files.r <- rast(qm.files.p)
-
+# Returns a list of stacked rasters (one for each method) 
+debaised_data <- lapply(i, function(x){
+  files <- f[grepl(x, f)]
+  files.p <- paste0(p, files)
+  #Reads in as list of Rasters 
+  dat <- lapply(files.p, rast) 
+  #Load all together so one raster per method
+  files.r <- rast(dat)
+})
 
 nlyr(qm.files.r) #144000 - 40 x 12 x 30 day months
 ```
