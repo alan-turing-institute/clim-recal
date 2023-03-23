@@ -69,7 +69,7 @@ f <- list.files(p)
 i <- c("debiased_delta_method_result", "debiased_linear_scaling_result", "debiased_quantile_delta_mapping", "debiased_quantile_mapping", "debiased_variance_scaling")
 
 # Returns a list of stacked rasters (one for each method) 
-debaised_data <- lapply(i, function(x){
+debiased_data <- lapply(i, function(x){
   files <- f[grepl(x, f)]
   files.p <- paste0(p, files)
   #Reads in as list of Rasters 
@@ -78,7 +78,8 @@ debaised_data <- lapply(i, function(x){
   files.r <- rast(dat)
 })
 
-nlyr(qm.files.r) #144000 - 40 x 12 x 30 day months
+names(debiased_data) <- i
+
 ```
 
 ## **2. Assessing the bias correction methods**
@@ -87,7 +88,20 @@ nlyr(qm.files.r) #144000 - 40 x 12 x 30 day months
 
 Check the time series over the whole dataset makes sense
 
+#### **2ai. Delta method**
+
+**cemthods** implements Delta Method based on: Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020), which describes the methods as follows:
+
+*The delta method consists of adding the difference between past and present-day simulated climate to present-day observed climate. As such, the delta method assumes that local (i.e. grid-cell-specific) model biases are constant over time (Maraun and Widmann, 2018). For temperature variables (including terrestrial and marine mean annual temperatures and terrestrial temperature of the warmest and coldest months considered here), the bias in a geographical location x is given by the difference between present-day observed and simulated temperature ...
+
+Precipitation is bounded below by zero and covers different orders of magnitude across different regions. A multiplicative rather than additive bias correction is therefore more common when applying the delta method for precipitation, which corresponds to applying the simulated relative change to the observations (Maraun and Widmann, 2018).*
+
+
 ```{r}
+delta <- debiased_data$debiased_delta_method_result
+nlyr(delta) #14400 -  correct number for 40Y * (12m*30d) - ie 14400 days
+#Check crop and map
+plot(delta[1])
 
 ```
 

@@ -17,3 +17,5 @@ Scotland <- polygon[grepl("Scotland", polygon$geo_label), ]
 e <- ext(Scotland)
 e2 <- as.polygons(e)
 terra::writeVector(e2, "Scotland.bbox.shp")
+
+
