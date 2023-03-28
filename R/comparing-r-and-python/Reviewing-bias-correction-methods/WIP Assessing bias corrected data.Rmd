@@ -21,6 +21,8 @@ knitr::opts_knit$set(root.dir="/Volumes/vmfileshare/ClimateData/")
 library(terra)
 library(sp)
 library(exactextractr)
+library(dplyr)
+library(ggplot2)
 
 dd <- "/Volumes/vmfileshare/ClimateData/"
 
@@ -33,24 +35,17 @@ Assessing the bias correction applied using the ```cmethods``` package.
 
 ## **0. Raw data**
 
-Comparing to the 'Raw' (but reprojecte CPM data) 
+Comparing to the 'Raw' (but reprojected CPM data) -- cropped to Scotland extent (cropping-CPM-to-Scotland.R)
 
 ```{r load raw data}
-# Read in as list of quantile mapping data
-## Each decade is seperated out - but potential should we brick these together?
-p <- paste0(dd, "Reprojected/UKCP2.2/tasmax/01/latest/")
-files <- list.files(p)
 
-raw.files <- files[!grepl("aux.xml", files)]
-raw.files.p <- paste0(p, raw.files)
+# NEEDS TO BE UPDATED WHEN CAN COPY THE FILES TO THE VM
+#  p <- paste0(dd, "Interim/Cropped_UKCPM/")
+p <- "~/Library/CloudStorage/OneDrive-TheAlanTuringInstitute/tempdata/"
+files <- list.files(p)
+raw.files.p <- paste0(p, files)
 raw.dat <- lapply(raw.files.p, rast) 
 
-#Crop to Scotland extent 
-scot <- vect("~/Library/CloudStorage/OneDrive-TheAlanTuringInstitute/CLIM-RECAL/clim-recal/data/Scotland/Scotland.bbox.shp")
-
-raw.dat_c <- lapply(raw.dat, function(i){ crop(i, scot) })
-
-raw.dat_r <- rast(raw.dat_c)
 ```
 
 
@@ -88,22 +83,120 @@ names(debiased_data) <- i
 
 Check the time series over the whole dataset makes sense
 
-#### **2ai. Delta method**
+#### **2ai. Raw CPM **
+
+```{r}
+
+```
+
+
+#### **2aii. Delta method**
 
 **cemthods** implements Delta Method based on: Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020), which describes the methods as follows:
 
-*The delta method consists of adding the difference between past and present-day simulated climate to present-day observed climate. As such, the delta method assumes that local (i.e. grid-cell-specific) model biases are constant over time (Maraun and Widmann, 2018). For temperature variables (including terrestrial and marine mean annual temperatures and terrestrial temperature of the warmest and coldest months considered here), the bias in a geographical location x is given by the difference between present-day observed and simulated temperature ...
+*The delta method consists of adding the difference between past and present-day simulated climate to present-day observed climate. As such, the delta method assumes that local (i.e. grid-cell-specific) model biases are constant over time (Maraun and Widmann, 2018). For temperature variables (including terrestrial and marine mean annual temperatures and terrestrial temperature of the warmest and coldest months considered here), the bias in a geographical location x is given by the difference between present-day observed and simulated temperature* 
 
-Precipitation is bounded below by zero and covers different orders of magnitude across different regions. A multiplicative rather than additive bias correction is therefore more common when applying the delta method for precipitation, which corresponds to applying the simulated relative change to the observations (Maraun and Widmann, 2018).*
+*Precipitation is bounded below by zero and covers different orders of magnitude across different regions. A multiplicative rather than additive bias correction is therefore more common when applying the delta method for precipitation, which corresponds to applying the simulated relative change to the observations (Maraun and Widmann, 2018).*
 
 
 ```{r}
 delta <- debiased_data$debiased_delta_method_result
 nlyr(delta) #14400 -  correct number for 40Y * (12m*30d) - ie 14400 days
-#Check crop and map
-plot(delta[1])
+
+#Create a name col representing the y/m/d - the way the file is reading is not readily useable
+ds <- rep(01:30, 12)
+ms <- rep(01:12, each=30)
+ys <- rep(c(2020:2040, 2060:2080), each=360)
+dmy <- paste0(ys,"-",ms,"-",ds)
+dmy2<- dmy[which(dmy=="2020-12-1"):which(dmy=="2080-11-30")]
+rem <- which(dmy2=="2040-12-1"):which(dmy2=="2060-11-30")
+dmy3 <- dmy2[-rem]
+
+names <- paste0("tasmax_", dmy3)
+df <- as.data.frame(delta, xy=T)
+
+n2 <- c("x", "y", names)
+names(df) <- n2
+
+#Mean and sd of by day calculated for plotting
+df.g <- apply(df[c(3:ncol(df))], 2, function(i){
+  mean <- mean(i, na.rm=T)
+  sd <- sd(i, na.rm=T)
+  data.frame(mean=mean, 
+             sd.high=mean+sd,
+             sd.low=mean-sd)
+})
+
+df.g <- df.g %>% purrr::reduce(rbind)
+row.names(df.g) <- names
+df.g$dmy <- dmy3
+```
+
+##### Delta trend daily 2020 - 2040
+
+```{r delta trend 1}
+df.g2020 <- df.g[which(df.g$dmy<2060),]
+
+ggplot(df.g2020) + 
+  geom_ribbon(aes(x = 1:length(dmy), ymin = sd.low, ymax=sd.high), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(dmy), y=mean), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax daily") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day")
 
 ```
 
 
 
+##### Delta trend daily 2060 - 2080
+
+```{r delta trend 2}
+df.g2060 <- df.g[which(df.g$dmy>2059),]
+
+ggplot(df.g2060) + 
+  geom_ribbon(aes(x = 1:length(dmy), ymin = sd.low, ymax=sd.high), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(dmy), y=mean), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax daily") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day")
+
+```
+
+##### Delta trend seasonal averages (full time series)
+
+```{r delta trend seasonal}
+
+#Annotate season based on month index
+df.g$season <- ifelse(grepl("-12-|-1-|-2-", df.g$dmy), "Winter",
+                      ifelse(grepl("-3-|-4-|-5-", df.g$dmy), "Spring",
+                          ifelse(grepl("-6-|-7-|-8-", df.g$dmy), "Summer", "Autumn")))
+
+df.g$year <- sub("-.*", "", df.g$dmy)
+
+#Calculate seasonal mean and SD
+seasonal.mean <- df.g %>% 
+  group_by(year, season) %>% mutate(mean.seasonal = mean(mean),
+                                    sd.high.seasonal = mean.seasonal + sd(mean),
+                                    sd.low.seasonal = mean.seasonal - sd(mean))
+
+#Remove daily vals to avoid confusion     
+seasonal.mean[c("mean", "sd.high", "sd.low", "dmy")] <- NULL
+
+seasonal.mean <- distinct(seasonal.mean, season, year, .keep_all=T) #162 seasons 
+
+```
+
+
+
+```{r delta trend seasonal}
+
+
+
+ggplot(df.g2060) + 
+  geom_ribbon(aes(x = 1:length(dmy), ymin = sd.low, ymax=sd.high), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(dmy), y=mean), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax daily") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day")
+
+```
