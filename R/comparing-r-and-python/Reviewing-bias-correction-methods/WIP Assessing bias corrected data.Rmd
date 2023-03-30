@@ -14,8 +14,8 @@ knitr::opts_knit$set(root.dir="/Volumes/vmfileshare/ClimateData/")
 
 library(terra)
 library(sp)
-library(exactextractr)
-library(dplyr)
+#library(exactextractr)
+#library(dplyr)
 library(ggplot2)
 
 dd <- "/Volumes/vmfileshare/ClimateData/"
@@ -38,12 +38,11 @@ Comparing to the 'Raw' (but reprojected CPM data) -- cropped to Scotland extent 
 p <- "~/Library/CloudStorage/OneDrive-TheAlanTuringInstitute/tempdata/"
 files <- list.files(p)
 raw.files.p <- paste0(p, files)
-raw.dat <- lapply(raw.files.p, rast) 
+#raw.dat <- lapply(raw.files.p, rast) 
 
-historic.raw <- raw.dat[c(1:7200)]
-historic.raw <- rast(historic.raw)
-proj.raw <- raw.dat[c(7201:length(raw.dat))]
-proj.raw <- rast(proj.raw)
+historic.raw.fs <- raw.files.p[c(1:7200)]
+proj.raw.fs <- raw.files.p[c(7201:length(files))]
+
 ```
 
 
@@ -87,9 +86,13 @@ Projected time series
 
 ```{r}
 
-df <- as.data.frame(proj.raw, xy=T)
+proj.raw.df <- lapply(proj.raw.fs[c(2:length(proj.raw.fs))], function(x){
+     r <- rast(x)
+     rdf <- as.data.frame(r)
+})
 
 
+proj.raw.df2 <- proj.raw.df %>% reduce(cbind)
 ```
 
 
