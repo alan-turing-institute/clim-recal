@@ -12,11 +12,11 @@ The aim of **clim-recal** is therefore to:
 * To provide researchers with a collated set of resources for how to technically apply the BC methods, with a framework for open additions 
 * To create accessible information on bias adjustment methods for non quantititative researchers and lay-audience stakeholders 
 
-We are working in partnership with the MetOffice to ensure the propriety of our work (**do we need sign off to say this??**). We're focusing on the UKCP18 suite of products, with the first dataset of focus their ground-breaking local-scale (2.2km) [Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf). 
+We are working in partnership with the MetOffice to ensure the propriety of our work. We're focusing on the UKCP18 suite of products, with the first dataset of focus their ground-breaking local-scale (2.2km) [Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf). 
 
 ### We love to collaborate!
 
-We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an issue or get in touch! **(can we set up a clim-recal@turing email or is that too much? )**
+We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an issue or get in touch! **(can we set up a clim-recal [at] turing.ac.uk
 
 ### Methods taxonomy 
 
@@ -27,7 +27,7 @@ Our work is however, just like climate data,  intended to be dynamic, and we are
 
 ## Code
 
-In this repo we aim to provide examples of how to run the debiasing pipeline starting from the raw data avalaible from the [MET office]() to the creation of debiased datasets for different time periods. The pipeline has the following steps:
+In this repo we aim to provide examples of how to run the debiasing pipeline starting from the raw data avalaible from the [MET office via CEDA](https://catalogue.ceda.ac.uk/uuid/ad2ac0ddd3f34210b0d6e19bfc335539) to the creation of debiased (bias corrected) datasets for different time periods. The pipeline has the following steps:
 
 1. Reproject the [UKCP](https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km) control and scenario data to the same coordinate system as the [HADs](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km) observational data (British National Grid).
 2. Resample the HADs data from 1km to 2.2km grid to match the UKCP reprojected grid.
@@ -43,15 +43,18 @@ Here you find scripts to reproject the UKCP datasets to the British National Gri
 ### Python
 
 In the `python` subdirectory you can find code for the different steps data processing and debiasing:
-    - **Resampling** for the HADs datasets from 1km to a 2.2 km grid to match the UKCP re-projected grid.
+    - **Resampling** for the HADsUK datasets from 1km to a 2.2 km grid to match the UKCP re-projected grid.
     - **Data loaders** functions for loading and concatenating data into a single xarray which can be used for running debiasing methods.
-    - **Debiasing scripts** that interface with implementations of the debiasing methods implemented by different libraries (by March 2023 we have only implemented the python-cmethods library).
+    - **Debiasing scripts** that interface with implementations of the debiasing (bias correction) methods implemented by different libraries (by March 2023 we have only implemented the python-cmethods library).
     
 More details in how to use this code can be found in [the python README file](python/README.md) and the environment used in this [environment setup file](setup-instructions.md).
 
 ### R 
 
-TO BE ADDED.
+In the `R` subdirectory you can find code for replicating the different data processing and debiasing steps as above, along with comparisons of methods between the two languages. 
+- **bias-correction-methods** for bias correction (debiasing) methods availble specifically in `R` libraries
+- **comparing-r-and-python** for replication of resampling and reviewing the bias correction methods applied in `python`.
+- **Resampling** for resampling the HADsUK datasets from 1km to 2.2km grid in `R`.
 
 
 ## Data
@@ -106,7 +109,8 @@ All the data used in this project can be found in the `/Volumes/vmfileshare/Clim
 In future, we're hoping to include:
 
 - Further bias correction of UKCP18 products 
-- Assessment of different observational data 
+- Assessment of the influence of different observational data 
+- Pipelines for adding an additional method 
 
 ## References
 
