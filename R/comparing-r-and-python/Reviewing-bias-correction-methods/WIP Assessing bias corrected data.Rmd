@@ -3,15 +3,9 @@ title: "WIP Assessing bias corrected data"
 author: "Ruth C E Bowyer"
 output: 
   github_document:
-    keep_html: true
-  html_document:
-    theme: cosmo
-    toc: TRUE
-    toc_float: TRUE
-    toc_depth: 4
-    df_print: paged
   date: "`r format(Sys.Date())`"
 ---
+
 
 ```{r libs and setup, message=FALSE, warning=F}
 rm(list=ls())
@@ -257,11 +251,9 @@ ggplot(dfg_sm_w) +
 ```
 
 
-
-
 **Delta - Summer only**
 
-```{r delta seasonal summer}
+```{r delta seasonal winter}
 
 dfg_sm_s <- subset(dfg_sm, grepl("Summer", season_year))
 
