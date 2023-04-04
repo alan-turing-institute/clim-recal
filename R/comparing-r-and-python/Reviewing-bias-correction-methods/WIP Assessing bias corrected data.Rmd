@@ -80,19 +80,60 @@ names(debiased_data) <- i
 
 Check the time series over the whole dataset makes sense
 
+```{r}
+
+# Code to create a character vector ensuring the days are read in in the correct order
+
+ds <- rep(01:30, 12)
+ds <- ifelse(ds<10, paste0(0,ds),paste(ds))
+ms <- rep(01:12, each=30)
+ms <- ifelse(ms<10, paste0(0,ms), paste(ms))
+ys <- rep(c(2020:2040, 2060:2080), each=360)
+dmy <- paste0(ys,"-",ms,"-",ds)
+dmy2<- dmy[which(dmy=="2020-12-01"):which(dmy=="2080-11-30")]
+rem <- which(dmy2=="2040-12-01"):which(dmy2=="2060-11-30")
+dmy_dash <- dmy2[-rem]
+
+dmy_nodash <- gsub("-","", dmy_dash)
+
+```
+
 #### **2ai. Raw CPM **
 
 Projected time series 
 
 ```{r}
 
-proj.raw.df <- lapply(proj.raw.fs[c(2:length(proj.raw.fs))], function(x){
+#Reorder the file list so they read in chronologically 
+##Create a df with a numeric vector for sorting by extracting the day
+i <- numeric()
+
+for (x in 0:39){
+  i <- c(i,(x*360)+1)
+}
+
+ii <- numeric()
+
+for (x in 1:40){
+  ii <- c(ii,(x*360))
+}
+
+dd <- rep(1:360, 40)
+
+ordered <- paste0("~/Library/CloudStorage/OneDrive-TheAlanTuringInstitute/tempdata/tasmax_rcp85_land-cpm_uk_2.2km_01_day_",
+                                dmy_nodash[i], 
+                                "-", dmy_nodash[ii],
+                                "_", dd, "_cropped.tif")
+
+
+proj.raw.df <- lapply(ordered, function(x){
      r <- rast(x)
      rdf <- as.data.frame(r)
 })
 
-
 proj.raw.df2 <- proj.raw.df %>% reduce(cbind)
+
+
 ```
 
 
