@@ -1,4 +1,4 @@
-# Welcome to clim-recal! 
+# Welcome to the `clim-recal` repository! 
 
 ## Background
 
