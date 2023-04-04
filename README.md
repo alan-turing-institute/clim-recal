@@ -12,11 +12,11 @@ The aim of **clim-recal** is therefore to:
 * To provide researchers with a collated set of resources for how to technically apply the BC methods, with a framework for open additions 
 * To create accessible information on bias adjustment methods for non quantititative researchers and lay-audience stakeholders 
 
-We are working in partnership with the MetOffice to ensure the propriety of our work. We're focusing on the UKCP18 suite of products, with the first dataset of focus their ground-breaking local-scale (2.2km) [Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf). 
+We are working in partnership with the MetOffice to ensure the propriety, quality, and usability of our work. We're focusing on the UKCP18 suite of products, with the first dataset of focus their ground-breaking local-scale (2.2km) [Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf). 
 
-### We love to collaborate!
+### Let's collaborate!
 
-We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an issue or get in touch! **(can we set up a clim-recal [at] turing.ac.uk
+We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an issue or [get in touch](mailto:clim-recal@turing.ac.uk)! 
 
 ### Methods taxonomy 
 
