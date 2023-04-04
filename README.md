@@ -4,7 +4,7 @@
 
 Regional climate models (RCMs) contain systematic errors, or biases in their output [1]. Biases arise in RCMs for a number of reasons, such as the assumptions in the general circulation models (GCMs), and in the downscaling process from GCM to RCM [1,2].
 
-Researchers, policy-makers and other stakeholders wishing to use publicly available RCMs,need to consider a range of bias “correction” methods (sometimes referred to as bias adjustment or recalibration). Bias correction methods offer a means of adjusting the outputs of RCM in a manner that might better reflect future climate change signals whilst preserving the natural/internal variability of climate [2]. 
+Researchers, policy-makers and other stakeholders wishing to use publicly available RCMs need to consider a range of "bias correction” methods (sometimes referred to as "bias adjustment" or "recalibration"). Bias correction methods offer a means of adjusting the outputs of RCM in a manner that might better reflect future climate change signals whilst preserving the natural and internal variability of climate [2]. 
 
 The aim of **clim-recal** is therefore to: 
 
