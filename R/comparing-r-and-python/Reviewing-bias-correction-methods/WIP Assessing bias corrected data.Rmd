@@ -164,28 +164,35 @@ proj.raw.df2 <- proj.raw.df %>% reduce(cbind)
 ```{r}
 
 #Add in xycoords for latter comparisons and checks
+
+## Get cell number from single raster
 r <- rast(ordered[[1]])
 cells <- cells(r)
+
 ukcp_c_xy <- sapply(cells, function(i){xyFromCell(r, i)})
 ukcp_c_xy <- as.data.frame(t(ukcp_c_xy))
 names(ukcp_c_xy) <- c("x", "y")
 proj.raw.df.xy <- cbind(ukcp_c_xy, proj.raw.df2)
 
+```
 
-proj.raw.df.g <- apply(proj.raw.df.xy[c(3:ncol(proj.raw.df.xy))], 2, function(i){
+
+```{r create summary data frame}
+
+## Create a dataframe summarising the average tasmax for this area 
+x <- 3:ncol(proj.raw.df.xy)
+proj.raw.df.g_ <- lapply(x, function(x){
+  i <- proj.raw.df.xy[,x]
   mean <- mean(i, na.rm=T)
   sd <- sd(i, na.rm=T)
-  data.frame(mean=mean, 
-
+  data.frame(row.names=names(proj.raw.df.xy)[x],
+             mean=mean, 
              sd.high=mean+sd,
              sd.low=mean-sd)
 })
 
 
-proj.raw.df.g  <- proj.raw.df.g %>% purrr::reduce(rbind)
-
-names <- paste0("tasmax_", dmy_dash)
-row.names(proj.raw.df.g) <- names
+proj.raw.df.g  <- proj.raw.df.g_ %>% purrr::reduce(rbind)
 
 proj.raw.df.g$dmy <- dmy_dash
 ```
@@ -317,7 +324,7 @@ ggplot(dfg_sm_w) +
 
 dfg_sm_s <- subset(dfg_sm, grepl("Summer", season_year))
 
-ggplot(dfg_sm_w) + 
+ggplot(dfg_sm_s) + 
   geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
               fill="darkgoldenrod", alpha=0.5) +
   geom_line(aes(year, y=mean.seasonal), color="darkred", group=1) +
@@ -327,6 +334,55 @@ ggplot(dfg_sm_w) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 ```
+
+##### 'Raw' trend - Annual tasmax
+
+```{r Raw Annual trend}
+
+#Calculate seasonal mean and SD
+annual.mean <- proj.raw.df.g %>% 
+  group_by(year) %>% mutate(mean.annual = mean(mean),
+                                    sd.high.annual = mean.annual + sd(mean),
+                                    sd.low.annual = mean.annual - sd(mean))
+
+#Remove daily vals to avoid confusion     
+annual.mean[c("mean", "sd.high", "sd.low")] <- NULL
+
+#Remove duplicate values
+annual.mean <- distinct(annual.mean, year, .keep_all=T) #42 year vals 
+
+#Remove 2020 and 2080 as not whole months in those years 
+annual.mean <- subset(annual.mean, year!=2020|year!=2060|year!=2080)
+
+#Add missing years as NA
+annual.mean <- plyr::rbind.fill(annual.mean,
+                           data.frame(year=c(2040:2060),
+                                      mean.annual=NA,
+                                      sd.low.annual=NA,
+                                      sd.high.annual=NA))
+
+annual.mean <- annual.mean[order(annual.mean$year),]
+
+```
+
+```{r Raw annual}
+
+ggplot(annual.mean) + 
+  geom_ribbon(aes(year, ymin = sd.low.annual, ymax=sd.high.annual), 
+              fill="firebrick1", alpha=0.5) +
+  geom_line(aes(year, y=mean.annual), color="firebrick4", group=1) +
+  theme_bw() + ylab("tasmax oC") + 
+  ggtitle("'Raw' - tasmax annual") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+
+# HERE
+Update the figs below as above 
+Add in annual fig for all
+Check Summer 2080 again 
 
 
 #### **2aii. Delta method**
