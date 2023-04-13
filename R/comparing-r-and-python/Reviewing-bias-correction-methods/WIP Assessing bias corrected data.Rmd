@@ -383,6 +383,7 @@ ggplot(annual.mean) +
 Update the figs below as above 
 Add in annual fig for all
 Check Summer 2080 again 
+.Rdata save 1104
 
 
 #### **2aii. Delta method**

@@ -1,0 +1,58 @@
+---
+title: "Identifying Runs"
+author: "Ruth C E Bowyer"
+date: '2023-04-13'
+output: 
+  github_document:
+  date: "`r format(Sys.Date())`"
+---
+
+```{r libs and setup, message=FALSE, warning=F}
+rm(list=ls())
+
+knitr::opts_knit$set(root.dir="/Volumes/vmfileshare/ClimateData/")
+
+library(terra)
+library(sp)
+library(tidyverse)
+#library(exactextractr)
+#library(dplyr)
+library(ggplot2)
+
+dd <- "/Volumes/vmfileshare/ClimateData/"
+
+```
+
+
+## **0. About**
+
+Script to derive the average daily tasmax per UKCP18 CPM run in order to identify the mean values, the 2nd highest and the 2nd lowest. 
+
+These three runs will be the focus of initial bias correction focus 
+
+## **1. Load Data**
+
+```{r}
+
+Runs <- c("01", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "15")
+
+CPM <- lapply(Runs, function(i){
+  fp <- paste0(dd, "Reprojected/UKCP2.2/tasmax/", i, "/latest/")
+  f <- list.files(fp)
+  files <- f[!grepl(".aux.xml", f)]
+  files.p <- paste0(fp, files)
+  
+  #Reads in as list of Rasters 
+  dat <- lapply(files.p, rast) 
+  #Load all together so one raster per run
+  files.r <- rast(dat)
+  
+})
+
+
+```
+
+## **2. Calculate average per day, per run**
+
+
+## **2. Calculate average per day, per run**
