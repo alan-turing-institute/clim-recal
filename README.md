@@ -8,7 +8,7 @@ Researchers, policy-makers and other stakeholders wishing to use publicly availa
 
 The aim of **clim-recal** is therefore to: 
 
-* To provide non-climate scientists with an extensive guide to the application, disadvatanges/advantages and use of BC methods 
+* To provide non-climate scientists with an extensive guide to the application, disadvantages/advantages and use of BC methods 
 * To provide researchers with a collated set of resources for how to technically apply the BC methods, with a framework for open additions 
 * To create accessible information on bias adjustment methods for non quantititative researchers and lay-audience stakeholders 
 
