@@ -10,7 +10,7 @@ The aim of **clim-recal** is therefore to:
 
 * To provide non-climate scientists with an extensive guide to the application, disadvantages/advantages and use of BC methods 
 * To provide researchers with a collated set of resources for how to technically apply the BC methods, with a framework for open additions 
-* To create accessible information on bias adjustment methods for non quantititative researchers and lay-audience stakeholders 
+* To create accessible information on bias adjustment methods for non quantitative researchers and lay-audience stakeholders 
 
 We are working in partnership with the MetOffice to ensure the propriety, quality, and usability of our work. We're focusing on the UKCP18 suite of products, with the first dataset of focus their ground-breaking local-scale (2.2km) [Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf). 
 
@@ -27,7 +27,7 @@ Our work is however, just like climate data,  intended to be dynamic, and we are
 
 ## Code
 
-In this repo we aim to provide examples of how to run the debiasing pipeline starting from the raw data avalaible from the [MET office via CEDA](https://catalogue.ceda.ac.uk/uuid/ad2ac0ddd3f34210b0d6e19bfc335539) to the creation of debiased (bias corrected) datasets for different time periods. The pipeline has the following steps:
+In this repo we aim to provide examples of how to run the debiasing pipeline starting from the raw data available from the [MET office via CEDA](https://catalogue.ceda.ac.uk/uuid/ad2ac0ddd3f34210b0d6e19bfc335539) to the creation of debiased (bias corrected) datasets for different time periods. The pipeline has the following steps:
 
 1. Reproject the [UKCP](https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km) control and scenario data to the same coordinate system as the [HADs](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km) observational data (British National Grid).
 2. Resample the HADs data from 1km to 2.2km grid to match the UKCP reprojected grid.
@@ -52,7 +52,7 @@ More details in how to use this code can be found in [the python README file](py
 ### R 
 
 In the `R` subdirectory you can find code for replicating the different data processing and debiasing steps as above, along with comparisons of methods between the two languages. 
-- **bias-correction-methods** for bias correction (debiasing) methods availble specifically in `R` libraries
+- **bias-correction-methods** for bias correction (debiasing) methods available specifically in `R` libraries
 - **comparing-r-and-python** for replication of resampling and reviewing the bias correction methods applied in `python`.
 - **Resampling** for resampling the HADsUK datasets from 1km to 2.2km grid in `R`.
 
@@ -61,7 +61,7 @@ In the `R` subdirectory you can find code for replicating the different data pro
 
 ### Accesing the data
 
-Datasets used in this project (raw, processed and debiased) are being stored in an Azure fileshare set-up for the clim-recal project (https://dymestorage1.file.core.windows.net/vmfileshare). You need to be given access, and register your IP adress to the approve list in the following way from the azure portal:
+Datasets used in this project (raw, processed and debiased) are being stored in an Azure fileshare set-up for the clim-recal project (https://dymestorage1.file.core.windows.net/vmfileshare). You need to be given access, and register your IP address to the approve list in the following way from the azure portal:
 
 - Go to dymestorage1 page
 - Security + networking tab
