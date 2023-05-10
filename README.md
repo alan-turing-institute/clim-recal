@@ -42,7 +42,8 @@ Here you find scripts to reproject the UKCP datasets to the British National Gri
 
 ### Python
 
-In the `python` subdirectory you can find code for the different steps data processing and debiasing:
+In the `python` subdirectory you can find code for the different data download, processing and debiasing steps:
+   - **Data download** for a script to download data from the CEDA archive.
    - **Resampling** for the HADsUK datasets from 1km to a 2.2 km grid to match the UKCP re-projected grid.
    - **Data loaders** functions for loading and concatenating data into a single xarray which can be used for running debiasing methods.
    - **Debiasing scripts** that interface with implementations of the debiasing (bias correction) methods implemented by different libraries (by March 2023 we have only implemented the python-cmethods library).
@@ -57,16 +58,30 @@ In the `R` subdirectory you can find code for replicating the different data pro
 - **Resampling** for resampling the HADsUK datasets from 1km to 2.2km grid in `R`.
 
 
-## Data
+## Data access
 
-### Accesing the data
+### How to download the data
 
-Datasets used in this project (raw, processed and debiased) are being stored in an Azure fileshare set-up for the clim-recal project (https://dymestorage1.file.core.windows.net/vmfileshare). You need to be given access, and register your IP address to the approve list in the following way from the azure portal:
+You can download the raw UKCP2.2 climate data from the CEDA archive using the python script under `python/data_download`: 
+```
+python3 ceda_ftp_download.py --input /badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/ --output output_dir --username 'uuu' --psw 'ppp' --change_hierarchy
+```
+You need to replace `uuu` and `ppp` with your CEDA username and FTP password respectively (you need to first create an account [here](https://archive.ceda.ac.uk/), and `output_dir` with the directory you want to write the data to.
+
+Note that the `--change_hierarchy` flag is used when the script is called, which modifies the folder hierarchy to fit with the hierarchy in the Turing Azure file store. You can use the same script without the `--change_hierarchy` flag in order to download files without any changes in the hierarch.
+
+You can download the HADs observational data from the CEDA archive using the same python script, with a different input (note the `change_hierarchy` flag should not be used with HADs data - only applies to UKCP data):
+```
+python3 ceda_ftp_download.py --input /badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km --output output_dir --username 'uuu' --psw 'ppp'
+```
+
+### Accessing the pre-downloaded/pre-processed data
+
+Datasets used in this project (raw, processed and debiased) have been pre-downloaded/pre-processed and stored in an Azure fileshare set-up for the clim-recal project (https://dymestorage1.file.core.windows.net/vmfileshare). You need to be given access, and register your IP address to the approve list in the following way from the azure portal:
 
 - Go to dymestorage1 page
 - Security + networking tab
 - Add your IP under the Firewall section
-
 
 Once you have access you can mount the fileshare. On a Mac you can do it from  a terminal 
 
@@ -78,9 +93,9 @@ The fileshare will be mounted under
 
 `/Volumes/vmfileshare/`
 
-Instructions of how the mount in other operating systems can be found in [the azure how-tos](https://learn.microsoft.com/en-us/azure/storage/files/storage-how-to-use-files-linux?tabs=smb311).
+Instructions on how the mount in other operating systems can be found in [the azure how-tos](https://learn.microsoft.com/en-us/azure/storage/files/storage-how-to-use-files-linux?tabs=smb311). Alternatively, you can access the Azure Portal, go to the dymestorage1 fileshare and click the "Connect" button to get an automatically generated script. This script can be used from within an Azure VM to mount the drive.
 
-### Dataset description
+### Pre-downloaded/pre-processed data description
 
 All the data used in this project can be found in the `/Volumes/vmfileshare/ClimateData/` directory. 
 
@@ -99,6 +114,7 @@ All the data used in this project can be found in the `/Volumes/vmfileshare/Clim
 │   └── ceda_fpt_download.py # script to download data from CEDA database. 
 ├── Reprojected # Directory where reprojected UKCP datasets are stored.
 │   └── UKCP2.2
+├── Reprojected_infill # Directory where reprojected UKCP datasets are stored, including the newest infill UKCP2.2 data published in May 2023.
 └── shapefiles
     ├── Middle_Layer_Super_Output_Areas_(December_2011)_Boundaries
     └── infuse_ctry_2011_clipped
