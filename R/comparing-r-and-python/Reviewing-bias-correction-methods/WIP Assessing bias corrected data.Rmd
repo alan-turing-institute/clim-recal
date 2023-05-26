@@ -3,15 +3,9 @@ title: "WIP Assessing bias corrected data"
 author: "Ruth C E Bowyer"
 output: 
   github_document:
-    keep_html: true
-  html_document:
-    theme: cosmo
-    toc: TRUE
-    toc_float: TRUE
-    toc_depth: 4
-    df_print: paged
   date: "`r format(Sys.Date())`"
 ---
+
 
 ```{r libs and setup, message=FALSE, warning=F}
 rm(list=ls())
@@ -20,7 +14,10 @@ knitr::opts_knit$set(root.dir="/Volumes/vmfileshare/ClimateData/")
 
 library(terra)
 library(sp)
-library(exactextractr)
+library(tidyverse)
+#library(exactextractr)
+#library(dplyr)
+library(ggplot2)
 
 dd <- "/Volumes/vmfileshare/ClimateData/"
 
@@ -31,25 +28,1191 @@ dd <- "/Volumes/vmfileshare/ClimateData/"
 
 Assessing the bias correction applied using the ```cmethods``` package. 
 
-Methods dested so far are quantile mapping and quantile delta mapping 
+Five methods have been applied in this interim dataset on run 1 of the UKCP CPM data.
 
-##**1. Quantile Mapping (QM)**
+### **Delta method** (delta)
 
-```{r load data 1}
-# Read in as list of quantile mapping data
-## Each decade is seperated out - but potential should we brick these together?
-p <- paste0(dd, "Debiased/tasmax/")
+**cemthods** implements Delta Method based on: Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020), which describes the methods as follows:
+
+*The delta method consists of adding the difference between past and present-day simulated climate to present-day observed climate. As such, the delta method assumes that local (i.e. grid-cell-specific) model biases are constant over time (Maraun and Widmann, 2018). For temperature variables (including terrestrial and marine mean annual temperatures and terrestrial temperature of the warmest and coldest months considered here), the bias in a geographical location x is given by the difference between present-day observed and simulated temperature* 
+
+*Precipitation is bounded below by zero and covers different orders of magnitude across different regions. A multiplicative rather than additive bias correction is therefore more common when applying the delta method for precipitation, which corresponds to applying the simulated relative change to the observations (Maraun and Widmann, 2018).*
+
+### **Linear scaling** (linear) 
+
+### **Variance scaling** (variance)
+
+### **Quantile Mapping method** (QM)
+
+### **Quantile Delta method** (QDM)
+
+## **0. Raw data**
+
+Comparing to the 'Raw' (but reprojected CPM data) -- cropped to Scotland extent (cropping-CPM-to-Scotland.R)
+
+```{r load raw data}
+
+# NEEDS TO BE UPDATED WHEN CAN COPY THE FILES TO THE VM
+#  p <- paste0(dd, "Interim/Cropped_UKCPM/")
+p <- "~/Library/CloudStorage/OneDrive-TheAlanTuringInstitute/tempdata/"
 files <- list.files(p)
-qm.files <- files[grepl("debiased_quantile_mapping", files)]
-qm.files.p <- paste0(p, qm.files)
-qm.dat <- lapply(qm.files.p, rast) 
+raw.files.p <- paste0(p, files)
+#raw.dat <- lapply(raw.files.p, rast) 
 
-plot(qm.dat[[1]]$tasmax_1)
-ext(qm.dat[[1]])
+historic.raw.fs <- raw.files.p[c(1:7200)]
+proj.raw.fs <- raw.files.p[c(7201:length(files))]
 
-#Load all together
-qm.files.r <- rast(qm.files.p)
-nlyr(qm.files.r) #144000 - 40 x 12 x 30 day months
 ```
 
-###**Assessing the bias correction**
+
+
+##**1. Bias corrected data **
+
+Load and check files 
+
+```{r load data 1}
+
+# Each method is a sep file per decade 
+# Create a character vector listing the methods 
+
+p <- paste0(dd, "Debiased/tasmax/")
+f <- list.files(p)
+i <- c("debiased_delta_method_result", "debiased_linear_scaling_result", "debiased_quantile_delta_mapping", "debiased_quantile_mapping", "debiased_variance_scaling")
+
+# Returns a list of stacked rasters (one for each method) 
+debiased_data <- lapply(i, function(x){
+  files <- f[grepl(x, f)]
+  files.p <- paste0(p, files)
+  #Reads in as list of Rasters 
+  dat <- lapply(files.p, rast) 
+  #Load all together so one raster per method
+  files.r <- rast(dat)
+})
+
+names(debiased_data) <- i
+
+```
+
+## **2. Assessing the bias correction methods**
+
+### **2a. Time series**
+
+Check the time series over the whole dataset makes sense
+
+```{r}
+
+# Code to create a character vector ensuring the days are read in in the correct order
+
+ds <- rep(01:30, 12)
+ds <- ifelse(ds<10, paste0(0,ds),paste(ds))
+ms <- rep(01:12, each=30)
+ms <- ifelse(ms<10, paste0(0,ms), paste(ms))
+ys <- rep(c(2020:2040, 2060:2080), each=360)
+dmy <- paste0(ys,"-",ms,"-",ds)
+dmy2<- dmy[which(dmy=="2020-12-01"):which(dmy=="2080-11-30")]
+rem <- which(dmy2=="2040-12-01"):which(dmy2=="2060-11-30")
+dmy_dash <- dmy2[-rem]
+
+dmy_nodash <- gsub("-","", dmy_dash)
+
+```
+
+#### **2ai. Raw CPM **
+
+Projected time series 
+
+```{r}
+
+#Reorder the file list so they read in chronologically 
+##Create a df with a numeric vector for sorting by extracting the day
+i <- numeric()
+
+for (x in 0:39){
+  i <- c(i,(x*360)+1)
+}
+
+ii <- numeric()
+
+for (x in 1:40){
+  ii <- c(ii,(x*360))
+}
+
+dd <- rep(1:360, 40)
+
+dmy.i<- rep(dmy_nodash[i], each=360)
+dmy.ii <- rep(dmy_nodash[ii], each=360)
+
+ordered <- paste0("~/Library/CloudStorage/OneDrive-TheAlanTuringInstitute/tempdata/tasmax_rcp85_land-cpm_uk_2.2km_01_day_",
+                                dmy.i, 
+                                "-", dmy.ii,
+                                "_", dd, "_cropped.tif")
+```
+
+Setting cache = T in this chunk and subsequent where runtime is long so subsequent running is quicker 
+
+```{r cache = T}
+
+#Read in order raw data and convert to data frame
+proj.raw.df <- lapply(ordered, function(x){
+     r <- rast(x)
+     rdf <- as.data.frame(r)
+})
+
+proj.raw.df2 <- proj.raw.df %>% reduce(cbind)
+```
+
+```{r}
+
+#Add in xycoords for latter comparisons and checks
+
+## Get cell number from single raster
+r <- rast(ordered[[1]])
+cells <- cells(r)
+
+ukcp_c_xy <- sapply(cells, function(i){xyFromCell(r, i)})
+ukcp_c_xy <- as.data.frame(t(ukcp_c_xy))
+names(ukcp_c_xy) <- c("x", "y")
+proj.raw.df.xy <- cbind(ukcp_c_xy, proj.raw.df2)
+
+```
+
+
+```{r create summary data frame}
+
+## Create a dataframe summarising the average tasmax for this area 
+x <- 3:ncol(proj.raw.df.xy)
+proj.raw.df.g_ <- lapply(x, function(x){
+  i <- proj.raw.df.xy[,x]
+  mean <- mean(i, na.rm=T)
+  sd <- sd(i, na.rm=T)
+  data.frame(row.names=names(proj.raw.df.xy)[x],
+             mean=mean, 
+             sd.high=mean+sd,
+             sd.low=mean-sd)
+})
+
+
+proj.raw.df.g  <- proj.raw.df.g_ %>% purrr::reduce(rbind)
+
+proj.raw.df.g$dmy <- dmy_dash
+```
+
+
+##### 'Raw' trend daily 2020 - 2040
+
+```{r Raw trend 1}
+proj.raw.df.g2020 <- proj.raw.df.g[which(proj.raw.df.g$dmy<2060),]
+
+ggplot(proj.raw.df.g2020) + 
+  geom_ribbon(aes(x = 1:length(dmy), ymin = sd.low, ymax=sd.high), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(dmy), y=mean), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("'Raw' - tasmax daily") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day")
+
+```
+
+
+
+##### 'Raw' trend daily 2060 - 2080
+
+```{r Raw trend 2}
+proj.raw.df.g2060 <- proj.raw.df.g[which(proj.raw.df.g$dmy>2059),]
+
+ggplot(proj.raw.df.g2060) + 
+  geom_ribbon(aes(x = 1:length(dmy), ymin = sd.low, ymax=sd.high), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(dmy), y=mean), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("'Raw' - tasmax daily") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day")
+
+```
+
+##### 'Raw' trend seasonal averages (full time series)
+
+```{r Raw trend seasonal}
+
+#Annotate season based on month index
+
+proj.raw.df.g$season <- ifelse(grepl("-12-|-01-|-02-", proj.raw.df.g$dmy), "Winter",
+                      ifelse(grepl("-03-|-04-|-05-", proj.raw.df.g$dmy), "Spring",
+                          ifelse(grepl("-06-|-07-|-08-", proj.raw.df.g$dmy), "Summer", "Autumn")))
+
+
+proj.raw.df.g$year <- as.numeric(sub("-.*", "", proj.raw.df.g$dmy))
+
+#Create a season_year var than considers the same Winter season across 2 years 
+## i.e. - Jan 2021 is considered as Winter 2020
+proj.raw.df.g$season_year <- ifelse(proj.raw.df.g$season != "Winter"| grepl("-12-", proj.raw.df.g$dmy), 
+                           paste0(proj.raw.df.g$season, "_", proj.raw.df.g$year), paste0(proj.raw.df.g$season,"_", proj.raw.df.g$year-1))
+
+
+#Calculate seasonal mean and SD
+seasonal.mean <- proj.raw.df.g %>% 
+  group_by(season_year) %>% mutate(mean.seasonal = mean(mean),
+                                    sd.high.seasonal = mean.seasonal + sd(mean),
+                                    sd.low.seasonal = mean.seasonal - sd(mean))
+
+#Remove daily vals to avoid confusion     
+seasonal.mean[c("mean", "sd.high", "sd.low")] <- NULL
+
+#Remove duplicate values
+seasonal.mean <- distinct(seasonal.mean, season_year, .keep_all=T) #160 seasons 
+
+```
+
+
+```{r Raw trend seasonal}
+
+#Add in missing years for clearer plotting of trend
+dfg_sm <- seasonal.mean
+
+seas.miss <- rep(c("Spring", "Summer", "Autumn", "Winter"), 19)
+year.miss <- rep(2041:2059, each=4)
+
+add.s.y <- paste0(seas.miss, "_", year.miss)
+add.s.y <- c("Winter_2040", add.s.y)
+
+dfg_sm <- plyr::rbind.fill(dfg_sm,
+                           data.frame(year=c(2040, year.miss),
+                                      season_year=add.s.y, 
+                                      mean.seasonal=NA,
+                                      sd.low.seasonal=NA,
+                                      sd.high.seasonal=NA))
+
+dfg_sm <- dfg_sm[order(dfg_sm$year),]
+```
+
+
+**'Raw' - seasonal**
+
+```{r Raw seasonal}
+
+ggplot(dfg_sm) + 
+  geom_ribbon(aes(x = 1:length(season_year), ymin = sd.low.seasonal, ymax=sd.high.seasonal), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(season_year), y=mean.seasonal), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("'Raw' - tasmax seasonal") + 
+  xlab("Season - Year") +
+  scale_x_discrete(labels = c(dfg_sm$season_year)) + 
+  theme(axis.text.x = element_text(angle = 270, vjust = 0.5, hjust=1))
+
+```
+
+
+**'Raw' - Winter only**
+
+```{r Raw seasonal winter}
+
+dfg_sm_w <- subset(dfg_sm, grepl("Winter", season_year))
+
+ggplot(dfg_sm_w) + 
+  geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
+              fill="lightblue3", alpha=0.5) +
+  geom_line(aes(year, y=mean.seasonal), color="lightblue4", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("'Raw' - tasmax seasonal - Winter only") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+
+**'Raw' - Summer only**
+
+```{r Raw seasonal summer}
+
+dfg_sm_s <- subset(dfg_sm, grepl("Summer", season_year))
+
+ggplot(dfg_sm_s) + 
+  geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
+              fill="darkgoldenrod", alpha=0.5) +
+  geom_line(aes(year, y=mean.seasonal), color="darkred", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("'Raw' - tasmax seasonal - Summer only") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+##### 'Raw' trend - Annual tasmax
+
+```{r Raw Annual trend}
+
+#Calculate seasonal mean and SD
+annual.mean <- proj.raw.df.g %>% 
+  group_by(year) %>% mutate(mean.annual = mean(mean),
+                                    sd.high.annual = mean.annual + sd(mean),
+                                    sd.low.annual = mean.annual - sd(mean))
+
+#Remove daily vals to avoid confusion     
+annual.mean[c("mean", "sd.high", "sd.low")] <- NULL
+
+#Remove duplicate values
+annual.mean <- distinct(annual.mean, year, .keep_all=T) #42 year vals 
+
+#Remove 2020 and 2080 as not whole months in those years 
+annual.mean <- subset(annual.mean, year!=2020|year!=2060|year!=2080)
+
+#Add missing years as NA
+annual.mean <- plyr::rbind.fill(annual.mean,
+                           data.frame(year=c(2040:2060),
+                                      mean.annual=NA,
+                                      sd.low.annual=NA,
+                                      sd.high.annual=NA))
+
+annual.mean <- annual.mean[order(annual.mean$year),]
+
+```
+
+```{r Raw annual}
+
+ggplot(annual.mean) + 
+  geom_ribbon(aes(year, ymin = sd.low.annual, ymax=sd.high.annual), 
+              fill="firebrick1", alpha=0.5) +
+  geom_line(aes(year, y=mean.annual), color="firebrick4", group=1) +
+  theme_bw() + ylab("tasmax oC") + 
+  ggtitle("'Raw' - tasmax annual") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+
+# HERE
+Update the figs below as above 
+Add in annual fig for all
+Check Summer 2080 again 
+.Rdata save 1104
+
+
+#### **2aii. Delta method**
+
+
+```{r}
+delta <- debiased_data$debiased_delta_method_result
+nlyr(delta) #14400 -  correct number for 40Y * (12m*30d) - ie 14400 days
+
+```
+
+```{r cache=T}
+names <- paste0("tasmax_", dmy_dash)
+df <- as.data.frame(delta, xy=T)
+
+n2 <- c("x", "y", names)
+names(df) <- n2
+```
+
+```{r}
+#Mean and sd of by day calculated for plotting
+df.g <- apply(df[c(3:ncol(df))], 2, function(i){
+  mean <- mean(i, na.rm=T)
+  sd <- sd(i, na.rm=T)
+  data.frame(mean=mean, 
+             sd.high=mean+sd,
+             sd.low=mean-sd)
+})
+
+df.g <- df.g %>% purrr::reduce(rbind)
+row.names(df.g) <- names
+df.g$dmy <- dmy_dash
+```
+
+##### Delta trend daily 2020 - 2040
+
+```{r delta trend 1}
+df.g2020 <- df.g[which(df.g$dmy<2060),]
+
+ggplot(df.g2020) + 
+  geom_ribbon(aes(x = 1:length(dmy), ymin = sd.low, ymax=sd.high), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(dmy), y=mean), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax daily") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day")
+
+```
+
+
+##### Delta trend daily 2060 - 2080
+
+```{r delta trend 2}
+df.g2060 <- df.g[which(df.g$dmy>2059),]
+
+ggplot(df.g2060) + 
+  geom_ribbon(aes(x = 1:length(dmy), ymin = sd.low, ymax=sd.high), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(dmy), y=mean), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax daily") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day")
+
+```
+
+##### Delta trend seasonal averages (full time series)
+
+```{r delta trend seasonal}
+
+#Annotate season based on month index
+df.g$season <- ifelse(grepl("-12-|-1-|-2-", df.g$dmy), "Winter",
+                      ifelse(grepl("-3-|-4-|-5-", df.g$dmy), "Spring",
+                          ifelse(grepl("-6-|-7-|-8-", df.g$dmy), "Summer", "Autumn")))
+
+df.g$year <- as.numeric(sub("-.*", "", df.g$dmy))
+
+#Create a season_year var than considers the same Winter season across 2 years 
+## i.e. - Jan 2021 is considered as Winter 2020
+df.g$season_year <- ifelse(df.g$season != "Winter"| grepl("-12-", df.g$dmy), 
+                           paste0(df.g$season, "_", df.g$year), paste0(df.g$season,"_", df.g$year-1))
+
+
+#Calculate seasonal mean and SD
+seasonal.mean <- df.g %>% 
+  group_by(season_year) %>% mutate(mean.seasonal = mean(mean),
+                                    sd.high.seasonal = mean.seasonal + sd(mean),
+                                    sd.low.seasonal = mean.seasonal - sd(mean))
+
+#Remove daily vals to avoid confusion     
+seasonal.mean[c("mean", "sd.high", "sd.low")] <- NULL
+
+#Remove duplicate values
+seasonal.mean <- distinct(seasonal.mean, season_year, .keep_all=T) #160 seasons 
+
+```
+
+
+```{r delta trend seasonal}
+
+#Add in missing years for clearer plotting of trend
+dfg_sm <- seasonal.mean
+seas.miss <- rep(c("Spring", "Summer", "Autumn", "Winter"), 20)
+year.miss <- rep(2041:2060, each=4)
+add.s.y <- paste0(seas.miss, "_", year.miss)
+add.s.y <- c("Winter_2040", add.s.y)
+
+dfg_sm <- plyr::rbind.fill(dfg_sm,
+                           data.frame(year=c(2040, year.miss),
+                                      season_year=add.s.y, 
+                                      mean.seasonal=NA,
+                                      sd.low.seasonal=NA,
+                                      sd.high.seasonal=NA))
+
+dfg_sm <- dfg_sm[order(dfg_sm$year),]
+```
+
+
+**Delta - seasonal**
+
+```{r delta seasonal}
+
+ggplot(dfg_sm) + 
+  geom_ribbon(aes(x = 1:length(season_year), ymin = sd.low.seasonal, ymax=sd.high.seasonal), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(season_year), y=mean.seasonal), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax seasonal") + 
+  xlab("Season - Year") +
+  scale_x_discrete(labels = c(dfg_sm$season_year)) + 
+  theme(axis.text.x = element_text(angle = 270, vjust = 0.5, hjust=1))
+
+```
+
+
+**Delta - Winter only**
+
+```{r delta seasonal winter}
+
+dfg_sm_w <- subset(dfg_sm, grepl("Winter", season_year))
+
+ggplot(dfg_sm_w) + 
+  geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
+              fill="lightblue3", alpha=0.5) +
+  geom_line(aes(year, y=mean.seasonal), color="lightblue4", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax seasonal - Winter only") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+
+**Delta - Summer only**
+
+```{r delta seasonal summer}
+
+dfg_sm_s <- subset(dfg_sm, grepl("Summer", season_year))
+
+ggplot(dfg_sm_w) + 
+  geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
+              fill="darkgoldenrod", alpha=0.5) +
+  geom_line(aes(year, y=mean.seasonal), color="darkred", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax seasonal - Summer only") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+
+#### **2aiii. Linear scaling method**
+
+**cemthods** implements 
+
+
+
+```{r}
+linear <- debiased_data$debiased_linear_method_result
+nlyr(linear) #14400 -  correct number for 40Y * (12m*30d) - ie 14400 days
+
+```
+
+```{r cache=T}
+names <- paste0("tasmax_", dmy_dash)
+df <- as.data.frame(linear, xy=T)
+
+n2 <- c("x", "y", names)
+names(df) <- n2
+```
+
+```{r}
+#Mean and sd of by day calculated for plotting
+df.g <- apply(df[c(3:ncol(df))], 2, function(i){
+  mean <- mean(i, na.rm=T)
+  sd <- sd(i, na.rm=T)
+  data.frame(mean=mean, 
+             sd.high=mean+sd,
+             sd.low=mean-sd)
+})
+
+df.g <- df.g %>% purrr::reduce(rbind)
+row.names(df.g) <- names
+df.g$dmy <- dmy_dash
+```
+
+##### linear trend daily 2020 - 2040
+
+```{r linear trend 1}
+df.g2020 <- df.g[which(df.g$dmy<2060),]
+
+ggplot(df.g2020) + 
+  geom_ribbon(aes(x = 1:length(dmy), ymin = sd.low, ymax=sd.high), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(dmy), y=mean), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("linear - tasmax daily") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day")
+
+```
+
+
+
+##### linear trend daily 2060 - 2080
+
+```{r linear trend 2}
+df.g2060 <- df.g[which(df.g$dmy>2059),]
+
+ggplot(df.g2060) + 
+  geom_ribbon(aes(x = 1:length(dmy), ymin = sd.low, ymax=sd.high), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(dmy), y=mean), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("linear - tasmax daily") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day")
+
+```
+
+##### linear trend seasonal averages (full time series)
+
+```{r linear trend seasonal}
+
+#Annotate season based on month index
+df.g$season <- ifelse(grepl("-12-|-1-|-2-", df.g$dmy), "Winter",
+                      ifelse(grepl("-3-|-4-|-5-", df.g$dmy), "Spring",
+                          ifelse(grepl("-6-|-7-|-8-", df.g$dmy), "Summer", "Autumn")))
+
+df.g$year <- as.numeric(sub("-.*", "", df.g$dmy))
+
+#Create a season_year var than considers the same Winter season across 2 years 
+## i.e. - Jan 2021 is considered as Winter 2020
+df.g$season_year <- ifelse(df.g$season != "Winter"| grepl("-12-", df.g$dmy), 
+                           paste0(df.g$season, "_", df.g$year), paste0(df.g$season,"_", df.g$year-1))
+
+
+#Calculate seasonal mean and SD
+seasonal.mean <- df.g %>% 
+  group_by(season_year) %>% mutate(mean.seasonal = mean(mean),
+                                    sd.high.seasonal = mean.seasonal + sd(mean),
+                                    sd.low.seasonal = mean.seasonal - sd(mean))
+
+#Remove daily vals to avoid confusion     
+seasonal.mean[c("mean", "sd.high", "sd.low")] <- NULL
+
+#Remove duplicate values
+seasonal.mean <- distinct(seasonal.mean, season_year, .keep_all=T) #160 seasons 
+
+```
+
+
+```{r linear trend seasonal}
+
+#Add in missing years for clearer plotting of trend
+dfg_sm <- seasonal.mean
+seas.miss <- rep(c("Spring", "Summer", "Autumn", "Winter"), 20)
+year.miss <- rep(2041:2060, each=4)
+add.s.y <- paste0(seas.miss, "_", year.miss)
+add.s.y <- c("Winter_2040", add.s.y)
+
+dfg_sm <- plyr::rbind.fill(dfg_sm,
+                           data.frame(year=c(2040, year.miss),
+                                      season_year=add.s.y, 
+                                      mean.seasonal=NA,
+                                      sd.low.seasonal=NA,
+                                      sd.high.seasonal=NA))
+
+dfg_sm <- dfg_sm[order(dfg_sm$year),]
+```
+
+
+**linear - seasonal**
+
+```{r linear seasonal}
+
+ggplot(dfg_sm) + 
+  geom_ribbon(aes(x = 1:length(season_year), ymin = sd.low.seasonal, ymax=sd.high.seasonal), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(season_year), y=mean.seasonal), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("linear - tasmax seasonal") + 
+  xlab("Season - Year") +
+  scale_x_discrete(labels = c(dfg_sm$season_year)) + 
+  theme(axis.text.x = element_text(angle = 270, vjust = 0.5, hjust=1))
+
+```
+
+
+**linear - Winter only**
+
+```{r linear seasonal winter}
+
+dfg_sm_w <- subset(dfg_sm, grepl("Winter", season_year))
+
+ggplot(dfg_sm_w) + 
+  geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
+              fill="lightblue3", alpha=0.5) +
+  geom_line(aes(year, y=mean.seasonal), color="lightblue4", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("linear - tasmax seasonal - Winter only") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+
+**linear - Summer only**
+
+```{r linear seasonal winter}
+  ggtitle("linear - tasmax seasonal - Summer only") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+
+#### **2aii. Delta method**
+
+
+```{r}
+delta <- debiased_data$debiased_delta_method_result
+nlyr(delta) #14400 -  correct number for 40Y * (12m*30d) - ie 14400 days
+
+```
+
+```{r cache=T}
+names <- paste0("tasmax_", dmy_dash)
+df <- as.data.frame(delta, xy=T)
+
+n2 <- c("x", "y", names)
+names(df) <- n2
+```
+
+```{r}
+#Mean and sd of by day calculated for plotting
+df.g <- apply(df[c(3:ncol(df))], 2, function(i){
+  mean <- mean(i, na.rm=T)
+  sd <- sd(i, na.rm=T)
+  data.frame(mean=mean, 
+             sd.high=mean+sd,
+             sd.low=mean-sd)
+})
+
+df.g <- df.g %>% purrr::reduce(rbind)
+row.names(df.g) <- names
+df.g$dmy <- dmy_dash
+```
+
+##### Delta trend daily 2020 - 2040
+
+```{r delta trend 1}
+df.g2020 <- df.g[which(df.g$dmy<2060),]
+
+ggplot(df.g2020) + 
+  geom_ribbon(aes(x = 1:length(dmy), ymin = sd.low, ymax=sd.high), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(dmy), y=mean), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax daily") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day")
+
+```
+
+
+
+##### Delta trend daily 2060 - 2080
+
+```{r delta trend 2}
+df.g2060 <- df.g[which(df.g$dmy>2059),]
+
+ggplot(df.g2060) + 
+  geom_ribbon(aes(x = 1:length(dmy), ymin = sd.low, ymax=sd.high), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(dmy), y=mean), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax daily") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day")
+
+```
+
+##### Delta trend seasonal averages (full time series)
+
+```{r delta trend seasonal}
+
+#Annotate season based on month index
+df.g$season <- ifelse(grepl("-12-|-1-|-2-", df.g$dmy), "Winter",
+                      ifelse(grepl("-3-|-4-|-5-", df.g$dmy), "Spring",
+                          ifelse(grepl("-6-|-7-|-8-", df.g$dmy), "Summer", "Autumn")))
+
+df.g$year <- as.numeric(sub("-.*", "", df.g$dmy))
+
+#Create a season_year var than considers the same Winter season across 2 years 
+## i.e. - Jan 2021 is considered as Winter 2020
+df.g$season_year <- ifelse(df.g$season != "Winter"| grepl("-12-", df.g$dmy), 
+                           paste0(df.g$season, "_", df.g$year), paste0(df.g$season,"_", df.g$year-1))
+
+
+#Calculate seasonal mean and SD
+seasonal.mean <- df.g %>% 
+  group_by(season_year) %>% mutate(mean.seasonal = mean(mean),
+                                    sd.high.seasonal = mean.seasonal + sd(mean),
+                                    sd.low.seasonal = mean.seasonal - sd(mean))
+
+#Remove daily vals to avoid confusion     
+seasonal.mean[c("mean", "sd.high", "sd.low")] <- NULL
+
+#Remove duplicate values
+seasonal.mean <- distinct(seasonal.mean, season_year, .keep_all=T) #160 seasons 
+
+```
+
+
+```{r delta trend seasonal}
+
+#Add in missing years for clearer plotting of trend
+dfg_sm <- seasonal.mean
+seas.miss <- rep(c("Spring", "Summer", "Autumn", "Winter"), 20)
+year.miss <- rep(2041:2060, each=4)
+add.s.y <- paste0(seas.miss, "_", year.miss)
+add.s.y <- c("Winter_2040", add.s.y)
+
+dfg_sm <- plyr::rbind.fill(dfg_sm,
+                           data.frame(year=c(2040, year.miss),
+                                      season_year=add.s.y, 
+                                      mean.seasonal=NA,
+                                      sd.low.seasonal=NA,
+                                      sd.high.seasonal=NA))
+
+dfg_sm <- dfg_sm[order(dfg_sm$year),]
+```
+
+
+**Delta - seasonal**
+
+```{r delta seasonal}
+
+ggplot(dfg_sm) + 
+  geom_ribbon(aes(x = 1:length(season_year), ymin = sd.low.seasonal, ymax=sd.high.seasonal), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(season_year), y=mean.seasonal), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax seasonal") + 
+  xlab("Season - Year") +
+  scale_x_discrete(labels = c(dfg_sm$season_year)) + 
+  theme(axis.text.x = element_text(angle = 270, vjust = 0.5, hjust=1))
+
+```
+
+
+**Delta - Winter only**
+
+```{r delta seasonal winter}
+
+dfg_sm_w <- subset(dfg_sm, grepl("Winter", season_year))
+
+ggplot(dfg_sm_w) + 
+  geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
+              fill="lightblue3", alpha=0.5) +
+  geom_line(aes(year, y=mean.seasonal), color="lightblue4", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax seasonal - Winter only") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+
+**Delta - Summer only**
+
+```{r delta seasonal winter}
+
+dfg_sm_s <- subset(dfg_sm, grepl("Summer", season_year))
+
+ggplot(dfg_sm_w) + 
+  geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
+              fill="lightblue3", alpha=0.5) +
+  geom_line(aes(year, y=mean.seasonal), color="lightblue4", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax seasonal - Summer 2only") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+
+#### **2aiii. Linear scaling method**
+
+**cemthods** implements 
+
+
+
+```{r}
+linear <- debiased_data$debiased_linear_method_result
+nlyr(linear) #14400 -  correct number for 40Y * (12m*30d) - ie 14400 days
+
+```
+
+```{r cache=T}
+names <- paste0("tasmax_", dmy_dash)
+df <- as.data.frame(linear, xy=T)
+
+n2 <- c("x", "y", names)
+names(df) <- n2
+```
+
+```{r}
+#Mean and sd of by day calculated for plotting
+df.g <- apply(df[c(3:ncol(df))], 2, function(i){
+  mean <- mean(i, na.rm=T)
+  sd <- sd(i, na.rm=T)
+  data.frame(mean=mean, 
+             sd.high=mean+sd,
+             sd.low=mean-sd)
+})
+
+df.g <- df.g %>% purrr::reduce(rbind)
+row.names(df.g) <- names
+df.g$dmy <- dmy_dash
+```
+
+##### linear trend daily 2020 - 2040
+
+```{r linear trend 1}
+df.g2020 <- df.g[which(df.g$dmy<2060),]
+
+ggplot(df.g2020) + 
+  geom_ribbon(aes(x = 1:length(dmy), ymin = sd.low, ymax=sd.high), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(dmy), y=mean), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("linear - tasmax daily") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day")
+
+```
+
+
+
+##### linear trend daily 2060 - 2080
+
+```{r linear trend 2}
+df.g2060 <- df.g[which(df.g$dmy>2059),]
+
+ggplot(df.g2060) + 
+  geom_ribbon(aes(x = 1:length(dmy), ymin = sd.low, ymax=sd.high), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(dmy), y=mean), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("linear - tasmax daily") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day")
+
+```
+
+##### linear trend seasonal averages (full time series)
+
+```{r linear trend seasonal}
+
+#Annotate season based on month index
+df.g$season <- ifelse(grepl("-12-|-1-|-2-", df.g$dmy), "Winter",
+                      ifelse(grepl("-3-|-4-|-5-", df.g$dmy), "Spring",
+                          ifelse(grepl("-6-|-7-|-8-", df.g$dmy), "Summer", "Autumn")))
+
+df.g$year <- as.numeric(sub("-.*", "", df.g$dmy))
+
+#Create a season_year var than considers the same Winter season across 2 years 
+## i.e. - Jan 2021 is considered as Winter 2020
+df.g$season_year <- ifelse(df.g$season != "Winter"| grepl("-12-", df.g$dmy), 
+                           paste0(df.g$season, "_", df.g$year), paste0(df.g$season,"_", df.g$year-1))
+
+
+#Calculate seasonal mean and SD
+seasonal.mean <- df.g %>% 
+  group_by(season_year) %>% mutate(mean.seasonal = mean(mean),
+                                    sd.high.seasonal = mean.seasonal + sd(mean),
+                                    sd.low.seasonal = mean.seasonal - sd(mean))
+
+#Remove daily vals to avoid confusion     
+seasonal.mean[c("mean", "sd.high", "sd.low")] <- NULL
+
+#Remove duplicate values
+seasonal.mean <- distinct(seasonal.mean, season_year, .keep_all=T) #160 seasons 
+
+```
+
+
+```{r linear trend seasonal}
+
+#Add in missing years for clearer plotting of trend
+dfg_sm <- seasonal.mean
+seas.miss <- rep(c("Spring", "Summer", "Autumn", "Winter"), 20)
+year.miss <- rep(2041:2060, each=4)
+add.s.y <- paste0(seas.miss, "_", year.miss)
+add.s.y <- c("Winter_2040", add.s.y)
+
+dfg_sm <- plyr::rbind.fill(dfg_sm,
+                           data.frame(year=c(2040, year.miss),
+                                      season_year=add.s.y, 
+                                      mean.seasonal=NA,
+                                      sd.low.seasonal=NA,
+                                      sd.high.seasonal=NA))
+
+dfg_sm <- dfg_sm[order(dfg_sm$year),]
+```
+
+
+**linear - seasonal**
+
+```{r linear seasonal}
+
+ggplot(dfg_sm) + 
+  geom_ribbon(aes(x = 1:length(season_year), ymin = sd.low.seasonal, ymax=sd.high.seasonal), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(season_year), y=mean.seasonal), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("linear - tasmax seasonal") + 
+  xlab("Season - Year") +
+  scale_x_discrete(labels = c(dfg_sm$season_year)) + 
+  theme(axis.text.x = element_text(angle = 270, vjust = 0.5, hjust=1))
+
+```
+
+
+**linear - Winter only**
+
+```{r linear seasonal winter}
+
+dfg_sm_w <- subset(dfg_sm, grepl("Winter", season_year))
+
+ggplot(dfg_sm_w) + 
+  geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
+              fill="lightblue3", alpha=0.5) +
+  geom_line(aes(year, y=mean.seasonal), color="lightblue4", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("linear - tasmax seasonal - Winter only") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+
+**linear - Summer only**
+
+```{r linear seasonal winter}
+
+dfg_sm_s <- subset(dfg_sm, grepl("Summer", season_year))
+
+ggplot(dfg_sm_w) + 
+  geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
+              fill="lightblue3", alpha=0.5) +
+  geom_line(aes(year, y=mean.seasonal), color="lightblue4", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("linear - tasmax seasonal - Summer 2only") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+#### **2aii. Delta method**
+
+**cemthods** implements Delta Method based on: Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020), which describes the methods as follows:
+
+*The delta method consists of adding the difference between past and present-day simulated climate to present-day observed climate. As such, the delta method assumes that local (i.e. grid-cell-specific) model biases are constant over time (Maraun and Widmann, 2018). For temperature variables (including terrestrial and marine mean annual temperatures and terrestrial temperature of the warmest and coldest months considered here), the bias in a geographical location x is given by the difference between present-day observed and simulated temperature* 
+
+*Precipitation is bounded below by zero and covers different orders of magnitude across different regions. A multiplicative rather than additive bias correction is therefore more common when applying the delta method for precipitation, which corresponds to applying the simulated relative change to the observations (Maraun and Widmann, 2018).*
+
+
+```{r}
+delta <- debiased_data$debiased_delta_method_result
+nlyr(delta) #14400 -  correct number for 40Y * (12m*30d) - ie 14400 days
+
+```
+
+```{r cache=T}
+names <- paste0("tasmax_", dmy_dash)
+df <- as.data.frame(delta, xy=T)
+
+n2 <- c("x", "y", names)
+names(df) <- n2
+```
+
+```{r}
+#Mean and sd of by day calculated for plotting
+df.g <- apply(df[c(3:ncol(df))], 2, function(i){
+  mean <- mean(i, na.rm=T)
+  sd <- sd(i, na.rm=T)
+  data.frame(mean=mean, 
+             sd.high=mean+sd,
+             sd.low=mean-sd)
+})
+
+df.g <- df.g %>% purrr::reduce(rbind)
+row.names(df.g) <- names
+df.g$dmy <- dmy_dash
+```
+
+##### Delta trend daily 2020 - 2040
+
+```{r delta trend 1}
+df.g2020 <- df.g[which(df.g$dmy<2060),]
+
+ggplot(df.g2020) + 
+  geom_ribbon(aes(x = 1:length(dmy), ymin = sd.low, ymax=sd.high), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(dmy), y=mean), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax daily") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day")
+
+```
+
+
+
+##### Delta trend daily 2060 - 2080
+
+```{r delta trend 2}
+df.g2060 <- df.g[which(df.g$dmy>2059),]
+
+ggplot(df.g2060) + 
+  geom_ribbon(aes(x = 1:length(dmy), ymin = sd.low, ymax=sd.high), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(dmy), y=mean), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax daily") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day")
+
+```
+
+##### Delta trend seasonal averages (full time series)
+
+```{r delta trend seasonal}
+
+#Annotate season based on month index
+df.g$season <- ifelse(grepl("-12-|-1-|-2-", df.g$dmy), "Winter",
+                      ifelse(grepl("-3-|-4-|-5-", df.g$dmy), "Spring",
+                          ifelse(grepl("-6-|-7-|-8-", df.g$dmy), "Summer", "Autumn")))
+
+df.g$year <- as.numeric(sub("-.*", "", df.g$dmy))
+
+#Create a season_year var than considers the same Winter season across 2 years 
+## i.e. - Jan 2021 is considered as Winter 2020
+df.g$season_year <- ifelse(df.g$season != "Winter"| grepl("-12-", df.g$dmy), 
+                           paste0(df.g$season, "_", df.g$year), paste0(df.g$season,"_", df.g$year-1))
+
+
+#Calculate seasonal mean and SD
+seasonal.mean <- df.g %>% 
+  group_by(season_year) %>% mutate(mean.seasonal = mean(mean),
+                                    sd.high.seasonal = mean.seasonal + sd(mean),
+                                    sd.low.seasonal = mean.seasonal - sd(mean))
+
+#Remove daily vals to avoid confusion     
+seasonal.mean[c("mean", "sd.high", "sd.low")] <- NULL
+
+#Remove duplicate values
+seasonal.mean <- distinct(seasonal.mean, season_year, .keep_all=T) #160 seasons 
+
+```
+
+
+```{r delta trend seasonal}
+
+#Add in missing years for clearer plotting of trend
+dfg_sm <- seasonal.mean
+seas.miss <- rep(c("Spring", "Summer", "Autumn", "Winter"), 20)
+year.miss <- rep(2041:2060, each=4)
+add.s.y <- paste0(seas.miss, "_", year.miss)
+add.s.y <- c("Winter_2040", add.s.y)
+
+dfg_sm <- plyr::rbind.fill(dfg_sm,
+                           data.frame(year=c(2040, year.miss),
+                                      season_year=add.s.y, 
+                                      mean.seasonal=NA,
+                                      sd.low.seasonal=NA,
+                                      sd.high.seasonal=NA))
+
+dfg_sm <- dfg_sm[order(dfg_sm$year),]
+```
+
+
+**Delta - seasonal**
+
+```{r delta seasonal}
+
+ggplot(dfg_sm) + 
+  geom_ribbon(aes(x = 1:length(season_year), ymin = sd.low.seasonal, ymax=sd.high.seasonal), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(season_year), y=mean.seasonal), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax seasonal") + 
+  xlab("Season - Year") +
+  scale_x_discrete(labels = c(dfg_sm$season_year)) + 
+  theme(axis.text.x = element_text(angle = 270, vjust = 0.5, hjust=1))
+
+```
+
+
+**Delta - Winter only**
+
+```{r delta seasonal winter}
+
+dfg_sm_w <- subset(dfg_sm, grepl("Winter", season_year))
+
+ggplot(dfg_sm_w) + 
+  geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
+              fill="lightblue3", alpha=0.5) +
+  geom_line(aes(year, y=mean.seasonal), color="lightblue4", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax seasonal - Winter only") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+
+**Delta - Summer only**
+
+```{r delta seasonal winter}
+
+dfg_sm_s <- subset(dfg_sm, grepl("Summer", season_year))
+
+ggplot(dfg_sm_w) + 
+  geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
+              fill="lightblue3", alpha=0.5) +
+  geom_line(aes(year, y=mean.seasonal), color="lightblue4", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Delta - tasmax seasonal - Summer 2only") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
