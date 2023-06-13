@@ -1,17 +1,10 @@
 ---
 title: "WIP MBC in R"
 author: "Ruth C E Bowyer"
-date: '2023-02-28'
-output: 
-  github_document:
-    keep_html: true
-  html_document:
-    theme: cosmo
-    toc: TRUE
-    toc_float: TRUE
-    toc_depth: 4
-    df_print: paged
-  date: "`r format(Sys.Date())`"
+date: "`r format(Sys.Date())`"
+output:
+  github_document
+
 ---
 
 ```{r setup, include=FALSE}
@@ -38,25 +31,20 @@ x <- c("MBC", "terra", "sf", "exactextractr")
 lapply(x,packageVersion)
 
 dd <- "/Volumes/vmfileshare/ClimateData/"
-
-
 ```
 
 
-## Observational data
+## 1. Load Data
+
+### Observational data
 
 Reprojected HADs data 
 
-First going to subset to a specific area 
 
 ```{r}
-### Observational HADs
- HADbrickL_crop_Y_2.2km$Y1988$X1988.02.16.12.00.00
 
-#Subset to first 360 days per year 
- HADbrickL_crop_Y_2.2km360 <- lapply(HADbrickL_crop_Y_2.2km, function(x){
-   x[[1:360]]
- })
+HADs <= 
+
 ```
 
 ```{r}
