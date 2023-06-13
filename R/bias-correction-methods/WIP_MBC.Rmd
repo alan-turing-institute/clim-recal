@@ -30,7 +30,9 @@ library(exactextractr)
 x <- c("MBC", "terra", "sf", "exactextractr")
 lapply(x,packageVersion)
 
-dd <- "/Volumes/vmfileshare/ClimateData/"
+#Path is "/<mount location>/vmfileshare/ClimateData
+#dd <- "/Volumes/vmfileshare/ClimateData/"
+dd <- "/mnt/vmfileshare/ClimateData/"
 ```
 
 
@@ -40,11 +42,88 @@ dd <- "/Volumes/vmfileshare/ClimateData/"
 
 Reprojected HADs data 
 
+Awaiting confirmation about this data - I believe the data in `Processed/HadsUKgrid/resampled_2.2km/tasmax/day/`is perhaps not for use? 
+
+*Temp solution to get pipeline running*:
+
+Going to crop extent of HADs grid to smaller region and run only on Scotland for time being 
+
+```{r}
+#fp <- "Processed/HadsUKgrid/resampled_2.2km_newgrid/tasmax/day/"
+#f <- list.files(paste0(dd, fp))
+#HADs <- rast(paste0(dd, fp,f))
+
+f <- paste0(dd, "Raw/HadsUKgrid/tasmax/day/")
+hads.tasmax <- list.files(f)
+
+v <- c("tasmax", "tasmin","rainfall")
+vd <- paste0(dd,"/Raw/HadsUKgrid/",v,"/day/")
+
+
+HADs.files<- unlist(lapply(vd,list.files))
+
+HADs.nc.files <- HADs.files[grepl("*.nc$", HADs.files)]  
+
+Hads_raw_eg <- rast(paste0(vd[[1]], HADs.nc.files[[1]]))
+Hads_raw_eg_r <- Hads_raw_eg$tasmax_7
+
+# Rough bounding for NI
+i <- rast()
+ext(i) <- c(-0, 200000, 450000, 600000)
+values(i) <- c(100)
+ plot(Hads_raw_eg_r)
+plot(i, add=T)
+```
+
+# HERE
+
+Adding in script to resample just this cropped part, then crop corresponding UKCP data and apply the bias corrections! 
 
 ```{r}
 
-HADs <= 
+##For recalibration, only need years 1980-2000 
+##Updating to just be for one year because it keeps crashing out below 
+##and this is being run to compare python methods
+s <- paste0("day_", 2000, collapse="|")
+HADs.nc.files.slice1 <- HADs.nc.files[grepl(s, HADs.nc.files)] 
 
+#Nested list of variables by terra rasts - One SpatRaster for each year 
+
+List.Rast <- lapply(v, function(x){
+  v.files <- HADs.nc.files.slice1[grepl(x, HADs.nc.files.slice1)]
+  v.files.d <- paste0(dd,"/Raw/HadsUKgrid/",x,"/day/",v.files)
+  HADbrickL <- lapply(v.files.d, rast) #is a list of 240 bricks
+  ##Each brick represents a month, with each raster layer within each brick representing the Hads grid for a day
+  })
+
+n.names <- paste0("HADbrickL_", v)
+names(List.Rast) <- n.names
+
+#### Create Grid from UKCP data 
+
+#Extract the 2.2km grid from the UK raster and then overlay that and create the mean from HADs
+## Random ukcp file for this 
+f <- "/Volumes/vmfileshare/ClimateData/Processed/UKCP2.2_Reproj/tasmax_bng2/01/latest/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.tif"
+r <- rast(f)
+r <- r$`tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130_1`
+
+# Resample -- Transfer values of a SpatRaster to another one with a different geometry
+## Not run - lapply to run over all
+#Resampled.HADs<- lapply(List.Rast, function(L){
+ # lapply(L, function(x){
+    #Bilinear resampling appropriate for continious vars 
+  #terra::resample(x, r, method="bilinear", threads=TRUE)
+  #  })
+  #})
+
+## Example for 17.50
+x <- List.Rast$HADbrickL_tasmax[[1]]
+y <- terra::resample(x, r, method="bilinear", threads=TRUE)
+
+
+### Save output -- just for testing reasons going to save a geotiff and a netcd
+writeRaster(y, "Resampled_HADs_tasmax.2000.01.tif")
+saveRDS(y, "Resampled_HADs_tasmax.2000.01.RDS") 
 ```
 
 ```{r}
