@@ -25,6 +25,9 @@ library(MBC)
 library(terra)
 library(sf)
 library(exactextractr)
+library(foreach)
+library(doSNOW)
+library(doParallel)
 
 #Loaded package versions
 x <- c("MBC", "terra", "sf", "exactextractr")
@@ -35,49 +38,66 @@ lapply(x,packageVersion)
 dd <- "/mnt/vmfileshare/ClimateData/"
 ```
 
-
 ## 1. Load Data
+
+To start with, cropping data to rough Northern Ireland extent
 
 ### Observational data
 
-Reprojected HADs data 
-
-Awaiting confirmation about this data - I believe the data in `Processed/HadsUKgrid/resampled_2.2km/tasmax/day/`is perhaps not for use? 
-
-*Temp solution to get pipeline running*:
-
-Going to crop extent of HADs grid to smaller region and run only on Scotland for time being 
+Reprojected HADs data located in `Processed/HadsUKgrid/resampled_2.2km/`  
 
 ```{r}
-#fp <- "Processed/HadsUKgrid/resampled_2.2km_newgrid/tasmax/day/"
-#f <- list.files(paste0(dd, fp))
-#HADs <- rast(paste0(dd, fp,f))
-
-f <- paste0(dd, "Raw/HadsUKgrid/tasmax/day/")
-hads.tasmax <- list.files(f)
-
 v <- c("tasmax", "tasmin","rainfall")
-vd <- paste0(dd,"/Raw/HadsUKgrid/",v,"/day/")
-
-
+vd <- paste0(dd,"Processed/HadsUKgrid/resampled_2.2km/",v,"/day/")
 HADs.files<- unlist(lapply(vd,list.files))
 
-HADs.nc.files <- HADs.files[grepl("*.nc$", HADs.files)]  
+Hads_r_eg <- rast(paste0(vd[[1]], HADs.files[[1]]))
+Hads_r_eg <- Hads_r_eg$tasmax_7
 
-Hads_raw_eg <- rast(paste0(vd[[1]], HADs.nc.files[[1]]))
-Hads_raw_eg_r <- Hads_raw_eg$tasmax_7
-
-# Rough bounding for NI
-i <- rast()
-ext(i) <- c(-0, 200000, 450000, 600000)
-values(i) <- c(100)
- plot(Hads_raw_eg_r)
-plot(i, add=T)
 ```
 
-# HERE
 
-Adding in script to resample just this cropped part, then crop corresponding UKCP data and apply the bias corrections! 
+```{r}
+	# Rough bounding for NI
+i <- rast()
+crs(i) <- crs(Hads_r_eg)
+ext(i) <- c(-0, 190000, 450000, 600000)
+values(i) <- c(100)
+
+e <- ext(i)
+ireland.bbox <- as.polygons(e)
+
+```
+
+Using 1980 - 2010 for training, compare the BC applied to 2010 - 2021 to HADs grids 
+
+This chunk: reads HADs obs in for each variable for year 2010-2021 and crops them to NI extent in parallel, then converts the data to a dataframe (input to MBC)
+xy coords are kept to check alignment with CPM - **to be added** - inclusion of test data for this
+
+```{r}
+
+cores <- detectCores()
+cl <- makeCluster(cores[1]-1)
+registerDoSNOW(cl)
+
+Runpaths <- HADs.files[grepl("tasmax", HADs.files)] #Subset to run paths
+Runpaths 
+i <- 1:length(Runpaths)
+
+#Subset to tasmax to start off with  
+  
+HADs.tasmax.Ireland.1980.2010 <- foreach(i = i, 
+                   .packages = c("terra"),
+                   .errorhandling = 'pass') %dopar% {
+                     p <- Runpaths[[i]] 
+                     r <- rast(p)
+                     r_c <- crop(r, ireland.bbox) 
+                     rdf <- as.data.frame(r_c) 
+                     return(rdf)
+                   }
+
+  stopCluster(cl) 
+```
 
 ```{r}
 
