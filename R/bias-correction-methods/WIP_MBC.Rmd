@@ -110,6 +110,13 @@ for(v in c("tasmax", "tasmin", "rainfall")){
   
 ```
 
+```{r}
+
+save.image("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.1") 
+
+```
+
+
 To check at some point -- why is does tasmin have 11562 vars and the others have 11560 ?
 
 ```{r}
@@ -119,9 +126,27 @@ HADsL <- list(HADsNI1980_2010_tasmax.df, HADsNI1980_2010_tasmin.df, HADsNI1980_2
 
 HADsLlong <- lapply(HADsL, function(l){
   melt <- melt(l, id=c("x","y"))
+  #Create an ID variable for easy merging
+  melt$xy <- paste0(melt$x, "-",melt$y)
+  return(melt)
 })
 
-#HADsLlong.allvars <- HADsLlong %>% reduce(merge, by=c("x", "y"))
+```
+
+```{r}
+HADsLlong.allvars <- HADsLlong %>% reduce(cbind)
+
+#Remove duplicate x and y - checking below with the xy variable all map ok
+names(HADsLlong.allvars) <- c("x","y", "tasmax_iy", "tasmax", "xy1",
+                              "x2", "y2", "tasmin_iy", "tasmin", "xy2",
+                              "x3", "y3", "rainfall_iy", "rainfall", "xy3")
+
+#Check all xy vars match
+#table(HADsLlong.allvars$xy1 == HADsLlong.allvars$xy2)
+#table(HADsLlong.allvars$xy1 == HADsLlong.allvars$xy3)
+
+#All match so remove not needed variables
+HADsLlong.allvars[c("x2", "y2", "xy2", "x3", "y3", "xy3")] <- NULL
 
 ```
 
@@ -130,9 +155,44 @@ HADsLlong <- lapply(HADsL, function(l){
 
 For now, loading - Run05, Run07, Run08, Run06
 
+Cropping all to NI as above to start with 
+
+
+# HERE
+Sort out a better looping system so you get list nested on run or on the variable 
 
 ```{r}
 
+run <- c("05", "07", "08", "06")
+v <- c("tasmax", "tasmin","rainfall")
+
+p <- paste0(dd, "Reprojected/UKCP2.2/", rep(v, 4), "/", rep(run, each=3), "/latest/")
+names(p) <- run
+files <- lapply(p, list.files)
+names(files) <- run
+
+for(i in run){
+  files <- files[[i]]
+  p <- p[[i]]
+  
+  raw.files <- files[!grepl("aux.xml", files)]
+  raw.files.p <- paste0(p, raw.files)
+raw.dat <- lapply(raw.files.p, rast) 
+
+raw.dat.r <- rast(raw.dat)
+}
+
+cropped.rasts <- lapply(run, function(run){
+  
+})
+
+nlyr(raw.dat.r)
+
+#Crop to Scotland extent (for method see Scotland.bbox.R)
+scot <- vect("~/Library/CloudStorage/OneDrive-TheAlanTuringInstitute/CLIM-RECAL/clim-recal/data/Scotland/Scotland.bbox.shp")
+
+raw.dat_c <- lapply(raw.dat.r, function(i){ crop(i, scot) })
+names(raw.dat_c) <- paste0(names(raw.dat.r), "_cropped")
 
 
 ```
