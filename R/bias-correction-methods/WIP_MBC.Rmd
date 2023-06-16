@@ -25,9 +25,11 @@ library(MBC)
 library(terra)
 library(sf)
 library(exactextractr)
-library(foreach)
-library(doSNOW)
-library(doParallel)
+library(reshape2) #melt
+library(foreach) #
+library(doSNOW) #
+library(doParallel) #
+library(tidyverse) #
 
 #Loaded package versions
 x <- c("MBC", "terra", "sf", "exactextractr")
@@ -65,7 +67,7 @@ ext(i) <- c(-0, 190000, 450000, 600000)
 values(i) <- c(100)
 
 e <- ext(i)
-ireland.bbox <- as.polygons(e)
+NI.bbox <- as.polygons(e)
 
 ```
 
@@ -76,89 +78,63 @@ xy coords are kept to check alignment with CPM - **to be added** - inclusion of 
 
 ```{r}
 
-cores <- detectCores()
-cl <- makeCluster(cores[1]-1)
-registerDoSNOW(cl)
+for(v in c("tasmax", "tasmin", "rainfall")){
 
-Runpaths <- HADs.files[grepl("tasmax", HADs.files)] #Subset to run paths
-Runpaths 
-i <- 1:length(Runpaths)
+  files <- HADs.files[grepl(v, HADs.files)] #Subset to run paths
+  Runpaths <- paste0(dd,"Processed/HadsUKgrid/resampled_2.2km/",v,"/day/",files[1:360]) #Subsbetting to years 1980-2010
 
-#Subset to tasmax to start off with  
+  i <- 2:length(Runpaths)
   
-HADs.tasmax.Ireland.1980.2010 <- foreach(i = i, 
-                   .packages = c("terra"),
-                   .errorhandling = 'pass') %dopar% {
-                     p <- Runpaths[[i]] 
+   # Read in 1st runpath as df with xy coords to ensure overlay with CPM data 
+   p <- Runpaths[[1]] 
+   r <- rast(p)
+   r_c <- crop(r, NI.bbox) 
+  rdf1 <- as.data.frame(r_c, xy=T) 
+  
+  # Load and convert remaining to single col dfs 
+       dfL <-lapply(i, function(i){
+          p <- Runpaths[[i]] 
                      r <- rast(p)
-                     r_c <- crop(r, ireland.bbox) 
-                     rdf <- as.data.frame(r_c) 
+                     r_c <- crop(r, NI.bbox) 
+                     rdf <- as.data.frame(r_c, xy=T) 
                      return(rdf)
-                   }
+       }) 
 
-  stopCluster(cl) 
+       df <- dfL %>% reduce(cbind)
+       df <- cbind(rdf1, df)
+       
+      assign(paste0("HADsNI1980_2010_", v, ".df"), df)
+
+  gc()
+}  
+  
 ```
+
+To check at some point -- why is does tasmin have 11562 vars and the others have 11560 ?
 
 ```{r}
 
-##For recalibration, only need years 1980-2000 
-##Updating to just be for one year because it keeps crashing out below 
-##and this is being run to compare python methods
-s <- paste0("day_", 2000, collapse="|")
-HADs.nc.files.slice1 <- HADs.nc.files[grepl(s, HADs.nc.files)] 
+# Melt to long
+HADsL <- list(HADsNI1980_2010_tasmax.df, HADsNI1980_2010_tasmin.df, HADsNI1980_2010_rainfall.df)
 
-#Nested list of variables by terra rasts - One SpatRaster for each year 
+HADsLlong <- lapply(HADsL, function(l){
+  melt <- melt(l, id=c("x","y"))
+})
 
-List.Rast <- lapply(v, function(x){
-  v.files <- HADs.nc.files.slice1[grepl(x, HADs.nc.files.slice1)]
-  v.files.d <- paste0(dd,"/Raw/HadsUKgrid/",x,"/day/",v.files)
-  HADbrickL <- lapply(v.files.d, rast) #is a list of 240 bricks
-  ##Each brick represents a month, with each raster layer within each brick representing the Hads grid for a day
-  })
+#HADsLlong.allvars <- HADsLlong %>% reduce(merge, by=c("x", "y"))
 
-n.names <- paste0("HADbrickL_", v)
-names(List.Rast) <- n.names
-
-#### Create Grid from UKCP data 
-
-#Extract the 2.2km grid from the UK raster and then overlay that and create the mean from HADs
-## Random ukcp file for this 
-f <- "/Volumes/vmfileshare/ClimateData/Processed/UKCP2.2_Reproj/tasmax_bng2/01/latest/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.tif"
-r <- rast(f)
-r <- r$`tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130_1`
-
-# Resample -- Transfer values of a SpatRaster to another one with a different geometry
-## Not run - lapply to run over all
-#Resampled.HADs<- lapply(List.Rast, function(L){
- # lapply(L, function(x){
-    #Bilinear resampling appropriate for continious vars 
-  #terra::resample(x, r, method="bilinear", threads=TRUE)
-  #  })
-  #})
-
-## Example for 17.50
-x <- List.Rast$HADbrickL_tasmax[[1]]
-y <- terra::resample(x, r, method="bilinear", threads=TRUE)
-
-
-### Save output -- just for testing reasons going to save a geotiff and a netcd
-writeRaster(y, "Resampled_HADs_tasmax.2000.01.tif")
-saveRDS(y, "Resampled_HADs_tasmax.2000.01.RDS") 
 ```
 
+
+### CPM data
+
+For now, loading - Run05, Run07, Run08, Run06
+
+
 ```{r}
-n <- names(UKCP_R2)[1:20]
 
-# Returns a list of dataframes for each year by rows of the raster cells
-ObsL <- lapply(n, function(i){
-    Sp <- HADbrickL_crop_Y_2.2km360[[i]]
-    Obs <- as(Sp, 'SpatialPolygonsDataFrame')
-    Obs <- Obs@data
-  })
 
-#Reduce to one df
-Obs_df <- ObsL %>% reduce(cbind)
-Obs_oc <-  unlist(Obs_df)
+
 ```
 
 ##### Model outputs - calibration
