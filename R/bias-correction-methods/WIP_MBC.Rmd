@@ -69,6 +69,12 @@ values(i) <- c(100)
 e <- ext(i)
 NI.bbox <- as.polygons(e)
 
+i2 <- rast()
+crs(i2) <- crs(Hads_r_eg)
+ext(i2) <- c(300000, 350000, 250000, 300000)
+ext2 <- as.polygons(ext(i2))
+
+p
 ```
 
 Using 1980 - 2010 for training, compare the BC applied to 2010 - 2021 to HADs grids 
@@ -195,7 +201,7 @@ for(i in run){
        df <- dfL %>% reduce(cbind)
        df <- cbind(rdf1, df)
     
-      assign(paste0("CPM_1980_2000", v, "_Run", i, "L"), df)
+      assign(paste0("CPM_1980_2000", v, "_Run", i), df)
   
   gc()
   }
@@ -203,13 +209,21 @@ for(i in run){
 
 ```
 
+There are many more cells in the CPM compared with the Hats data because the CPM includes Sea cells - merging by the x and y coordinates results in a merge of just the cells in both (no loss from the Hads dataset)
+
+
 ```{r}
 #Update
-#save.image("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.1.RData") 
+save.image("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.2.RData") 
 #load("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.1.RData")
 
 ```
 
+#HERE
+Load later and infill CPM data
+merge where relevant - in loop - and run MBC!!
+
+#OLD CODE
 
 ##### Model outputs - calibration
 
