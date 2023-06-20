@@ -81,7 +81,7 @@ xy coords are kept to check alignment with CPM - **to be added** - inclusion of 
 for(v in c("tasmax", "tasmin", "rainfall")){
 
   files <- HADs.files[grepl(v, HADs.files)] #Subset to run paths
-  Runpaths <- paste0(dd,"Processed/HadsUKgrid/resampled_2.2km/",v,"/day/",files[1:360]) #Subsbetting to years 1980-2010
+  Runpaths <- paste0(dd,"Processed/HadsUKgrid/resampled_2.2km/",v,"/day/",files[1:360]) #Subsetting to years 1980-2010
 
   i <- 2:length(Runpaths)
   
@@ -96,7 +96,7 @@ for(v in c("tasmax", "tasmin", "rainfall")){
           p <- Runpaths[[i]] 
                      r <- rast(p)
                      r_c <- crop(r, NI.bbox) 
-                     rdf <- as.data.frame(r_c, xy=T) 
+                     rdf <- as.data.frame(r_cI) 
                      return(rdf)
        }) 
 
@@ -112,7 +112,8 @@ for(v in c("tasmax", "tasmin", "rainfall")){
 
 ```{r}
 
-save.image("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.1") 
+#save.image("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.1.RData") 
+load("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.1.RData")
 
 ```
 
@@ -155,47 +156,60 @@ HADsLlong.allvars[c("x2", "y2", "xy2", "x3", "y3", "xy3")] <- NULL
 
 For now, loading - Run05, Run07, Run08, Run06
 
-Cropping all to NI as above to start with 
+Cropping all to NI for this first iteration  
 
-
-# HERE
-Sort out a better looping system so you get list nested on run or on the variable 
+**Note** - naming convention for precipitation - currently is 'rainfall' in HADs but maybe could change? 
 
 ```{r}
 
 run <- c("05", "07", "08", "06")
-v <- c("tasmax", "tasmin","rainfall")
+var <- c("tasmax", "tasmin","pr")
+hist.years <- paste0(1980:1999, "1201", collapse="|") #Historical years 
 
-p <- paste0(dd, "Reprojected/UKCP2.2/", rep(v, 4), "/", rep(run, each=3), "/latest/")
-names(p) <- run
-files <- lapply(p, list.files)
-names(files) <- run
-
+# Historical 
 for(i in run){
-  files <- files[[i]]
-  p <- p[[i]]
+  for(v in var){
+    p <- paste0(dd, "Reprojected/UKCP2.2/", v, "/", i, "/latest/")
+    files <- list.files(p)
+    files <- files[!grepl("aux.xml", files)]
   
-  raw.files <- files[!grepl("aux.xml", files)]
-  raw.files.p <- paste0(p, raw.files)
-raw.dat <- lapply(raw.files.p, rast) 
-
-raw.dat.r <- rast(raw.dat)
+    files.h <- files[grepl(hist.years, files)]# Historical timeslice for calibration
+    files.h.p <- paste0(p, files.h)
+    
+    #As above
+     # Read in 1st runpath as df with xy coords to ensure overlay with CPM data 
+        p1 <- files.h.p[[1]] 
+        r <- rast(p1)
+        r_c <- crop(r, NI.bbox) 
+        rdf1 <- as.data.frame(r_c, xy=T) 
+  
+  # Load and convert remaining to single col dfs 
+        dfL <- lapply(2:length(files.h.p), function(i){
+                  p <- files.h.p[[i]] 
+                  r <- rast(p)
+                  r_c <- crop(r, NI.bbox) 
+                  rdf <- as.data.frame(r_c) 
+                  return(rdf)
+       }) 
+        
+       df <- dfL %>% reduce(cbind)
+       df <- cbind(rdf1, df)
+    
+      assign(paste0("CPM_1980_2000", v, "_Run", i, "L"), df)
+  
+  gc()
+  }
 }
 
-cropped.rasts <- lapply(run, function(run){
-  
-})
+```
 
-nlyr(raw.dat.r)
-
-#Crop to Scotland extent (for method see Scotland.bbox.R)
-scot <- vect("~/Library/CloudStorage/OneDrive-TheAlanTuringInstitute/CLIM-RECAL/clim-recal/data/Scotland/Scotland.bbox.shp")
-
-raw.dat_c <- lapply(raw.dat.r, function(i){ crop(i, scot) })
-names(raw.dat_c) <- paste0(names(raw.dat.r), "_cropped")
-
+```{r}
+#Update
+#save.image("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.1.RData") 
+#load("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.1.RData")
 
 ```
+
 
 ##### Model outputs - calibration
 
