@@ -40,6 +40,102 @@ lapply(x,packageVersion)
 dd <- "/mnt/vmfileshare/ClimateData/"
 ```
 
+## 00. Script Functions
+
+Potentially for future add to a source script but for now here is fine
+
+```{r defining functions}
+
+# A function to read in specific runs, vars and years 
+
+read_crop_df <- function(runs, #Character vector of selected runs
+                         var, #Character vector of selected variables - this might need changing
+                         fp, #filepath of where files are - eg paste0(dd, "Reprojected_infill/UKCP2.2/")
+                         year1, #Numeric, first year of segment
+                         year2, #Numeric, lastyear of segment
+                         name1, #Character - first part of name to be assigned to the returned df- usually the model
+                         crop, #logical
+                         crop.area, #Polygon of area to crop to - any Spat obj accepted by terra::crop will work
+                         cropname){ #Character - name of crop to be assigned to the returned df - usually the crop area
+
+    runs <- runs 
+    var <- var
+    years <- paste0(year1:year2, "1201", collapse="|")
+    
+    if(crop == T){
+      
+      bbox <- crop.area
+
+       for(i in runs){
+          for(v in var){
+             p <- paste0(fp, v, "/", i, "/latest/")
+             files <- list.files(p)
+             files <- files[!grepl("aux.xml", files)]
+  
+             files.y <- files[grepl(years, files)]# Historical timeslice 2 for calibration
+             files.y.p <- paste0(p, files.y)
+    
+        # Read in 1st runpath as df with xy coords to ensure overlay 
+              p1 <- files.y.p[[1]] 
+              r <- rast(p1)
+              r_c <- crop(r, bbox) 
+              rdf1 <- as.data.frame(r_c, xy=T) 
+  
+        # Load and convert remaining to single col dfs 
+            dfL <- lapply(2:length(files.y.p), function(i){
+                  p <- files.y.p[[i]] 
+                  r <- rast(p)
+                  r_c <- crop(r, bbox) 
+                  rdf <- as.data.frame(r_c) 
+                  return(rdf)
+                  }) 
+        
+       df <- dfL %>% reduce(cbind)
+       df <- cbind(rdf1, df)
+       
+       name <- assign(paste0(name1, "_", cropname, year1, "_", year2, v, "_Run", i), df)
+    
+      gc()
+          }
+       }
+    } else { #for where no crop to be applied
+
+       for(i in runs){
+          for(v in var){
+             p <- paste0(fp, v, "/", i, "/latest/")
+             files <- list.files(p)
+             files <- files[!grepl("aux.xml", files)]
+  
+             files.y <- files[grepl(years, files)]# Historical timeslice 2 for calibration
+             files.y.p <- paste0(p, files.y)
+    
+        # Read in 1st runpath as df with xy coords to ensure overlay 
+              p1 <- files.y.p[[1]] 
+              r <- rast(p1)
+              rdf1 <- as.data.frame(r_c, xy=T) 
+  
+        # Load and convert remaining to single col dfs 
+            dfL <- lapply(2:length(files.y.p), function(i){
+                  p <- files.y.p[[i]] 
+                  r <- rast(p)
+                  rdf <- as.data.frame(r_c) 
+                  return(rdf)
+                  }) 
+        
+       df <- dfL %>% reduce(cbind)
+       df <- cbind(rdf1, df)
+
+      assign(paste0(name1, "_", year1, "_", year2, v, "_Run", i), df)
+    
+      gc()
+      }
+    }
+  }
+}
+         
+```
+
+
 ## 1. Load Data
 
 To start with, cropping data to rough Northern Ireland extent
@@ -68,19 +164,14 @@ values(i) <- c(100)
 
 e <- ext(i)
 NI.bbox <- as.polygons(e)
-
-i2 <- rast()
-crs(i2) <- crs(Hads_r_eg)
-ext(i2) <- c(300000, 350000, 250000, 300000)
-ext2 <- as.polygons(ext(i2))
-
-p
 ```
 
 Using 1980 - 2010 for training, compare the BC applied to 2010 - 2021 to HADs grids 
 
 This chunk: reads HADs obs in for each variable for year 2010-2021 and crops them to NI extent in parallel, then converts the data to a dataframe (input to MBC)
-xy coords are kept to check alignment with CPM - **to be added** - inclusion of test data for this
+xy coords are kept to check alignment with CPM 
+
+Have no updated the read_crop_df function to have this run on observational (requires adding another if... statement just for the run aspect of the CPM)
 
 ```{r}
 
@@ -102,7 +193,7 @@ for(v in c("tasmax", "tasmin", "rainfall")){
           p <- Runpaths[[i]] 
                      r <- rast(p)
                      r_c <- crop(r, NI.bbox) 
-                     rdf <- as.data.frame(r_cI) 
+                     rdf <- as.data.frame(r_c) 
                      return(rdf)
        }) 
 
@@ -114,13 +205,6 @@ for(v in c("tasmax", "tasmin", "rainfall")){
   gc()
 }  
   
-```
-
-```{r}
-
-#save.image("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.1.RData") 
-load("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.1.RData")
-
 ```
 
 
@@ -158,6 +242,15 @@ HADsLlong.allvars[c("x2", "y2", "xy2", "x3", "y3", "xy3")] <- NULL
 ```
 
 
+
+### Checkpoint 1
+
+```{r}
+
+#save.image("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.1.RData") #Last saved 22.06.24
+#load("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.1.RData")
+
+```
 ### CPM data
 
 For now, loading - Run05, Run07, Run08, Run06
@@ -166,11 +259,21 @@ Cropping all to NI for this first iteration
 
 **Note** - naming convention for precipitation - currently is 'rainfall' in HADs but maybe could change? 
 
-```{r}
+#### Historical 
 
-run <- c("05", "07", "08", "06")
+```{r CPM historical 1}
+
+runs <- c("05", "07", "08", "06")
 var <- c("tasmax", "tasmin","pr")
-hist.years <- paste0(1980:1999, "1201", collapse="|") #Historical years 
+
+read_crop_df(runs=runs, var=var, fp=paste0(dd, "Reprojected/UKCP2.2/"),
+              year1=1980, year2=1999, name1="CPM", crop = T, crop.area = NI.bbox, cropname = "NI")
+```
+
+
+delete below if above works 
+
+```{r}
 
 # Historical 
 for(i in run){
@@ -209,19 +312,77 @@ for(i in run){
 
 ```
 
+
+
+#### Historical - infill
+
+Using 2010-2020 as test period so just loading in 2010 here 
+
+```{r CPM historical 2}
+
+run <- c("05", "07", "08", "06")
+var <- c("tasmax", "tasmin","pr")
+hist.years <- paste0(2000:2010, "1201", collapse="|") #Historical years 
+
+# Historical 
+for(i in run){
+  for(v in var){
+    p <- paste0(dd, "Reprojected_infill/UKCP2.2/", v, "/", i, "/latest/")
+    files <- list.files(p)
+    files <- files[!grepl("aux.xml", files)]
+  
+    files.h <- files[grepl(hist.years, files)]# Historical timeslice 2 for calibration
+    files.h.p <- paste0(p, files.h)
+    
+    #As above
+     # Read in 1st runpath as df with xy coords to ensure overlay with CPM data 
+        p1 <- files.h.p[[1]] 
+        r <- rast(p1)
+        r_c <- crop(r, NI.bbox) 
+        rdf1 <- as.data.frame(r_c, xy=T) 
+  
+  # Load and convert remaining to single col dfs 
+        dfL <- lapply(2:length(files.h.p), function(i){
+                  p <- files.h.p[[i]] 
+                  r <- rast(p)
+                  r_c <- crop(r, NI.bbox) 
+                  rdf <- as.data.frame(r_c) 
+                  return(rdf)
+       }) 
+        
+       df <- dfL %>% reduce(cbind)
+       df <- cbind(rdf1, df)
+    
+      assign(paste0("CPM_2000_2010", v, "_Run", i), df)
+  
+  gc()
+  }
+}
+
+```
+
+#### Projections
+
+
+```{r CPM historical 2}
+
+```
+
+
 There are many more cells in the CPM compared with the Hats data because the CPM includes Sea cells - merging by the x and y coordinates results in a merge of just the cells in both (no loss from the Hads dataset)
 
 
 ```{r}
-#Update
+
 save.image("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.2.RData") 
-#load("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.1.RData")
+#load("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.2.RData")
 
 ```
 
 #HERE
-Load later and infill CPM data
+Load later and infill CPM data -- after 2022 for both 
 merge where relevant - in loop - and run MBC!!
+
 
 #OLD CODE
 
