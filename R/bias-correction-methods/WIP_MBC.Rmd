@@ -93,7 +93,7 @@ read_crop_df <- function(runs, #Character vector of selected runs
        df <- dfL %>% reduce(cbind)
        df <- cbind(rdf1, df)
        
-       name <- assign(paste0(name1, "_", cropname, year1, "_", year2, v, "_Run", i), df)
+       assign(paste0(name1, "_", cropname, year1, "_", year2, v, "_Run", i), df, envir = .GlobalEnv)
     
       gc()
           }
@@ -125,14 +125,23 @@ read_crop_df <- function(runs, #Character vector of selected runs
        df <- dfL %>% reduce(cbind)
        df <- cbind(rdf1, df)
 
-      assign(paste0(name1, "_", year1, "_", year2, v, "_Run", i), df)
+      assign(paste0(name1, "_", year1, "_", year2, v, "_Run", i, envir = .GlobalEnv), df)
     
       gc()
       }
     }
   }
 }
-         
+   
+
+write.csv.date <- function(x, y){
+  date <- Sys.Date()
+  date <- gsub("-", ".", date)
+  fn <- y
+  rd <- rd
+  csvFileName <- paste(rd,"/",fn,".",date,".csv",sep="")
+  write.csv(x, file=csvFileName)}
+      
 ```
 
 
@@ -208,6 +217,24 @@ for(v in c("tasmax", "tasmin", "rainfall")){
 ```
 
 
+#### Write dfs 
+
+
+
+```{r}
+
+rd <- "~/Desktop/clim-recal/clim-recal/data/MBCdata"
+
+wL <- list(HADsNI1980_2010_tasmax.df, HADsNI1980_2010_tasmin.df, HADsNI1980_2010_rainfall.df)
+dfnames <- c("HADsNI1980_2010_tasmax", "HADsNI1980_2010_tasmin", "HADsNI1980_2010_rainfall")
+names(wL) <- dfnames
+
+lapply(dfnames, function(x){
+  df <- wL[[x]]
+  write.csv.date(df, x)
+})
+```
+
 To check at some point -- why is does tasmin have 11562 vars and the others have 11560 ?
 
 ```{r}
@@ -243,14 +270,6 @@ HADsLlong.allvars[c("x2", "y2", "xy2", "x3", "y3", "xy3")] <- NULL
 
 
 
-### Checkpoint 1
-
-```{r}
-
-#save.image("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.1.RData") #Last saved 22.06.24
-#load("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.1.RData")
-
-```
 ### CPM data
 
 For now, loading - Run05, Run07, Run08, Run06
@@ -270,45 +289,21 @@ read_crop_df(runs=runs, var=var, fp=paste0(dd, "Reprojected/UKCP2.2/"),
               year1=1980, year2=1999, name1="CPM", crop = T, crop.area = NI.bbox, cropname = "NI")
 ```
 
+```{r write hist CPM}
+#When decided the format of all of the many dfs to be used, can reqrite the above function to return all as list rather than returning individual dfs to the environment
+CPM.hist.L.all <- list(CPM_NI1980_1999pr_Run05, CPM_NI1980_1999pr_Run06, CPM_NI1980_1999pr_Run07, CPM_NI1980_1999pr_Run08,
+                       CPM_NI1980_1999tasmax_Run05, CPM_NI1980_1999tasmax_Run06, CPM_NI1980_1999tasmax_Run07, CPM_NI1980_1999tasmax_Run08,
+                       CPM_NI1980_1999tasmin_Run05, CPM_NI1980_1999tasmin_Run06, CPM_NI1980_1999tasmin_Run07, CPM_NI1980_1999tasmin_Run08)
 
-delete below if above works 
+names(CPM.hist.L.all) <- c("CPM_NI1980_1999pr_Run05", "CPM_NI1980_1999pr_Run06", "CPM_NI1980_1999pr_Run07", "CPM_NI1980_1999pr_Run08",
+                       "CPM_NI1980_1999tasmax_Run05", "CPM_NI1980_1999tasmax_Run06", "CPM_NI1980_1999tasmax_Run07", "CPM_NI1980_1999tasmax_Run08",
+                       "CPM_NI1980_1999tasmin_Run05", "CPM_NI1980_1999tasmin_Run06", "CPM_NI1980_1999tasmin_Run07", "CPM_NI1980_1999tasmin_Run08")
 
-```{r}
 
-# Historical 
-for(i in run){
-  for(v in var){
-    p <- paste0(dd, "Reprojected/UKCP2.2/", v, "/", i, "/latest/")
-    files <- list.files(p)
-    files <- files[!grepl("aux.xml", files)]
-  
-    files.h <- files[grepl(hist.years, files)]# Historical timeslice for calibration
-    files.h.p <- paste0(p, files.h)
-    
-    #As above
-     # Read in 1st runpath as df with xy coords to ensure overlay with CPM data 
-        p1 <- files.h.p[[1]] 
-        r <- rast(p1)
-        r_c <- crop(r, NI.bbox) 
-        rdf1 <- as.data.frame(r_c, xy=T) 
-  
-  # Load and convert remaining to single col dfs 
-        dfL <- lapply(2:length(files.h.p), function(i){
-                  p <- files.h.p[[i]] 
-                  r <- rast(p)
-                  r_c <- crop(r, NI.bbox) 
-                  rdf <- as.data.frame(r_c) 
-                  return(rdf)
-       }) 
-        
-       df <- dfL %>% reduce(cbind)
-       df <- cbind(rdf1, df)
-    
-      assign(paste0("CPM_1980_2000", v, "_Run", i), df)
-  
-  gc()
-  }
-}
+lapply(names(CPM.hist.L.all), function(x){
+  df <- CPM.hist.L.all[[x]]
+  write.csv.date(df, x)
+})
 
 ```
 
@@ -316,71 +311,71 @@ for(i in run){
 
 #### Historical - infill
 
-Using 2010-2020 as test period so just loading in 2010 here 
+Using 2010-2020 as test period so just loading in 2000 - 2009 here 
+
 
 ```{r CPM historical 2}
 
-run <- c("05", "07", "08", "06")
-var <- c("tasmax", "tasmin","pr")
-hist.years <- paste0(2000:2010, "1201", collapse="|") #Historical years 
+read_crop_df(runs=runs, var=var, fp=paste0(dd, "Reprojected_infill/UKCP2.2/"),
+              year1=2000, year2=2009, name1="CPM", crop = T, crop.area = NI.bbox, cropname = "NI")
+```
 
-# Historical 
-for(i in run){
-  for(v in var){
-    p <- paste0(dd, "Reprojected_infill/UKCP2.2/", v, "/", i, "/latest/")
-    files <- list.files(p)
-    files <- files[!grepl("aux.xml", files)]
-  
-    files.h <- files[grepl(hist.years, files)]# Historical timeslice 2 for calibration
-    files.h.p <- paste0(p, files.h)
-    
-    #As above
-     # Read in 1st runpath as df with xy coords to ensure overlay with CPM data 
-        p1 <- files.h.p[[1]] 
-        r <- rast(p1)
-        r_c <- crop(r, NI.bbox) 
-        rdf1 <- as.data.frame(r_c, xy=T) 
-  
-  # Load and convert remaining to single col dfs 
-        dfL <- lapply(2:length(files.h.p), function(i){
-                  p <- files.h.p[[i]] 
-                  r <- rast(p)
-                  r_c <- crop(r, NI.bbox) 
-                  rdf <- as.data.frame(r_c) 
-                  return(rdf)
-       }) 
-        
-       df <- dfL %>% reduce(cbind)
-       df <- cbind(rdf1, df)
-    
-      assign(paste0("CPM_2000_2010", v, "_Run", i), df)
-  
-  gc()
-  }
-}
+```{r write hist CPM}
+#When decided the format of all of the many dfs to be used, can reqrite the above function to return all as list rather than returning individual dfs to the environment
+CPM.hist_infill.L.all <- list(CPM_NI2000_2009pr_Run05, CPM_NI2000_2009pr_Run06, CPM_NI2000_2009pr_Run07, CPM_NI2000_2009pr_Run08,
+                       CPM_NI2000_2009tasmax_Run05, CPM_NI2000_2009tasmax_Run06, CPM_NI2000_2009tasmax_Run07, CPM_NI2000_2009tasmax_Run08,
+                       CPM_NI2000_2009tasmin_Run05, CPM_NI2000_2009tasmin_Run06, CPM_NI2000_2009tasmin_Run07, CPM_NI2000_2009tasmin_Run08)
+
+names(CPM.hist_infill.L.all) <- c("CPM_NI2000_2009pr_Run05", "CPM_NI2000_2009pr_Run06", "CPM_NI2000_2009pr_Run07", "CPM_NI2000_2009pr_Run08",
+                       "CPM_NI2000_2009tasmax_Run05", "CPM_NI2000_2009tasmax_Run06", "CPM_NI2000_2009tasmax_Run07", "CPM_NI2000_2009tasmax_Run08",
+                       "CPM_NI2000_2009tasmin_Run05", "CPM_NI2000_2009tasmin_Run06", "CPM_NI2000_2009tasmin_Run07", "CPM_NI2000_2009tasmin_Run08")
+
+
+lapply(names(CPM.hist_infill.L.all), function(x){
+  df <- CPM.hist_infill.L.all[[x]]
+  write.csv.date(df, x)
+})
 
 ```
 
 #### Projections
 
+##### 2020 - 2040
 
-```{r CPM historical 2}
+```{r CPM historical 1}
+
+runs <- c("05", "07", "08", "06")
+var <- c("tasmax", "tasmin","pr")
+
+read_crop_df(runs=runs, var=var, fp=paste0(dd, "Reprojected/UKCP2.2/"),
+              year1=2020, year2=2039, name1="CPM", crop = T, crop.area = NI.bbox, cropname = "NI")
+```
+
+```{r write hist CPM}
+#When decided the format of all of the many dfs to be used, can reqrite the above function to return all as list rather than returning individual dfs to the environment
+CPM20.39L.all <- list(CPM_NI2020_2039pr_Run05, CPM_NI2020_2039pr_Run06, CPM_NI2020_2039pr_Run07, CPM_NI2020_2039pr_Run08,
+                       CPM_NI2020_2039tasmax_Run05, CPM_NI2020_2039tasmax_Run06, CPM_NI2020_2039tasmax_Run07, CPM_NI2020_2039tasmax_Run08,
+                       CPM_NI2020_2039tasmin_Run05, CPM_NI2020_2039tasmin_Run06, CPM_NI2020_2039tasmin_Run07, CPM_NI2020_2039tasmin_Run08)
+
+names(CPM20.39L.all) <- c("CPM_NI2020_2039pr_Run05", "CPM_NI2020_2039pr_Run06", "CPM_NI2020_2039pr_Run07", "CPM_NI2020_2039pr_Run08",
+                       "CPM_NI2020_2039tasmax_Run05", "CPM_NI2020_2039tasmax_Run06", "CPM_NI2020_2039tasmax_Run07", "CPM_NI2020_2039tasmax_Run08",
+                       "CPM_NI2020_2039tasmin_Run05", "CPM_NI2020_2039tasmin_Run06", "CPM_NI2020_2039tasmin_Run07", "CPM_NI2020_2039tasmin_Run08")
+
+
+lapply(names(CPM20.39L.all), function(x){
+  df <- CPM20.39L.all[[x]]
+  write.csv.date(df, x)
+})
 
 ```
+
 
 
 There are many more cells in the CPM compared with the Hats data because the CPM includes Sea cells - merging by the x and y coordinates results in a merge of just the cells in both (no loss from the Hads dataset)
 
 
-```{r}
-
-save.image("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.2.RData") 
-#load("~/Desktop/clim-recal/clim-recal/data/MBCdata/MBCimage.2.RData")
-
-```
-
 #HERE
-Load later and infill CPM data -- after 2022 for both 
+Load later and infill CPM data -- after 2022 for both -- you need to clear everything then creat NI box and run again as Rstudio is getting overwhelmed 
 merge where relevant - in loop - and run MBC!!
 
 
