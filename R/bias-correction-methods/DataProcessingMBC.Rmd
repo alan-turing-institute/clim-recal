@@ -4,7 +4,6 @@ author: "Ruth C E Bowyer"
 date: "`r format(Sys.Date())`"
 output:
   github_document
-
 ---
 
 ```{r setup, include=FALSE}
