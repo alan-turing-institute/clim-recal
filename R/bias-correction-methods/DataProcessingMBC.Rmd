@@ -185,10 +185,6 @@ e <- ext(i)
 NI.bbox <- as.polygons(e)
 ```
 
-```{r}
-
-```
-
 ### Observational data
 
 Using 1980 - 2010 for training, compare the BC applied to 2010 - 2021 to HADs grids 
@@ -213,12 +209,22 @@ for(v in c("tasmax", "tasmin", "rainfall")){
    r_c <- crop(r, NI.bbox) 
   rdf1 <- as.data.frame(r_c, xy=T) 
   
+  #To ensure subset fataframe has useful naming convention - this does not pull it through as such
+  n <- substr(p, nchar(p)-20, nchar(p))
+  n <- gsub(".nc","", n)
+  names(rdf1) <- gsub("_", paste0(n, "_"), names(rdf1))
+  
+  
   # Load and convert remaining to single col dfs 
        dfL <-lapply(i, function(i){
           p <- Runpaths[[i]] 
                      r <- rast(p)
                      r_c <- crop(r, NI.bbox) 
-                     rdf <- as.data.frame(r_c) 
+                     rdf <- as.data.frame(r_c)
+                       #To ensure subset dataframe has useful naming convention - this does not pull it through as such
+                     n <- substr(p, nchar(p)-20, nchar(p))
+                     n <- gsub(".nc","", n)
+                     names(rdf) <- gsub(paste0("_", n, "_"), names(rdf))
                      return(rdf)
        }) 
 
@@ -242,6 +248,11 @@ rd <- paste0(dd, "Interim/NI_cropped_MBCdata")
 wL <- list(HADsNI1980_2010_tasmax.df, HADsNI1980_2010_tasmin.df, HADsNI1980_2010_rainfall.df)
 dfnames <- c("HADsNI1980_2010_tasmax", "HADsNI1980_2010_tasmin", "HADsNI1980_2010_rainfall")
 names(wL) <- dfnames
+wL <- lapply(wL, function(x){
+  names(x) <- gsub("__", "_", names(x))
+  return(x)
+})
+
 
 lapply(dfnames, function(x){
   df <- wL[[x]]
