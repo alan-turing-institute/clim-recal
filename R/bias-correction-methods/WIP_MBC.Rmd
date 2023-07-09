@@ -48,6 +48,7 @@ obs <- files[grepl("HAD", files)]
 obs.dfs <- lapply(obs, function(x){
   fread(paste0(fp, x))
 })
+names(obs.dfs) <- obs
 
 #Using 1980 - 2010 as calibration period
 cpm.files <- files[grepl("CPM", files)]
@@ -56,36 +57,59 @@ cal <- cpm.files[grepl("1980|2000", cpm.files)]
 cal.dfs <- lapply(cal, function(x){
   fread(paste0(fp, x))
 })
+names(cal.dfs) <- cal
 
 gc()
 ```
 
 ```{r}
 #R crashed when reading all of this in so for now just doing the projections for the next few decades 
-
-proj1 <- cpm.files[grepl("2020|2020", cpm.files)]
+proj1 <- cpm.files[grepl("2020", cpm.files)]
 
 proj.dfs <- lapply(proj1, function(x){
   fread(paste0(fp, x))
 })
 
-
+names(proj.dfs) <- proj1
 ```
 
 
-## Univariate quantile mapping
+## 2. Linear scaling
 
-This package for univar mapping but soon to be multivar
+So the df is data as rows and cells as x - so need to t transform yours etc 
 
-Following the vignette here (first using the test data) https://cran.r-project.org/web/packages/MBC/MBC.pdf 
+```{r}
+library('qmap')
+### QM1: Linear transform function
 
-Do this seperately for each run
+qm1.fit <- fitQmap(Obs, Mod.Hist, method = "PTF", transfun = "linear", wet.day =
+FALSE, cost = "RSS") 
+qm1.proj <- doQmapPTF(Mod.Hist, qm1.fit)
+qm1.hist <- doQmapPTF(Mod.Proj, qm1.fit) 
+```
 
-Below method is univariate quanitle mapping
 
 
-Also need to understand better the vignette as if its really just using vectors that aren't spatially linked and applying them everywhere - then maybe the geography does matter ??? 
-Next step multivariate mapping in same package 
+## 3. Univariate quantile mapping
+
+Following vignette here: https://cran.r-project.org/web/packages/MBC/MBC.pdf 
+
+To really understand - is the distribution sampled from the whole data, or is it cell specific - as assume the former and then in which case the area will matter... 
+
+Because its just asking for a vector, is it better to just loop it over by cell obs anyway?? or create a single vector
+
+```{r}
+#Start with tasmax
+
+obs.tasmax <- as.data.frame(obs.dfs$HADsNI1980_2010_tasmax.2023.06.27.csv)
+#Run 5
+cal.tasmax_1 <- as.data.frame(cal.dfs$CPM_NI1980_1999tasmax_Run05.2023.06.27.csv)
+cal.tasmax_2 <- as.data.frame(cal.dfs$CPM_NI2000_2009tasmax_Run05.2023.06.27.csv)
+proj.tasmax <- as.data.frame(proj.dfs$CPM_NI2020_2039tasmax_Run05.2023.06.27.csv)
+
+
+```
+
 
 ```{r}
 library(MBC)
