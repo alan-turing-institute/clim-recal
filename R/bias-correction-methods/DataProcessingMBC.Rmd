@@ -258,6 +258,7 @@ lapply(dfnames, function(x){
   df <- wL[[x]]
   write.csv.date(df, x)
 })
+
 ```
 
 To check at some point -- why is does tasmin have 11562 vars and the others have 11560 ?
