@@ -11,7 +11,7 @@ write.csv.date <- function(x, y){
 
 cpm_read_crop_df_write <- function(runs, #Character vector of selected runs
                                var, #Character vector of selected variables - this might need changing
-                               fp, #filepath of where files are - eg paste0(dd, "Reprojected_infill/UKCP2.2/")
+                               fp, #filepath of parent d of folders where files are - eg paste0(dd, "Reprojected_infill/UKCP2.2/")
                                year1, #Numeric, first year of segment
                                year2, #Numeric, lastyear of segment
                                name1, #Character - first part of name to be assigned to the returned df- usually the model
@@ -40,14 +40,14 @@ cpm_read_crop_df_write <- function(runs, #Character vector of selected runs
         # Read in 1st runpath as df with xy coords to ensure overlay 
         p1 <- files.y.p[[1]] 
         r <- rast(p1)
-        r_c <- crop(r, bbox) 
+        r_c <- crop(r, bbox, snap="out", mask=T) 
         rdf1 <- as.data.frame(r_c, xy=T) 
         
         # Load and convert remaining to single col dfs 
         dfL <- lapply(2:length(files.y.p), function(i){
           p <- files.y.p[[i]] 
           r <- rast(p)
-          r_c <- crop(r, bbox) 
+          r_c <- crop(r, bbox, snap="out", mask=T) 
           rdf <- as.data.frame(r_c) 
           return(rdf)
         }) 
@@ -105,20 +105,22 @@ cpm_read_crop_df_write <- function(runs, #Character vector of selected runs
 # HADs function 
 
 hads19802010_read_crop_df_write <- function(var, #Character vector of selected variables - this might need changing
-                                   fp, #filepath of where files are - eg paste0(dd, "Reprojected_infill/UKCP2.2/")
+                                   fp, #filepath of parent d of folders where files are - eg paste0(dd, "Reprojected_infill/UKCP2.2/")
                                    name1, #Character - first part of name to be assigned to the returned df- usually the model
                                    crop, #logical
-                                   crop.area, #Polygon of area to crop to - any Spat obj accepted by terra::crop will work
-                                   cropname, #Character - name of crop to be assigned to the returned df - usually the crop area
+                                   crop.area=NULL, #Polygon of area to crop to - any Spat obj accepted by terra::crop will work
+                                   cropname=NULL, #Character - name of crop to be assigned to the returned df - usually the crop area
                                    rd){ # results directory for storing results
   
   var <- var
+  fp <- fp
+  crop <- crop
 
   for(v in var){
     
-    HADs.files <- list.files(paste0(dd,"Processed/HadsUKgrid/resampled_2.2km/",v,"/day/"))
+    HADs.files <- list.files(paste0(fp, v,"/day/"))
     files <- HADs.files[grepl(v, HADs.files)]
-    Runpaths <- paste0(dd,"Processed/HadsUKgrid/resampled_2.2km/",v,"/day/",files[1:360]) #Subsetting to years 1980-2010 -
+    Runpaths <- paste0(fp,v,"/day/",files[1:360]) #Subsetting to years 1980-2010 - if we download different data then this would need to be changed
     
     if(crop == TRUE){
       
@@ -127,7 +129,7 @@ hads19802010_read_crop_df_write <- function(var, #Character vector of selected v
       # Read in 1st runpath as df with xy coords to ensure overlay with CPM data 
        p <- Runpaths[[1]] 
        r <- rast(p)
-       r_c <- crop(r, bbox) 
+       r_c <- crop(r, bbox, snap="out", mask=T) 
        rdf1 <- as.data.frame(r_c, xy=T) 
     
       #To ensure subset dataframe has useful naming convention - this does not pull it through as such
@@ -141,12 +143,12 @@ hads19802010_read_crop_df_write <- function(var, #Character vector of selected v
       dfL <-lapply(i, function(i){
         p <- Runpaths[[i]] 
         r <- rast(p)
-        r_c <- crop(r, NI.bbox) 
+        r_c <- crop(r, bbox, snap="out", mask=T) 
         rdf <- as.data.frame(r_c)
           #To ensure subset dataframe has useful naming convention - this does not pull it through as such
         n <- substr(p, nchar(p)-20, nchar(p))
         n <- gsub(".nc","", n)
-      names(rdf) <- gsub(paste0("_", n, "_"), names(rdf))
+        names(rdf) <- gsub("_", paste0(n, "_"), names(rdf))
       return(rdf)
     }) 
     
@@ -184,7 +186,7 @@ hads19802010_read_crop_df_write <- function(var, #Character vector of selected v
         #To ensure subset dataframe has useful naming convention - this does not pull it through as such
         n <- substr(p, nchar(p)-20, nchar(p))
         n <- gsub(".nc","", n)
-        names(rdf) <- gsub(paste0("_", n, "_"), names(rdf))
+        names(rdf) <- gsub("_", paste0(n, "_"), names(rdf))
         return(rdf)
       }) 
       
