@@ -108,8 +108,8 @@ hads19802010_read_crop_df_write <- function(var, #Character vector of selected v
                                    fp, #filepath of parent d of folders where files are - eg paste0(dd, "Reprojected_infill/UKCP2.2/")
                                    name1, #Character - first part of name to be assigned to the returned df- usually the model
                                    crop, #logical
-                                   crop.area=NULL, #Polygon of area to crop to - any Spat obj accepted by terra::crop will work
-                                   cropname=NULL, #Character - name of crop to be assigned to the returned df - usually the crop area
+                                   crop.area, #Polygon of area to crop to - any Spat obj accepted by terra::crop will work
+                                   cropname, #Character - name of crop to be assigned to the returned df - usually the crop area
                                    rd){ # results directory for storing results
   
   var <- var
@@ -125,6 +125,7 @@ hads19802010_read_crop_df_write <- function(var, #Character vector of selected v
     if(crop == TRUE){
       
       bbox <- crop.area
+      cropname <- cropname
     
       # Read in 1st runpath as df with xy coords to ensure overlay with CPM data 
        p <- Runpaths[[1]] 
