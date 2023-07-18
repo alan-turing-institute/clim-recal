@@ -62,13 +62,13 @@ In the `R` subdirectory you can find code for replicating the different data pro
 
 ### How to download the data
 
-You can download the raw UKCP2.2 climate data from the CEDA archive using the python script under `python/data_download`: 
+You can download the raw UKCP2.2 climate data from the CEDA archive. Go [here](https://archive.ceda.ac.uk/), create an account and set up your FTP credentials in "My Account". You can then use the python script under `python/data_download/` to download the data: 
 ```
-python3 ceda_ftp_download.py --input /badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/ --output output_dir --username 'uuu' --psw 'ppp' --change_hierarchy
+python3 ceda_ftp_download.py --input /badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/ --output 'output_dir' --username 'uuu' --psw 'ppp' --change_hierarchy
 ```
-You need to replace `uuu` and `ppp` with your CEDA username and FTP password respectively (you need to first create an account [here](https://archive.ceda.ac.uk/), and `output_dir` with the directory you want to write the data to.
+You need to replace `uuu` and `ppp` with your CEDA username and FTP password respectively and replace 'output_dir' with the directory you want to write the data to.
 
-Note that the `--change_hierarchy` flag is used when the script is called, which modifies the folder hierarchy to fit with the hierarchy in the Turing Azure file store. You can use the same script without the `--change_hierarchy` flag in order to download files without any changes in the hierarch.
+Note that the `--change_hierarchy` flag is used, which modifies the folder hierarchy to fit with the hierarchy in the Turing Azure file store. You can use the same script without the `--change_hierarchy` flag in order to download files without any changes in the hierarchy.
 
 You can download the HADs observational data from the CEDA archive using the same python script, with a different input (note the `change_hierarchy` flag should not be used with HADs data - only applies to UKCP data):
 ```
@@ -77,13 +77,13 @@ python3 ceda_ftp_download.py --input /badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/H
 
 ### Accessing the pre-downloaded/pre-processed data
 
-Datasets used in this project (raw, processed and debiased) have been pre-downloaded/pre-processed and stored in an Azure fileshare set-up for the clim-recal project (https://dymestorage1.file.core.windows.net/vmfileshare). You need to be given access, and register your IP address to the approve list in the following way from the azure portal:
+Datasets used in this project (raw, processed and debiased) have been pre-downloaded/pre-processed and stored in an Azure fileshare set-up for the clim-recal project (https://dymestorage1.file.core.windows.net/vmfileshare). You need to be given access, and register your IP address to the approved list in the following way from the azure portal:
 
 - Go to dymestorage1 page
 - Security + networking tab
 - Add your IP under the Firewall section
 
-Once you have access you can mount the fileshare. On a Mac you can do it from  a terminal 
+Once you have access you can mount the fileshare. On a Mac you can do it from a terminal:
 
 `open smb://dymestorage1.file.core.windows.net/vmfileshare`
 
@@ -93,7 +93,9 @@ The fileshare will be mounted under
 
 `/Volumes/vmfileshare/`
 
-Instructions on how the mount in other operating systems can be found in [the azure how-tos](https://learn.microsoft.com/en-us/azure/storage/files/storage-how-to-use-files-linux?tabs=smb311). Alternatively, you can access the Azure Portal, go to the dymestorage1 fileshare and click the "Connect" button to get an automatically generated script. This script can be used from within an Azure VM to mount the drive.
+Instructions on how the mount in other operating systems can be found in [the azure how-tos](https://learn.microsoft.com/en-us/azure/storage/files/storage-how-to-use-files-linux?tabs=smb311). 
+
+Alternatively, you can access the Azure Portal, go to the dymestorage1 fileshare and click the "Connect" button to get an automatically generated script. This script can be used from within an Azure VM to mount the drive.
 
 ### Pre-downloaded/pre-processed data description
 
