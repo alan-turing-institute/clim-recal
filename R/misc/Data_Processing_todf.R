@@ -104,3 +104,5 @@ registerDoParallel(cl)
   stopCluster(cl) 
   gc()
   
+  
+  
