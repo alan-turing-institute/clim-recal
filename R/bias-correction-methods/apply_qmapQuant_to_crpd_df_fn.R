@@ -27,8 +27,10 @@ for(r in Runs){
 
         #subset file list to var
         obs.var <-  obs[grepl(v,obs)]
-  
-        obs.df <- fread(paste0(fp, obs.var))
+        
+        #subset to calibration years
+        obs.varc <- obs.var[grepl("1980_", obs.var)]
+        obs.df <- fread(paste0(fp, obs.varc))
         obs.df <- as.data.frame(obs.df)
 
         row.names(obs.df) <- paste0(obs.df$x, "_", obs.df$y )
@@ -342,12 +344,15 @@ for(r in Runs){
  }
       }
     }
+}
 
+  ########################## 
   
+  #Function for applying the bias correction to a list of dfs (ie rather than reading in the csvs, as above)
 
-apply_bias_correction_to_cropped_df <- function(region, #Region code - needs to relate to the file name in a unique way to subset
+apply_qmap_to_cropped_dfL <- function(region, #Region code - needs to relate to the file name in a unique way to subset
                                                 var, #Meterological variables
-                                                Runs){
+                                                Runs){ #Runs as 05 not Run05
 
   i <- region   
 
@@ -356,115 +361,61 @@ for(r in Runs){
     if(v!="pr"){
       dd <- "/mnt/vmfileshare/ClimateData/"
 
-      #Subset to Area
-      #HADs grid observational data
-        fp <- paste0(dd, "Interim/HadsUK/Data_as_df/")
-        files <- list.files(fp)
-        obs <- files[grepl(i, files)]
-
-        #subset file list to var
-        obs.var <-  obs[grepl(v,obs)]
-  
-        obs.df <- fread(paste0(fp, obs.var))
-        obs.df <- as.data.frame(obs.df)
-
+        obs.df <- cities.Hads.dfs[[i]]
+        n <- names(obs.df)
+        obs.df <- obs.df[[n[grepl(v, n)&grepl("1980",n)]]] #change to rainfall in this  #1980 is the calibration period - pulls out of the list
+        
         row.names(obs.df) <- paste0(obs.df$x, "_", obs.df$y )
         obs.df$x <- NULL
         obs.df$y <- NULL
+        
+        ci <- min(grep("19801201",names(obs.df)))
+        obs.df <- obs.df[,ci:ncol(obs.df)]
+        
+        #Remove the extra dates -- can be removed in future
+        remove <- c(paste0("0229_", v,"_29"), paste0("0430_",v,"_30"), paste0("0731_",v,"_31"), paste0("0930_",v,"_30"), 
+                    paste0("1130_",v,"_30"))
+        remove <- paste0(remove, collapse = "|")
+        
+        obs.df <- obs.df[,!grepl(remove, names(obs.df))]
+        
 
-        #Using 1980 - 2010 as calibration period
-        fp <- paste0(dd, "Interim/CPM/Data_as_df/")
-        cpm.files <- list.files(fp)
-
-        #Calibration years 1980 - 2010  - load in full one for 1980 - 2000
-        cpm.cal <- cpm.files[grepl("1980|2000", cpm.files)]
-
-        #Subset file list to area 
-        cpm.cal <- cpm.cal[grepl(i, cpm.cal)]
-
-        #subset to var and run
-        cpm.cal.var <- cpm.cal[grepl(v, cpm.cal)&grepl(r, cpm.cal)]
-
-        #Load in 
-        cal.dfs1 <- lapply(cpm.cal.var, function(x){
-        df <- fread(paste0(fp, x))
-        df <- as.data.frame(df)
-        })
-
-        names(cal.dfs1) <- cpm.cal.var
-
-
-        #Sub out beyond cal period (2010 - 2020) - ie just keep the calibration here 
-        years <- 2000:2009
-        lyrs <- paste0("_day_", years, collapse = "|")
-
-        cal.df2 <- cal.dfs1[[2]][,grepl(lyrs, names(cal.dfs1[[2]]))]
-
-        #Create final cal.df for this run
-        cal.df <- list(cal.dfs1[[1]], cal.df2) %>% reduce(cbind)
-        row.names(cal.df)<- paste0(cal.df$x, "_", cal.df$y)
+        n <- names(cities.cpm.dfs)
+        cal.df <- cities.cpm.dfs[[i]]
+        n <- names(cal.df)
+        ii <- n[grepl(paste0("_",v,"_"),n)&grepl("calibration",n)&grepl(paste0("_",r,"_"), n)]
+        cal.df <- cal.df[[ii]] 
+        row.names(cal.df) <- paste0(cal.df$x, "_", cal.df$y)
         cal.df$x <- NULL
         cal.df$y <- NULL
         
-        #Clean up
-        remove("cal.df2")
-
-        #Subset out the test years (2010-2020)
-        proj.df1 <- cal.dfs1[[2]][,!grepl(lyrs, names(cal.dfs1[[2]]))]
-
-        #Clean up
-        remove("cal.dfs1")
-        gc()
-  
-        yi <- paste0(i,c(2020,2040,2060), collapse="|")
-        cpm.proj <- cpm.files[grepl(yi, cpm.files)]
-
-        #Subset to Area, var and run
-        cpm.proj <- cpm.proj[grepl(i, cpm.proj)&grepl(v, cpm.proj)&grepl(r, cpm.proj)]
-
-        #Load in 
-        proj.df2 <- lapply(cpm.proj, function(x){
-          df <- as.data.frame(fread(paste0(fp, x)))
-          #Remove x and y cols
-          df[c(3:ncol(df))]
-          })
-
-          names(proj.df2) <- cpm.proj
-
-        proj.df <- c(list(proj.df1), proj.df2) %>% reduce(cbind)
+        #Accidently added in too many dates to the the calibration period -- and need to start the obs period from 1st Dec 1980 --
+        #This should be removed for next re-running when the HADs 360 cal and regrouping is run
+        ci <- min(grep("19801201",names(obs.df)))
+        obs.df <- obs.df[,ci:ncol(obs.df)]
+        add.to.proj <-  cal.df[,ncol(obs.df):ncol(cal.df)]
+        cal.df <- cal.df[,1:ncol(obs.df)]
         
+        n <- names(cities.cpm.dfs)
+        proj.df <- cities.cpm.dfs[[i]]
+        n <- names(proj.df)
+        ii <- n[grepl(paste0("_",v,"_"),n)&grepl("projection",n)&grepl(paste0("_",r,"_"), n)]
+        proj.df <- proj.df[[ii]] 
         row.names(proj.df) <- paste0(proj.df$x, "_", proj.df$y)
         proj.df$x <- NULL
         proj.df$y <- NULL
-  
-        remove("proj.df1")
-        remove("proj.df2")
+        proj.df <- cbind(add.to.proj, proj.df)
+        
+        #clean up
+        remove(add.to.proj)
 
 ## **2. Wrangle the data**
-    
-        missing.in.hads.cpm.cal <- cal.df[-which(row.names(cal.df)%in%row.names(obs.df)),]
-        missing.in.hads.cpm.proj <- proj.df[-which(row.names(proj.df)%in%row.names(obs.df)),]
-    
-        #mnt/vmfileshare/ClimateData/Debiased/R/QuantileMapping
 
           cal.df <- cal.df[which(row.names(cal.df)%in%row.names(obs.df)),]
           proj.df <- proj.df[which(row.names(proj.df)%in%row.names(obs.df)),]
  
-        #save the missing outputs 
-        p <- paste0("checkpoint1", v, "_", i, "_", r, "_")
-        print(p)
-        write.csv(missing.in.hads.cpm.cal, paste0(dd, "Debiased/R/QuantileMapping/missing.in.hads/",r,"_",i,"_",v, ".csv"))
-  
-        ### Update obs data to 360 days
-
-  #The below is a work around with the HADS dataset having 365 days on leap years - this is to be updateed and corrected when the 360 day sampling is better sorted 
-      
-        #Convert obs to 360 day year - has 40 more vars so remove the ones not in cal
-        remove <- c("0229_29", "0430_30", "0731_31", "0930_30", "1130_30")
-        remove <- paste0(remove, collapse = "|")
-      
-        obs.df <- obs.df[,!grepl(remove, names(obs.df))]
-
+        #This all needs to be updated as currently the dates are not aligning very well at all 
+          
 ### Transpose the data sets
 
       #Obs grid should be cols, observations (time) should be rows for linear scaling
@@ -504,7 +455,7 @@ for(r in Runs){
           names(results.L) <- c("t.obs", "t.cal", "t.proj", "qm1.hist.a", "qm1.hist.b", "qm1.proj.a", "qm1.proj.b")
           p <- paste0("checkpoint4", v, "_", i, "_", r, "_")
           print(p)
-          base::saveRDS(results.L, file = paste0(dd, "Debiased/R/QuantileMapping/resultsL", r,"_",i,"_",v, ".RDS"))
+          base::saveRDS(results.L, file = paste0(dd, "Debiased/R/QuantileMapping/three.cities/resultsL", r,"_",i,"_",v, ".RDS"))
 
           p <- paste0("checkpoint5", v, "_", i, "_", r, "_")
           print(p)
@@ -518,125 +469,69 @@ for(r in Runs){
 #### Precipitation - the HADs variable has is called 'rainfall' 
     
    dd <- "/mnt/vmfileshare/ClimateData/"
-    
-    #Subset to Area
-    #HADs grid observational data
-    fp <- paste0(dd, "Interim/HadsUK/Data_as_df/")
-    files <- list.files(fp)
-    obs <- files[grepl(i, files)]
-    
-    #subset file list to var
-    obs.var <-  obs[grepl("rainfall",obs)]
-    
-    obs.df <- fread(paste0(fp, obs.var))
-    obs.df <- as.data.frame(obs.df)
-    
-    row.names(obs.df) <- paste0(obs.df$x, "_", obs.df$y )
-    obs.df$x <- NULL
-    obs.df$y <- NULL
-    
-    #Using 1980 - 2010 as calibration period
-    fp <- paste0(dd, "Interim/CPM/Data_as_df/")
-    cpm.files <- list.files(fp)
-    
-    #Calibration years 1980 - 2010  - load in full one for 1980 - 2000
-    cpm.cal <- cpm.files[grepl("1980|2000", cpm.files)]
-    
-    #Subset file list to area 
-    cpm.cal <- cpm.cal[grepl(i, cpm.cal)]
-    
-    #subset to var and run
-    cpm.cal.var <- cpm.cal[grepl(v, cpm.cal)&grepl(r, cpm.cal)]
-    
-    #Load in 
-    cal.dfs1 <- lapply(cpm.cal.var, function(x){
-      df <- fread(paste0(fp, x))
-      df <- as.data.frame(df)
-    })
-    
-    names(cal.dfs1) <- cpm.cal.var
-    
-    
-    #Sub out beyond cal period (2010 - 2020) - ie just keep the calibration here 
-    years <- 2000:2009
-    lyrs <- paste0("_day_", years, collapse = "|")
-    
-    cal.df2 <- cal.dfs1[[2]][,grepl(lyrs, names(cal.dfs1[[2]]))]
-    
-    #Create final cal.df for this run
-    cal.df <- list(cal.dfs1[[1]], cal.df2) %>% reduce(cbind)
-    row.names(cal.df)<- paste0(cal.df$x, "_", cal.df$y)
-    cal.df$x <- NULL
-    cal.df$y <- NULL
-    
-    #Clean up
-    remove("cal.df2")
-    
-    #Subset out the test years (2010-2020)
-    proj.df1 <- cal.dfs1[[2]][,!grepl(lyrs, names(cal.dfs1[[2]]))]
-    
-    #Clean up
-    remove("cal.dfs1")
-    gc()
-    
-    yi <- paste0(i,c(2020,2040,2060), collapse="|")
-    cpm.proj <- cpm.files[grepl(yi, cpm.files)]
-    
-    #Subset to Area, var and run
-    cpm.proj <- cpm.proj[grepl(i, cpm.proj)&grepl(v, cpm.proj)&grepl(r, cpm.proj)]
-    
-    #Load in 
-    proj.df2 <- lapply(cpm.proj, function(x){
-      df <- as.data.frame(fread(paste0(fp, x)))
-      #Remove x and y cols
-      df[c(3:ncol(df))]
-    })
-    
-    names(proj.df2) <- cpm.proj
-    
-    proj.df <- c(list(proj.df1), proj.df2) %>% reduce(cbind)
-    
-    row.names(proj.df) <- paste0(proj.df$x, "_", proj.df$y)
-    proj.df$x <- NULL
-    proj.df$y <- NULL
-    
-    remove("proj.df1")
-    remove("proj.df2")
-    
-    ## **2. Wrangle the data**
-    
-    missing.in.hads.cpm.cal <- cal.df[-which(row.names(cal.df)%in%row.names(obs.df)),]
-    missing.in.hads.cpm.proj <- proj.df[-which(row.names(proj.df)%in%row.names(obs.df)),]
-    
-    #mnt/vmfileshare/ClimateData/Debiased/R/QuantileMapping
-    
-    cal.df <- cal.df[which(row.names(cal.df)%in%row.names(obs.df)),]
-    proj.df <- proj.df[which(row.names(proj.df)%in%row.names(obs.df)),]
-    
-    #save the missing outputs 
-    p <- paste0("checkpoint1", v, "_", i, "_", r, "_")
-    print(p)
-    write.csv(missing.in.hads.cpm.cal, paste0(dd, "Debiased/R/QuantileMapping/missing.in.hads/",r,"_",i,"_",v, ".csv"))
-    
-    ### Update obs data to 360 days
-    
-    #The below is a work around with the HADS dataset having 365 days on leap years - this is to be updateed and corrected when the 360 day sampling is better sorted 
-    
-    #Convert obs to 360 day year - has 40 more vars so remove the ones not in cal
-    remove <- c("0229_29", "0430_30", "0731_31", "0930_30", "1130_30")
-    remove <- paste0(remove, collapse = "|")
-    
-    obs.df <- obs.df[,!grepl(remove, names(obs.df))]
-    
-    ### Transpose the data sets
-    
-    #Obs grid should be cols, observations (time) should be rows for linear scaling
-    
-    cal.df <- t(cal.df)
-    proj.df <- t(proj.df)
-    obs.df <- t(obs.df)
-    
-    
+   
+   obs.df <- cities.Hads.dfs[[i]]
+   n <- names(obs.df)
+   obs.df <- obs.df[[n[grepl("rainfall", n)&grepl("1980",n)]]] #change to rainfall in this  #1980 is the calibration period - pulls out of the list
+   
+   row.names(obs.df) <- paste0(obs.df$x, "_", obs.df$y )
+   obs.df$x <- NULL
+   obs.df$y <- NULL
+   
+   ci <- min(grep("19801201",names(obs.df)))
+   obs.df <- obs.df[,ci:ncol(obs.df)]
+   
+   #Remove the extra dates -- can be removed in future
+   remove <- c("0229_rainfall_29", "0430_rainfall_30", "0731_rainfall_31", "0930_rainfall_30", "1130_rainfall_30")
+   remove <- paste0(remove, collapse = "|")
+   
+   obs.df <- obs.df[,!grepl(remove, names(obs.df))]
+   
+   
+   n <- names(cities.cpm.dfs)
+   cal.df <- cities.cpm.dfs[[i]]
+   n <- names(cal.df)
+   ii <- n[grepl(paste0("_",v,"_"),n)&grepl("calibration",n)&grepl(paste0("_",r,"_"), n)]
+   cal.df <- cal.df[[ii]]
+   row.names(cal.df) <- paste0(cal.df$x, "_", cal.df$y)
+   cal.df$x <- NULL
+   cal.df$y <- NULL
+   
+   #Accidently added in too many dates to the the calibration period -- and need to start the obs period from 1st Dec 1980 --
+   #This should be removed for next re-running when the HADs 360 cal and regrouping is run
+   ci <- min(grep("19801201",names(obs.df)))
+   obs.df <- obs.df[,ci:ncol(obs.df)]
+   add.to.proj <-  cal.df[,ncol(obs.df):ncol(cal.df)]
+   cal.df <- cal.df[,1:ncol(obs.df)]
+   
+   n <- names(cities.cpm.dfs)
+   proj.df <- cities.cpm.dfs[[i]]
+   n <- names(proj.df)
+   ii <- n[grepl(paste0("_",v,"_"),n)&grepl("projection",n)&grepl(paste0("_",r,"_"), n)]
+   proj.df <- proj.df[[ii]] 
+   row.names(proj.df) <- paste0(proj.df$x, "_", proj.df$y)
+   proj.df$x <- NULL
+   proj.df$y <- NULL
+   proj.df <- cbind(add.to.proj, proj.df)
+   
+   #clean up
+   remove(add.to.proj)
+   
+   ## **2. Wrangle the data**
+   
+   cal.df <- cal.df[which(row.names(cal.df)%in%row.names(obs.df)),]
+   proj.df <- proj.df[which(row.names(proj.df)%in%row.names(obs.df)),]
+   
+   #This all needs to be updated as currently the dates are not aligning very well at all 
+   
+   ### Transpose the data sets
+   
+   #Obs grid should be cols, observations (time) should be rows for linear scaling
+   
+   cal.df <- t(cal.df)
+   proj.df <- t(proj.df)
+   obs.df <- t(obs.df)
+   
     ## **3. Empirical Quantile Mapping**
     
     #(from qmap vignette) - fitQmapQUANT estimates values of the empirical cumulative distribution function of observed and
@@ -667,7 +562,7 @@ for(r in Runs){
           names(results.L) <- c("t.obs", "t.cal", "t.proj", "qm1.hist.a", "qm1.hist.b", "qm1.proj.a", "qm1.proj.b")
           p <- paste0("checkpoint4", v, "_", i, "_", r, "_")
           print(p)
-          base::saveRDS(results.L, file = paste0(dd, "Debiased/R/QuantileMapping/resultsL", r,"_",i,"_",v, ".RDS"))
+          base::saveRDS(results.L, file = paste0(dd, "Debiased/R/QuantileMapping/three.cities/resultsL", r,"_",i,"_",v, ".RDS"))
           
           p <- paste0("checkpoint5", v, "_", i, "_", r, "_")
           print(p)
@@ -678,4 +573,5 @@ for(r in Runs){
   
  }
       }
-    }
+}
+}

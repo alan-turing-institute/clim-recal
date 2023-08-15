@@ -45,16 +45,22 @@ cities.cpm.dfs <- lapply(cities, function(x){
           rdf <- as.data.frame(r, xy=T) 
           return(rdf)
         }) 
+  
+  names(dfL) <- files
+  return(dfL)
+  
    })
 
-#HERE
-names(cities.cpm.dfs)
-   
+names(cities.cpm.dfs) <- cities
+```
+
+```{r}
 
 cities.Hads.dfs <- lapply(cities, function(x){
   
-  fp <- paste0(dd, "/Interim/HadsUK/three.cities/",x,"/grouped/")
+  fp <- paste0(dd, "Interim/HadsUK/three.cities/",x, "/")
   files <- list.files(fp)
+  files <- files[!grepl("aux.json", files)]
   files.paths <- paste0(fp, files)
 
   # Load and to df
@@ -62,15 +68,34 @@ cities.Hads.dfs <- lapply(cities, function(x){
           r <- rast(i)
           rdf <- as.data.frame(r, xy=T) 
           return(rdf)
-        }) 
+        })
+  
+  names(dfL) <- files
+    return(dfL)
    })
    
-
+names(cities.Hads.dfs) <- cities
 ```
 
 ## 2. Apply bias correction by variable/run 
 
+The called function was written to apply the following models:
+
+For tasmax and tasmin: 
+
+
+For precip
+
 ```{r}
+
+source("/home/dyme/Desktop/clim-recal/clim-recal/R/bias-correction-methods/apply_qmapQuant_to_crpd_df_fn.R")
+
+var <- c("tasmax", "tasmin", "pr")
+Runs <-c("05", "06", "07", "08")
+
+lapply(cities, function(x){
+  apply_qmap_to_cropped_dfL(region=x, var=var, Runs = Runs)})
+
 
 ```
 
