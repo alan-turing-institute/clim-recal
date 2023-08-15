@@ -1,0 +1,76 @@
+---
+title: "Quantile Mapping across three cities"
+author: "Ruth C E Bowyer"
+date: "`r format(Sys.Date())`"
+output:
+  github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## 0. About
+
+Testing `Qmap` for the 3 cities 
+
+```{r libraries dd}
+rm(list=ls())
+
+library(qmap)
+library(terra)
+
+dd <- "/mnt/vmfileshare/ClimateData/"
+
+```
+
+## 1. Convert data to dataframes
+
+Qmap uses df as inpt 
+
+```{r}
+
+cities <- c("London", "Manchester", "Glasgow")
+
+cities.cpm.dfs <- lapply(cities, function(x){
+  
+  fp <- paste0(dd, "/Interim/CPM/three.cities/",x,"/grouped/")
+  files <- list.files(fp)
+  files.paths <- paste0(fp, files)
+
+  # Load and to df
+  dfL <- lapply(files.paths, function(i){
+          r <- rast(i)
+          rdf <- as.data.frame(r, xy=T) 
+          return(rdf)
+        }) 
+   })
+
+#HERE
+names(cities.cpm.dfs)
+   
+
+cities.Hads.dfs <- lapply(cities, function(x){
+  
+  fp <- paste0(dd, "/Interim/HadsUK/three.cities/",x,"/grouped/")
+  files <- list.files(fp)
+  files.paths <- paste0(fp, files)
+
+  # Load and to df
+  dfL <- lapply(files.paths, function(i){
+          r <- rast(i)
+          rdf <- as.data.frame(r, xy=T) 
+          return(rdf)
+        }) 
+   })
+   
+
+```
+
+## 2. Apply bias correction by variable/run 
+
+```{r}
+
+```
+

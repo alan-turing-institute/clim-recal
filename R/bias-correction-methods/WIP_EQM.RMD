@@ -1,0 +1,274 @@
+---
+title: "Linear.Scaling"
+author: "Ruth C E Bowyer"
+date: "`r format(Sys.Date())`"
+output:
+  github_document
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## **0. About**
+
+Testing Bias Correction methods from the Qmap package in R
+
+Loading data as created in 'Data_Processing_todf.R' 
+
+```{r libraries dd}
+rm(list=ls())
+
+library(MBC)
+library(terra)
+library(sf)
+library(exactextractr)
+library(reshape2) #melt
+library(data.table) #for fread
+library(tidyverse)
+
+#Loaded package versions
+x <- c("MBC", "terra", "sf", "exactextractr")
+lapply(x,packageVersion)
+
+#Path is "/<mount location>/vmfileshare/ClimateData
+#dd <- "/Volumes/vmfileshare/ClimateData/"
+dd <- "/mnt/vmfileshare/ClimateData/"
+```
+
+
+## **1. Load data**
+
+As this method is univariate - applying seperately to each variable - starting with tasmax
+Starting with smallest region - London - for testing 
+
+```{r hads obs data}
+
+#HADs grid observational data
+fp <- paste0(dd, "Interim/HadsUK/Data_as_df/")
+files <- list.files(fp)
+
+#Subset to London (UKI)
+Ldn.obs <- files[grepl("UKI", files)]
+
+#start with tasmax
+Ldn.obs.tasmax <- Ldn.obs[grepl("tasmax", Ldn.obs)]
+
+obs.df <- fread(paste0(fp, Ldn.obs.tasmax))
+obs.df <- as.data.frame(obs.df)
+
+row.names(obs.df) <- paste0(obs.df$x, "_", obs.df$y )
+obs.df$x <- NULL
+obs.df$y <- NULL
+
+```
+
+```{r cpm - calibration}
+
+#Using 1980 - 2010 as calibration period
+fp <- paste0(dd, "Interim/CPM/Data_as_df/")
+files <- list.files(fp)
+
+#Calibration years 1980 - 2010 
+cpm.cal <- files[grepl("1980|2000", files)]
+  
+#Subset to London (UKI)
+Ldn.cpm.cal <- cpm.cal[grepl("UKI", cpm.cal)]
+
+#start with tasmax
+Ldn.cpm.cal.tasmax <- Ldn.cpm.cal[grepl("tasmax", Ldn.cpm.cal)]
+
+#Load in all the runs
+cal.dfs1 <- lapply(Ldn.cpm.cal.tasmax, function(x){
+  df <- fread(paste0(fp, x))
+  df <- as.data.frame(df)
+})
+
+names(cal.dfs1) <- Ldn.cpm.cal.tasmax
+
+#Sub out beyond cal period (2010 - 2020)
+years <- 2000:2009
+lyrs <- paste0("_day_", years, collapse = "|")
+
+cdfs2 <- lapply(cal.dfs1[5:8], function(x){
+  x2 <- x[,grepl(lyrs, names(x))]
+})
+
+names(cdfs2) <- names(cal.dfs1[5:8])
+
+cal.dfs <- lapply(c("Run05", "Run06", "Run07", "Run08"), function(x){
+  i1 <- paste0("CPM_UKI1980_1999tasmax_", x, ".2023.07.16.csv")
+  i2 <- paste0("CPM_UKI2000_2020tasmax_", x, ".2023.07.16.csv")
+  #This does assume x and y are in same order but because converted from raster should be sanity checked
+  df.f <- list(cal.dfs1[[i1]], cdfs2[[i2]]) %>% reduce(cbind)
+    row.names(df.f)<- paste0(df.f$x, "_", df.f$y)
+     df.f$x <- NULL
+     df.f$y <- NULL
+  return(df.f)
+})
+
+names(cal.dfs) <- c("Run05", "Run06", "Run07", "Run08")
+```
+
+
+```{r}
+#Seeing if can load All the proj data - 2010 - 2020 is test, so treating with proj - 2020 - 2080 is the rest of the data 
+
+proj.df1 <- lapply(cal.dfs1[5:8], function(x){
+  x2 <- x[,!grepl(lyrs, names(x))]
+})
+
+cpm.proj <- files[grepl("UKI2020|UKI2040|UKI2060", files)]
+  
+#Subset to London (UKI)
+Ldn.cpm.proj <- cpm.proj[grepl("UKI", cpm.proj)]
+
+#start with tasmax
+Ldn.cpm.proj.tasmax <- Ldn.cpm.proj[grepl("tasmax", Ldn.cpm.proj)]
+
+#Load in all the runs
+proj.df2 <- lapply(Ldn.cpm.proj.tasmax, function(x){
+  df <- fread(paste0(fp, x))
+  df <- as.data.frame(df)
+})
+
+names(proj.df2) <- Ldn.cpm.proj.tasmax
+```
+
+```{r}
+
+#reduce however you did above but adding it in first series as above 
+
+proj.dfs <- lapply(c("Run05", "Run06", "Run07", "Run08"), function(x){
+  
+  i1 <- paste0("CPM_UKI2000_2020tasmax_", x, ".2023.07.16.csv")
+  i2 <- paste0("CPM_UKI2020_2040tasmax_", x, ".2023.07.17.csv")
+  i3 <- paste0("CPM_UKI2040_2060tasmax_", x, ".2023.07.17.csv")
+  #This does assume x and y are in same order but because converted from raster should be sanity checked
+  #Remove x and y from proj df 
+  df2 <- proj.df2[[i2]][c(3:ncol(proj.df2[[i2]]))]
+  df3 <- proj.df2[[i3]][c(3:ncol(proj.df2[[i3]]))]
+  df.f <- list(proj.df1[[i1]], df2, df3) %>% 
+    reduce(cbind)
+  row.names(df.f) <- paste0(df.f$x, "_", df.f$y)
+  df.f$x <- NULL
+  df.f$y <- NULL
+  return(df.f)
+})
+
+names(proj.dfs) <- c("Run05", "Run06", "Run07", "Run08")
+
+```
+
+## **2. Wrangle the data**
+
+### Ensure dfs have same grid references 
+
+```{r}
+#Note there are a few squares missing in the HADs grid, I'm not sure why (could be predom water which I think looses it?)
+cal.Run05 <- cal.dfs$Run05
+proj.Run05 <- proj.dfs$Run05
+missing.in.hads.cpm.cal <- cal.Run05[-which(row.names(cal.Run05)%in%row.names(obs.df)),]
+missing.in.hads.cpm.proj <- proj.Run05[-which(row.names(proj.Run05)%in%row.names(obs.df)),]
+
+cal.Run05 <- cal.Run05[which(row.names(cal.Run05)%in%row.names(obs.df)),]
+proj.Run05 <- proj.Run05[which(row.names(proj.Run05)%in%row.names(obs.df)),]
+```
+
+### Update obs data to 360 days
+
+The below is a work around with the HADS dataset having 365 days on leap years - this is to be updateed and corrected when the 360 day sampling is better sorted 
+
+```{r}
+#Convert obs to 360 day year - has 40 more vars so remove the ones not in cal
+names(obs.df)[c(28:64)]
+names(obs.df)[c(388:440)]
+
+had365day <- obs.df[,grepl("_1980", names(obs.df))]
+had365dates <- gsub("tasmax_1980|1980", "",names(had365day))
+
+had360day <- obs.df[,grepl("_1981", names(obs.df))]
+had360dates <- gsub("tasmax_1981|1981", "",names(had360day))
+
+rem <- had365dates[-which(had365dates%in%had360dates)] #Pulls out all the Feb dates - 
+#Have added as issue to repo - for now going to remove: "0201-0229_29" "0401-0430_30" "0701-0731_31" "0901-0930_30" "1101-1130_30" - but needs to be checked as should just be _31s removed? 
+
+remove <- c("0229_29", "0430_30", "0731_31", "0930_30", "1130_30")
+remove <- paste0(remove, collapse = "|")
+
+removed.dates <- obs.df[,grepl(remove, names(obs.df))]
+obs.df2 <- obs.df[,!grepl(remove, names(obs.df))]
+
+```
+
+### Transpose the data sets
+
+Obs grid should be cols, observations (time) should be rows for linear scaling
+
+```{r}
+t.cal.Run05 <- t(cal.Run05)
+t.proj.Run05 <- t(proj.Run05)
+t.obs.df2 <- t(obs.df2)
+
+```
+
+
+## **3. Empirical Quantile Mapping**
+
+(from qmap vignette) - fitQmapQUANT estimates values of the empirical cumulative distribution function of observed and
+modelled time series for regularly spaced quantiles. doQmapQUANT uses these estimates to perform
+quantile mapping
+
+```{r}
+library('qmap')
+
+qm1.fit <- fitQmapQUANT(t.obs.df2, t.cal.Run05,
+                        wet.day = FALSE,
+                        qstep = 0.01, 
+                        nboot = 1) #nboot number of bootstrap samples used for estimation of the observed quantiles. 
+
+
+qm1.hist.a <- doQmapQUANT(t.cal.Run05, qm1.fit, type="linear")
+qm1.hist.b <- doQmapQUANT(t.cal.Run05, qm1.fit, type="tricub")
+
+qm1.proj.a <- doQmapQUANT(t.proj.Run05, qm1.fit, type="linear")
+qm1.proj.b <- doQmapQUANT(t.proj.Run05, qm1.fit, type="tricub")
+```
+
+
+
+## **4. Save the data**
+
+```{r}
+# Save data as .csv
+results.L <- list(t.obs.df2, t.cal.Run05, t.proj.Run05, qm1.hist.a, qm1.hist.b, qm1.proj.a, qm1.proj.b)
+
+names(results.L) <- c("t.obs.df2", "t.cal.Run05", "t.proj.Run05", "qm1.hist.a", "qm1.hist.b", "qm1.proj.a", "qm1.proj.b")
+
+saveRDS(results.L, file = paste0(dd, "Debiased/R/QuantileMapping/results.L.london.250724.RDS"))
+```
+
+```{r}
+
+library(raster)
+source("~/Desktop/clim-recal/clim-recal/R/misc/HAD.CRS.for.sourcing.R")
+
+# Save data as raster
+
+test <-  t(results.L$qm1.hist.a)
+x <- gsub("_.*", "", row.names(test))
+y <- gsub(".*_", "", row.names(test))
+xydf <- data.frame(x=x, y=y)
+t2 <- cbind(xydf, test)
+
+ dfr <- rasterFromXYZ(t2, crs=HAD.CRS)  #Convert first two columns as lon-lat and third as value
+ fn <- paste0(dd, "Debiased/R/QuantileMapping/", x, ".tif")
+ dfr2 <- rast(dfr) #Converting from a raster brick to a  terra::rast means when writing layer names are preserved
+ terra::writeRaster(dfr2, fn, overwrite=T)
+
+```
+
+
+
