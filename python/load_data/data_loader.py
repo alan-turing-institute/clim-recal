@@ -4,6 +4,7 @@ import geopandas as gp
 import os
 from datetime import datetime
 
+
 def load_data(input_path, date_range, variable, shapefile_path=None, extension='nc'):
     '''
     This function takes a date range and a variable and loads and merges xarrays based on those parameters.
@@ -107,7 +108,7 @@ def reformat_file(file, variable):
 
     try:
         with xr.open_dataset(file, engine='rasterio') as x:
-            xa = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time",'band_data':variable}) \
+            xa = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time", 'band_data': variable}) \
                 .rio.write_crs('epsg:27700')
             xa.coords['time'] = time_index
 
@@ -169,7 +170,7 @@ def load_and_merge(date_range, files, variable):
                     x = ds.load()
                     x = x.sel(time=slice(*date_range))
             except Exception as e:
-                x = reformat_file(file,variable).sel(time=slice(*date_range))
+                x = reformat_file(file, variable).sel(time=slice(*date_range))
 
             # Select the date range
             if x.time.size != 0:

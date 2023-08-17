@@ -6,6 +6,7 @@
 
 
 import argparse
+import glob
 import logging
 import sys
 import time
@@ -87,8 +88,22 @@ def run_debiasing() -> None:
     ds_simh = \
         load_data(contr_fpath, date_range=h_date_period, variable=var, shapefile_path=shape_fpath, extension='tif')[
             var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
-    ds_obs = load_data(obs_fpath, date_range=h_date_period, variable=var, shapefile_path=shape_fpath)[var].rename(
-        {"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
+
+    # find file extensions for observation data
+    files_obs_nc = glob.glob(f"{obs_fpath}/*.nc", recursive=True)
+    files_obs_tif = glob.glob(f"{obs_fpath}/*.tif", recursive=True)
+
+    if len(files_obs_nc) > 0 and len(files_obs_tif) == 0:
+        ext = 'nc'
+    elif len(files_obs_nc) == 0 and len(files_obs_tif) > 0:
+        ext = 'tif'
+    elif len(files_obs_nc) == 0 and len(files_obs_tif) == 0:
+        raise Exception(f"No observation files found in {obs_fpath} with extensions .nc or .tif")
+    else:
+        raise Exception(f"A mix of .nc and .tif observation files found in {obs_fpath}, file extension should be the "
+                        f"same for all files in the directory.")
+    ds_obs = load_data(obs_fpath, date_range=h_date_period, variable=var, shapefile_path=shape_fpath,
+                       extension=ext)[var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
     log.info('Historical data Loaded.')
 
     # aligning calendars, e.g there might be a few extra days on the scenario data that has to be droped.
