@@ -50,19 +50,19 @@ Dates in raw not in resampled: {'1981-03-31', '1981-03-30'}
 Dates in resampled not in raw: {'1981-02-29', '1981-02-30'}
 File: tasmax_hadukgrid_uk_1km_day_19810401-19810430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'1981-04-30', '1981-04-29'}
+Dates in raw not in resampled: {'1981-04-29', '1981-04-30'}
 Dates in resampled not in raw: {'1981-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_19810501-19810531.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1981-05-31', '1981-05-30'}
-Dates in resampled not in raw: {'1981-04-30', '1981-04-29'}
+Dates in raw not in resampled: {'1981-05-30', '1981-05-31'}
+Dates in resampled not in raw: {'1981-04-29', '1981-04-30'}
 File: tasmax_hadukgrid_uk_1km_day_19810601-19810630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'1981-06-30'}
 Dates in resampled not in raw: {'1981-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_19810701-19810731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'1981-07-31', '1981-07-30'}
+Dates in raw not in resampled: {'1981-07-30', '1981-07-31'}
 Dates in resampled not in raw: {'1981-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_19810801-19810831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -95,14 +95,14 @@ Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_19820301-19820331.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'1982-03-30', '1982-03-31'}
-Dates in resampled not in raw: {'1982-02-30', '1982-02-29'}
+Dates in resampled not in raw: {'1982-02-29', '1982-02-30'}
 File: tasmax_hadukgrid_uk_1km_day_19820401-19820430.nc produced errors:
 raw # days: 30 - resampled # days: 29
 Dates in raw not in resampled: {'1982-04-29', '1982-04-30'}
 Dates in resampled not in raw: {'1982-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_19820501-19820531.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1982-05-31', '1982-05-30'}
+Dates in raw not in resampled: {'1982-05-30', '1982-05-31'}
 Dates in resampled not in raw: {'1982-04-29', '1982-04-30'}
 File: tasmax_hadukgrid_uk_1km_day_19820601-19820630.nc produced errors:
 raw # days: 30 - resampled # days: 30
@@ -110,7 +110,7 @@ Dates in raw not in resampled: {'1982-06-30'}
 Dates in resampled not in raw: {'1982-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_19820701-19820731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'1982-07-30', '1982-07-31'}
+Dates in raw not in resampled: {'1982-07-31', '1982-07-30'}
 Dates in resampled not in raw: {'1982-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_19820801-19820831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -143,15 +143,15 @@ Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_19830301-19830331.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'1983-03-30', '1983-03-31'}
-Dates in resampled not in raw: {'1983-02-29', '1983-02-30'}
+Dates in resampled not in raw: {'1983-02-30', '1983-02-29'}
 File: tasmax_hadukgrid_uk_1km_day_19830401-19830430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'1983-04-29', '1983-04-30'}
+Dates in raw not in resampled: {'1983-04-30', '1983-04-29'}
 Dates in resampled not in raw: {'1983-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_19830501-19830531.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1983-05-30', '1983-05-31'}
-Dates in resampled not in raw: {'1983-04-29', '1983-04-30'}
+Dates in raw not in resampled: {'1983-05-31', '1983-05-30'}
+Dates in resampled not in raw: {'1983-04-30', '1983-04-29'}
 File: tasmax_hadukgrid_uk_1km_day_19830601-19830630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'1983-06-30'}
@@ -226,23 +226,23 @@ Dates in raw not in resampled: {'1985-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_19850301-19850331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1985-03-30', '1985-03-31'}
+Dates in raw not in resampled: {'1985-03-31', '1985-03-30'}
 Dates in resampled not in raw: {'1985-02-30', '1985-02-29'}
 File: tasmax_hadukgrid_uk_1km_day_19850401-19850430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'1985-04-30', '1985-04-29'}
+Dates in raw not in resampled: {'1985-04-29', '1985-04-30'}
 Dates in resampled not in raw: {'1985-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_19850501-19850531.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1985-05-30', '1985-05-31'}
-Dates in resampled not in raw: {'1985-04-30', '1985-04-29'}
+Dates in raw not in resampled: {'1985-05-31', '1985-05-30'}
+Dates in resampled not in raw: {'1985-04-29', '1985-04-30'}
 File: tasmax_hadukgrid_uk_1km_day_19850601-19850630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'1985-06-30'}
 Dates in resampled not in raw: {'1985-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_19850701-19850731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'1985-07-30', '1985-07-31'}
+Dates in raw not in resampled: {'1985-07-31', '1985-07-30'}
 Dates in resampled not in raw: {'1985-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_19850801-19850831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -274,16 +274,16 @@ Dates in raw not in resampled: {'1986-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_19860301-19860331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1986-03-30', '1986-03-31'}
-Dates in resampled not in raw: {'1986-02-30', '1986-02-29'}
+Dates in raw not in resampled: {'1986-03-31', '1986-03-30'}
+Dates in resampled not in raw: {'1986-02-29', '1986-02-30'}
 File: tasmax_hadukgrid_uk_1km_day_19860401-19860430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'1986-04-29', '1986-04-30'}
+Dates in raw not in resampled: {'1986-04-30', '1986-04-29'}
 Dates in resampled not in raw: {'1986-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_19860501-19860531.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1986-05-30', '1986-05-31'}
-Dates in resampled not in raw: {'1986-04-29', '1986-04-30'}
+Dates in raw not in resampled: {'1986-05-31', '1986-05-30'}
+Dates in resampled not in raw: {'1986-04-30', '1986-04-29'}
 File: tasmax_hadukgrid_uk_1km_day_19860601-19860630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'1986-06-30'}
@@ -322,8 +322,8 @@ Dates in raw not in resampled: {'1987-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_19870301-19870331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1987-03-31', '1987-03-30'}
-Dates in resampled not in raw: {'1987-02-29', '1987-02-30'}
+Dates in raw not in resampled: {'1987-03-30', '1987-03-31'}
+Dates in resampled not in raw: {'1987-02-30', '1987-02-29'}
 File: tasmax_hadukgrid_uk_1km_day_19870401-19870430.nc produced errors:
 raw # days: 30 - resampled # days: 29
 Dates in raw not in resampled: {'1987-04-29', '1987-04-30'}
@@ -338,7 +338,7 @@ Dates in raw not in resampled: {'1987-06-30'}
 Dates in resampled not in raw: {'1987-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_19870701-19870731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'1987-07-30', '1987-07-31'}
+Dates in raw not in resampled: {'1987-07-31', '1987-07-30'}
 Dates in resampled not in raw: {'1987-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_19870801-19870831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -410,12 +410,12 @@ Dates in raw not in resampled: {'1989-03-30', '1989-03-31'}
 Dates in resampled not in raw: {'1989-02-29', '1989-02-30'}
 File: tasmax_hadukgrid_uk_1km_day_19890401-19890430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'1989-04-29', '1989-04-30'}
+Dates in raw not in resampled: {'1989-04-30', '1989-04-29'}
 Dates in resampled not in raw: {'1989-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_19890501-19890531.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1989-05-31', '1989-05-30'}
-Dates in resampled not in raw: {'1989-04-29', '1989-04-30'}
+Dates in raw not in resampled: {'1989-05-30', '1989-05-31'}
+Dates in resampled not in raw: {'1989-04-30', '1989-04-29'}
 File: tasmax_hadukgrid_uk_1km_day_19890601-19890630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'1989-06-30'}
@@ -455,22 +455,22 @@ Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_19900301-19900331.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'1990-03-30', '1990-03-31'}
-Dates in resampled not in raw: {'1990-02-29', '1990-02-30'}
+Dates in resampled not in raw: {'1990-02-30', '1990-02-29'}
 File: tasmax_hadukgrid_uk_1km_day_19900401-19900430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'1990-04-30', '1990-04-29'}
+Dates in raw not in resampled: {'1990-04-29', '1990-04-30'}
 Dates in resampled not in raw: {'1990-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_19900501-19900531.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'1990-05-31', '1990-05-30'}
-Dates in resampled not in raw: {'1990-04-30', '1990-04-29'}
+Dates in resampled not in raw: {'1990-04-29', '1990-04-30'}
 File: tasmax_hadukgrid_uk_1km_day_19900601-19900630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'1990-06-30'}
 Dates in resampled not in raw: {'1990-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_19900701-19900731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'1990-07-31', '1990-07-30'}
+Dates in raw not in resampled: {'1990-07-30', '1990-07-31'}
 Dates in resampled not in raw: {'1990-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_19900801-19900831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -502,16 +502,16 @@ Dates in raw not in resampled: {'1991-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_19910301-19910331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1991-03-30', '1991-03-31'}
+Dates in raw not in resampled: {'1991-03-31', '1991-03-30'}
 Dates in resampled not in raw: {'1991-02-29', '1991-02-30'}
 File: tasmax_hadukgrid_uk_1km_day_19910401-19910430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'1991-04-30', '1991-04-29'}
+Dates in raw not in resampled: {'1991-04-29', '1991-04-30'}
 Dates in resampled not in raw: {'1991-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_19910501-19910531.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1991-05-30', '1991-05-31'}
-Dates in resampled not in raw: {'1991-04-30', '1991-04-29'}
+Dates in raw not in resampled: {'1991-05-31', '1991-05-30'}
+Dates in resampled not in raw: {'1991-04-29', '1991-04-30'}
 File: tasmax_hadukgrid_uk_1km_day_19910601-19910630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'1991-06-30'}
@@ -586,16 +586,16 @@ Dates in raw not in resampled: {'1993-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_19930301-19930331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1993-03-31', '1993-03-30'}
-Dates in resampled not in raw: {'1993-02-30', '1993-02-29'}
+Dates in raw not in resampled: {'1993-03-30', '1993-03-31'}
+Dates in resampled not in raw: {'1993-02-29', '1993-02-30'}
 File: tasmax_hadukgrid_uk_1km_day_19930401-19930430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'1993-04-30', '1993-04-29'}
+Dates in raw not in resampled: {'1993-04-29', '1993-04-30'}
 Dates in resampled not in raw: {'1993-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_19930501-19930531.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'1993-05-31', '1993-05-30'}
-Dates in resampled not in raw: {'1993-04-30', '1993-04-29'}
+Dates in resampled not in raw: {'1993-04-29', '1993-04-30'}
 File: tasmax_hadukgrid_uk_1km_day_19930601-19930630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'1993-06-30'}
@@ -634,8 +634,8 @@ Dates in raw not in resampled: {'1994-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_19940301-19940331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1994-03-31', '1994-03-30'}
-Dates in resampled not in raw: {'1994-02-30', '1994-02-29'}
+Dates in raw not in resampled: {'1994-03-30', '1994-03-31'}
+Dates in resampled not in raw: {'1994-02-29', '1994-02-30'}
 File: tasmax_hadukgrid_uk_1km_day_19940401-19940430.nc produced errors:
 raw # days: 30 - resampled # days: 29
 Dates in raw not in resampled: {'1994-04-30', '1994-04-29'}
@@ -683,15 +683,15 @@ Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_19950301-19950331.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'1995-03-31', '1995-03-30'}
-Dates in resampled not in raw: {'1995-02-29', '1995-02-30'}
+Dates in resampled not in raw: {'1995-02-30', '1995-02-29'}
 File: tasmax_hadukgrid_uk_1km_day_19950401-19950430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'1995-04-30', '1995-04-29'}
+Dates in raw not in resampled: {'1995-04-29', '1995-04-30'}
 Dates in resampled not in raw: {'1995-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_19950501-19950531.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'1995-05-30', '1995-05-31'}
-Dates in resampled not in raw: {'1995-04-30', '1995-04-29'}
+Dates in resampled not in raw: {'1995-04-29', '1995-04-30'}
 File: tasmax_hadukgrid_uk_1km_day_19950601-19950630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'1995-06-30'}
@@ -770,12 +770,12 @@ Dates in raw not in resampled: {'1997-03-30', '1997-03-31'}
 Dates in resampled not in raw: {'1997-02-29', '1997-02-30'}
 File: tasmax_hadukgrid_uk_1km_day_19970401-19970430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'1997-04-29', '1997-04-30'}
+Dates in raw not in resampled: {'1997-04-30', '1997-04-29'}
 Dates in resampled not in raw: {'1997-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_19970501-19970531.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1997-05-31', '1997-05-30'}
-Dates in resampled not in raw: {'1997-04-29', '1997-04-30'}
+Dates in raw not in resampled: {'1997-05-30', '1997-05-31'}
+Dates in resampled not in raw: {'1997-04-30', '1997-04-29'}
 File: tasmax_hadukgrid_uk_1km_day_19970601-19970630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'1997-06-30'}
@@ -818,19 +818,19 @@ Dates in raw not in resampled: {'1998-03-31', '1998-03-30'}
 Dates in resampled not in raw: {'1998-02-30', '1998-02-29'}
 File: tasmax_hadukgrid_uk_1km_day_19980401-19980430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'1998-04-30', '1998-04-29'}
+Dates in raw not in resampled: {'1998-04-29', '1998-04-30'}
 Dates in resampled not in raw: {'1998-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_19980501-19980531.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'1998-05-30', '1998-05-31'}
-Dates in resampled not in raw: {'1998-04-30', '1998-04-29'}
+Dates in resampled not in raw: {'1998-04-29', '1998-04-30'}
 File: tasmax_hadukgrid_uk_1km_day_19980601-19980630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'1998-06-30'}
 Dates in resampled not in raw: {'1998-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_19980701-19980731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'1998-07-30', '1998-07-31'}
+Dates in raw not in resampled: {'1998-07-31', '1998-07-30'}
 Dates in resampled not in raw: {'1998-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_19980801-19980831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -862,23 +862,23 @@ Dates in raw not in resampled: {'1999-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_19990301-19990331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1999-03-30', '1999-03-31'}
-Dates in resampled not in raw: {'1999-02-30', '1999-02-29'}
+Dates in raw not in resampled: {'1999-03-31', '1999-03-30'}
+Dates in resampled not in raw: {'1999-02-29', '1999-02-30'}
 File: tasmax_hadukgrid_uk_1km_day_19990401-19990430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'1999-04-30', '1999-04-29'}
+Dates in raw not in resampled: {'1999-04-29', '1999-04-30'}
 Dates in resampled not in raw: {'1999-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_19990501-19990531.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'1999-05-31', '1999-05-30'}
-Dates in resampled not in raw: {'1999-04-30', '1999-04-29'}
+Dates in raw not in resampled: {'1999-05-30', '1999-05-31'}
+Dates in resampled not in raw: {'1999-04-29', '1999-04-30'}
 File: tasmax_hadukgrid_uk_1km_day_19990601-19990630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'1999-06-30'}
 Dates in resampled not in raw: {'1999-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_19990701-19990731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'1999-07-30', '1999-07-31'}
+Dates in raw not in resampled: {'1999-07-31', '1999-07-30'}
 Dates in resampled not in raw: {'1999-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_19990801-19990831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -994,8 +994,8 @@ Dates in raw not in resampled: {'2002-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_20020301-20020331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'2002-03-31', '2002-03-30'}
-Dates in resampled not in raw: {'2002-02-30', '2002-02-29'}
+Dates in raw not in resampled: {'2002-03-30', '2002-03-31'}
+Dates in resampled not in raw: {'2002-02-29', '2002-02-30'}
 File: tasmax_hadukgrid_uk_1km_day_20020401-20020430.nc produced errors:
 raw # days: 30 - resampled # days: 29
 Dates in raw not in resampled: {'2002-04-29', '2002-04-30'}
@@ -1010,7 +1010,7 @@ Dates in raw not in resampled: {'2002-06-30'}
 Dates in resampled not in raw: {'2002-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_20020701-20020731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'2002-07-30', '2002-07-31'}
+Dates in raw not in resampled: {'2002-07-31', '2002-07-30'}
 Dates in resampled not in raw: {'2002-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_20020801-20020831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -1042,7 +1042,7 @@ Dates in raw not in resampled: {'2003-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_20030301-20030331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'2003-03-30', '2003-03-31'}
+Dates in raw not in resampled: {'2003-03-31', '2003-03-30'}
 Dates in resampled not in raw: {'2003-02-29', '2003-02-30'}
 File: tasmax_hadukgrid_uk_1km_day_20030401-20030430.nc produced errors:
 raw # days: 30 - resampled # days: 29
@@ -1058,7 +1058,7 @@ Dates in raw not in resampled: {'2003-06-30'}
 Dates in resampled not in raw: {'2003-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_20030701-20030731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'2003-07-30', '2003-07-31'}
+Dates in raw not in resampled: {'2003-07-31', '2003-07-30'}
 Dates in resampled not in raw: {'2003-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_20030801-20030831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -1126,16 +1126,16 @@ Dates in raw not in resampled: {'2005-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_20050301-20050331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'2005-03-31', '2005-03-30'}
-Dates in resampled not in raw: {'2005-02-29', '2005-02-30'}
+Dates in raw not in resampled: {'2005-03-30', '2005-03-31'}
+Dates in resampled not in raw: {'2005-02-30', '2005-02-29'}
 File: tasmax_hadukgrid_uk_1km_day_20050401-20050430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'2005-04-29', '2005-04-30'}
+Dates in raw not in resampled: {'2005-04-30', '2005-04-29'}
 Dates in resampled not in raw: {'2005-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_20050501-20050531.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'2005-05-31', '2005-05-30'}
-Dates in resampled not in raw: {'2005-04-29', '2005-04-30'}
+Dates in resampled not in raw: {'2005-04-30', '2005-04-29'}
 File: tasmax_hadukgrid_uk_1km_day_20050601-20050630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'2005-06-30'}
@@ -1174,23 +1174,23 @@ Dates in raw not in resampled: {'2006-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_20060301-20060331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'2006-03-30', '2006-03-31'}
-Dates in resampled not in raw: {'2006-02-29', '2006-02-30'}
+Dates in raw not in resampled: {'2006-03-31', '2006-03-30'}
+Dates in resampled not in raw: {'2006-02-30', '2006-02-29'}
 File: tasmax_hadukgrid_uk_1km_day_20060401-20060430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'2006-04-29', '2006-04-30'}
+Dates in raw not in resampled: {'2006-04-30', '2006-04-29'}
 Dates in resampled not in raw: {'2006-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_20060501-20060531.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'2006-05-31', '2006-05-30'}
-Dates in resampled not in raw: {'2006-04-29', '2006-04-30'}
+Dates in raw not in resampled: {'2006-05-30', '2006-05-31'}
+Dates in resampled not in raw: {'2006-04-30', '2006-04-29'}
 File: tasmax_hadukgrid_uk_1km_day_20060601-20060630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'2006-06-30'}
 Dates in resampled not in raw: {'2006-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_20060701-20060731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'2006-07-31', '2006-07-30'}
+Dates in raw not in resampled: {'2006-07-30', '2006-07-31'}
 Dates in resampled not in raw: {'2006-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_20060801-20060831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -1222,23 +1222,23 @@ Dates in raw not in resampled: {'2007-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_20070301-20070331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'2007-03-31', '2007-03-30'}
-Dates in resampled not in raw: {'2007-02-29', '2007-02-30'}
+Dates in raw not in resampled: {'2007-03-30', '2007-03-31'}
+Dates in resampled not in raw: {'2007-02-30', '2007-02-29'}
 File: tasmax_hadukgrid_uk_1km_day_20070401-20070430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'2007-04-30', '2007-04-29'}
+Dates in raw not in resampled: {'2007-04-29', '2007-04-30'}
 Dates in resampled not in raw: {'2007-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_20070501-20070531.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'2007-05-31', '2007-05-30'}
-Dates in resampled not in raw: {'2007-04-30', '2007-04-29'}
+Dates in raw not in resampled: {'2007-05-30', '2007-05-31'}
+Dates in resampled not in raw: {'2007-04-29', '2007-04-30'}
 File: tasmax_hadukgrid_uk_1km_day_20070601-20070630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'2007-06-30'}
 Dates in resampled not in raw: {'2007-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_20070701-20070731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'2007-07-31', '2007-07-30'}
+Dates in raw not in resampled: {'2007-07-30', '2007-07-31'}
 Dates in resampled not in raw: {'2007-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_20070801-20070831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -1322,7 +1322,7 @@ Dates in raw not in resampled: {'2009-06-30'}
 Dates in resampled not in raw: {'2009-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_20090701-20090731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'2009-07-31', '2009-07-30'}
+Dates in raw not in resampled: {'2009-07-30', '2009-07-31'}
 Dates in resampled not in raw: {'2009-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_20090801-20090831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -1354,16 +1354,16 @@ Dates in raw not in resampled: {'2010-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_20100301-20100331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'2010-03-31', '2010-03-30'}
-Dates in resampled not in raw: {'2010-02-29', '2010-02-30'}
+Dates in raw not in resampled: {'2010-03-30', '2010-03-31'}
+Dates in resampled not in raw: {'2010-02-30', '2010-02-29'}
 File: tasmax_hadukgrid_uk_1km_day_20100401-20100430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'2010-04-29', '2010-04-30'}
+Dates in raw not in resampled: {'2010-04-30', '2010-04-29'}
 Dates in resampled not in raw: {'2010-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_20100501-20100531.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'2010-05-30', '2010-05-31'}
-Dates in resampled not in raw: {'2010-04-29', '2010-04-30'}
+Dates in raw not in resampled: {'2010-05-31', '2010-05-30'}
+Dates in resampled not in raw: {'2010-04-30', '2010-04-29'}
 File: tasmax_hadukgrid_uk_1km_day_20100601-20100630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'2010-06-30'}
@@ -1402,16 +1402,16 @@ Dates in raw not in resampled: {'2011-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_20110301-20110331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'2011-03-30', '2011-03-31'}
-Dates in resampled not in raw: {'2011-02-29', '2011-02-30'}
+Dates in raw not in resampled: {'2011-03-31', '2011-03-30'}
+Dates in resampled not in raw: {'2011-02-30', '2011-02-29'}
 File: tasmax_hadukgrid_uk_1km_day_20110401-20110430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'2011-04-30', '2011-04-29'}
+Dates in raw not in resampled: {'2011-04-29', '2011-04-30'}
 Dates in resampled not in raw: {'2011-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_20110501-20110531.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'2011-05-30', '2011-05-31'}
-Dates in resampled not in raw: {'2011-04-30', '2011-04-29'}
+Dates in resampled not in raw: {'2011-04-29', '2011-04-30'}
 File: tasmax_hadukgrid_uk_1km_day_20110601-20110630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'2011-06-30'}
@@ -1486,23 +1486,23 @@ Dates in raw not in resampled: {'2013-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_20130301-20130331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'2013-03-30', '2013-03-31'}
-Dates in resampled not in raw: {'2013-02-30', '2013-02-29'}
+Dates in raw not in resampled: {'2013-03-31', '2013-03-30'}
+Dates in resampled not in raw: {'2013-02-29', '2013-02-30'}
 File: tasmax_hadukgrid_uk_1km_day_20130401-20130430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'2013-04-29', '2013-04-30'}
+Dates in raw not in resampled: {'2013-04-30', '2013-04-29'}
 Dates in resampled not in raw: {'2013-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_20130501-20130531.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'2013-05-30', '2013-05-31'}
-Dates in resampled not in raw: {'2013-04-29', '2013-04-30'}
+Dates in raw not in resampled: {'2013-05-31', '2013-05-30'}
+Dates in resampled not in raw: {'2013-04-30', '2013-04-29'}
 File: tasmax_hadukgrid_uk_1km_day_20130601-20130630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'2013-06-30'}
 Dates in resampled not in raw: {'2013-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_20130701-20130731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'2013-07-31', '2013-07-30'}
+Dates in raw not in resampled: {'2013-07-30', '2013-07-31'}
 Dates in resampled not in raw: {'2013-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_20130801-20130831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -1535,22 +1535,22 @@ Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_20140301-20140331.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'2014-03-31', '2014-03-30'}
-Dates in resampled not in raw: {'2014-02-30', '2014-02-29'}
+Dates in resampled not in raw: {'2014-02-29', '2014-02-30'}
 File: tasmax_hadukgrid_uk_1km_day_20140401-20140430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'2014-04-29', '2014-04-30'}
+Dates in raw not in resampled: {'2014-04-30', '2014-04-29'}
 Dates in resampled not in raw: {'2014-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_20140501-20140531.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'2014-05-31', '2014-05-30'}
-Dates in resampled not in raw: {'2014-04-29', '2014-04-30'}
+Dates in resampled not in raw: {'2014-04-30', '2014-04-29'}
 File: tasmax_hadukgrid_uk_1km_day_20140601-20140630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'2014-06-30'}
 Dates in resampled not in raw: {'2014-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_20140701-20140731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'2014-07-31', '2014-07-30'}
+Dates in raw not in resampled: {'2014-07-30', '2014-07-31'}
 Dates in resampled not in raw: {'2014-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_20140801-20140831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -1590,7 +1590,7 @@ Dates in raw not in resampled: {'2015-04-29', '2015-04-30'}
 Dates in resampled not in raw: {'2015-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_20150501-20150531.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'2015-05-31', '2015-05-30'}
+Dates in raw not in resampled: {'2015-05-30', '2015-05-31'}
 Dates in resampled not in raw: {'2015-04-29', '2015-04-30'}
 File: tasmax_hadukgrid_uk_1km_day_20150601-20150630.nc produced errors:
 raw # days: 30 - resampled # days: 30
@@ -1666,8 +1666,8 @@ Dates in raw not in resampled: {'2017-02-01'}
 Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_20170301-20170331.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'2017-03-31', '2017-03-30'}
-Dates in resampled not in raw: {'2017-02-29', '2017-02-30'}
+Dates in raw not in resampled: {'2017-03-30', '2017-03-31'}
+Dates in resampled not in raw: {'2017-02-30', '2017-02-29'}
 File: tasmax_hadukgrid_uk_1km_day_20170401-20170430.nc produced errors:
 raw # days: 30 - resampled # days: 29
 Dates in raw not in resampled: {'2017-04-30', '2017-04-29'}
@@ -1715,7 +1715,7 @@ Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_20180301-20180331.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'2018-03-30', '2018-03-31'}
-Dates in resampled not in raw: {'2018-02-30', '2018-02-29'}
+Dates in resampled not in raw: {'2018-02-29', '2018-02-30'}
 File: tasmax_hadukgrid_uk_1km_day_20180401-20180430.nc produced errors:
 raw # days: 30 - resampled # days: 29
 Dates in raw not in resampled: {'2018-04-29', '2018-04-30'}
@@ -1730,7 +1730,7 @@ Dates in raw not in resampled: {'2018-06-30'}
 Dates in resampled not in raw: {'2018-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_20180701-20180731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'2018-07-31', '2018-07-30'}
+Dates in raw not in resampled: {'2018-07-30', '2018-07-31'}
 Dates in resampled not in raw: {'2018-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_20180801-20180831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -1763,22 +1763,22 @@ Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_20190301-20190331.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'2019-03-31', '2019-03-30'}
-Dates in resampled not in raw: {'2019-02-29', '2019-02-30'}
+Dates in resampled not in raw: {'2019-02-30', '2019-02-29'}
 File: tasmax_hadukgrid_uk_1km_day_20190401-20190430.nc produced errors:
 raw # days: 30 - resampled # days: 29
-Dates in raw not in resampled: {'2019-04-29', '2019-04-30'}
+Dates in raw not in resampled: {'2019-04-30', '2019-04-29'}
 Dates in resampled not in raw: {'2019-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_20190501-20190531.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'2019-05-31', '2019-05-30'}
-Dates in resampled not in raw: {'2019-04-29', '2019-04-30'}
+Dates in resampled not in raw: {'2019-04-30', '2019-04-29'}
 File: tasmax_hadukgrid_uk_1km_day_20190601-20190630.nc produced errors:
 raw # days: 30 - resampled # days: 30
 Dates in raw not in resampled: {'2019-06-30'}
 Dates in resampled not in raw: {'2019-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_20190701-20190731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'2019-07-30', '2019-07-31'}
+Dates in raw not in resampled: {'2019-07-31', '2019-07-30'}
 Dates in resampled not in raw: {'2019-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_20190801-20190831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -1847,14 +1847,14 @@ Dates in resampled not in raw: set()
 File: tasmax_hadukgrid_uk_1km_day_20210301-20210331.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'2021-03-31', '2021-03-30'}
-Dates in resampled not in raw: {'2021-02-30', '2021-02-29'}
+Dates in resampled not in raw: {'2021-02-29', '2021-02-30'}
 File: tasmax_hadukgrid_uk_1km_day_20210401-20210430.nc produced errors:
 raw # days: 30 - resampled # days: 29
 Dates in raw not in resampled: {'2021-04-29', '2021-04-30'}
 Dates in resampled not in raw: {'2021-03-30'}
 File: tasmax_hadukgrid_uk_1km_day_20210501-20210531.nc produced errors:
 raw # days: 31 - resampled # days: 31
-Dates in raw not in resampled: {'2021-05-30', '2021-05-31'}
+Dates in raw not in resampled: {'2021-05-31', '2021-05-30'}
 Dates in resampled not in raw: {'2021-04-29', '2021-04-30'}
 File: tasmax_hadukgrid_uk_1km_day_20210601-20210630.nc produced errors:
 raw # days: 30 - resampled # days: 30
@@ -1862,7 +1862,7 @@ Dates in raw not in resampled: {'2021-06-30'}
 Dates in resampled not in raw: {'2021-05-30'}
 File: tasmax_hadukgrid_uk_1km_day_20210701-20210731.nc produced errors:
 raw # days: 31 - resampled # days: 30
-Dates in raw not in resampled: {'2021-07-31', '2021-07-30'}
+Dates in raw not in resampled: {'2021-07-30', '2021-07-31'}
 Dates in resampled not in raw: {'2021-06-30'}
 File: tasmax_hadukgrid_uk_1km_day_20210801-20210831.nc produced errors:
 raw # days: 31 - resampled # days: 31
@@ -1884,3 +1884,60 @@ File: tasmax_hadukgrid_uk_1km_day_20211201-20211231.nc produced errors:
 raw # days: 31 - resampled # days: 31
 Dates in raw not in resampled: {'2021-12-31'}
 Dates in resampled not in raw: {'2021-11-30'}
+______________________________
+missing dates: 0
+date '1980-03-30' appears 2 times.
+date '1980-05-30' appears 2 times.
+date '1980-07-30' appears 2 times.
+date '1980-09-30' appears 2 times.
+date '1980-11-30' appears 2 times.
+date '1984-03-30' appears 2 times.
+date '1984-05-30' appears 2 times.
+date '1984-07-30' appears 2 times.
+date '1984-09-30' appears 2 times.
+date '1984-11-30' appears 2 times.
+date '1988-03-30' appears 2 times.
+date '1988-05-30' appears 2 times.
+date '1988-07-30' appears 2 times.
+date '1988-09-30' appears 2 times.
+date '1988-11-30' appears 2 times.
+date '1992-03-30' appears 2 times.
+date '1992-05-30' appears 2 times.
+date '1992-07-30' appears 2 times.
+date '1992-09-30' appears 2 times.
+date '1992-11-30' appears 2 times.
+date '1996-03-30' appears 2 times.
+date '1996-05-30' appears 2 times.
+date '1996-07-30' appears 2 times.
+date '1996-09-30' appears 2 times.
+date '1996-11-30' appears 2 times.
+date '2000-03-30' appears 2 times.
+date '2000-05-30' appears 2 times.
+date '2000-07-30' appears 2 times.
+date '2000-09-30' appears 2 times.
+date '2000-11-30' appears 2 times.
+date '2004-03-30' appears 2 times.
+date '2004-05-30' appears 2 times.
+date '2004-07-30' appears 2 times.
+date '2004-09-30' appears 2 times.
+date '2004-11-30' appears 2 times.
+date '2008-03-30' appears 2 times.
+date '2008-05-30' appears 2 times.
+date '2008-07-30' appears 2 times.
+date '2008-09-30' appears 2 times.
+date '2008-11-30' appears 2 times.
+date '2012-03-30' appears 2 times.
+date '2012-05-30' appears 2 times.
+date '2012-07-30' appears 2 times.
+date '2012-09-30' appears 2 times.
+date '2012-11-30' appears 2 times.
+date '2016-03-30' appears 2 times.
+date '2016-05-30' appears 2 times.
+date '2016-07-30' appears 2 times.
+date '2016-09-30' appears 2 times.
+date '2016-11-30' appears 2 times.
+date '2020-03-30' appears 2 times.
+date '2020-05-30' appears 2 times.
+date '2020-07-30' appears 2 times.
+date '2020-09-30' appears 2 times.
+date '2020-11-30' appears 2 times.
