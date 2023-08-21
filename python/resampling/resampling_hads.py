@@ -1,4 +1,11 @@
+'''
+This script resamples the UKHADS data to match UKCP18 data.
+It resamples spatially, from 1km to 2.2km
+It resamples temporally to a 360 day calendar.
+'''
+
 import argparse
+import pandas as pd
 import xarray as xr
 import os
 import glob
@@ -8,7 +15,45 @@ from tqdm import tqdm
 import scipy
 import netCDF4
 
+def enforce_date_dropping(raw_data: xr.Dataset, converted_data: xr.Dataset) -> xr.Dataset:
+    """
+    Workaround to avoid convert_calendar misbehavior with monthly data files.
+    
+    For leap years, the conversion assigns dropped data to the previous date instead of deleting it.
+    Here we manually delete those dates to avoid duplicates later in the pipeline.
+    
+    Args:
+        raw_data (xr.Dataset): The original data.
+        converted_data (xr.Dataset): The data after conversion.
+        
+    Returns:
+        xr.Dataset: The converted data with specific dates dropped.
+    """
+    month_day_drop = {(1, 31), (4, 1), (6, 1), (8, 1), (9, 31), (12, 1)}
+    time_values = pd.DatetimeIndex(raw_data.coords['time'].values)
+    
+    # Get the indices of the dates to be dropped
+    index_to_drop = [i for i, (m, d) in enumerate(zip(time_values.month, time_values.day)) if (m, d) in month_day_drop]
+    
+    # Filter indices that are within the bounds of the converted_data
+    index_to_drop = [i for i in index_to_drop if i < len(converted_data.coords['time'].values)]
+    
+    if index_to_drop:
+        converted_data = converted_data.drop_sel(time=converted_data.coords['time'].values[index_to_drop])
+    
+    return converted_data
+    
 def resample_hadukgrid(x):
+    '''
+    Resamples the UKHADs data to match UKCP18 data both spatially and temporally
+    and saves the resampled data to the output directory.
+    inputs:
+        x: list of inputs
+            x[0]: file to be resampled
+            x[1]: x_grid    
+            x[2]: y_grid    
+            x[3]: output_dir    
+    '''
     try:
         # due to the multiprocessing implementations inputs come as list
         file = x[0]
@@ -28,13 +73,14 @@ def resample_hadukgrid(x):
         data = xr.open_dataset(file, decode_coords="all")
 
         # convert to 360 day calendar.
-        data = data.convert_calendar(dim='time', calendar='360_day', align_on='year')
+        data_360 = data.convert_calendar(dim='time', calendar='360_day', align_on='year')
+        data_360 = enforce_date_dropping(data,data_360)
 
         # the dataset to be resample must have dimensions named projection_x_coordinate and projection_y_coordinate .
-        resampled = data[[variable]].interp(projection_x_coordinate=x_grid, projection_y_coordinate=y_grid, method="linear")
+        resampled = data_360[[variable]].interp(projection_x_coordinate=x_grid, projection_y_coordinate=y_grid, method="linear")
 
         #make sure we keep the original CRS
-        resampled.rio.write_crs(data.rio.crs,inplace=True)
+        resampled.rio.write_crs(data_360.rio.crs,inplace=True)
 
         # save resampled file
         resampled.to_netcdf(os.path.join(output_dir,output_name))
@@ -54,9 +100,8 @@ if __name__ == "__main__":
 
     # Adding arguments
     parser.add_argument("--input", help="Path where the .nc files to resample is located", required=True, type=str)
+    parser.add_argument("--grid_data", help="Path where the .nc file with the grid to resample is located", required=False,type=str, default='../../data/rcp85_land-cpm_uk_2.2km_grid.nc')
     parser.add_argument("--output", help="Path to save the resampled data data", required=False, default=".", type=str)
-    parser.add_argument("--grid_data", help="Path where the .nc file with the grid to resample is located", required=False,
-                        type=str, default='../../data/rcp85_land-cpm_uk_2.2km_grid.nc')
 
     parser_args = parser.parse_args()
 
