@@ -13,6 +13,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from datetime import datetime
 
 sys.path.insert(1, 'python-cmethods')
 from cmethods.CMethods import CMethods
@@ -38,7 +39,16 @@ parser.add_argument('--obs', '--observation', dest='obs_fpath', type=str, help='
 parser.add_argument('--contr', '--control', dest='contr_fpath', type=str, help='Path to control datasets')
 parser.add_argument('--scen', '--scenario', dest='scen_fpath', type=str,
                     help='Path to scenario datasets (data to adjust)')
-
+parser.add_argument('--calib_dates', '--calibration_date_range', dest='calib_date_range', type=str,
+                    help='Start and end dates for calibration data (historic data used to '
+                         'calibrate the debiasing model) - in YYYYMMDD-YYYYMMDD format',
+                    default='19801201-19811130')
+parser.add_argument('--proj_dates', '--projection_date_range', dest='proj_date_range', type=str,
+                    help='Start and end dates for future data (data to be projected using the '
+                         'calibrated debiasing model) - multiple date ranges can be passed, '
+                         'separated by "_", each in YYYYMMDD-YYYYMMDD format e.g., '
+                         '"20100101-20191231_20200101-20291231"',
+                    default='20201201-20221130_20221201-20231130')
 parser.add_argument('--shp', '--shapefile', dest='shapefile_fpath', type=str, help='Path to shapefile', default=None)
 parser.add_argument('--out', '--output', dest='output_fpath', type=str, help='Path to save output files', default='.')
 parser.add_argument('-m', '--method', dest='method', type=str, help='Correction method',
@@ -56,6 +66,8 @@ params = vars(parser.parse_args())
 obs_fpath = params['obs_fpath']
 contr_fpath = params['contr_fpath']
 scen_fpath = params['scen_fpath']
+calibration_date_range = params['calib_date_range']
+projection_date_range = params['proj_date_range']
 shape_fpath = params['shapefile_fpath']
 out_fpath = params['output_fpath']
 
@@ -67,14 +79,26 @@ kind = params['kind']
 n_quantiles = params['n_quantiles']
 n_jobs = params['p']
 
-h_date_period = ('1980-12-01', '1999-11-30')
-future_time_periods = [('2020-12-01', '2030-11-30'), ('2030-12-01', '2040-11-30'), ('2060-12-01', '2070-11-30'),
-                       ('2070-12-01', '2080-11-30')]
+
+calib_list = calibration_date_range.split('-')
+h_date_period = (datetime.strptime(calib_list[0], '%Y%m%d').strftime('%Y-%m-%d'),
+                 datetime.strptime(calib_list[1], '%Y%m%d').strftime('%Y-%m-%d'))
+proj_list = projection_date_range.split('_')
+future_time_periods = [(p.split('-')[0], p.split('-')[1]) for p in proj_list]
+future_time_periods = [(datetime.strptime(p[0], '%Y%m%d').strftime('%Y-%m-%d'),
+                        datetime.strptime(p[1], '%Y%m%d').strftime('%Y-%m-%d'))
+                       for p in future_time_periods]
+
+
+# h_date_period = ('1980-12-01', '1999-11-30')
+# future_time_periods = [('2020-12-01', '2030-11-30'), ('2030-12-01', '2040-11-30'), ('2060-12-01', '2070-11-30'),
+#                       ('2070-12-01', '2080-11-30')]
 
 
 # for testing
-future_time_periods = [('2020-12-01', '2022-11-30'),('2022-12-01', '2023-11-30')]
-h_date_period = ('1980-12-01', '1981-11-30')
+# future_time_periods = [('2020-12-01', '2022-11-30'),('2022-12-01', '2023-11-30')]
+# h_date_period = ('1980-12-01', '1981-11-30')
+
 # * ----- ----- -----M A I N ----- ----- -----
 def run_debiasing() -> None:
     start = time.time()
