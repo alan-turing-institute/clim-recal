@@ -7,12 +7,13 @@ import os
 import xarray as xr
 import glob
 import numpy as np
+from pathlib import Path
 
 # input Hads data folder
 path = '/Volumes/vmfileshare/ClimateData/Interim/HadsUK/three.cities/'
 
 # output Hads data folder - NOTE: this is a local path, please change to local or Azure path
-path_output = '/debiasing_test/all/'
+path_output = '/debiasing_test/observation/'
 # path_output = '/Volumes/vmfileshare/ClimateData/Interim/HadsUK/three.cities.greg/'
 
 # do this for two variables - tasmin is omitted because dates in files are different
@@ -57,6 +58,10 @@ for variable in ["tasmax", "rainfall"]:
             {"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time", 'band_data': variable}) \
             .rio.write_crs('epsg:27700')
         data.coords['time'] = time_index
+
+        if not os.path.exists(os.path.dirname(files_out[i])):
+            folder_path = Path(os.path.dirname(files_out[i]))
+            folder_path.mkdir(parents=True)
 
         # write to an .nc file
         data.to_netcdf(files_out[i])
