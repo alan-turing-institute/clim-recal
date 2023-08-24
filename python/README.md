@@ -66,7 +66,7 @@ cd debiasing
 git submodule update --init --recursive
 ```
 
-The [run_cmethods.py](debiasing/run_cmethods.py) allow us to adjusts climate biases in climate data using the python-cmethods library. 
+The [run_cmethods.py](debiasing/run_cmethods.py) allow us to adjust climate biases in climate data using the python-cmethods library. 
 It takes as input observation data (HADs data), control data (historical UKCP data), and scenario data (future UKCP data), 
 and applies a correction method to the scenario data. The resulting output is saved as a `.nc` to a specified directory.
 The script will also produce a time-series and a map plot of the debiased data.
@@ -87,6 +87,8 @@ where:
 - `--obs` specifies the path to the observation datasets
 - `--contr` specifies the path to the control datasets
 - `--scen`  specifies the path to the scenario datasets (data to adjust)
+- `--contr_dates`  specifies start and end dates for control and observation data (historic UKCP and HADs data used to calibrate the debiasing model)
+- `--scen_dates`  specifies start and end dates for scenario data (data to be debiased using the calibrated debiasing model - multiple date ranges can be passed
 - `--shp`  specifies the path to a shapefile, in case we want to select a smaller region (default: None)
 - `--out` specifies the path to save the output files (default: current directory)
 - `--method` specifies the correction method to use (default: quantile_delta_mapping)
@@ -104,9 +106,8 @@ python run_cmethods.py --help
 ```
 **Main Functionality**:
 
-The script applies corrections extracted from historical observed and simulated data between `1980-12-01` and `1999-11-30`.
-Corrections are applied to future scenario data between `2020` and `2080` (however there is no available scenario data between `2040` to `2060`, so this time
-period is skipped.
+By default (if no control and scenario dates are passed), the script applies corrections extracted from historical observed and simulated data between `1980-12-01` and `1999-11-30`.
+Corrections are applied to future scenario data between `2020` and `2040`.
 
 
 The script performs the following steps:

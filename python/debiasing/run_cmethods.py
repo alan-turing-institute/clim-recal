@@ -39,16 +39,16 @@ parser.add_argument('--obs', '--observation', dest='obs_fpath', type=str, help='
 parser.add_argument('--contr', '--control', dest='contr_fpath', type=str, help='Path to control datasets')
 parser.add_argument('--scen', '--scenario', dest='scen_fpath', type=str,
                     help='Path to scenario datasets (data to adjust)')
-parser.add_argument('--calib_dates', '--calibration_date_range', dest='calib_date_range', type=str,
-                    help='Start and end dates for calibration data (historic data used to '
+parser.add_argument('--contr_dates', '--control_date_range', dest='control_date_range', type=str,
+                    help='Start and end dates for control and observation data (historic data used to '
                          'calibrate the debiasing model) - in YYYYMMDD-YYYYMMDD format',
-                    default='19801201-19811130')
-parser.add_argument('--proj_dates', '--projection_date_range', dest='proj_date_range', type=str,
-                    help='Start and end dates for future data (data to be projected using the '
+                    default='19801201-19991130')
+parser.add_argument('--scen_dates', '--scenario_date_range', dest='scenario_date_range', type=str,
+                    help='Start and end dates for scenario data (data to be debiased using the '
                          'calibrated debiasing model) - multiple date ranges can be passed, '
                          'separated by "_", each in YYYYMMDD-YYYYMMDD format e.g., '
                          '"20100101-20191231_20200101-20291231"',
-                    default='20201201-20221130_20221201-20231130')
+                    default='20201201-20291130_20301201-20391130')
 parser.add_argument('--shp', '--shapefile', dest='shapefile_fpath', type=str, help='Path to shapefile', default=None)
 parser.add_argument('--out', '--output', dest='output_fpath', type=str, help='Path to save output files', default='.')
 parser.add_argument('-m', '--method', dest='method', type=str, help='Correction method',
@@ -66,8 +66,8 @@ params = vars(parser.parse_args())
 obs_fpath = params['obs_fpath']
 contr_fpath = params['contr_fpath']
 scen_fpath = params['scen_fpath']
-calibration_date_range = params['calib_date_range']
-projection_date_range = params['proj_date_range']
+calibration_date_range = params['control_date_range']
+projection_date_range = params['scenario_date_range']
 shape_fpath = params['shapefile_fpath']
 out_fpath = params['output_fpath']
 
