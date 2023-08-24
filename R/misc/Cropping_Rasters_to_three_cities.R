@@ -7,6 +7,7 @@ source("~/Desktop/clim-recal/clim-recal/R/misc/read_crop.fn.R")
 library(tidyverse)
 library(data.table)
 library(qmap)
+library(terra)
 
 dd <- "/mnt/vmfileshare/ClimateData/"
 
