@@ -1,10 +1,10 @@
 #!/bin/sh
 
-declare -a vars=("tasmax" "rainfall" "tasmin")
+declare -a vars=("rainfall" "tasmax" "tasmin")
 declare -a runs=("05" "07" "08" "06")
+declare -a cities=("Glasgow" "Manchester" "London")
 declare -a methods=("quantile_delta_mapping" "quantile_mapping")
 declare -a methods_2=("variance_scaling" "delta_method")
-declare -a cities=("Glasgow" "Manchester" "London")
 
 for var in "${vars[@]}"; do
   for run in "${runs[@]}"; do
