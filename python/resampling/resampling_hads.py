@@ -29,7 +29,7 @@ def enforce_date_dropping(raw_data: xr.Dataset, converted_data: xr.Dataset) -> x
     Returns:
         xr.Dataset: The converted data with specific dates dropped.
     """
-    month_day_drop = {(1, 31), (4, 1), (6, 1), (8, 1), (9, 31), (12, 1)}
+    month_day_drop = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
     time_values = pd.DatetimeIndex(raw_data.coords['time'].values)
     
     # Get the indices of the dates to be dropped
@@ -74,7 +74,9 @@ def resample_hadukgrid(x):
 
         # convert to 360 day calendar.
         data_360 = data.convert_calendar(dim='time', calendar='360_day', align_on='year')
-        data_360 = enforce_date_dropping(data,data_360)
+        # apply correction if leap year
+        if data.time.dt.is_leap_year.any():
+            data_360 = enforce_date_dropping(data,data_360)
 
         # the dataset to be resample must have dimensions named projection_x_coordinate and projection_y_coordinate .
         resampled = data_360[[variable]].interp(projection_x_coordinate=x_grid, projection_y_coordinate=y_grid, method="linear")
@@ -93,7 +95,6 @@ def resample_hadukgrid(x):
 if __name__ == "__main__":
     """
     Script to resample UKHADs data from the command line
-
     """
     # Initialize parser
     parser = argparse.ArgumentParser()
