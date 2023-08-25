@@ -28,7 +28,7 @@ for(r in Runs){
         #subset file list to var
         obs.var <-  obs[grepl(v,obs)]
         
-        #subset to calibration years 
+        #subset to calibration years  
         obs.varc <- obs.var[grepl("1980", obs.var)]
         obs.df <- fread(paste0(fp, obs.varc))
         obs.df <- as.data.frame(obs.df)
@@ -186,7 +186,7 @@ for(r in Runs){
    obs <- files[grepl(i, files)]
    
    #subset file list to var
-   obs.var <-  obs[grepl(v,obs)]
+   obs.var <-  obs[grepl("rainfall",obs)]
    
    #subset to calibration years 
    obs.varc <- obs.var[grepl("1980", obs.var)]
