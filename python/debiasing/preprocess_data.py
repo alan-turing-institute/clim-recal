@@ -86,7 +86,8 @@ def preprocess_data() -> None:
     if run_number is not None:
         ds_simh = \
             load_data(contr_fpath, date_range=h_date_period, variable=var, filter_filenames_on_variable=True,
-                      run_number=run_number, filter_filenames_on_run_number=True, use_pr=use_pr, shapefile_path=shape_fpath,
+                      run_number=run_number, filter_filenames_on_run_number=True, use_pr=use_pr,
+                      shapefile_path=shape_fpath,
                       extension='tif')[var].rename({"projection_x_coordinate": "lon",
                                                     "projection_y_coordinate": "lat"})
     else:
