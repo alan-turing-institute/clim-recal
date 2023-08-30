@@ -124,7 +124,6 @@ def clip_dataset(xa, variable, shapefile):
 def reformat_file(file, variable):
     """
     Load tif file and reformat xarray into expected format.
-
     """
     print(f"File: {file} needs rasterio library, trying...")
     filename = os.path.basename(file).split('_')
@@ -193,6 +192,13 @@ def load_and_merge(date_range, files, variable):
                 print('Loading and selecting ', file)
                 with xr.open_dataset(file, engine='netcdf4') as ds:
                     x = ds.load()
+                    dv = list(x.data_vars)
+                    if len(dv) > 1 and dv[0] == os.path.basename(file)[:-3] and dv[1] == "crs":
+                        x = x.rename({"northing": "projection_y_coordinate",
+                                      "easting": "projection_x_coordinate",
+                                      os.path.basename(file)[:-3]: variable}) \
+                            .rio.write_crs('epsg:27700')
+                        x = x.convert_calendar(dim='time', calendar='360_day', align_on='year')
                     x = x.sel(time=slice(*date_range))
             except Exception as e:
                 x = reformat_file(file, variable).sel(time=slice(*date_range))

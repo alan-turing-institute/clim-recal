@@ -114,7 +114,7 @@ def preprocess_data() -> None:
                                                                                "projection_y_coordinate": "lat"})
     log.info('Historical data Loaded.')
 
-    # aligning calendars, e.g there might be a few extra days on the scenario data that has to be droped.
+    # aligning calendars, e.g there might be a few extra days on the scenario data that has to be dropped.
     ds_simh = ds_simh.sel(time=ds_obs.time, method='nearest')
 
     if ds_obs.shape != ds_simh.shape:
