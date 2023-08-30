@@ -5,8 +5,10 @@ import os
 from datetime import datetime
 
 
-def load_data(input_path, date_range, variable, shapefile_path=None, extension='nc'):
-    '''
+def load_data(input_path, date_range, variable, filter_filenames_on_variable=False,
+              run_number=None, filter_filenames_on_run_number=False, use_pr=False,
+              shapefile_path=None, extension='nc'):
+    """
     This function takes a date range and a variable and loads and merges xarrays based on those parameters.
     If shapefile is provided it crops the data to that region.
 
@@ -18,6 +20,19 @@ def load_data(input_path, date_range, variable, shapefile_path=None, extension='
         A tuple of datetime objects representing the start and end date
     variable : string
         A string representing the variable to be loaded
+    filter_filenames_on_variable : bool, default = False
+        When True, files in the input_path will be filtered based on whether their file name
+        contains "variable" as a substring. When False, filtering does not happen.
+    run_number : sting, default None
+        A string representing the CPM run number to use (out of 13 CPM runs available in the database). Only files
+        whose file name contains the substring run_number will be used. If None, all files in input_path are parsed,
+        regardless of run number in filename.
+    filter_filenames_on_run_number : bool, default = False
+        When True, files in the input_path will be filtered based on whether their file name
+        contains "2.2km_" followed by "run_number". When False, filtering does not happen.
+        This should only be used for CPM files. For HADs files this should always be set to False.
+    use_pr : bool, default = False
+        If True, replace variable with "pr" string when filtering the file names.
     shapefile_path: str
         Path to a shape file used to clip resulting dataset.
     extension: str
@@ -27,30 +42,42 @@ def load_data(input_path, date_range, variable, shapefile_path=None, extension='
     -------
     merged_xarray : xarray
         An xarray containing all loaded and merged and clipped data
-    '''
+    """
 
     if extension not in ('nc', 'tif'):
         raise Exception("We only accept .nc or .tif extension for the input data")
 
-    files = glob.glob(f"{input_path}/*.{extension}", recursive=True)
+    if filter_filenames_on_variable:
+        if filter_filenames_on_run_number:
+            if use_pr:
+                # when run_number is used, use it to select files from CPM file list
+                files = glob.glob(f"{input_path}/pr*2.2km_{run_number}_*.{extension}", recursive=True)
+            else:
+                # when run_number is used, use it to select files from CPM file list
+                files = glob.glob(f"{input_path}/{variable}*2.2km_{run_number}_*.{extension}", recursive=True)
+        else:
+            if use_pr:
+                # when run_number is not used, select files only based on variable (either CPM or HADs)
+                files = glob.glob(f"{input_path}/pr*.{extension}", recursive=True)
+            else:
+                # when run_number is not used, select files only based on variable (either CPM or HADs)
+                files = glob.glob(f"{input_path}/{variable}*.{extension}", recursive=True)
+    else:
+        if filter_filenames_on_run_number:
+            # when run_number is used, use it to select files from CPM file list
+            files = glob.glob(f"{input_path}/*2.2km_{run_number}_*.{extension}", recursive=True)
+        else:
+            # when run_number is not used, select files only based on variable (either CPM or HADs)
+            files = glob.glob(f"{input_path}/*.{extension}", recursive=True)
 
-    if len(files)==0:
+    if len(files) == 0:
         raise Exception(f"No files found in {input_path} with {extension}")
-
-
-    #TODO: Load using mfdataset avoiding errors from HDF5
-    #try:
-        # loading files with dedicated function
-    #    xa = xr.open_mfdataset(files).sel(time=slice(*date_range)).sortby('time')
-    #except Exception as e:
-    #    print(f"Not able to load using open_mfdataset, with errors: {e}. "
-    #          f"Looping and loading individual files.")
-    #    # files with wrong format wont load with open_mfdataset, need to be reformated.
 
     xa = load_and_merge(date_range, files, variable)
 
     # clipping
     if shapefile_path:
+        print(f"Clipping data using shapefile {shapefile_path}...")
         xa = clip_dataset(xa, variable, shapefile_path)
 
     return xa
@@ -91,15 +118,15 @@ def clip_dataset(xa, variable, shapefile):
     except:
         pass
 
-
     return xa
+
 
 def reformat_file(file, variable):
     """
     Load tif file and reformat xarray into expected format.
 
     """
-    print(f"File: {file} is needs rasterio library, trying...")
+    print(f"File: {file} needs rasterio library, trying...")
     filename = os.path.basename(file).split('_')
 
     start = filename[-1].split('-')[0]
@@ -121,8 +148,6 @@ def reformat_file(file, variable):
         xa = xa.transpose('time', 'projection_y_coordinate',
                                      'projection_x_coordinate').to_dataset(
                 name=variable)
-
-
 
     return xa
 
@@ -159,13 +184,13 @@ def load_and_merge(date_range, files, variable):
         start_range = datetime.strptime(date_range[0], '%Y-%m-%d')
         stop_range = datetime.strptime(date_range[1], '%Y-%m-%d')
 
-        if (stop_file < start_range) | (start_file> stop_range):
+        if (stop_file < start_range) | (start_file > stop_range):
             continue
 
         # Load the xarray
         try:
             try:
-                print ('Loading and selecting ', file)
+                print('Loading and selecting ', file)
                 with xr.open_dataset(file, engine='netcdf4') as ds:
                     x = ds.load()
                     x = x.sel(time=slice(*date_range))
@@ -184,6 +209,7 @@ def load_and_merge(date_range, files, variable):
     if len(xarray_list) == 0:
         raise RuntimeError('No files passed the time selection. No merged output produced.')
     else:
-        merged_xarray = xr.concat(xarray_list, dim="time",coords='minimal').sortby('time')
+        print("Merging arrays from different files...")
+        merged_xarray = xr.concat(xarray_list, dim="time", coords='minimal').sortby('time')
 
     return merged_xarray
