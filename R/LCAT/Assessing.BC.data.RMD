@@ -1,0 +1,276 @@
+---
+title: "Assessing and Processing LCAT data"
+author: "Ruth C E Bowyer"
+date: "`r format(Sys.Date())`"
+output:
+  github_document
+---
+
+
+
+```{r libs and setup, message=FALSE, warning=F}
+rm(list=ls())
+
+knitr::opts_knit$set(root.dir="/mnt/vmfileshare/ClimateData/")
+
+library(ggplot2)
+library(terra)
+library(tmap) #pretty maps
+library(RColorBrewer)
+
+dd <- "/mnt/vmfileshare/ClimateData/"
+
+```
+
+
+## **0. About**
+
+LCAT require 'bias corrected' data for the whole of the UK. 
+We have applied a widely used approach, quantile mapping, to the data. Specifically, we have used *non-parametric quantile mapping using empirical quantiles* as available in the `Qmap` package. 
+Because the data is so large, we have applied this bias correction to the UK broked down into regions, with Scotland brokedn down into further regions (see `R/LCAT/Region.Refs.csv`)
+
+We will now:
+
+- Assess the bias correction using some of the segments
+- Process the data back to geotiff 
+- Either process as monthly data or as UK wide rasters (maybe just write them seperately) and av across runs
+
+The data is within `ClimateData/Debiased/R/QuantileMapping` and is in RDS format, with each object containing a list.
+
+The objects within this R list are as follows:
+- 't.obs': transposed observation df
+- 't.cal': transposed calibration df
+- 't.proj': transposed projection df (included the validation period)
+- 'qm1.hist.a' - bias corrected values for the historical period, values fitted with linear interpolation
+- 'qm1.hist.b' - bias corrected values for the historical period, values fitted with tricubic interpolation
+- 'qm1.proj.a' - bias corrected values for the validation/projection period, values fitted with linear interpolation
+- 'qm1.proj.b' - bias corrected values for the validation/projection period, values fitted with tricubic interpolation
+
+## **1. Bias Correction Assessment**
+
+### **London - tasmax = Run 08**
+
+Using the London region (UKI) as this is the smallest -- not this is the same regional area as the 'three.cities' crops but cut to shapefile edges rather than the square grid 
+
+```{r}
+
+London <- readRDS(paste0(dd,"/Debiased/R/QuantileMapping/resultsLRun08_UKI_tasmax.RDS"))
+
+```
+
+### **1b. Check trends**
+
+```{r convert to df and raster}
+
+## Load a source raster to extract the crs
+r <- list.files(paste0(dd, "Reprojected/UKCP2.2/tasmax/05/latest/"))
+r <- r[1]
+rp <- paste0(dd, "Reprojected/UKCP2.2/tasmax/05/latest/", r)
+rast <- rast(rp)
+
+crs <- crs(rast)
+
+## Convert from matix to df, transpose, create x and y cols
+London.df <- lapply(London, function(x){
+  df <- as.data.frame(t(x))
+  rn <- row.names(df) #The x_y coords were saves as rownames
+  x <- gsub("_.*", "", rn)
+  y <- gsub(".*_", "", rn)
+  xy <- data.frame(x=x,y=y)
+  df <- cbind(xy,df)
+  })
+
+## Convert to rasters
+London.rasts <- lapply(London.df, function(x){
+  r <- rast(x, type="xyz")
+  crs(r) <- crs
+  return(r)
+})
+
+
+```
+
+#### *Raster vis comparison*
+
+Random selection of 3 days of the observation, calibration and two adjusted cals, for three historic days
+
+```{r}
+tm_shape(London.rasts$t.obs[[1]]) + tm_raster(title="Observation, 1980-12-01")
+tm_shape(London.rasts$t.cal[[1]]) + tm_raster(title="Calibration, 1980-12-01")
+tm_shape(London.rasts$qm1.hist.a[[1]]) + tm_raster(title="Calibration, bias corrected, linear 1980-12-01")
+tm_shape(London.rasts$qm1.hist.b[[1]]) + tm_raster(title="Calibration, bias corrected, tricubic 1980-12-01")
+```
+#### *Annual trends - Calibration period*
+
+```{r}
+
+London.dfg <- lapply(names(London.df), function(i){
+  dfi <- London.df[[i]]
+  x <- 3:ncol(dfi)
+  
+  dfx <- lapply(x, function(x){
+    y <- dfi[,x]
+    mean <- mean(y, na.rm=T)
+    sd <- sd(y, na.rm=T)
+    dfr <- data.frame(mean=mean, 
+             sd.high=mean+sd,
+             sd.low=mean-sd)
+    names(dfr) <- paste0(i,".",names(dfr))
+    dfr$day <- names(dfi)[x]
+    return(dfr)
+  })
+
+  dfx_g <- dfx %>% purrr::reduce(rbind)
+})
+
+names(London.dfg) <- names(London.df)
+
+```
+
+```{r}
+#Add a day index to align the cal and obs 
+
+London.dfg.calp <- London.dfg[c("t.obs", "t.cal", "qm1.hist.a", "qm1.hist.b")]
+
+London.dfg.calp <- lapply(London.dfg.calp, function(x){
+  x$dayi <- 1:nrow(x)
+  x$day<- NULL
+  return(x)
+})
+
+London.dfg.calp <- London.dfg.calp %>% reduce(merge, "dayi")
+
+head(London.dfg.calp)
+```
+
+```{r}
+
+London.dfg.calp_m <- reshape2::melt(London.dfg.calp, id="dayi") #create long df for plotting multiple lines
+
+London.dfg.calp_mm <- London.dfg.calp_m[grepl(".mean", London.dfg.calp_m$variable),] #For easy vis, only keep mean vals
+```
+
+
+```{r Historic trend 1}
+
+ggplot(London.dfg.calp_mm, aes(dayi, value, group=variable, colour=variable)) + 
+  geom_line() +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Tasmax Hisotric trends") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day, 1980.12.01 - 2009.12.01") +
+  scale_color_brewer(palette="Set1", name="Model", labels=c("Obs (Hads)", "Raw CPM", "BC CPM 1", "BC CPM 2"))
+
+```
+
+#### *Annual trends - Calibration period*
+
+
+#Annotate season based on month index
+
+```{r}
+
+proj.raw.df.g$season <- ifelse(grepl("-12-|-01-|-02-", proj.raw.df.g$dmy), "Winter",
+                      ifelse(grepl("-03-|-04-|-05-", proj.raw.df.g$dmy), "Spring",
+                          ifelse(grepl("-06-|-07-|-08-", proj.raw.df.g$dmy), "Summer", "Autumn")))
+
+
+proj.raw.df.g$year <- as.numeric(sub("-.*", "", proj.raw.df.g$dmy))
+
+#Create a season_year var than considers the same Winter season across 2 years 
+## i.e. - Jan 2021 is considered as Winter 2020
+proj.raw.df.g$season_year <- ifelse(proj.raw.df.g$season != "Winter"| grepl("-12-", proj.raw.df.g$dmy), 
+                           paste0(proj.raw.df.g$season, "_", proj.raw.df.g$year), paste0(proj.raw.df.g$season,"_", proj.raw.df.g$year-1))
+
+
+#Calculate seasonal mean and SD
+seasonal.mean <- proj.raw.df.g %>% 
+  group_by(season_year) %>% mutate(mean.seasonal = mean(mean),
+                                    sd.high.seasonal = mean.seasonal + sd(mean),
+                                    sd.low.seasonal = mean.seasonal - sd(mean))
+
+#Remove daily vals to avoid confusion     
+seasonal.mean[c("mean", "sd.high", "sd.low")] <- NULL
+
+#Remove duplicate values
+seasonal.mean <- distinct(seasonal.mean, season_year, .keep_all=T) #160 seasons 
+
+```
+
+
+```{r Raw trend seasonal}
+
+#Add in missing years for clearer plotting of trend
+dfg_sm <- seasonal.mean
+
+seas.miss <- rep(c("Spring", "Summer", "Autumn", "Winter"), 19)
+year.miss <- rep(2041:2059, each=4)
+
+add.s.y <- paste0(seas.miss, "_", year.miss)
+add.s.y <- c("Winter_2040", add.s.y)
+
+dfg_sm <- plyr::rbind.fill(dfg_sm,
+                           data.frame(year=c(2040, year.miss),
+                                      season_year=add.s.y, 
+                                      mean.seasonal=NA,
+                                      sd.low.seasonal=NA,
+                                      sd.high.seasonal=NA))
+
+dfg_sm <- dfg_sm[order(dfg_sm$year),]
+```
+
+
+**'Raw' - seasonal**
+
+```{r Raw seasonal}
+
+ggplot(dfg_sm) + 
+  geom_ribbon(aes(x = 1:length(season_year), ymin = sd.low.seasonal, ymax=sd.high.seasonal), color="lightgrey", alpha=0.5) +
+  geom_line(aes(x=1:length(season_year), y=mean.seasonal), color="cornflowerblue", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("'Raw' - tasmax seasonal") + 
+  xlab("Season - Year") +
+  scale_x_discrete(labels = c(dfg_sm$season_year)) + 
+  theme(axis.text.x = element_text(angle = 270, vjust = 0.5, hjust=1))
+
+```
+
+
+**'Raw' - Winter only**
+
+```{r Raw seasonal winter}
+
+dfg_sm_w <- subset(dfg_sm, grepl("Winter", season_year))
+
+ggplot(dfg_sm_w) + 
+  geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
+              fill="lightblue3", alpha=0.5) +
+  geom_line(aes(year, y=mean.seasonal), color="lightblue4", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("'Raw' - tasmax seasonal - Winter only") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+
+**'Raw' - Summer only**
+
+```{r Raw seasonal summer}
+
+dfg_sm_s <- subset(dfg_sm, grepl("Summer", season_year))
+
+ggplot(dfg_sm_s) + 
+  geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
+              fill="darkgoldenrod", alpha=0.5) +
+  geom_line(aes(year, y=mean.seasonal), color="darkred", group=1) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("'Raw' - tasmax seasonal - Summer only") + 
+  xlab("Year") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+### Metrics
+
+Add in HADs data 
+

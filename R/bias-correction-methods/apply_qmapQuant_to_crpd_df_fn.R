@@ -79,7 +79,7 @@ for(r in Runs){
         proj.df1 <- cal.df[c((n2+1):ncol(cal.df))]
         cal.df <- cal.df[c(1:n2)]
         
-        gc()
+        gc() 
   
         yi <- paste0(i,c(2020,2040,2060), collapse="|")
         cpm.proj <- cpm.files[grepl(yi, cpm.files)]
@@ -400,6 +400,7 @@ cropdf_further_apply_bc_to_cropped_df <- function(region, #Region code - needs t
         #Subset the dataframe iteratively depending on y
         nrows.seg <- nrow(cal.df)/N.new.segments
         y_1 <- y-1
+
         nr1 <- round(nrows.seg*y_1) + 1
         nr2 <- round(nrows.seg*y)
         cal.df <- cal.df[nr1:nr2,]
@@ -524,7 +525,7 @@ cropdf_further_apply_bc_to_cropped_df <- function(region, #Region code - needs t
         
         p <- paste0("checkpoint5", v, "_", i, "_", r, "_", y)
         print(p)
-        rm(list=setdiff(ls(), c("v", "i", "r", "var", "Runs", "y")))
+        rm(list=setdiff(ls(), c("v", "i", "r", "var", "Runs", "y", "N.new.segments")))
         
         gc(reset=TRUE)
         
@@ -576,11 +577,12 @@ cropdf_further_apply_bc_to_cropped_df <- function(region, #Region code - needs t
         #Subset the dataframe iteratively depending on y
         nrows.seg <- nrow(cal.df)/N.new.segments
         y_1 <- y-1
+
         nr1 <- round(nrows.seg*y_1) + 1
         nr2 <- round(nrows.seg*y)
         cal.df <- cal.df[nr1:nr2,]
         
-        
+    
         #proj data
         yi <- paste0(i,c(2020,2040,2060), collapse="|")
         cpm.proj <- cpm.files[grepl(yi, cpm.files)]
@@ -681,6 +683,12 @@ cropdf_further_apply_bc_to_cropped_df <- function(region, #Region code - needs t
                                 nboot = 1) #nboot number of bootstrap samples used for estimation of the observed quantiles. 
         
         
+        qm1.hist.a <- doQmapQUANT(cal.df, qm1.fit, type="linear")
+        qm1.hist.b <- doQmapQUANT(cal.df, qm1.fit, type="tricub")
+        
+        qm1.proj.a <- doQmapQUANT(proj.df, qm1.fit, type="linear")
+        qm1.proj.b <- doQmapQUANT(proj.df, qm1.fit, type="tricub")
+        
         
         ## **4. Save the data**
         p <- paste0("checkpoint3", v, "_", i, "_", r, "_", y)
@@ -695,7 +703,7 @@ cropdf_further_apply_bc_to_cropped_df <- function(region, #Region code - needs t
         
         p <- paste0("checkpoint5", v, "_", i, "_", r, "_", y)
         print(p)
-        rm(list=setdiff(ls(), c("v", "i", "r", "var", "Runs", "y")))
+        rm(list=setdiff(ls(), c("v", "i", "r", "var", "Runs", "y", "N.new.segments")))
         
         gc(reset=TRUE)
         
