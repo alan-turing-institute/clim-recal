@@ -35,7 +35,9 @@ subgraph Preprocessing
     
     data_hads_res[Processed/HadsUKgrid/../*.nc]
     data_cpm_rep[Reprojected/UKCP2.2/../*.tiff]
-    data_out1[out]
+    data_gl[glasgow]
+    data_ma[manchester]
+    data_lon[london]
     data_out2[out]
     data_out3[out]
     
@@ -46,31 +48,44 @@ subgraph Preprocessing
     data_hads_res --> script_crop_city
 
     
-    script_crop_city --> data_out1
-    data_out1 --> script_preproc
+    script_crop_city --> data_gl
+    script_crop_city --> data_ma
+    script_crop_city --> data_lon
+
+
+    data_gl --> script_preproc
+    data_ma --> script_preproc
+    data_lon --> script_preproc
     script_preproc --> data_out2
     script_crop_uk --> data_out3
     
+    data_cpm_rep --> script_crop_city
+    data_cpm_rep --> script_crop_uk
 
 end
 
 
 subgraph Debiasing
     
-    script_bc_py[run_cmethods.py]
-    script_bc_r[apply_qmapQuant_to_crpd_df_fn.R]
+    script_bc_py([run_cmethods.py])
+    script_bc_r([apply_qmapQuant_to_crpd_df_fn.R])
     
     data_out2 --> script_bc_py
-    data_out1 --> script_bc_r
+    data_gl --> script_bc_r
+    data_ma --> script_bc_r
+    data_lon --> script_bc_r
     data_out3 --> script_bc_r
+    
+    
     
 end
 
 
 classDef python fill:#4CAF50;
 classDef r fill:#FF5722;
+classDef bash fill:#f9f
 
-class script_crop_city,script_crop_uk r;
-class script_load,script_resampling,script_preproc python;
-
+class script_crop_city,script_crop_uk,script_bc_r r;
+class script_load,script_resampling,script_preproc,script_bc_py python;
+class script_reproject bash;
 ```
