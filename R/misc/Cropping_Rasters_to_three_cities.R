@@ -1,8 +1,9 @@
 ## Crop CPM and HADs 
 
 rm(list=ls())
-
-source("~/Desktop/clim-recal/clim-recal/R/misc/read_crop.fn.R")
+#setwd("~/Desktop/clim-recal/clim-recal/")
+#setwd("/home/dyme/Desktop/clim-recal/clim-recal")
+source("R/misc/read_crop.fn.R")
 
 library(tidyverse)
 library(data.table)
@@ -56,150 +57,40 @@ ext.L <- list(London.ext, Glasgow.ext, Manchester.ext)
 names(ext.L) <- cities
 
 lapply(cities, function(x){
-
-      cpm_read_crop(runs=runs, var = var, 
-                          fp = paste0(dd, "Reprojected/UKCP2.2/"),
-                          year1=1980,
-                          year2=2000,
-                          crop.area=ext.L[[x]],
-                          cropname=x) })
-
-
-# Splitting up next time slice for calib and val 
-
-lapply(cities, function(x){
   
   cpm_read_crop(runs=runs, var = var, 
-                fp = paste0(dd, "Reprojected_infill/UKCP2.2/"),
-                year1=2000,
-                year2=2010,
-                crop.area=ext.L[[x]],
-                cropname=x) })
-
-lapply(cities, function(x){
-  
-  cpm_read_crop(runs=runs, var = var, 
-                fp = paste0(dd, "Reprojected_infill/UKCP2.2/"),
-                year1=2010,
-                year2=2020,
-                crop.area=ext.L[[x]],
-                cropname=x) })
-
-## Next time slice 2020-2040
-lapply(cities, function(x){
-  
-  cpm_read_crop(runs=runs, var = var, 
-                fp = paste0(dd, "Reprojected/UKCP2.2/"),
-                year1=2020,
-                year2=2040,
-                crop.area=ext.L[[x]],
-                cropname=x) })
-
-
-## Next time slice 2040-2060
-lapply(cities, function(x){
-  
-  cpm_read_crop(runs=runs, var = var, 
-                fp = paste0(dd, "Reprojected_infill/UKCP2.2/"),
-                year1=2040,
-                year2=2060,
-                crop.area=ext.L[[x]],
-                cropname=x) })
-
-## Next time slice 2060-2080
-lapply(cities, function(x){
-  
-  cpm_read_crop(runs=runs, var = var, 
-                fp = paste0(dd, "Reprojected/UKCP2.2/"),
-                year1=2060,
-                year2=2080,
+                fp =  paste0(dd, "Reprojected_infill/UKCP2.2/"),
+                rd = paste0(dd, "Cropped/three.cities/CPM/"),
                 crop.area=ext.L[[x]],
                 cropname=x) })
 
 
 
-#### HADS
-
-#Calibration years files 1 - 360 (first 30 years)
+#### HADS - original 360
 
 var <- c("tasmax", "tasmin", "rainfall")
 
 lapply(cities, function(x){
   
-    hads_read_crop(var = var, 
-               fp= paste0(dd,  "Processed/HadsUKgrid/resampled_2.2km/"), 
-               i1 = 1, i2 = 360,
-               crop.area=ext.L[[x]],
-               cropname=x) })
-
-#Validation years files 361 - 480 -- years 2010 - 2020
-
-lapply(cities, function(x){
-  
   hads_read_crop(var = var, 
                  fp= paste0(dd,  "Processed/HadsUKgrid/resampled_2.2km/"), 
-                 i1 = 361, i2 = 480,
+                 rd= paste0(dd, "Cropped/three.cities/Hads.original360/"),
+                 file.date="19801201", #Start from the same date as the CPM
                  crop.area=ext.L[[x]],
                  cropname=x) })
 
 
-### Group the CPM to cal, val and projection 
-runs <- c("05", "07", "08", "06")
-var <- c("tasmax", "tasmin","pr")
+#### HADs - updated 360 calendar (to be run pending updated files)
 
-for(x in cities){
-  for(r in runs){
-    for(v in var){
-    p <- paste0(dd, "Interim/CPM/three.cities/", x, "/")
-    files <- list.files(p)
-    
-    files.y.v <- files[grepl("day_1980|day_2000", files)&grepl(v, files)&grepl(paste0(r, "_day"), files)]
-    
-    dfL <- lapply(files.y.v, function(n){
-      f <- paste0(p, n)
-      r <- rast(f)
-    }) 
-    
-    R <- dfL %>% reduce(c)
-    
-    #Write directory
-    rp <- paste0(dd, "Interim/CPM/three.cities/", x, "/grouped/",x, "_") #adding in cropname to write, I think will make easier to track
-    
-    fn <- paste0(rp, v, "_", r,"_calibration_1980-2010.tif")
-    writeRaster(R, fn, overwrite=TRUE) 
-    
-    gc()
-  }
-}
-} 
+var <- c("tasmax", "tasmin", "rainfall")
 
-#For validation I just copied over and renamed the files as they were already split that way
+lapply(cities, function(x){
+  
+  hads_read_crop(var = var, 
+                 fp= paste0(dd,  "Processed/HadsUKgrid/resampled_calendarfix/"), 
+                 rd= paste0(dd, "Cropped/three.cities/Hads.updated360/"),
+                 file.date="19801201", #Start from the same date as the CPM
+                 crop.area=ext.L[[x]],
+                 cropname=x) })
 
-## Projection years 
 
-for(x in cities){
-  for(r in runs){
-    for(v in var){
-      p <- paste0(dd, "Interim/CPM/three.cities/", x, "/")
-      files <- list.files(p)
-      
-       files.y.v <- files[grepl("day_2020|day_2040|day_2060", files)&grepl(v, files)&grepl(paste0(r, "_day"), files)]
-      
-      dfL <- lapply(files.y.v, function(n){
-        f <- paste0(p, n)
-        r <- rast(f)
-      }) 
-      
-      
-      R <- dfL %>% reduce(c)
-      
-      #Write directory
-      rp <- paste0(dd, "Interim/CPM/three.cities/", x, "/grouped/",x, "_") #adding in cropname to write, I think will make easier to track
-      
-      fn <- paste0(rp, v, "_", r,"_projection_2020-2080.tif")
-      writeRaster(R, fn, overwrite=TRUE) 
-      
-      gc()
-    }
-  }
-} 
