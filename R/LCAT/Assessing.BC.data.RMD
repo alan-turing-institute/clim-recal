@@ -46,7 +46,7 @@ The objects within this R list are as follows:
 - 'qm1.proj.a' - bias corrected values for the validation/projection period, values fitted with linear interpolation
 - 'qm1.proj.b' - bias corrected values for the validation/projection period, values fitted with tricubic interpolation
 
-## **1. Bias Correction Assessment**
+## **1. Bias Correction Assessment: trends**
 
 ### **London - tasmax = Run 08**
 
@@ -60,6 +60,8 @@ London <- readRDS(paste0(dd,"/Debiased/R/QuantileMapping/resultsLRun08_UKI_tasma
 
 ### **1b. Check trends**
 
+The next set of chunks visualise the data by converting back to raster, and by looking at the trends of data across all time periods
+
 ```{r convert to df and raster}
 
 ## Load a source raster to extract the crs
@@ -70,7 +72,7 @@ rast <- rast(rp)
 
 crs <- crs(rast)
 
-## Convert from matix to df, transpose, create x and y cols
+## Convert from matix to df, transpose, create x and y cols - when run in chunk this works fine but for some reason can throw an error when run otherwise
 London.df <- lapply(London, function(x){
   df <- as.data.frame(t(x))
   rn <- row.names(df) #The x_y coords were saves as rownames
@@ -100,7 +102,7 @@ tm_shape(London.rasts$t.cal[[1]]) + tm_raster(title="Calibration, 1980-12-01")
 tm_shape(London.rasts$qm1.hist.a[[1]]) + tm_raster(title="Calibration, bias corrected, linear 1980-12-01")
 tm_shape(London.rasts$qm1.hist.b[[1]]) + tm_raster(title="Calibration, bias corrected, tricubic 1980-12-01")
 ```
-#### *Annual trends - Calibration period*
+#### *Annual trends - Calibration period - daily mean*
 
 ```{r}
 
@@ -123,14 +125,18 @@ London.dfg <- lapply(names(London.df), function(i){
   dfx_g <- dfx %>% purrr::reduce(rbind)
 })
 
-names(London.dfg) <- names(London.df)
+names(London.dfg) <- c("obs.daymeans", "raw.cal.daymeans",
+                       "raw.proj.daymeans", "bc.a.cal.daymeans",
+                       "bc.b.cal.daymeans", "bc.a.proj.daymeans",
+                       "bc.b.proj.daymeans")
 
 ```
 
 ```{r}
 #Add a day index to align the cal and obs 
 
-London.dfg.calp <- London.dfg[c("t.obs", "t.cal", "qm1.hist.a", "qm1.hist.b")]
+London.dfg.calp <- London.dfg[c("obs.daymeans", "raw.cal.daymeans",
+                       "bc.b.cal.daymeans", "bc.a.cal.daymeans")]
 
 London.dfg.calp <- lapply(London.dfg.calp, function(x){
   x$dayi <- 1:nrow(x)
@@ -162,38 +168,67 @@ ggplot(London.dfg.calp_mm, aes(dayi, value, group=variable, colour=variable)) +
 
 ```
 
-#### *Annual trends - Calibration period*
+#### *Annual trends - Calibration period - seasonal mean*
 
-
-#Annotate season based on month index
+Annotate season based on month index - the dates have different formats depending on the input data (ie hads vs cpm) so am pulling out the necessary to adjust sep 
 
 ```{r}
 
-proj.raw.df.g$season <- ifelse(grepl("-12-|-01-|-02-", proj.raw.df.g$dmy), "Winter",
-                      ifelse(grepl("-03-|-04-|-05-", proj.raw.df.g$dmy), "Spring",
-                          ifelse(grepl("-06-|-07-|-08-", proj.raw.df.g$dmy), "Summer", "Autumn")))
+#Hads/obs df
+obs.daymeans.df <- London.dfg$obs.daymeans
+
+x <- obs.daymeans.df$day
+obs.daymeans.df$season <- ifelse(grepl("1231_|0131_|0228_|0229_", x), "Winter",
+                      ifelse(grepl("0331_|0430_|0531_", x), "Spring",
+                          ifelse(grepl("0630_|0731_|0831_", x), "Summer", "Autumn")))
+
+#A note here - the seasons should each have 90 days but seemingly Winter and Autumn have 89 and Spring and Summer have 91 - this is due to how the manual aligning worked out and should be updated when the hads data is re-run 
 
 
-proj.raw.df.g$year <- as.numeric(sub("-.*", "", proj.raw.df.g$dmy))
+# Mutate to a seasonal mean
+obs.seasonal.mean.df <- obs.daymeans.df %>% 
+  group_by(season_year) %>% 
+          mutate(mean.seasonal = mean(t.obs.mean),
+                                    sd.high.seasonal = mean.seasonal + sd(t.obs.mean),
+                                    sd.low.seasonal = mean.seasonal - sd(t.obs.mean))
 
-#Create a season_year var than considers the same Winter season across 2 years 
-## i.e. - Jan 2021 is considered as Winter 2020
-proj.raw.df.g$season_year <- ifelse(proj.raw.df.g$season != "Winter"| grepl("-12-", proj.raw.df.g$dmy), 
-                           paste0(proj.raw.df.g$season, "_", proj.raw.df.g$year), paste0(proj.raw.df.g$season,"_", proj.raw.df.g$year-1))
+obs.seasonal.mean.df <- obs.seasonal.mean.df %>%
+  dplyr::select(season_year:sd.low.seasonal) %>% distinct()
+
+#Grouping variable for later vars 
+obs.seasonal.mean.df$model <- "obs"
+```
+
+```{r}
+#lapply needs to needed 
+
+London.dfg[c("raw.cal.daymeans", "bc.b.cal.daymeans", "bc.a.cal.daymeans")]
+
+#lapply for remaining dfs
+  x <- df$day
+  #The CPM days are consecutive 1 - 360 by year
+  winter <- paste0(30, "_", 1:90, collapse="|")
+  spring <- paste0(30, "_", 91:180, collapse="|")
+  summer <- paste0(30, "_", 181:270, collapse="|")
+```
+#HERE - sorting out below season
+```{r}
+  df$season <- ifelse(grepl(winter, x), "Winter",
+                      ifelse(grepl(spring, x), "Spring",
+                          ifelse(grepl(summer, x), "Summer", "Autumn")))
+
+# Mutate to a seasonal mean
+obs.seasonal.mean.df <- obs.daymeans.df %>% 
+  group_by(season_year) %>% 
+          mutate(mean.seasonal = mean(t.obs.mean),
+                                    sd.high.seasonal = mean.seasonal + sd(t.obs.mean),
+                                    sd.low.seasonal = mean.seasonal - sd(t.obs.mean))
+
+obs.seasonal.mean.df <- obs.seasonal.mean.df %>%
+  dplyr::select(season_year:sd.low.seasonal) %>% distinct()
 
 
-#Calculate seasonal mean and SD
-seasonal.mean <- proj.raw.df.g %>% 
-  group_by(season_year) %>% mutate(mean.seasonal = mean(mean),
-                                    sd.high.seasonal = mean.seasonal + sd(mean),
-                                    sd.low.seasonal = mean.seasonal - sd(mean))
-
-#Remove daily vals to avoid confusion     
-seasonal.mean[c("mean", "sd.high", "sd.low")] <- NULL
-
-#Remove duplicate values
-seasonal.mean <- distinct(seasonal.mean, season_year, .keep_all=T) #160 seasons 
-
+obs.seasonal.mean.df$model <- "obs"
 ```
 
 
@@ -270,7 +305,17 @@ ggplot(dfg_sm_s) +
 
 ```
 
-### Metrics
+#### *Annual trends - seasonal max*
 
-Add in HADs data 
+I think visualising the daily data is not mega helpful, but now grouping to season and calculating the seasonal maxima vals (i.e. rather than means above)
 
+#### *Validation period - annual trends - seasonal mean*
+
+#### *Validation period - annual trends - seasonal max*
+
+
+## **2. Bias Correction Assessment: Metrics**
+
+Add in HADs data from the cal period 
+
+### mean by cell 
