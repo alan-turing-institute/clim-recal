@@ -58,6 +58,26 @@ London <- readRDS(paste0(dd,"/Debiased/R/QuantileMapping/resultsLRun08_UKI_tasma
 
 ```
 
+Load in Hads validation data 
+(So this can be run for all of the LCAT data, I'm going to read in the whole HADs files for the calibration years)
+
+**The calibration period is 2009-12-01 to 2019-11-30 to relate to the CPM month grouping**
+
+```{r}
+
+fp <- "/mnt/vmfileshare/ClimateData/Processed/HadsUKgrid/resampled_2.2km/tasmax/day/"
+hads.tasmax <- list.files(fp)
+i <- grep("20091201-", hads.tasmax)
+ii <- grep("20191130", hads.tasmax)
+hads.tasmax.i <- hads.tasmax[i:ii]
+
+source("/home/dyme/Desktop/clim-recal/clim-recal/R/misc/read_crop.fn.R")
+
+
+
+```
+
+
 ### **1b. Check trends**
 
 The next set of chunks visualise the data by converting back to raster, and by looking at the trends of data across all time periods
@@ -73,7 +93,8 @@ rast <- rast(rp)
 crs <- crs(rast)
 
 ## Convert from matix to df, transpose, create x and y cols - when run in chunk this works fine but for some reason can throw an error when run otherwise
-London.df <- lapply(London, function(x){
+London.df <- lapply(London, 
+                    function(x){
   df <- as.data.frame(t(x))
   rn <- row.names(df) #The x_y coords were saves as rownames
   x <- gsub("_.*", "", rn)
