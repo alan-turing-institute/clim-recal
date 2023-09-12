@@ -17,6 +17,7 @@ library(ggplot2)
 library(terra)
 library(tmap) #pretty maps
 library(RColorBrewer)
+library(plotrix) #For taylor diagrams 
 
 dd <- "/mnt/vmfileshare/ClimateData/"
 
@@ -54,8 +55,13 @@ Using the London region (UKI) as this is the smallest -- not this is the same re
 
 ```{r}
 
-London <- readRDS(paste0(dd,"/Debiased/R/QuantileMapping/resultsLRun08_UKI_tasmax.RDS"))
+runs <- c("Run05", "Run06", "Run07", "Run08")
 
+London.allruns <- lapply(runs, function(i){
+  rds <- paste0(dd,"/Debiased/R/QuantileMapping/resultsL",i,"_UKI_tasmax.RDS")
+  readRDS(rds)})
+
+names(London.allruns) <- runs
 ```
 
 Load in Hads validation data 
@@ -79,8 +85,9 @@ obs.val.df <- read.csv(paste0(fp,f)) # Starts here from 2010 - 01 -01 -- because
 
 ### **1b. Check trends**
 
-The next set of chunks visualise the data by converting back to raster, and by looking at the trends of data across all time periods
+The next set of chunks visualise the data 
 
+This next chunk converts the dfs back to raster with the correct CRS
 ```{r convert to df and raster}
 
 ## Load a source raster to extract the crs
@@ -91,39 +98,94 @@ rast <- rast(rp)
 
 crs <- crs(rast)
 
-## Convert from matix to df, transpose, create x and y cols - when run in chunk this works fine but for some reason can throw an error when run otherwise
-London.df <- lapply(London, 
-                    function(d){
-  df <- as.data.frame(t(d))
-  rn <- row.names(df) #The x_y coords were saves as rownames
-  x <- gsub("_.*", "", rn)
-  y <- gsub(".*_", "", rn)
-  xy <- data.frame(x=x,y=y)
-  df <- cbind(xy,df)
+## Convert from matrix to df, transpose, create x and y cols - when run in chunk this works fine but for some reason can throw an error when run otherwise
+London.df.rL <- lapply(runs, function(i){
+  L <- London.allruns[[i]]
+    lapply(L, function(x){
+    df <- t(x)
+    df <- as.data.frame(df)                      
+    rn <- row.names(df) #The rownames were saves as x_y coordinates
+    xi <- gsub("_.*", "", rn)
+    yi <- gsub(".*_", "", rn)
+    xy <- data.frame(x = xi, y = yi)
+    df <- cbind(xy, df)})
   })
 
+names(London.df.rL) <- runs
+
 ## Convert to rasters
-London.rasts <- lapply(London.df, function(x){
-  r <- rast(x, type="xyz")
-  crs(r) <- crs
-  return(r)
+London.rasts <- lapply(runs, function(i){
+  L <- London.df.rL[[i]]
+  lapply(L, function(x){
+    r <- rast(x, type="xyz")
+    crs(r) <- crs
+    return(r)}) 
 })
 
+names(London.rasts) <- runs
+
 
 ```
 
-#### *Raster vis comparison*
+#### **Raster vis comparison**
 
 Random selection of 3 days of the observation, calibration and two adjusted cals, for three historic days
+(Note: I'm just plotting the bias corrected with linear interpolation so as to overwhelm with plots)
 
-```{r}
-tm_shape(London.rasts$t.obs[[1]]) + tm_raster(title="Observation, 1980-12-01")
-tm_shape(London.rasts$t.cal[[1]]) + tm_raster(title="Calibration, 1980-12-01")
-tm_shape(London.rasts$qm1.hist.a[[1]]) + tm_raster(title="Calibration, bias corrected, linear 1980-12-01")
-tm_shape(London.rasts$qm1.hist.b[[1]]) + tm_raster(title="Calibration, bias corrected, tricubic 1980-12-01")
+##### *Day 1 - 1980-12-01*
+
+```{r, figures-side, fig.show="hold", out.width="33%"}
+tm_shape(London.rasts$Run05$t.obs[[1]]) + tm_raster(title="Observation, 1980-12-01") #Obviously just one call of the observation 
+tm_shape(London.rasts$Run05$t.cal[[1]]) + tm_raster(title="Calibration, Run 05, Raw 1980-12-01")
+tm_shape(London.rasts$Run06$t.cal[[1]]) + tm_raster(title="Calibration, Run 06, Raw 1980-12-01")
+tm_shape(London.rasts$Run07$t.cal[[1]]) + tm_raster(title="Calibration, Run 07, Raw 1980-12-01")
+tm_shape(London.rasts$Run08$t.cal[[1]]) + tm_raster(title="Calibration, Run 08, Raw 1980-12-01")
+tm_shape(London.rasts$Run05$qm1.hist.a[[1]]) + tm_raster(title="Calibration, Run 05, BC 1980-12-01")
+tm_shape(London.rasts$Run06$qm1.hist.a[[1]]) + tm_raster(title="Calibration, Run 06, BC 1980-12-01")
+tm_shape(London.rasts$Run07$qm1.hist.a[[1]]) + tm_raster(title="Calibration, Run 07, BC 1980-12-01")
+tm_shape(London.rasts$Run08$qm1.hist.a[[1]]) + tm_raster(title="Calibration, Run 08, BC 1980-12-01")
+
+
 ```
+
+##### *Day 2 - 1991-06-01*
+
+Just to note I was so suprised by how much lower the observation data was for this raster I loaded the raw HADs to check (in resampled_2.2km/tasmax and the original 1km grid it does reflect it - it just seems very low)
+
+```{r, figures-side, fig.show="hold", out.width="33%"}
+tm_shape(London.rasts$Run05$t.obs[[3781]]) + tm_raster(title="Observation, 1991-06-01") #Obviously just one call of the observation 
+tm_shape(London.rasts$Run05$t.cal[[3781]]) + tm_raster(title="Calibration, Run 05, Raw 1991-06-01")
+tm_shape(London.rasts$Run06$t.cal[[3781]]) + tm_raster(title="Calibration, Run 06, Raw 1991-06-01")
+tm_shape(London.rasts$Run07$t.cal[[3781]]) + tm_raster(title="Calibration, Run 07, Raw 1991-06-01")
+tm_shape(London.rasts$Run08$t.cal[[3781]]) + tm_raster(title="Calibration, Run 08, Raw 1991-06-01")
+tm_shape(London.rasts$Run05$qm1.hist.a[[3781]]) + tm_raster(title="Calibration, Run 05, BC 1991-06-01")
+tm_shape(London.rasts$Run06$qm1.hist.a[[3781]]) + tm_raster(title="Calibration, Run 06, BC 1991-06-01")
+tm_shape(London.rasts$Run07$qm1.hist.a[[3781]]) + tm_raster(title="Calibration, Run 07, BC 1991-06-01")
+tm_shape(London.rasts$Run08$qm1.hist.a[[3781]]) + tm_raster(title="Calibration, Run 08, BC 1991-06-01")
+
+```
+
+
+
+##### *Day 3 - 2000-08-01*
+
+
+```{r, figures-side, fig.show="hold", out.width="33%"}
+tm_shape(London.rasts$Run05$t.obs[[7081]]) + tm_raster(title="Observation, 2000-08-01") #Obviously just one call of the observation 
+tm_shape(London.rasts$Run05$t.cal[[7081]]) + tm_raster(title="Calibration, Run 05, Raw 2000-08-01")
+tm_shape(London.rasts$Run06$t.cal[[7081]]) + tm_raster(title="Calibration, Run 06, Raw 2000-08-01")
+tm_shape(London.rasts$Run07$t.cal[[7081]]) + tm_raster(title="Calibration, Run 07, Raw 2000-08-01")
+tm_shape(London.rasts$Run08$t.cal[[7081]]) + tm_raster(title="Calibration, Run 08, Raw 2000-08-01")
+tm_shape(London.rasts$Run05$qm1.hist.a[[7081]]) + tm_raster(title="Calibration, Run 05, BC 2000-08-01")
+tm_shape(London.rasts$Run06$qm1.hist.a[[7081]]) + tm_raster(title="Calibration, Run 06, BC 2000-08-01")
+tm_shape(London.rasts$Run07$qm1.hist.a[[7081]]) + tm_raster(title="Calibration, Run 07, BC 2000-08-01")
+tm_shape(London.rasts$Run08$qm1.hist.a[[7081]]) + tm_raster(title="Calibration, Run 08, BC 2000-08-01")
+
+```
+
 #### *Annual trends - Calibration period - daily mean*
 
+#here convert to runs aspect 
 ```{r}
 
 London.dfg <- lapply(names(London.df), function(i){
@@ -202,10 +264,15 @@ obs.daymeans.df$season <- ifelse(grepl("1231_|0131_|0228_|0229_", x), "Winter",
                       ifelse(grepl("0331_|0430_|0531_", x), "Spring",
                           ifelse(grepl("0630_|0731_|0831_", x), "Summer", "Autumn")))
 
-#A note here - the seasons should each have 90 days but seemingly Winter and Autumn have 89 and Spring and Summer have 91 - this is due to how the manual aligning worked out and should be updated when the hads data is re-run 
+#Note: the seasons should each have 90 days but seemingly Winter and Autumn have 89 and Spring and Summer have 91 - this is due to how the manual aligning worked out and should be updated when the hads data is re-run 
 
-
-# Mutate to a seasonal mean
+#Create season_year - All Winter months apart from Dec to be added to the previous year (ie Winter 2000) would be the Dec of 2000 to the Feb of 2001
+year <- gsub("^[^_]*_", "", x)
+year <- as.numeric(substr(year, 1,4))
+obs.daymeans.df$season_year <- ifelse(grepl("0131_|0228_|0229_", x), 
+                                      paste0(obs.daymeans.df$season, year-1), 
+                                      paste0(obs.daymeans.df$season, year))
+# Mutate to a seasonal mean df
 obs.seasonal.mean.df <- obs.daymeans.df %>% 
   group_by(season_year) %>% 
           mutate(mean.seasonal = mean(t.obs.mean),
@@ -222,55 +289,45 @@ obs.seasonal.mean.df$model <- "obs"
 ```{r}
 #lapply needs to needed 
 
-London.dfg[c("raw.cal.daymeans", "bc.b.cal.daymeans", "bc.a.cal.daymeans")]
-
-#lapply for remaining dfs
+London.dfg.seasonal.mean <- lapply(c("raw.cal.daymeans", "bc.b.cal.daymeans", "bc.a.cal.daymeans"), function(i){
+  df <- London.dfg[[i]]
   x <- df$day
+  x <- gsub(".*_", "", x)
+  x <- as.numeric(x)
   #The CPM days are consecutive 1 - 360 by year
-  winter <- paste0(30, "_", 1:90, collapse="|")
-  spring <- paste0(30, "_", 91:180, collapse="|")
-  summer <- paste0(30, "_", 181:270, collapse="|")
-```
-#HERE - sorting out below season
-```{r}
-  df$season <- ifelse(grepl(winter, x), "Winter",
-                      ifelse(grepl(spring, x), "Spring",
-                          ifelse(grepl(summer, x), "Summer", "Autumn")))
+  df$season <- ifelse(x<91, "Winter",
+                      ifelse(x<181, "Spring",
+                          ifelse(x<271, "Summer", "Autumn")))
+  
+  
+#Create season_year - All Winter months apart from Dec to be added to the previous year (ie Winter 2000) would be the Dec of 2000 to the Feb of 2001
+year <- gsub(".*day_", "", df$day)
+year <- as.numeric(substr(year, 1,4))
+df$season_year <- ifelse(x>29&x<91, 
+                         paste0(df$season, year-1), 
+                         paste0(df$season, year))
 
 # Mutate to a seasonal mean
-obs.seasonal.mean.df <- obs.daymeans.df %>% 
+df <- obs.daymeans.df %>% 
   group_by(season_year) %>% 
           mutate(mean.seasonal = mean(t.obs.mean),
                                     sd.high.seasonal = mean.seasonal + sd(t.obs.mean),
                                     sd.low.seasonal = mean.seasonal - sd(t.obs.mean))
 
-obs.seasonal.mean.df <- obs.seasonal.mean.df %>%
+df <- df %>%
   dplyr::select(season_year:sd.low.seasonal) %>% distinct()
 
+ii <- gsub(".daymeans", "",i)
 
-obs.seasonal.mean.df$model <- "obs"
+df$model <- ii
+as.data.frame(df)})
+
+names(London.dfg.seasonal.mean)
 ```
 
+```{r}
 
-```{r Raw trend seasonal}
 
-#Add in missing years for clearer plotting of trend
-dfg_sm <- seasonal.mean
-
-seas.miss <- rep(c("Spring", "Summer", "Autumn", "Winter"), 19)
-year.miss <- rep(2041:2059, each=4)
-
-add.s.y <- paste0(seas.miss, "_", year.miss)
-add.s.y <- c("Winter_2040", add.s.y)
-
-dfg_sm <- plyr::rbind.fill(dfg_sm,
-                           data.frame(year=c(2040, year.miss),
-                                      season_year=add.s.y, 
-                                      mean.seasonal=NA,
-                                      sd.low.seasonal=NA,
-                                      sd.high.seasonal=NA))
-
-dfg_sm <- dfg_sm[order(dfg_sm$year),]
 ```
 
 
