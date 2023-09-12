@@ -63,17 +63,16 @@ Load in Hads validation data
 
 **The calibration period is 2009-12-01 to 2019-11-30 to relate to the CPM month grouping**
 
+Hads data were also cropped to the regional files for the calibration years - some of the dates might need to be added from the observation (or just be ignored for ease)
+
 ```{r}
+fp <- paste0(dd, "Interim/HadsUK/Data_as_df/")
+f <- list.files(fp)
+v <- "tasmax"
+reg <- "UKI"
+f <- f[grepl("2010_2020", f)&grepl(v,f)&grepl(reg, f)]
 
-fp <- "/mnt/vmfileshare/ClimateData/Processed/HadsUKgrid/resampled_2.2km/tasmax/day/"
-hads.tasmax <- list.files(fp)
-i <- grep("20091201-", hads.tasmax)
-ii <- grep("20191130", hads.tasmax)
-hads.tasmax.i <- hads.tasmax[i:ii]
-
-source("/home/dyme/Desktop/clim-recal/clim-recal/R/misc/read_crop.fn.R")
-
-
+obs.val.df <- read.csv(paste0(fp,f)) # Starts here from 2010 - 01 -01 -- because for the BC I removed these vals to align with the cpm years we're missing the month of Dec - so need to update the cpm data to reflect this in the assessment -- wont be a problem for other BC data 
 
 ```
 
@@ -94,8 +93,8 @@ crs <- crs(rast)
 
 ## Convert from matix to df, transpose, create x and y cols - when run in chunk this works fine but for some reason can throw an error when run otherwise
 London.df <- lapply(London, 
-                    function(x){
-  df <- as.data.frame(t(x))
+                    function(d){
+  df <- as.data.frame(t(d))
   rn <- row.names(df) #The x_y coords were saves as rownames
   x <- gsub("_.*", "", rn)
   y <- gsub(".*_", "", rn)
@@ -330,13 +329,106 @@ ggplot(dfg_sm_s) +
 
 I think visualising the daily data is not mega helpful, but now grouping to season and calculating the seasonal maxima vals (i.e. rather than means above)
 
+#### Create validaton df list
+
+Adding in the observational HADs data and aligning based on dates
+
+*Note* So as not to re-run the UK wide LCAT data processing, a workaround was added to the bias correction function used to group the obs data - this means that to align the validation cpm data we have to remove a month in the beginning - ie the LCAT specific 
+
+20191201-20201130_30 - runs to the end of the month of December of 2019 -- so should map the obvs.val
+
+```{r}
+
+#Extract validation period of raw and bias corrected CPM data 
+cpm.val.dfs <- lapply(London.df[c("t.proj", "qm1.proj.a", "qm1.proj.b")], function(x){
+  i <- grep("20191201-20201130_30", names(x))[1]
+  df <- x[,1:i]
+})
+
+#Using the old cpm data for the hads obs - so need to remove the dates to ensure theres 30 days per year
+remove <- c("0229_29", "0430_30", "0731_31", "0930_30", "1130_30")
+remove <- paste0(remove, collapse = "|")
+      
+obs.val.df <- obs.val.df[,!grepl(remove, names(obs.val.df))]
+row.names(obs.val.df) <- paste0(obs.val.df$x, "_", obs.val.df$y)
+
+val.dfs <- c(list(obs.val.df), cpm.val.dfs)
+names(val.dfs) <- c("obs.val.df", "raw.cpm.val", "bc1.cpm.val", "bc2.cpm.val")
+```
+
+
 #### *Validation period - annual trends - seasonal mean*
+
+
 
 #### *Validation period - annual trends - seasonal max*
 
 
 ## **2. Bias Correction Assessment: Metrics**
 
-Add in HADs data from the cal period 
+Using the validation data set for this
+
+Most metrics will just require vectors of values at this point, although it would be nice to have the georeferenced incorporated incase values spatially vary depending on eg topography 
+
+```{r}
+val.dfs.v <- lapply(val.dfs, function(x){
+  #Remove x and y 
+  x$x <- NULL
+  x$y <- NULL
+  #Convert to single vector
+  unlist(as.vector(x))
+})
+
+val.dfs.v.df <- val.dfs.v %>% reduce(cbind)
+val.dfs.v.df <- as.data.frame(val.dfs.v.df)
+```
+
+### **2a. Descriptive statistics**
+
+```{r descriptives validation}
+
+descriptives <-  lapply(val.dfs.v, function(x){
+  per <- data.frame(as.list(quantile(x, probs=c(0.1, 0.9))))
+  data.frame(mean=mean(x), sd=sd(x), per10th=per$X10.,per90th=per$X90.)
+})
+
+descriptives <- descriptives %>% reduce(rbind)
+row.names(descriptives) <- c("obs", "raw.cpm", "bc1.cpm", "bc2.cpm")
+descriptives
+```
+
+
+
+#### **Distribution**
+
+```{r}
+
+cal.val.dfg <- reshape2::melt(as.matrix(val.dfs.v))
+
+
+```
+
+
+### **2b. RMSE**
+
+sqrt(mean((data$actual - data$predicted)^2))
+
+```{r}
+
+actual <- val.dfs.v$obs.val.df
+
+rmse <- sapply(val.dfs.v[c(2:4)], function(x){
+  sqrt(mean((actual - x)^2))
+})
+
+data.frame(as.list(rmse), row.names = "RMSE")
+```
+
+In this example, the first bias correction has a lower RMSE (just!) and therefore is better fitting than the raw 
+
+# Taylor diagram
+
+
+## **3. Bias Correction Assessment: Metric specific - tasmax**
 
 ### mean by cell 
