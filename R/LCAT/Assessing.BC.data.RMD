@@ -185,55 +185,68 @@ tm_shape(London.rasts$Run08$qm1.hist.a[[7081]]) + tm_raster(title="Calibration, 
 
 #### *Annual trends - Calibration period - daily mean*
 
-#here convert to runs aspect 
 ```{r}
-
-London.dfg <- lapply(names(London.df), function(i){
-  dfi <- London.df[[i]]
-  x <- 3:ncol(dfi)
-  
-  dfx <- lapply(x, function(x){
-    y <- dfi[,x]
-    mean <- mean(y, na.rm=T)
-    sd <- sd(y, na.rm=T)
-    dfr <- data.frame(mean=mean, 
+#Returns a list of dfs in handy format for graphing
+London.dfg.rL <- lapply(runs, function(i){
+  L <- London.df.rL[[i]]
+    dfg <- lapply(names(L), function(ii){
+      dfi <- L[[ii]]
+      x <- 3:ncol(dfi) #ignore cols 1 & 2 with x y
+      #Calc mean and sd
+      dfx <- lapply(x, function(x){
+        y <- dfi[,x]
+        mean <- mean(y, na.rm=T)
+        sd <- sd(y, na.rm=T)
+        dfr <- data.frame(mean=mean, 
              sd.high=mean+sd,
              sd.low=mean-sd)
-    names(dfr) <- paste0(i,".",names(dfr))
-    dfr$day <- names(dfi)[x]
-    return(dfr)
-  })
+        dfr$day <- names(dfi)[x]
+        return(dfr)
+      })
 
-  dfx_g <- dfx %>% purrr::reduce(rbind)
-})
+      dfx_g <- dfx %>% purrr::reduce(rbind)
+    })
 
-names(London.dfg) <- c("obs.daymeans", "raw.cal.daymeans",
+    names(dfg) <- c("obs.daymeans", "raw.cal.daymeans",
                        "raw.proj.daymeans", "bc.a.cal.daymeans",
                        "bc.b.cal.daymeans", "bc.a.proj.daymeans",
                        "bc.b.proj.daymeans")
-
-```
-
-```{r}
-#Add a day index to align the cal and obs 
-
-London.dfg.calp <- London.dfg[c("obs.daymeans", "raw.cal.daymeans",
-                       "bc.b.cal.daymeans", "bc.a.cal.daymeans")]
-
-London.dfg.calp <- lapply(London.dfg.calp, function(x){
-  x$dayi <- 1:nrow(x)
-  x$day<- NULL
-  return(x)
+    
+    return(dfg)
 })
 
-London.dfg.calp <- London.dfg.calp %>% reduce(merge, "dayi")
+names(London.dfg.rL) <- runs
+```
 
-head(London.dfg.calp)
+
+```{r}
+#Create a df for all of the runs to plot
+##Add a day index to align the cal and obs 
+
+London.dfg.calp.L <- lapply(runs, function(i){
+   dfg <- London.dfg.rL[[i]]
+  dfg.calp <- dfg[c("obs.daymeans", "raw.cal.daymeans",
+                       "bc.b.cal.daymeans", "bc.a.cal.daymeans")]
+
+    dfg.calp <- lapply(dfg.calp, function(x){
+    x$dayi <- 1:nrow(x)
+    x$day<- NULL
+    return(x)
+    })
+
+  dfg.calp <- dfg.calp %>% reduce(merge, "dayi")
+  dfg.calp$Run <- i
+  return(dfg.calp)})
+
+names(London.dfg.calp.L) <- runs
+
+London.dfg.calp <- London.dfg.calp.L %>% reduce(rbind)
+
 ```
 
 ```{r}
 
-London.dfg.calp_m <- reshape2::melt(London.dfg.calp, id="dayi") #create long df for plotting multiple lines
+London.dfg.calp_m <- reshape2::melt(London.dfg.calp, id=c("dayi", "Run")) #create long df for plotting multiple lines
 
 London.dfg.calp_mm <- London.dfg.calp_m[grepl(".mean", London.dfg.calp_m$variable),] #For easy vis, only keep mean vals
 ```
@@ -242,7 +255,8 @@ London.dfg.calp_mm <- London.dfg.calp_m[grepl(".mean", London.dfg.calp_m$variabl
 ```{r Historic trend 1}
 
 ggplot(London.dfg.calp_mm, aes(dayi, value, group=variable, colour=variable)) + 
-  geom_line() +
+  geom_line(alpha=0.7) +
+  facet_wrap(.~Run) +
   theme_bw() + ylab("Av daily max temp oC") + 
   ggtitle("Tasmax Hisotric trends") +
  scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day, 1980.12.01 - 2009.12.01") +
@@ -256,75 +270,80 @@ Annotate season based on month index - the dates have different formats dependin
 
 ```{r}
 
-#Hads/obs df
-obs.daymeans.df <- London.dfg$obs.daymeans
+seasonal.means <- lapply(runs, function(r){
+  dfg <- London.dfg.rL[[r]]
+    #Hads/obs df
+    obs.daymeans.df <- dfg$obs.daymeans
 
-x <- obs.daymeans.df$day
-obs.daymeans.df$season <- ifelse(grepl("1231_|0131_|0228_|0229_", x), "Winter",
+      x <- obs.daymeans.df$day
+      obs.daymeans.df$season <- ifelse(grepl("1231_|0131_|0228_|0229_", x),
+                                       "Winter",
                       ifelse(grepl("0331_|0430_|0531_", x), "Spring",
                           ifelse(grepl("0630_|0731_|0831_", x), "Summer", "Autumn")))
 
 #Note: the seasons should each have 90 days but seemingly Winter and Autumn have 89 and Spring and Summer have 91 - this is due to how the manual aligning worked out and should be updated when the hads data is re-run 
 
-#Create season_year - All Winter months apart from Dec to be added to the previous year (ie Winter 2000) would be the Dec of 2000 to the Feb of 2001
-year <- gsub("^[^_]*_", "", x)
-year <- as.numeric(substr(year, 1,4))
-obs.daymeans.df$season_year <- ifelse(grepl("0131_|0228_|0229_", x), 
+    #Create season_year - All Winter months apart from Dec to be added to the previous year (ie     Winter 2000) would be the Dec of 2000 to the Feb of 2001
+    year <- gsub("^[^_]*_", "", x)
+    year <- as.numeric(substr(year, 1,4))
+    obs.daymeans.df$season_year <- ifelse(grepl("0131_|0228_|0229_", x), 
                                       paste0(obs.daymeans.df$season, year-1), 
                                       paste0(obs.daymeans.df$season, year))
-# Mutate to a seasonal mean df
-obs.seasonal.mean.df <- obs.daymeans.df %>% 
-  group_by(season_year) %>% 
-          mutate(mean.seasonal = mean(t.obs.mean),
-                                    sd.high.seasonal = mean.seasonal + sd(t.obs.mean),
-                                    sd.low.seasonal = mean.seasonal - sd(t.obs.mean))
+    # Mutate to a seasonal mean df
+    obs.seasonal.mean.df <- obs.daymeans.df %>% 
+      group_by(season_year) %>% 
+          mutate(mean.seasonal = mean(mean),
+                                    sd.high.seasonal = mean.seasonal + sd(mean),
+                                    sd.low.seasonal = mean.seasonal - sd(mean))
 
-obs.seasonal.mean.df <- obs.seasonal.mean.df %>%
-  dplyr::select(season_year:sd.low.seasonal) %>% distinct()
+    obs.seasonal.mean.df <- obs.seasonal.mean.df %>%
+      dplyr::select(season_year:sd.low.seasonal) %>% distinct()
 
-#Grouping variable for later vars 
-obs.seasonal.mean.df$model <- "obs"
-```
-
-```{r}
-#lapply needs to needed 
-
-London.dfg.seasonal.mean <- lapply(c("raw.cal.daymeans", "bc.b.cal.daymeans", "bc.a.cal.daymeans"), function(i){
-  df <- London.dfg[[i]]
-  x <- df$day
-  x <- gsub(".*_", "", x)
-  x <- as.numeric(x)
-  #The CPM days are consecutive 1 - 360 by year
-  df$season <- ifelse(x<91, "Winter",
+  #Grouping variable for later vars 
+  obs.seasonal.mean.df$model <- "obs"
+   
+   
+    dfg.seasonal.mean <- lapply(c("raw.cal.daymeans", "bc.b.cal.daymeans",
+                                         "bc.a.cal.daymeans"), function(i){
+        df <- dfg[[i]]
+        x <- df$day
+        x <- gsub(".*_", "", x)
+        x <- as.numeric(x)
+      #The CPM days are consecutive 1 - 360 by year
+        df$season <- ifelse(x<91, "Winter",
                       ifelse(x<181, "Spring",
                           ifelse(x<271, "Summer", "Autumn")))
   
-  
-#Create season_year - All Winter months apart from Dec to be added to the previous year (ie Winter 2000) would be the Dec of 2000 to the Feb of 2001
-year <- gsub(".*day_", "", df$day)
-year <- as.numeric(substr(year, 1,4))
-df$season_year <- ifelse(x>29&x<91, 
+  #Create season_year - All Winter months apart from Dec to be added to the previous year (ie     Winter 2000) would be the Dec of 2000 to the Feb of 2001  
+        year <- gsub(".*day_", "", df$day)
+        year <- as.numeric(substr(year, 1,4))
+        df$season_year <- ifelse(x>29&x<91, 
                          paste0(df$season, year-1), 
                          paste0(df$season, year))
+  
+    # Mutate to a seasonal mean
+      df <- df %>% 
+        group_by(season_year) %>% 
+          mutate(mean.seasonal = mean(mean),
+                                    sd.high.seasonal = mean.seasonal + sd(mean),
+                                    sd.low.seasonal = mean.seasonal - sd(mean))
 
-# Mutate to a seasonal mean
-df <- obs.daymeans.df %>% 
-  group_by(season_year) %>% 
-          mutate(mean.seasonal = mean(t.obs.mean),
-                                    sd.high.seasonal = mean.seasonal + sd(t.obs.mean),
-                                    sd.low.seasonal = mean.seasonal - sd(t.obs.mean))
+      df <- df %>%
+        dplyr::select(season_year:sd.low.seasonal) %>% distinct()
 
-df <- df %>%
-  dplyr::select(season_year:sd.low.seasonal) %>% distinct()
+        ii <- gsub(".daymeans", "",i)
 
-ii <- gsub(".daymeans", "",i)
+        df$model <- ii
+        as.data.frame(df)})
 
-df$model <- ii
-as.data.frame(df)})
-
-names(London.dfg.seasonal.mean)
+  dff <- c(list(obs.seasonal.mean.df), dfg.seasonal.mean) %>% reduce(rbind)  
+  dff$Run <- r
+  return(dff)
+})
+    
 ```
-
+#Here 
+check above chunk works and graph as in the annual trend 
 ```{r}
 
 
