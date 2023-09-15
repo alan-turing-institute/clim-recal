@@ -17,6 +17,7 @@ library(ggplot2)
 library(terra)
 library(tmap) #pretty maps
 library(RColorBrewer)
+library(tidyverse)
 library(plotrix) #For taylor diagrams 
 
 dd <- "/mnt/vmfileshare/ClimateData/"
@@ -132,7 +133,7 @@ names(London.rasts) <- runs
 Random selection of 3 days of the observation, calibration and two adjusted cals, for three historic days
 (Note: I'm just plotting the bias corrected with linear interpolation so as to overwhelm with plots)
 
-##### *Day 1 - 1980-12-01*
+##### Fig. *Day 1 - 1980-12-01*
 
 ```{r, figures-side, fig.show="hold", out.width="33%"}
 tm_shape(London.rasts$Run05$t.obs[[1]]) + tm_raster(title="Observation, 1980-12-01") #Obviously just one call of the observation 
@@ -148,7 +149,7 @@ tm_shape(London.rasts$Run08$qm1.hist.a[[1]]) + tm_raster(title="Calibration, Run
 
 ```
 
-##### *Day 2 - 1991-06-01*
+##### Fig. *Day 2 - 1991-06-01*
 
 Just to note I was so suprised by how much lower the observation data was for this raster I loaded the raw HADs to check (in resampled_2.2km/tasmax and the original 1km grid it does reflect it - it just seems very low)
 
@@ -167,7 +168,7 @@ tm_shape(London.rasts$Run08$qm1.hist.a[[3781]]) + tm_raster(title="Calibration, 
 
 
 
-##### *Day 3 - 2000-08-01*
+##### Fig. *Day 3 - 2000-08-01*
 
 
 ```{r, figures-side, fig.show="hold", out.width="33%"}
@@ -183,12 +184,14 @@ tm_shape(London.rasts$Run08$qm1.hist.a[[7081]]) + tm_raster(title="Calibration, 
 
 ```
 
-#### *Annual trends - Calibration period - daily mean*
+#### **Calibration period - annual trends**
+
 
 ```{r}
 #Returns a list of dfs in handy format for graphing
 London.dfg.rL <- lapply(runs, function(i){
   L <- London.df.rL[[i]]
+  names(L)[1:3] <- c("obs", "cal", "proj") 
     dfg <- lapply(names(L), function(ii){
       dfi <- L[[ii]]
       x <- 3:ncol(dfi) #ignore cols 1 & 2 with x y
@@ -200,6 +203,7 @@ London.dfg.rL <- lapply(runs, function(i){
         dfr <- data.frame(mean=mean, 
              sd.high=mean+sd,
              sd.low=mean-sd)
+        names(dfr) <- paste0(ii, ".", names(dfr))
         dfr$day <- names(dfi)[x]
         return(dfr)
       })
@@ -233,7 +237,8 @@ London.dfg.calp.L <- lapply(runs, function(i){
     x$day<- NULL
     return(x)
     })
-
+    
+    
   dfg.calp <- dfg.calp %>% reduce(merge, "dayi")
   dfg.calp$Run <- i
   return(dfg.calp)})
@@ -248,9 +253,10 @@ London.dfg.calp <- London.dfg.calp.L %>% reduce(rbind)
 
 London.dfg.calp_m <- reshape2::melt(London.dfg.calp, id=c("dayi", "Run")) #create long df for plotting multiple lines
 
-London.dfg.calp_mm <- London.dfg.calp_m[grepl(".mean", London.dfg.calp_m$variable),] #For easy vis, only keep mean vals
+London.dfg.calp_mm <- London.dfg.calp_m[grepl("mean", London.dfg.calp_m$variable),] #For easy vis, only keep mean vals
 ```
 
+#### Fig. Calibration period - annual mean
 
 ```{r Historic trend 1}
 
@@ -264,7 +270,7 @@ ggplot(London.dfg.calp_mm, aes(dayi, value, group=variable, colour=variable)) +
 
 ```
 
-#### *Annual trends - Calibration period - seasonal mean*
+#### **Seasonal trends - Calibration period **
 
 Annotate season based on month index - the dates have different formats depending on the input data (ie hads vs cpm) so am pulling out the necessary to adjust sep 
 
@@ -287,17 +293,15 @@ seasonal.means <- lapply(runs, function(r){
     year <- gsub("^[^_]*_", "", x)
     year <- as.numeric(substr(year, 1,4))
     obs.daymeans.df$season_year <- ifelse(grepl("0131_|0228_|0229_", x), 
-                                      paste0(obs.daymeans.df$season, year-1), 
-                                      paste0(obs.daymeans.df$season, year))
-    # Mutate to a seasonal mean df
-    obs.seasonal.mean.df <- obs.daymeans.df %>% 
-      group_by(season_year) %>% 
-          mutate(mean.seasonal = mean(mean),
-                                    sd.high.seasonal = mean.seasonal + sd(mean),
-                                    sd.low.seasonal = mean.seasonal - sd(mean))
-
-    obs.seasonal.mean.df <- obs.seasonal.mean.df %>%
-      dplyr::select(season_year:sd.low.seasonal) %>% distinct()
+                                      paste0(year-1, obs.daymeans.df$season), 
+                                      paste0(year, obs.daymeans.df$season))
+    # Mutate to a seasonal mean df 
+    obs.seasonal.mean.df <- aggregate(obs.daymeans.df[[1]], list(obs.daymeans.df[["season_year"]]), function(x) c(seasonal.mean = mean(x), sd.high.seasonal = mean(x) + sd(x), sd.low.seasonal = mean(x) - sd(x)))
+    obs.seasonal.mean.df<- data.frame(season_year=obs.seasonal.mean.df$Group.1,
+                                        seasonal.mean=obs.seasonal.mean.df$x[,"seasonal.mean"],
+                                        sd.high.seasonal = obs.seasonal.mean.df$x[,"sd.high.seasonal"],
+                                        sd.low.seasonal = obs.seasonal.mean.df$x[,"sd.low.seasonal"])
+    
 
   #Grouping variable for later vars 
   obs.seasonal.mean.df$model <- "obs"
@@ -318,92 +322,196 @@ seasonal.means <- lapply(runs, function(r){
         year <- gsub(".*day_", "", df$day)
         year <- as.numeric(substr(year, 1,4))
         df$season_year <- ifelse(x>29&x<91, 
-                         paste0(df$season, year-1), 
-                         paste0(df$season, year))
+                         paste0(year-1, df$season), 
+                         paste0(year, df$season))
   
-    # Mutate to a seasonal mean
-      df <- df %>% 
-        group_by(season_year) %>% 
-          mutate(mean.seasonal = mean(mean),
-                                    sd.high.seasonal = mean.seasonal + sd(mean),
-                                    sd.low.seasonal = mean.seasonal - sd(mean))
+    # Mutate to a seasonal mean -- cant get this to run in tidyverse within loop as cant seem to get col indexing working so:
+       df2 <- aggregate(df[[1]], list(df[["season_year"]]), function(x) c(seasonal.mean = mean(x), sd.high.seasonal = mean(x) + sd(x), sd.low.seasonal = mean(x) - sd(x)))
+       
+       df2 <-    data.frame(season_year=df2$Group.1,
+                                        seasonal.mean=df2$x[,"seasonal.mean"],
+                                        sd.high.seasonal = df2$x[,"sd.high.seasonal"],
+                                        sd.low.seasonal = df2$x[,"sd.low.seasonal"])
 
-      df <- df %>%
-        dplyr::select(season_year:sd.low.seasonal) %>% distinct()
+        df2$model <- gsub(".daymeans","",i)
 
-        ii <- gsub(".daymeans", "",i)
-
-        df$model <- ii
-        as.data.frame(df)})
+       return(df2)})
 
   dff <- c(list(obs.seasonal.mean.df), dfg.seasonal.mean) %>% reduce(rbind)  
   dff$Run <- r
   return(dff)
 })
-    
+
+names(seasonal.means) <- runs
+
+seasonal.means.df <- seasonal.means %>% reduce(rbind)
+
 ```
-#Here 
-check above chunk works and graph as in the annual trend 
+
+#### Fig. Calibration period - seasonal mean
+
 ```{r}
 
-
-```
-
-
-**'Raw' - seasonal**
-
-```{r Raw seasonal}
-
-ggplot(dfg_sm) + 
-  geom_ribbon(aes(x = 1:length(season_year), ymin = sd.low.seasonal, ymax=sd.high.seasonal), color="lightgrey", alpha=0.5) +
-  geom_line(aes(x=1:length(season_year), y=mean.seasonal), color="cornflowerblue", group=1) +
+ggplot(seasonal.means.df, aes(season_year, seasonal.mean, group=model, colour=model)) + 
+  geom_line() +
+  facet_wrap(.~Run) +
   theme_bw() + ylab("Av daily max temp oC") + 
-  ggtitle("'Raw' - tasmax seasonal") + 
-  xlab("Season - Year") +
-  scale_x_discrete(labels = c(dfg_sm$season_year)) + 
-  theme(axis.text.x = element_text(angle = 270, vjust = 0.5, hjust=1))
+  ggtitle("Tasmax Hisotric trends") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Seasonal averages, 1980.12.01 - 2009.12.01") +
+  scale_color_brewer(palette="Set1", name="Model")
 
 ```
 
 
-**'Raw' - Winter only**
+##### *Summer only*
 
 ```{r Raw seasonal winter}
 
-dfg_sm_w <- subset(dfg_sm, grepl("Winter", season_year))
+dfg_sm<- subset(seasonal.means.df, grepl("Summer", season_year))
 
-ggplot(dfg_sm_w) + 
-  geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
-              fill="lightblue3", alpha=0.5) +
-  geom_line(aes(year, y=mean.seasonal), color="lightblue4", group=1) +
-  theme_bw() + ylab("Av daily max temp oC") + 
-  ggtitle("'Raw' - tasmax seasonal - Winter only") + 
-  xlab("Year") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+ggplot(dfg_sm, aes(season_year, seasonal.mean, group=model, colour=model)) + 
+  geom_line(alpha=0.7) +
+  facet_wrap(.~Run) +
+  theme_bw() + ylab("Av daily max temp oC -Summer average") + 
+  ggtitle("Tasmax Hisotric trends") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Summer averages, 1980.12.01 - 2009.12.01") +
+  scale_color_brewer(palette="Set1", name="Model")
 
 ```
+It looks purple because the two bc methods aren't revealing much difference so subsetting to just one instead
 
 
-**'Raw' - Summer only**
+```{r}
 
-```{r Raw seasonal summer}
+dfg_sm<- subset(seasonal.means.df, !grepl("bc.b.cal", model)&grepl("Summer", season_year))
 
-dfg_sm_s <- subset(dfg_sm, grepl("Summer", season_year))
-
-ggplot(dfg_sm_s) + 
-  geom_ribbon(aes(year, ymin = sd.low.seasonal, ymax=sd.high.seasonal), 
-              fill="darkgoldenrod", alpha=0.5) +
-  geom_line(aes(year, y=mean.seasonal), color="darkred", group=1) +
-  theme_bw() + ylab("Av daily max temp oC") + 
-  ggtitle("'Raw' - tasmax seasonal - Summer only") + 
-  xlab("Year") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+ggplot(dfg_sm, aes(season_year, seasonal.mean, group=model, colour=model)) + 
+  geom_line(alpha=0.7) +
+  facet_wrap(.~Run) +
+  theme_bw() + ylab("Av daily max temp oC -Summer average") + 
+  ggtitle("Tasmax Hisotric trends") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Seasonal averages, 1980.12.01 - 2009.12.01") +
+  scale_color_brewer(palette="Set1", name="Model")
 
 ```
 
 #### *Annual trends - seasonal max*
 
-I think visualising the daily data is not mega helpful, but now grouping to season and calculating the seasonal maxima vals (i.e. rather than means above)
+For tasmax - grouping to season and calculating the seasonal maxima vals (i.e. rather than means above) 
+
+```{r}
+
+#Convert to max, out put a df in easy fig format 
+London.dfg.max <- lapply(runs, function(r){
+  L <- London.df.rL[[r]]
+  names(L)[1:3] <- c("obs", "cal", "proj") 
+    dfg <- lapply(names(L), function(ii){
+      dfi <- L[[ii]]
+      x <- 3:ncol(dfi) #ignore cols 1 & 2 with x y
+      #Calc maxima of the 
+      dfx <- lapply(x, function(x){
+        xx <- dfi[,x]
+        data.frame(max=max(xx, na.rm=T), day= names(dfi)[x])
+      })
+
+      dfx_g <- dfx %>% purrr::reduce(rbind)
+    })
+
+    names(dfg) <- paste0(names(L), ".max")
+    return(dfg)
+})
+
+names(London.dfg.max) <- runs
+
+seasonal.max.cal <- lapply(runs, function(r){
+  dfg <- London.dfg.max[[r]]
+    #Hads/obs df
+    df1 <- dfg$obs.max
+      x <- df1$day
+      df1$season <- ifelse(grepl("1231_|0131_|0228_|0229_", x),
+                                       "Winter",
+                      ifelse(grepl("0331_|0430_|0531_", x), "Spring",
+                          ifelse(grepl("0630_|0731_|0831_", x), "Summer", "Autumn")))
+
+#Note: the seasons should each have 90 days but seemingly Winter and Autumn have 89 and Spring and Summer have 91 - this is due to how the manual aligning worked out and should be updated when the hads data is re-run 
+
+    #Create season_year - All Winter months apart from Dec to be added to the previous year (ie     Winter 2000) would be the Dec of 2000 to the Feb of 2001
+    year <- gsub("^[^_]*_", "", x)
+    year <- as.numeric(substr(year, 1,4))
+    df1$season_year <- ifelse(grepl("0131_|0228_|0229_", x), 
+                                      paste0(year-1, df1$season), 
+                                      paste0(year, df1$season))
+    # Mutate to a seasonal mean df 
+    obs.seasonal.max.df <- aggregate(df1[[1]], list(df1[["season_year"]]), max)
+  #Grouping variable for later vars 
+  obs.seasonal.max.df$model <- "obs"
+   
+    dfg.seasonal.max <- lapply(c("cal.max", "qm1.hist.a.max",
+                                         "qm1.hist.b.max"), function(i){
+        df <- dfg[[i]]
+        x <- df$day
+        x <- gsub(".*_", "", x)
+        x <- as.numeric(x)
+      #The CPM days are consecutive 1 - 360 by year
+        df$season <- ifelse(x<91, "Winter",
+                      ifelse(x<181, "Spring",
+                          ifelse(x<271, "Summer", "Autumn")))
+  
+  #Create season_year - All Winter months apart from Dec to be added to the previous year (ie     Winter 2000) would be the Dec of 2000 to the Feb of 2001  
+        year <- gsub(".*day_", "", df$day)
+        year <- as.numeric(substr(year, 1,4))
+        df$season_year <- ifelse(x>29&x<91, 
+                         paste0(year-1, df$season), 
+                         paste0(year, df$season))
+  
+    # Mutate to a seasonal mean -- cant get this to run in tidyverse within loop as cant seem to get col indexing working so:
+       df2 <- aggregate(df[[1]], list(df[["season_year"]]), max)
+
+        df2$model <- gsub(".max","",i)
+
+       return(df2)})
+
+  dff <- c(list(obs.seasonal.max.df), dfg.seasonal.max) %>% reduce(rbind)  
+  dff$Run <- r
+  return(dff)
+})
+
+names(seasonal.max.cal) <- runs
+
+seasonal.maxima.df <- seasonal.max.cal %>% reduce(rbind)
+names(seasonal.maxima.df) <- c("season_year", "max", "model", "Run")
+```
+
+#### Fig. Calibration period - seasonal max
+
+```{r}
+
+ggplot(seasonal.maxima.df, aes(season_year, max, group=model, colour=model)) + 
+  geom_line() +
+  facet_wrap(.~Run) +
+  theme_bw() + ylab("Max daily max temp oC") + 
+  ggtitle("Tasmax Hisotric trends") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Seasonal averages, 1980.12.01 - 2009.12.01") +
+  scale_color_brewer(palette="Set1", name="Model")
+
+```
+
+#### Fig. Calibration period -  *Summer only*
+
+```{r}
+
+dfg_sm<- subset(seasonal.maxima.df, !grepl("qm1.hist.b", model)&grepl("Summer", season_year))
+
+ggplot(dfg_sm, aes(season_year, max, group=model, colour=model)) + 
+  geom_line(alpha=0.7) +
+  facet_wrap(.~Run) +
+  theme_bw() + ylab("Av daily max temp oC -Summer average") + 
+  ggtitle("Tasmax Hisotric trends") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Seasonal averages, 1980.12.01 - 2009.12.01") +
+  scale_color_brewer(palette="Set1", name="Model")
+
+```
+# here
 
 #### Create validaton df list
 
@@ -415,8 +523,8 @@ Adding in the observational HADs data and aligning based on dates
 
 ```{r}
 
-#Extract validation period of raw and bias corrected CPM data 
-cpm.val.dfs <- lapply(London.df[c("t.proj", "qm1.proj.a", "qm1.proj.b")], function(x){
+#Extract validation period of raw and bias corrected CPM data -- need to update the 1 
+cpm.val.dfs <- lapply(London.df[[1]][c("t.proj", "qm1.proj.a", "qm1.proj.b")], function(x){
   i <- grep("20191201-20201130_30", names(x))[1]
   df <- x[,1:i]
 })
@@ -445,6 +553,8 @@ names(val.dfs) <- c("obs.val.df", "raw.cpm.val", "bc1.cpm.val", "bc2.cpm.val")
 Using the validation data set for this
 
 Most metrics will just require vectors of values at this point, although it would be nice to have the georeferenced incorporated incase values spatially vary depending on eg topography 
+
+**to do** I think also extracting and aligning a similar cal.dfs would really help here  
 
 ```{r}
 val.dfs.v <- lapply(val.dfs, function(x){
@@ -487,7 +597,6 @@ cal.val.dfg <- reshape2::melt(as.matrix(val.dfs.v))
 
 ### **2b. RMSE**
 
-sqrt(mean((data$actual - data$predicted)^2))
 
 ```{r}
 
@@ -506,5 +615,10 @@ In this example, the first bias correction has a lower RMSE (just!) and therefor
 
 
 ## **3. Bias Correction Assessment: Metric specific - tasmax**
+
+
+#### **For future work**
+
+I used 100 quantiles but obviously more within qmap would help! 
 
 ### mean by cell 
