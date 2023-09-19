@@ -506,12 +506,11 @@ ggplot(dfg_sm, aes(season_year, max, group=model, colour=model)) +
   geom_line(alpha=0.7) +
   facet_wrap(.~Run) +
   theme_bw() + ylab("Av daily max temp oC -Summer average") + 
-  ggtitle("Tasmax Hisotric trends") +
- scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Seasonal averages, 1980.12.01 - 2009.12.01") +
+  ggtitle("Tasmax Historic trends") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Seasonal Summer averages, 1980.12.01 - 2009.12.01") +
   scale_color_brewer(palette="Set1", name="Model")
 
 ```
-# here
 
 #### Create validaton df list
 
@@ -521,23 +520,27 @@ Adding in the observational HADs data and aligning based on dates
 
 20191201-20201130_30 - runs to the end of the month of December of 2019 -- so should map the obvs.val
 
+#HERE
+
 ```{r}
 
 #Extract validation period of raw and bias corrected CPM data -- need to update the 1 
-cpm.val.dfs <- lapply(London.df[[1]][c("t.proj", "qm1.proj.a", "qm1.proj.b")], function(x){
-  i <- grep("20191201-20201130_30", names(x))[1]
-  df <- x[,1:i]
-})
+val.dfs <- lapply(London.dfg.rL, function(x))
+ London.df <- London.dfg.rL
+  cpm.val.dfs <- lapply(London.df[[1]][c("t.proj", "qm1.proj.a", "qm1.proj.b")], function(x){
+    i <- grep("20191201-20201130_30", names(x))[1]
+    df <- x[,1:i]
+  })
 
-#Using the old cpm data for the hads obs - so need to remove the dates to ensure theres 30 days per year
-remove <- c("0229_29", "0430_30", "0731_31", "0930_30", "1130_30")
-remove <- paste0(remove, collapse = "|")
+  #Using the old cpm data for the hads obs - so need to remove the dates to ensure theres 30 days per year
+  remove <- c("0229_29", "0430_30", "0731_31", "0930_30", "1130_30")
+  remove <- paste0(remove, collapse = "|")
       
-obs.val.df <- obs.val.df[,!grepl(remove, names(obs.val.df))]
-row.names(obs.val.df) <- paste0(obs.val.df$x, "_", obs.val.df$y)
+  obs.val.df <- obs.val.df[,!grepl(remove, names(obs.val.df))]
+  row.names(obs.val.df) <- paste0(obs.val.df$x, "_", obs.val.df$y)
 
-val.dfs <- c(list(obs.val.df), cpm.val.dfs)
-names(val.dfs) <- c("obs.val.df", "raw.cpm.val", "bc1.cpm.val", "bc2.cpm.val")
+  val.dfs <- c(list(obs.val.df), cpm.val.dfs)
+  names(val.dfs) <- c("obs.val.df", "raw.cpm.val", "bc1.cpm.val", "bc2.cpm.val")
 ```
 
 
