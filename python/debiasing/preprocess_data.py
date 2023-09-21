@@ -127,7 +127,7 @@ def preprocess_data() -> None:
     log.info('Resulting datasets with shape')
     log.info(ds_obsc.shape)
 
-    # masking coordinates where the observed data has no values
+    # masking coordinates where the observed data has no x, y values
     ds_modc = ds_modc.where(~np.isnan(ds_obsc.isel(time=0)))
     ds_modc = ds_modc.where(ds_modc.values < 1000)
     log.info('Calibration data masked')
@@ -164,23 +164,24 @@ def preprocess_data() -> None:
             use_pr = False
             if var == "rainfall":
                 use_pr = True
+
             # load
             if run_number is not None:
                 ds_modv = \
                     load_data(mod_fpath, date_range=f_date_period, variable=var, run_number=run_number,
                               filter_filenames_on_run_number=True, use_pr=use_pr, shapefile_path=shape_fpath,
-                              extension='tif')[
+                              filter_filenames_on_variable=True, extension='tif')[
                         var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
             else:
                 ds_modv = \
-                    load_data(mod_fpath, date_range=f_date_period, variable=var,
+                    load_data(mod_fpath, date_range=f_date_period, variable=var, filter_filenames_on_variable=True,
                               use_pr=use_pr, shapefile_path=shape_fpath, extension='tif')[
                         var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
         except Exception as e:
             log.info(f'No data available for {f_date_period} time period')
             continue
 
-        # masking coordinates where the observed data has no values
+        # masking coordinates where the observed data has no x, y values
         ds_modv = ds_modv.where(~np.isnan(ds_obsc.isel(time=0)))
         ds_modv = ds_modv.where(ds_modv.values < 1000)
 
