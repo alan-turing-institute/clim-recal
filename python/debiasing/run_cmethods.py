@@ -34,9 +34,11 @@ logging.getLogger().addHandler(screen_handler)
 parser = argparse.ArgumentParser(description='Adjust climate data based on bias correction algorithms.')
 parser.add_argument('--input_data_folder', '--input_data_folder', dest='input_dir', type=str,
                     help='Directory that contains all data files. NetCDF (.nc) files with names starting with '
-                         '`simh` and `obsh` should be found in the directory (containing historic CPM '
-                         'and HADs data respectively), as well as at least one file with name '
-                         'starting with `simp` (containing future CPM data)')
+                         '`modc` and `obsc` should be found in the directory (containing '
+                         'modelled calibration data (CPM) and observed calibration data (HADs) respectively), '
+                         'as well as at least one file with name '
+                         'starting with `modv` (containing modelled validation data (CPM). Calibration data '
+                         'are used to calibrate the debiasing methods and validation data are debiased.')
 parser.add_argument('--out', '--output', dest='output_fpath', type=str, help='Path to save output files', default='.')
 parser.add_argument('-m', '--method', dest='method', type=str, help='Correction method',
                     default='quantile_delta_mapping')
@@ -68,49 +70,49 @@ def run_debiasing() -> None:
     if method not in cm.get_available_methods():
         raise ValueError(f'Unknown method {method}. Available methods: {cm.get_available_methods()}')
 
-    simh_files = glob.glob(f"{input_dir}/simh*.nc")
-    if len(simh_files) == 0:
-        raise Exception(f"No .nc files with filename starting with simh were "
+    modc_files = glob.glob(f"{input_dir}/modc*.nc")
+    if len(modc_files) == 0:
+        raise Exception(f"No .nc files with filename starting with modc were "
                                 f"found in the input directory {input_dir}")
-    elif len(simh_files) > 1:
-        raise Exception(f"More than one .nc file with filenames starting with simh were "
+    elif len(modc_files) > 1:
+        raise Exception(f"More than one .nc file with filenames starting with modc were "
                         f"found in the input directory {input_dir}")
     else:
-        print('Loading historic control data from ', simh_files[0], "...")
-        with xr.open_dataset(simh_files[0], engine='netcdf4') as ds:
-            ds_simh = ds.load()[var]
-    log.info(f'Historic control data loaded with shape {ds_simh.shape}.')
+        print('Loading modelled calibration data (CPM) from ', modc_files[0], "...")
+        with xr.open_dataset(modc_files[0], engine='netcdf4') as ds:
+            ds_modc = ds.load()[var]
+    log.info(f'Modelled calibration data (CPM) loaded with shape {ds_modc.shape}.')
 
-    obsh_files = glob.glob(f"{input_dir}/obsh*.nc")
-    if len(obsh_files) == 0:
-        raise Exception(f"No .nc files with filename starting with obsh were "
+    obsc_files = glob.glob(f"{input_dir}/obsc*.nc")
+    if len(obsc_files) == 0:
+        raise Exception(f"No .nc files with filename starting with obsc were "
                         f"found in the input directory {input_dir}")
-    elif len(obsh_files) > 1:
-        raise Exception(f"More than one .nc file with filenames starting with obsh were "
+    elif len(obsc_files) > 1:
+        raise Exception(f"More than one .nc file with filenames starting with obsc were "
                         f"found in the input directory {input_dir}")
     else:
-        print('Loading historic observation data from ', obsh_files[0], "...")
-        with xr.open_dataset(obsh_files[0], engine='netcdf4') as ds:
-            ds_obs = ds.load()[var]
-        log.info(f'Historic observation data loaded with shape {ds_obs.shape}.')
+        print('Loading observation data for calibration from ', obsc_files[0], "...")
+        with xr.open_dataset(obsc_files[0], engine='netcdf4') as ds:
+            ds_obsc = ds.load()[var]
+        log.info(f'Observation data for calibration loaded with shape {ds_obsc.shape}.')
 
-    if ds_obs.shape != ds_simh.shape:
-        raise RuntimeError('Error, observed and control historical data must have same dimensions.')
+    if ds_obsc.shape != ds_modc.shape:
+        raise RuntimeError('Error, observed and modelled calibration data must have same dimensions.')
 
     # looping over future time periods for which debiased data need to be generated
-    simp_files = glob.glob(f"{input_dir}/simp*.nc")
-    if len(simp_files) == 0:
-        raise Exception(f"No .nc files with filename starting with simp were "
+    modv_files = glob.glob(f"{input_dir}/modv*.nc")
+    if len(modv_files) == 0:
+        raise Exception(f"No .nc files with filename starting with modv were "
                         f"found in the input directory {input_dir}")
     else:
-        for simp_file in simp_files:
-            print('Loading future scenario (CPM) data from ', simp_file, "...")
-            with xr.open_dataset(simp_file, engine='netcdf4') as ds:
-                ds_simp = ds.load()[var]
-            log.info(f'Future scenario data loaded with shape {ds_simp.shape}.')
+        for modv_file in modv_files:
+            print('Loading modelled data (CPM) for validation from ', modv_file, "...")
+            with xr.open_dataset(modv_file, engine='netcdf4') as ds:
+                ds_modv = ds.load()[var]
+            log.info(f'Modelled data (CPM) for validation loaded with shape {ds_modv.shape}.')
 
-            start_date: str = ds_simp['time'][0].dt.strftime('%Y%m%d').values.ravel()[0]
-            end_date: str = ds_simp['time'][-1].dt.strftime('%Y%m%d').values.ravel()[0]
+            start_date: str = ds_modv['time'][0].dt.strftime('%Y%m%d').values.ravel()[0]
+            end_date: str = ds_modv['time'][-1].dt.strftime('%Y%m%d').values.ravel()[0]
 
             descr1, descr2 = '', ''
             if method in cm.DISTRIBUTION_METHODS:
@@ -125,9 +127,9 @@ def run_debiasing() -> None:
             log.info(f'Starting {method} adjustment')
             result = cm.adjust_3d(
                 method=method,
-                obs=ds_obs,
-                simh=ds_simh,
-                simp=ds_simp,
+                obs=ds_obsc,
+                simh=ds_modc,
+                simp=ds_modv,
                 n_quantiles=n_quantiles,
                 kind=kind,
                 group=group,
@@ -135,7 +137,7 @@ def run_debiasing() -> None:
             )
             log.info('Saving now')
             result.name = var
-            result['time'] = ds_simp['time']
+            result['time'] = ds_modv['time']
             result = result.rename({"lon": "projection_x_coordinate", "lat": "projection_y_coordinate"})
 
             # define output name
@@ -146,9 +148,9 @@ def run_debiasing() -> None:
             log.info(result.head())
 
             plt.figure(figsize=(10, 5), dpi=216)
-            ds_simh.groupby('time.dayofyear').mean(...).plot(label='$T_{sim,h}$')
-            ds_obs.groupby('time.dayofyear').mean(...).plot(label='$T_{obs,h}$')
-            ds_simp.groupby('time.dayofyear').mean(...).plot(label='$T_{sim,p}$')
+            ds_modc.groupby('time.dayofyear').mean(...).plot(label='$T_{sim,h}$')
+            ds_obsc.groupby('time.dayofyear').mean(...).plot(label='$T_{obs,h}$')
+            ds_modv.groupby('time.dayofyear').mean(...).plot(label='$T_{sim,p}$')
             result.groupby('time.dayofyear').mean(...).plot(label='$T^{*Debiased}_{sim,p}$')
             plt.title(
                 f'Debiased {var} projected to {start_date} and {end_date}')
