@@ -40,7 +40,7 @@ parser.add_argument('--calib_dates', '--calibration_date_range', dest='calibrati
                     default='19801201-19991130')
 parser.add_argument('--valid_dates', '--validation_date_range', dest='validation_date_range', type=str,
                     help='Start and end dates for validation data (CPM data to be debiased using the '
-                         'calibrated debiasing model) - multiple date ranges can be passed, '
+                         'calibrated debiasing model, and HADs data as referece) - multiple date ranges can be passed, '
                          'separated by "_", each in YYYYMMDD-YYYYMMDD format e.g., '
                          '"20100101-20191231_20200101-20291231"',
                     default='20201201-20291130_20301201-20391130')
@@ -124,7 +124,7 @@ def preprocess_data() -> None:
     if ds_obsc.shape != ds_modc.shape:
         raise RuntimeError('Error, observed and modelled calibration data must have same dimensions.')
 
-    log.info('Resulting datasets with shape')
+    log.info('Resulting calibration datasets with shape')
     log.info(ds_obsc.shape)
 
     # masking coordinates where the observed data has no x, y values
@@ -159,6 +159,7 @@ def preprocess_data() -> None:
     for f_date_period in future_time_periods:
 
         log.info(f'Running for {f_date_period} time period')
+
         # load modelled (CPM) data for validation period and store in ds_modv
         try:
             use_pr = False
@@ -178,24 +179,52 @@ def preprocess_data() -> None:
                               use_pr=use_pr, shapefile_path=shape_fpath, extension='tif')[
                         var].rename({"projection_x_coordinate": "lon", "projection_y_coordinate": "lat"})
         except Exception as e:
-            log.info(f'No data available for {f_date_period} time period')
+            log.info(f'No modelled data available for {f_date_period} time period')
             continue
 
+        # load observed (HADs) data for validation period and store in ds_obsv
+        try:
+            ds_obsv = load_data(obs_fpath, date_range=f_date_period, variable=var, filter_filenames_on_variable=True,
+                                shapefile_path=shape_fpath, extension=ext)[var].rename(
+                {"projection_x_coordinate": "lon",
+                 "projection_y_coordinate": "lat"})
+        except Exception as e:
+            log.info(f'No observed data available for {f_date_period} time period')
+            continue
+
+        # aligning calendars, there might be extra days in the modelled data that need to be dropped
+        ds_modv = ds_modv.sel(time=ds_obsv.time, method='nearest')
+
+        if ds_obsv.shape != ds_modv.shape:
+            raise RuntimeError('Error, observed and modelled validation data must have same dimensions.')
+
+        log.info('Resulting validation datasets with shape')
+        log.info(ds_obsv.shape)
+
         # masking coordinates where the observed data has no x, y values
-        ds_modv = ds_modv.where(~np.isnan(ds_obsc.isel(time=0)))
+        ds_modv = ds_modv.where(~np.isnan(ds_obsv.isel(time=0)))
         ds_modv = ds_modv.where(ds_modv.values < 1000)
 
+        ds_obsv.attrs['unit'] = unit
         ds_modv.attrs['unit'] = unit
 
-        # write ds_modv to .nc file in output directory
+        # write ds_modv and ds_obsv to .nc files in output directory
         ds_modv_filename = f'modv_var-{var}_run-{run_number}_{f_date_period[0]}_{f_date_period[1]}'
+        ds_obsv_filename = f'obsv_var-{var}_run-{run_number}_{f_date_period[0]}_{f_date_period[1]}'
         ds_modv_path = os.path.join(out_fpath, f'{ds_modv_filename}.nc')
+        ds_obsv_path = os.path.join(out_fpath, f'{ds_obsv_filename}.nc')
         if not os.path.exists(os.path.dirname(ds_modv_path)):
             folder_path = Path(os.path.dirname(ds_modv_path))
+            folder_path.mkdir(parents=True)
+        if not os.path.exists(os.path.dirname(ds_obsv_path)):
+            folder_path = Path(os.path.dirname(ds_obsv_path))
             folder_path.mkdir(parents=True)
         print(f"Saving modelled (CPM) data for validation to {ds_modv_path}")
         ds_modv.to_netcdf(ds_modv_path)
         log.info(f'Saved modelled (CPM) data for validation, period {f_date_period} to {ds_modv_path}')
+        print(f"Saving observed (HADs) data for validation to {ds_obsv_path}")
+        ds_obsv.to_netcdf(ds_obsv_path)
+        log.info(f'Saved observed (HADs) data for validation, period {f_date_period} to {ds_modv_path}')
 
     end = time.time()
     log.info(f'total time in seconds: {end - start}')
