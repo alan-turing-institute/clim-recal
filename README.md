@@ -79,8 +79,8 @@ python3 ceda_ftp_download.py --input /badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/H
 
 Datasets used in this project (raw, processed and debiased) have been pre-downloaded/pre-processed and stored in an Azure fileshare set-up for the clim-recal project (https://dymestorage1.file.core.windows.net/vmfileshare). You need to be given access, and register your IP address to the approved list in the following way from the azure portal:
 
-- Go to dymestorage1 page `Home > Storage accounts > dymestorage1`
-- Navigate to *Networking* tab under Security + networking
+- Go to dymestorage1 page
+- Security + networking tab
 - Add your IP under the Firewall section
 
 Once you have access you can mount the fileshare. On a Mac you can do it from a terminal:
