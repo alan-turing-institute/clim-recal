@@ -516,31 +516,31 @@ ggplot(dfg_sm, aes(season_year, max, group=model, colour=model)) +
 
 Adding in the observational HADs data and aligning based on dates
 
-*Note* So as not to re-run the UK wide LCAT data processing, a workaround was added to the bias correction function used to group the obs data - this means that to align the validation cpm data we have to remove a month in the beginning - ie the LCAT specific 
-
-20191201-20201130_30 - runs to the end of the month of December of 2019 -- so should map the obvs.val
-
-#HERE
+*Note* So as not to re-run the UK wide LCAT data processing, a workaround was added to the bias correction function used to group the obs data - this means that to align the validation cpm data we have to remove a month in the beginning 
 
 ```{r}
 
-#Extract validation period of raw and bias corrected CPM data -- need to update the 1 
-val.dfs <- lapply(London.dfg.rL, function(x))
- London.df <- London.dfg.rL
-  cpm.val.dfs <- lapply(London.df[[1]][c("t.proj", "qm1.proj.a", "qm1.proj.b")], function(x){
+#Extract validation period of raw and bias corrected CPM data
+val.dfs <- lapply(runs, function(r){
+    London.df <- London.df.rL[[r]]
+    cpm.val.dfs <- lapply(London.df[c("t.proj", "qm1.proj.a", "qm1.proj.b")], function(x){
     i <- grep("20191201-20201130_30", names(x))[1]
     df <- x[,1:i]
   })
 
-  #Using the old cpm data for the hads obs - so need to remove the dates to ensure theres 30 days per year
-  remove <- c("0229_29", "0430_30", "0731_31", "0930_30", "1130_30")
-  remove <- paste0(remove, collapse = "|")
+    #Using the old cpm data for the hads obs - so need to remove the dates to ensure theres 30 days per year
+    remove <- c("0229_29", "0430_30", "0731_31", "0930_30", "1130_30")
+    remove <- paste0(remove, collapse = "|")
       
-  obs.val.df <- obs.val.df[,!grepl(remove, names(obs.val.df))]
-  row.names(obs.val.df) <- paste0(obs.val.df$x, "_", obs.val.df$y)
+    obs.val.df <- obs.val.df[,!grepl(remove, names(obs.val.df))]
+    row.names(obs.val.df) <- paste0(obs.val.df$x, "_", obs.val.df$y)
 
-  val.dfs <- c(list(obs.val.df), cpm.val.dfs)
-  names(val.dfs) <- c("obs.val.df", "raw.cpm.val", "bc1.cpm.val", "bc2.cpm.val")
+    val.dfs <- c(list(obs.val.df), cpm.val.dfs)
+    names(val.dfs) <- c("obs.val.df", "raw.cpm.val", "bc1.cpm.val", "bc2.cpm.val")
+    return(val.dfs)
+    })
+
+names(val.dfs) <- runs
 ```
 
 
@@ -555,35 +555,52 @@ val.dfs <- lapply(London.dfg.rL, function(x))
 
 Using the validation data set for this
 
-Most metrics will just require vectors of values at this point, although it would be nice to have the georeferenced incorporated incase values spatially vary depending on eg topography 
-
-**to do** I think also extracting and aligning a similar cal.dfs would really help here  
 
 ```{r}
-val.dfs.v <- lapply(val.dfs, function(x){
+#Convert dfs to a vector
+val.dfs.v <- lapply(runs, function(r){
+  dfs <- val.dfs[[r]]
+  dfs2 <- lapply(dfs, function(d){
   #Remove x and y 
-  x$x <- NULL
-  x$y <- NULL
+  d$x <- NULL
+  d$y <- NULL
   #Convert to single vector
-  unlist(as.vector(x))
+  unlist(as.vector(d))})
+  names(dfs2) <- names(dfs)
+
+val.dfs.v.df <- dfs2 %>% reduce(cbind)
+val.dfs.v.df <- as.data.frame(val.dfs.v.df)})
+
+names(val.dfs.v) <- runs
+```
+
+```{r}
+val.dfs.v <- lapply(runs, function(r){
+  df <- val.dfs.v[[r]]
+  names(df) <-paste0(r, ".", c("obs.val.df", "raw.cpm.val", "bc1.cpm.val", "bc2.cpm.val"))
+  return(df)
 })
 
-val.dfs.v.df <- val.dfs.v %>% reduce(cbind)
-val.dfs.v.df <- as.data.frame(val.dfs.v.df)
+#Convert to a single df 
+val.dfs.v.allruns <- val.dfs.v %>% reduce(cbind)
+
+#Remove duplicate obs (pulled through across each run)
+val.dfs.v.allruns[c("Run06.obs.val.df", "Run07.obs.val.df", "Run08.obs.val.df")] <- NULL
+names(val.dfs.v.allruns)[1] <- "obs.val"
 ```
 
 ### **2a. Descriptive statistics**
 
 ```{r descriptives validation}
 
-descriptives <-  lapply(val.dfs.v, function(x){
+descriptives <- apply(val.dfs.v.allruns,2, function(x){ 
   per <- data.frame(as.list(quantile(x, probs=c(0.1, 0.9))))
   data.frame(mean=mean(x), sd=sd(x), per10th=per$X10.,per90th=per$X90.)
 })
 
 descriptives <- descriptives %>% reduce(rbind)
-row.names(descriptives) <- c("obs", "raw.cpm", "bc1.cpm", "bc2.cpm")
-descriptives
+row.names(descriptives) <- names(val.dfs.v.allruns)
+t(descriptives)
 ```
 
 
@@ -592,8 +609,28 @@ descriptives
 
 ```{r}
 
-cal.val.dfg <- reshape2::melt(as.matrix(val.dfs.v))
+names(val.dfs.v) <- runs
+val.dfs.v_fordist <- lapply(runs, function(r){
+  df <- val.dfs.v[[r]]
+  names(df) <- c("obs", "raw.cpm", "bc1.cpm", "bc2.cpm")
+  df$run <- paste0(r)
+  return(df)
+})
 
+#Convert to a single df 
+val.dfs.v.allruns_fordist <- val.dfs.v_fordist %>% reduce(rbind)
+val.dfg <- reshape2::melt(val.dfs.v.allruns_fordist, id="run")
+```
+
+#### Fig.Density plot of validation period 
+
+```{r}
+ggplot(subset(val.dfg, variable!="bc2.cpm"), aes(value, fill=variable, colour=variable)) + 
+  geom_density(alpha = 0.3, position="identity") + 
+ facet_wrap(.~ run) +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1") +
+  scale_color_brewer(palette = "Set1")
 
 ```
 
@@ -603,16 +640,19 @@ cal.val.dfg <- reshape2::melt(as.matrix(val.dfs.v))
 
 ```{r}
 
-actual <- val.dfs.v$obs.val.df
+actual <- val.dfs.v.allruns$obs.val
 
-rmse <- sapply(val.dfs.v[c(2:4)], function(x){
+rmse <- sapply(val.dfs.v.allruns[c(2:ncol(val.dfs.v.allruns))], function(x){
   sqrt(mean((actual - x)^2))
 })
 
-data.frame(as.list(rmse), row.names = "RMSE")
+ t(data.frame(as.list(rmse), row.names = "RMSE"))
 ```
 
-In this example, the first bias correction has a lower RMSE (just!) and therefore is better fitting than the raw 
+Across all runs, the bias corrected datasets have a lower RMSE (just!) and therefore are better fitting than the raw. Depending on the run, the raw could fit the data better. 
+
+###
+
 
 # Taylor diagram
 
