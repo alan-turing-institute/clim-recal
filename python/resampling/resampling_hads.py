@@ -6,7 +6,7 @@ It resamples temporally to a 360 day calendar.
 
 import argparse
 import pandas as pd
-import xarray as xr
+import xarray as xr #requires rioxarray extension
 import os
 import glob
 import multiprocessing
