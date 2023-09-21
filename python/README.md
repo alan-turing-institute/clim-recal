@@ -84,11 +84,11 @@ python3 run_cmethods.py --input_data_folder <input files directory> --out <outpu
 
 For more details on the scripts and options you can run:
 ```
-python preprocess_data.py --help
+python3 preprocess_data.py --help
 ```
 and
 ```
-python run_cmethods.py --help
+python3 run_cmethods.py --help
 ```
 **Main Functionality**:
 
@@ -109,17 +109,13 @@ The `run_cmethods.py` script performs the following steps:
   - Saves the resulting output to the specified directory.
   - Creates diagnotic figues of the output dataset (time series and time dependent maps) and saves it into the specified directory.
 
-In this script 
-datasets are debiased in periods of 10 years, in a consecutive loop. For each time period it will produce an `.nc` output file
-with the adjusted data and a time-series plot and a time dependent map plot of the adjusted data. 
-
 **Working example**.
 
 Example of how to run the two scripts using data stored in the Azure fileshare, running the scripts locally (uses input data that have been cropped to contain only the city of Glasgow. The two scripts will debias only the `tasmax` variable, run 05 of the CPM, for calibration years 1980-2009 and validation years 2010-2019. It uses the `quantile_delta_mapping` debiasing method:
 ```
 python3 preprocess_data.py --mod /Volumes/vmfileshare/ClimateData/Cropped/three.cities/CPM/Glasgow/ --obs /Volumes/vmfileshare/ClimateData/Cropped/three.cities/Hads.original360/Glasgow/ -v tasmax --out ./preprocessed_data/ --calib_dates 19800101-20091230 --valid_dates 20100101-20191230 --run_number 05
 
-python run_cmethods.py --input_data_folder ./preprocessed_data/  --out ./debiased_data/  --method quantile_delta_mapping --v tasmax -p 4
+python3 run_cmethods.py --input_data_folder ./preprocessed_data/  --out ./debiased_data/  --method quantile_delta_mapping --v tasmax -p 4
 ```
 
 
