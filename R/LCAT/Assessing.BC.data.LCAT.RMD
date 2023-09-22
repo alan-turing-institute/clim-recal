@@ -1,11 +1,16 @@
 ---
-title: "Assessing and Processing LCAT data"
-author: "Ruth C E Bowyer"
+title: "Bias correction assessment of LCAT data"
+author: "Ruth Bowyer"
 date: "`r format(Sys.Date())`"
 output:
-  github_document
+  html_document:
+    theme: cosmo
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 4
+    code_folding: hide
+    df_print: paged
 ---
-
 
 
 ```{r libs and setup, message=FALSE, warning=F}
@@ -18,6 +23,7 @@ library(terra)
 library(tmap) #pretty maps
 library(RColorBrewer)
 library(tidyverse)
+library(kableExtra)
 library(plotrix) #For taylor diagrams 
 
 dd <- "/mnt/vmfileshare/ClimateData/"
@@ -135,7 +141,7 @@ Random selection of 3 days of the observation, calibration and two adjusted cals
 
 ##### Fig. *Day 1 - 1980-12-01*
 
-```{r, figures-side, fig.show="hold", out.width="33%"}
+```{r, fig.show="hold", out.width="33%"}
 tm_shape(London.rasts$Run05$t.obs[[1]]) + tm_raster(title="Observation, 1980-12-01") #Obviously just one call of the observation 
 tm_shape(London.rasts$Run05$t.cal[[1]]) + tm_raster(title="Calibration, Run 05, Raw 1980-12-01")
 tm_shape(London.rasts$Run06$t.cal[[1]]) + tm_raster(title="Calibration, Run 06, Raw 1980-12-01")
@@ -153,7 +159,7 @@ tm_shape(London.rasts$Run08$qm1.hist.a[[1]]) + tm_raster(title="Calibration, Run
 
 Just to note I was so suprised by how much lower the observation data was for this raster I loaded the raw HADs to check (in resampled_2.2km/tasmax and the original 1km grid it does reflect it - it just seems very low)
 
-```{r, figures-side, fig.show="hold", out.width="33%"}
+```{r, fig.show="hold", out.width="33%"}
 tm_shape(London.rasts$Run05$t.obs[[3781]]) + tm_raster(title="Observation, 1991-06-01") #Obviously just one call of the observation 
 tm_shape(London.rasts$Run05$t.cal[[3781]]) + tm_raster(title="Calibration, Run 05, Raw 1991-06-01")
 tm_shape(London.rasts$Run06$t.cal[[3781]]) + tm_raster(title="Calibration, Run 06, Raw 1991-06-01")
@@ -171,7 +177,7 @@ tm_shape(London.rasts$Run08$qm1.hist.a[[3781]]) + tm_raster(title="Calibration, 
 ##### Fig. *Day 3 - 2000-08-01*
 
 
-```{r, figures-side, fig.show="hold", out.width="33%"}
+```{r, fig.show="hold", out.width="33%"}
 tm_shape(London.rasts$Run05$t.obs[[7081]]) + tm_raster(title="Observation, 2000-08-01") #Obviously just one call of the observation 
 tm_shape(London.rasts$Run05$t.cal[[7081]]) + tm_raster(title="Calibration, Run 05, Raw 2000-08-01")
 tm_shape(London.rasts$Run06$t.cal[[7081]]) + tm_raster(title="Calibration, Run 06, Raw 2000-08-01")
@@ -546,10 +552,11 @@ names(val.dfs) <- runs
 
 #### *Validation period - annual trends - seasonal mean*
 
-
+(To be added)
 
 #### *Validation period - annual trends - seasonal max*
 
+(To be added)
 
 ## **2. Bias Correction Assessment: Metrics**
 
@@ -595,7 +602,7 @@ names(val.dfs.v.allruns)[1] <- "obs.val"
 
 descriptives <- apply(val.dfs.v.allruns,2, function(x){ 
   per <- data.frame(as.list(quantile(x, probs=c(0.1, 0.9))))
-  data.frame(mean=mean(x), sd=sd(x), per10th=per$X10.,per90th=per$X90.)
+  data.frame(mean=mean(x), sd=sd(x), min = min(x), per10th=per$X10.,per90th=per$X90., max = max(x))
 })
 
 descriptives <- descriptives %>% reduce(rbind)
@@ -633,35 +640,88 @@ ggplot(subset(val.dfg, variable!="bc2.cpm"), aes(value, fill=variable, colour=va
   scale_color_brewer(palette = "Set1")
 
 ```
+### **2b. Model fit statistics**
 
+Using the following to assess overall fit: 
 
-### **2b. RMSE**
+- **R-squared (rsq)**
+- **Root Square Mean Error (RMSE)**
+- **Nash-Sutcliffe Efficiency (NSE):** Magnitude of residual variance compared to measured data variance, ranges -∞ to 1, 1 = perfect match to observations
+- **Percent bias (PBIAS):** The optimal value of PBIAS is 0.0, with low-magnitude values indicating accurate model simulation. Positive values indicate overestimation bias, whereas negative values indicate model underestimation bias.
 
-
-```{r}
-
+```{r rsq}
 actual <- val.dfs.v.allruns$obs.val
+
+rsq <- sapply(val.dfs.v.allruns[c(2:ncol(val.dfs.v.allruns))], function(x){
+  cor(actual, x)^2
+})
+
+ t(data.frame(as.list(rsq), row.names = "RSQ"))
+```
+
+```{r rmse}
 
 rmse <- sapply(val.dfs.v.allruns[c(2:ncol(val.dfs.v.allruns))], function(x){
   sqrt(mean((actual - x)^2))
 })
 
- t(data.frame(as.list(rmse), row.names = "RMSE"))
 ```
 
-Across all runs, the bias corrected datasets have a lower RMSE (just!) and therefore are better fitting than the raw. Depending on the run, the raw could fit the data better. 
+```{r pbias}
 
-###
+pbias <- sapply(val.dfs.v.allruns[c(2:ncol(val.dfs.v.allruns))], function(x){
+  hydroGOF::pbias(x, actual)
+})
 
+```
 
-# Taylor diagram
+```{r nse}
+nse <- sapply(val.dfs.v.allruns[c(2:ncol(val.dfs.v.allruns))], function(x){
+  hydroGOF::NSE(x, actual)
+})
+
+```
+
+Highlighting the bias corrected statistics 
+
+```{r pretty kable}
+
+k <- cbind(rsq, rmse, pbias, nse)
+k %>% 
+  kable(booktabs = T) %>%
+  kable_styling() %>%
+  row_spec(grep(".bc.",row.names(k)), background = "lightgrey")
+
+```
+
 
 
 ## **3. Bias Correction Assessment: Metric specific - tasmax**
 
+### **3b Days above 30 degrees**
+
+(Not considered consecutively here)
+
+```{r}
+val.dfs.v.allruns$year <- substr(row.names(val.dfs.v.allruns), 8,11)
+
+over30 <- lapply(names(val.dfs.v.allruns), function(i){
+  x <- val.dfs.v.allruns[,i]
+  df <- aggregate(x, list(val.dfs.v.allruns$year), function(x){sum(x>=30)})
+  names(df) <- c("year", paste0("Days.over.30.", i))
+                 return(df)
+})
+
+over30 %>% reduce(left_join, "year")
+```
+
+
+### **Number of heatwaves per annum**
+
+(to be added)
 
 #### **For future work**
 
-I used 100 quantiles but obviously more within qmap would help! 
+The number of quantiles selected will effect the efficacy of the bias correction: lots of options therefore with this specific method
 
-### mean by cell 
+

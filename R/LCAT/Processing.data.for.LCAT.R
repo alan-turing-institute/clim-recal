@@ -2,7 +2,7 @@ rm(list=ls())
 
 #setwd("~/Desktop/clim-recal/clim-recal/")
 setwd("/home/dyme/Desktop/clim-recal/clim-recal")
-source("R/bias-correction-methods/apply_qmapQuant_to_crpd_df_fn.R")
+source("R/LCAT/LCATv_apply_qmapQuant_to_crpd_df_fn.R")
 
 library(terra)
 library(tidyverse)
@@ -15,7 +15,7 @@ Regioncds <- Region.Refs$Regioncd
 #Scotland (UKM) needs to be broken down, so running on everyone else
 Regioncds.2 <- Regioncds[c(1:10, 12)] 
 
-  apply_bias_correction_to_cropped_df(region="UKK", 
+  apply_bias_correction_to_cropped_df(region=Regionscds.2, 
                                       var=c("tasmin", "tasmax", "pr"),
                                       Runs=c("Run05", "Run06", "Run07", "Run08"))
 
