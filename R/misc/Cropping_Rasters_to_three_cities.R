@@ -2,7 +2,7 @@
 
 rm(list=ls())
 #setwd("~/Desktop/clim-recal/clim-recal/")
-#setwd("/home/dyme/Desktop/clim-recal/clim-recal")
+setwd("/home/dyme/Desktop/clim-recal/clim-recal")
 source("R/misc/read_crop.fn.R")
 
 library(tidyverse)
@@ -80,7 +80,7 @@ lapply(cities, function(x){
                  cropname=x) })
 
 
-#### HADs - updated 360 calendar (to be run pending updated files)
+#### HADs - updated 360 calendar 
 
 var <- c("tasmax", "tasmin", "rainfall")
 
