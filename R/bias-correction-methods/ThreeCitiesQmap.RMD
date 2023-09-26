@@ -20,71 +20,64 @@ rm(list=ls())
 
 library(qmap)
 library(terra)
+library(tidyverse) 
+library(doParallel)
 
 dd <- "/mnt/vmfileshare/ClimateData/"
 
 ```
 
-## 1. Convert data to dataframes
+## 1. Pre-processing
 
-Qmap uses df as inpt 
+Qmap uses df as inpt so below CPM data is loaded and converted to df
 
-```{r}
+```{r cpm hads processing}
 
 cities <- c("London", "Manchester", "Glasgow")
 
-cities.cpm.dfs <- lapply(cities, function(x){
-  
-  fp <- paste0(dd, "/Interim/CPM/three.cities/",x,"/grouped/")
-  files <- list.files(fp)
-  files.paths <- paste0(fp, files)
+#file locations for cropped versions of CPM and updated hads data
+fps <- c(paste0(dd, "Cropped/three.cities/CPM/"),
+            paste0(dd, "Cropped/three.cities/Hads.updated360/"))
 
-  # Load and to df
-  dfL <- lapply(files.paths, function(i){
+x <- paste0(fps, rep(cities, 2))
+
+#Run the conversion to df in parallel 
+cores <- detectCores()
+cl <- makeCluster(cores[1]-1)
+registerDoParallel(cl)
+
+    foreach(x = x, 
+         .packages = c("terra", "tidyverse"),
+             .errorhandling = 'pass') %dopar% { 
+
+      fp <- paste0(x, "/")
+      files <- list.files(fp)
+      files.paths <- paste0(fp, files)
+
+      # Load and to df
+      dfL <- lapply(files.paths, function(i){
           r <- rast(i)
           rdf <- as.data.frame(r, xy=T) 
           return(rdf)
         }) 
   
-  names(dfL) <- files
-  return(dfL)
+        names(dfL) <- files
+        
+        #assign a nice name for easy referencing
+        obj.name <- gsub("/mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/", "cpm.dfL.", x)
+        obj.name <- gsub("/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.updated360/", "obs.dfL.", obj.name)
+        
+        assign(dfL, obj.name)
   
-   })
+             } 
 
-names(cities.cpm.dfs) <- cities
-```
 
-```{r}
-
-cities.Hads.dfs <- lapply(cities, function(x){
-  
-  fp <- paste0(dd, "Interim/HadsUK/three.cities/",x, "/")
-  files <- list.files(fp)
-  files <- files[!grepl("aux.json", files)]
-  files.paths <- paste0(fp, files)
-
-  # Load and to df
-  dfL <- lapply(files.paths, function(i){
-          r <- rast(i)
-          rdf <- as.data.frame(r, xy=T) 
-          return(rdf)
-        })
-  
-  names(dfL) <- files
-    return(dfL)
-   })
-   
-names(cities.Hads.dfs) <- cities
 ```
 
 ## 2. Apply bias correction by variable/run 
 
 The called function was written to apply the following models:
 
-For tasmax and tasmin: 
-
-
-For precip
 
 ```{r}
 
