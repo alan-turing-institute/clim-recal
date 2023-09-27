@@ -81,5 +81,8 @@ USER ${NB_UID}
 # You can comment this line to keep the default environment in Terminal
 RUN echo "conda activate ${env_name}" >> "${HOME}/.bashrc"
 
+RUN cd python/debiasing && git submodule update --init --recursive
+
+
 # This will use the default launch as discussed in
 # https://jupyter-docker-stacks.readthedocs.io/en/latest/using/running.html
