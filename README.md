@@ -17,6 +17,7 @@ Clim-recal is an **Extensive guide to application of BC methods**:
 1. [Introduction](#)
 2. [Overview: Bias Correction Pipeline](#bias-correction-pipeline)
 3. [Documentation](#documentation)
+4. [The dataset](#the-dataset)
 4. [Guidance for Non-Climate Scientists](#guidance-for-non-climate-scientists)
 5. [Guidance for Climate Scientists](#guidance-for-non-climate-scientists)
 6. [Research](#research)
@@ -26,41 +27,47 @@ Clim-recal is an **Extensive guide to application of BC methods**:
 
 ## Overview: Bias Correction Pipeline
 
-Here we provide an example of how to run a debiasing pipeline starting.  The pipeline has the following steps:
+Here we provide an example of how to run a debiasing pipeline starting. The pipeline has the following steps:
 
-1. Reproject the [UKCP](https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km) control and scenario data to the same coordinate system as the [HADs](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km) observational data (British National Grid).
-2. Resample the HADs data from 1km to 2.2km grid to match the UKCP reprojected grid.
-3. Run debiasing method on the control and observational data and project it into the scenario dataset. 
-
-After each of these steps the reprojected, resampled and debiased scenario datasets are produced and saved in an Azure fileshare storage (more details about this bellow).
-
-> 📢 If you are an internal collaborator you can access the raw data as well as intermediate steps through our Azure server. [See here for a How-to]().
+1. [Load data](#load-data)
+2. [Preprocessing - Reproject](#preprocessing-reproject)
+3. [Preprocessing - Resample](#preprocessing-resample)
+4. [Preprocessing - split into training and validation](#preproessing-split-into-training-and-validation)
+5. [Apply bias correction](#apply-bias-correction)
+6. [Assess the debiased data](#assess-the-debiased-data)
 
 ### Prerequisites
 
 #### Setting up your environment
-the environment used in this [environment setup file](setup-instructions.md).
 
-
+Methods can be used with a custom environment, here we provide a Anaconda
+environment file for ease-of-use. 
+```
+conda env create -f environment.yml
+```
 #### Downloading the data
-Our pipeline is optimized to work with the raw data from the [MET office via CEDA](https://catalogue.ceda.ac.uk/uuid/ad2ac0ddd3f34210b0d6e19bfc335539).
 
-You can download the raw UKCP2.2 climate data from the CEDA archive. Go [here](https://archive.ceda.ac.uk/), create an account and set up your FTP credentials in "My Account". You can then use our custom script [ceda_ftp_download.py](python/data_download/) to download the data: 
+This example pipeline is optimized to work with raw data from the MET office which can be openly accessed [via CEDA](https://catalogue.ceda.ac.uk/uuid/ad2ac0ddd3f34210b0d6e19bfc335539). Specifically, we use the [UKCP](https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km) control and scenario data at 2.2km resolution and the [HADs](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km) observational data (British National Grid). If you are not familiar with this data, read our section on [the dataset](#the-dataset)
+
+To download the data from the CEDA archive. Go [here](https://archive.ceda.ac.uk/), create an account and set up your FTP credentials in "My Account". You can then use our custom script [ceda_ftp_download.py](python/data_download/) to download the data: 
 
 ```
 # cpm data
 python3 ceda_ftp_download.py --input /badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/ --output 'output_dir' --username 'uuu' --psw 'ppp' --change_hierarchy
 
 # hads data
-python3 ceda_ftp_download.py --input /badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km --output output_dir --username 'uuu' --psw 'ppp'
+python3 ceda_ftp_download.py --input /badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km --output 'output_dir' --username 'uuu' --psw 'ppp'
 ```
-You need to replace `uuu` and `ppp` with your CEDA username and FTP password respectively and replace 'output_dir' with the directory you want to write the data to.
+You need to replace `uuu` and `ppp` with your CEDA username and FTP password respectively and replace `output_dir` with the directory you want to write the data to.
 
 The `--change_hierarchy` flag modifies the folder hierarchy to fit with the hierarchy in the Turing Azure file store. This flag only applies to the UKCP data and should not be used with HADs data. You can use the same script without the `--change_hierarchy` flag in order to download files without any changes to the hierarchy.
 
+> 📢 If you are an internal collaborator you can access the raw data as well as intermediate steps through our Azure server. [See here for a How-to]().
 
 ### Preparing the data
 In [python/load_data/data_loader.py] we have written a few functions for loading and concatenating data into a single xarray which can be used for running debiasing methods. Instructions in how to use these functions can be found in python/notebooks/load_data_python.ipynb.
+
+Resample the HADs data from 1km to 2.2km grid to match the UKCP reprojected grid.
 
 reproject the UKCP datasets to the British National Grid coordinate system.
 **Resampling** for the HADsUK datasets from 1km to a 2.2 km grid to match the UKCP re-projected grid.
@@ -181,6 +188,13 @@ This will display all available options for the script, including their purposes
 For R scripts, please refer to the comments within the R scripts for contextual information and usage guidelines, and feel free to reach out with any specific queries.
 
 We appreciate your patience and encourage you to check back for updates on our ongoing documentation efforts.
+## The dataset
+
+### UKCP18
+The UK Climate Projections 2018 (UKCP18) dataset offers insights into the potential climate changes in the UK. UKCP18 is an advancement of the UKCP09 projections and delivers the latest evaluations of the UK's possible climate alterations in land and marine regions throughout the 21st century. This crucial information aids in future Climate Change Risk Assessments and supports the UK’s adaptation to climate change challenges and opportunities as per the National Adaptation Programme.
+
+### HADS
+[HadUK-Grid](https://www.metoffice.gov.uk/research/climate/maps-and-data/data/haduk-grid/haduk-grid) is a comprehensive collection of climate data for the UK, compiled from various land surface observations across the country. This data is organized into a uniform grid to ensure consistent coverage throughout the UK at up to 1km x 1km resolution. The dataset, spanning from 1836 to the present, includes a variety of climate variables such as air temperature, precipitation, sunshine, and wind speed, available on daily, monthly, seasonal, and annual timescales. 
 
 ## Guidance for Non-Climate Scientists
 
@@ -193,6 +207,26 @@ Researchers, policy-makers and other stakeholders wishing to use publicly availa
 ### Let's collaborate!
 
 We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an issue or [get in touch](mailto:clim-recal@turing.ac.uk)! 
+
+### Adding to the conda environment file 
+
+To use `R` in anaconda you may need to specify the `conda-forge` channel:
+
+```
+conda config --env --add channels conda-forge
+```
+
+Some libraries may be only available through `pip`, for example, these may
+require the generation / update of a `requirements.txt`:
+
+```
+pip freeze > requirements.txt
+```
+
+and installing with:
+
+```
+pip install -r requirements.txt
 
 ## Research
 ### Methods taxonomy 
