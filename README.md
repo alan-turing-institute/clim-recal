@@ -15,19 +15,17 @@ Clim-recal is an **Extensive guide to application of BC methods**:
 ## Table of Contents
 
 1. [Introduction](#)
-2. [Bias Correction Pipeline](#bias-correction-pipeline)
+2. [Overview: Bias Correction Pipeline](#bias-correction-pipeline)
+3. [Documentation](#documentation)
 4. [Guidance for Non-Climate Scientists](#guidance-for-non-climate-scientists)
 5. [Guidance for Climate Scientists](#guidance-for-non-climate-scientists)
-6. [Documentation](#documentation)
-7. [Research](#research)
-    - [Literature Review](#review)
-    - [Full BC Taxonomy](#taxonomy)
-    - [References](#references)
-7. [License](#contributors)
-8. [Contributors](#license)
+6. [Research](#research)
+7. [References](#references)
+8. [License](#contributors)
+9. [Contributors](#license)
 
-## Bias Correction Pipeline
-### Overview
+## Overview: Bias Correction Pipeline
+
 Here we provide an example of how to run a debiasing pipeline starting.  The pipeline has the following steps:
 
 1. Reproject the [UKCP](https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km) control and scenario data to the same coordinate system as the [HADs](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km) observational data (British National Grid).
@@ -158,30 +156,9 @@ python run_cmethods.py --scen /Volumes/vmfileshare/ClimateData/Reprojected/UKCP2
     
 ### Assessing the corrected data
 
-## Guidance for Non-Climate Scientists
+## Documentation (🚧 In Progress)
 
-Regional climate models (RCMs) contain systematic errors, or biases in their output [1]. Biases arise in RCMs for a number of reasons, such as the assumptions in the general circulation models (GCMs), and in the downscaling process from GCM to RCM [1,2].
-
-Researchers, policy-makers and other stakeholders wishing to use publicly available RCMs need to consider a range of "bias correction” methods (sometimes referred to as "bias adjustment" or "recalibration"). Bias correction methods offer a means of adjusting the outputs of RCM in a manner that might better reflect future climate change signals whilst preserving the natural and internal variability of climate [2]. 
-
-## Guidance for Climate Scientists
-
-### Let's collaborate!
-
-We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an issue or [get in touch](mailto:clim-recal@turing.ac.uk)! 
-
-## Research
-### Methods taxonomy 
-
-Our work-in-progress taxonomy can be viewed [here](https://docs.google.com/spreadsheets/d/18LIc8omSMTzOWM60aFNv1EZUl1qQN_DG8HFy1_0NdWk/edit?usp=sharing). When we've completed our literature review, it will be submitted for publication in an open peer-reviewed journal. 
-
-Our work is however, just like climate data,  intended to be dynamic, and we are in the process of setting up a pipeline for researchers creating new methods of bias correction to be able to submit their methods for inclusion on in the **clim-recal** repository. 
-
-## 🚧 Future plans
-
-- **More BC Methods**: Further bias correction of UKCP18 products. *This is planned for a future release and is not available yet.*
-- **Pipeline for adding new methods**: *This is planned for a future release and is not available yet.*
-- **Code Documentation**: We are in the process of developing comprehensive documentation for our codebase to supplement the guidance provided in this document. In the interim, for Python scripts, you can leverage the inline documentation (docstrings) available within the code. To access a summary of the available options and usage information for any Python script, you can use the `--help` flag in the command line as follows:
+We are in the process of developing comprehensive documentation for our codebase to supplement the guidance provided in this document. In the interim, for Python scripts, you can leverage the inline documentation (docstrings) available within the code. To access a summary of the available options and usage information for any Python script, you can use the `--help` flag in the command line as follows:
 
   ```sh
   python <script_name>.py --help
@@ -205,6 +182,29 @@ For R scripts, please refer to the comments within the R scripts for contextual 
 
 We appreciate your patience and encourage you to check back for updates on our ongoing documentation efforts.
 
+## Guidance for Non-Climate Scientists
+
+Regional climate models (RCMs) contain systematic errors, or biases in their output [1]. Biases arise in RCMs for a number of reasons, such as the assumptions in the general circulation models (GCMs), and in the downscaling process from GCM to RCM [1,2].
+
+Researchers, policy-makers and other stakeholders wishing to use publicly available RCMs need to consider a range of "bias correction” methods (sometimes referred to as "bias adjustment" or "recalibration"). Bias correction methods offer a means of adjusting the outputs of RCM in a manner that might better reflect future climate change signals whilst preserving the natural and internal variability of climate [2]. 
+
+## Guidance for Climate Scientists
+
+### Let's collaborate!
+
+We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an issue or [get in touch](mailto:clim-recal@turing.ac.uk)! 
+
+## Research
+### Methods taxonomy 
+
+Our work-in-progress taxonomy can be viewed [here](https://docs.google.com/spreadsheets/d/18LIc8omSMTzOWM60aFNv1EZUl1qQN_DG8HFy1_0NdWk/edit?usp=sharing). When we've completed our literature review, it will be submitted for publication in an open peer-reviewed journal. 
+
+Our work is however, just like climate data,  intended to be dynamic, and we are in the process of setting up a pipeline for researchers creating new methods of bias correction to be able to submit their methods for inclusion on in the **clim-recal** repository. 
+
+## 🚧 Future plans
+
+- **More BC Methods**: Further bias correction of UKCP18 products. *This is planned for a future release and is not available yet.*
+- **Pipeline for adding new methods**: *This is planned for a future release and is not available yet.*
 
 ## References
 
