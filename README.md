@@ -47,9 +47,9 @@ conda env create -f environment.yml
 ```
 #### Downloading the data
 
-This example pipeline is optimized to work with raw data from the MET office which can be openly accessed [via CEDA](https://catalogue.ceda.ac.uk/uuid/ad2ac0ddd3f34210b0d6e19bfc335539). Specifically, we use the [UKCP](https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km) control and scenario data at 2.2km resolution and the [HADs](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km) observational data (British National Grid). If you are not familiar with this data, read our section on [the dataset](#the-dataset)
+This streamlined pipeline is designed for raw data provided by the Met Office, accessible through the [CEDA archive]((https://catalogue.ceda.ac.uk/uuid/ad2ac0ddd3f34210b0d6e19bfc335539)). It utilizes [UKCP](https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km) control, scenario data at 2.2km resolution, and [HADs](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km) observational data. For those unfamiliar with this data, refer to our [the dataset](#the-dataset) section.
 
-To download the data from the CEDA archive. Go [here](https://archive.ceda.ac.uk/), create an account and set up your FTP credentials in "My Account". You can then use our custom script [ceda_ftp_download.py](python/data_download/) to download the data: 
+To access the data,[register here]((https://archive.ceda.ac.uk/)) at the CEDA archive and configure your FTP credentials in "My Account". Utilize our [ceda_ftp_download.py](python/data_download/) script to download the data.
 
 ```
 # cpm data
