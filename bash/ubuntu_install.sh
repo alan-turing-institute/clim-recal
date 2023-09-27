@@ -1,5 +1,6 @@
 #!/bin/bash
-# Basic if statement
+
+# A script to automate an Azure Ubuntu Server deploy for testings
 
 CHECKOUT_PATH=$HOME/code/clim-recal
 ANACONDA_INSTALL_FOLDER=$HOME/code/anaconda-install
