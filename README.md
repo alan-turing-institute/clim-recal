@@ -29,12 +29,14 @@ Clim-recal is an **Extensive guide to application of BC methods**:
 
 Here we provide an example of how to run a debiasing pipeline starting. The pipeline has the following steps:
 
-1. [Load data](#load-data)
-2. [Preprocessing - Reproject](#preprocessing-reproject)
-3. [Preprocessing - Resample](#preprocessing-resample)
-4. [Preprocessing - split into training and validation](#preproessing-split-into-training-and-validation)
-5. [Apply bias correction](#apply-bias-correction)
-6. [Assess the debiased data](#assess-the-debiased-data)
+1. Set-up & data download
+    *We provide custom scripts to facilitate download of data*
+2. Preprocessing
+    *This includes reprojecting, resampling & splitting the data prior to bias correction*
+5. Apply bias correction
+    *Our pipeline embeds two distinct methods of bias correction*
+6. Assess the debiased data
+    *We have developed a way to assess the quality of the debiasing step across multiple alternative methods*
 
 ### Prerequisites
 
@@ -64,7 +66,12 @@ The `--change_hierarchy` flag modifies the folder hierarchy to fit with the hier
 
 > 📢 If you are an internal collaborator you can access the raw data as well as intermediate steps through our Azure server. [See here for a How-to]().
 
-### Preparing the data
+### Reproject the data
+The HADs data and the UKCP projections have different resolution and coordinate system. For example the HADs dataset uses the British National Grid coordinate system.
+
+ 
+### Resample the data
+
 In [python/load_data/data_loader.py] we have written a few functions for loading and concatenating data into a single xarray which can be used for running debiasing methods. Instructions in how to use these functions can be found in python/notebooks/load_data_python.ipynb.
 
 Resample the HADs data from 1km to 2.2km grid to match the UKCP reprojected grid.
@@ -227,6 +234,7 @@ and installing with:
 
 ```
 pip install -r requirements.txt
+```
 
 ## Research
 ### Methods taxonomy 
