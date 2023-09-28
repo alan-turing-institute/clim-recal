@@ -67,11 +67,14 @@ registerDoParallel(cl)
         obj.name <- gsub("/mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/", "cpm.dfL.", x)
         obj.name <- gsub("/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.updated360/", "obs.dfL.", obj.name)
         
-        assign(dfL, obj.name)
+        assign(obj.name, dfL, envir=.GlobalEnv)
   
              } 
 
-
+ stopCluster(cl) 
+  gc()
+  
+  
 ```
 
 ## 2. Apply bias correction by variable/run 

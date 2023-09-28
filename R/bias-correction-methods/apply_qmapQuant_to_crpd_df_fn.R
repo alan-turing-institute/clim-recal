@@ -8,23 +8,23 @@ library(data.table)
 library(qmap)
 
 
-apply_bias_correction_to_cropped_df <- function(region, #Region code - needs to relate to the file name in a unique way to subset
-                                                var, #Meterological variables
-                                                Runs){
+apply_qmapQUANT_to_cropped_df <- function(region, #Region code - needs to relate to the file name in a unique way to subset
+                                                var, #Meterological variables - as in files
+                                                Runs, #Run as in name of files 
+                                     ## These args to be passed to qmapQUANT itself:
+                                     qstep, # numeric value between 0 and 1, e.g 0.1. The quantile mapping is fitted only for the quantiles defined by quantile(0,1,probs=seq(0,1,by=qstep).
+                                     nboot, #numeric value 1 or greater - nboot number of bootstrap samples used for estimation of the observed quantiles.If nboot==1 the estimation is based on all (and not resampled) data.
+
+                                     type #interpolation method to use for fitting data to the predictions )(eg linear, tricubic)
+                                    
+                                    ){
 
   i <- region   
 
 for(r in Runs){
   for(v in var){
     if(v!="pr"){
-      dd <- "/mnt/vmfileshare/ClimateData/"
-
-      #Subset to Area
-      #HADs grid observational data
-        fp <- paste0(dd, "Interim/HadsUK/Data_as_df/")
-        files <- list.files(fp)
-        obs <- files[grepl(i, files)]
-
+        obj.df <- ls(pattern=paste0(c(v,i,obs), collapse="|")) #Extract object based on name from global env
         #subset file list to var
         obs.var <-  obs[grepl(v,obs)]
         
@@ -151,7 +151,7 @@ for(r in Runs){
                         nboot = 1) #nboot number of bootstrap samples used for estimation of the observed quantiles. 
 
 
-        qm1.hist.a <- doQmapQUANT(cal.df, qm1.fit, type="linear")
+        qm1.hist.a <- doQmapQUANT(cal.df, qm1.fit, type=type)
         qm1.hist.b <- doQmapQUANT(cal.df, qm1.fit, type="tricub")
 
         qm1.proj.a <- doQmapQUANT(proj.df, qm1.fit, type="linear")
