@@ -12,8 +12,19 @@ from datetime import date, datetime
 
 DATA_PATH: Final[Path] = Path('/mnt/vmfileshare/ClimateData/Cropped/three.cities/')
 DateType = date | str
-DATE_FORMAT_STR: str = '%Y%m%d'
-DATE_FORMAT_SPLIT_STR: str = '-'
+DATE_FORMAT_STR: Final[str] = '%Y%m%d'
+DATE_FORMAT_SPLIT_STR: Final[str] = '-'
+
+CORRECT_CLI_DEBIASING_DEFAULT_COMMAND: Final[str] = (
+    "python preprocess_data.py "
+    "--mod /mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/Manchester "
+    "--obs /mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.original360/Manchester "
+    "-v tasmax "
+    "-r 05 "
+    "--out /mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/Manchester/05/tasmax "
+    "--calib_dates 19810101-19811230 "
+    "--valid_dates 20100101-20100330"
+)
 
     
 def date_to_str(date_obj: DateType, in_format_str: str = DATE_FORMAT_STR, out_format_str: str = DATE_FORMAT_STR) -> str:
@@ -224,6 +235,10 @@ class RunConfig:
         Example:
             ```pycon
             >>> config: RunConfig = RunConfig()
+            >>> config.to_cli_preprocess_str() == CORRECT_CLI_DEBIASING_DEFAULT_COMMAND
+            True
+            >>> CORRECT_CLI_DEBIASING_DEFAULT_COMMAND[:96]  #doctest: +ELLIPSIS
+            'python preprocess_data.py --mod /.../CPM/Manchester'
 
             ```
         """
@@ -252,15 +267,5 @@ class RunConfig:
 
 def test_command_line_default() -> None:
     """Test default generated cli `str`."""
-    correct_cli_str: str = (
-        "python preprocess_data.py "
-        "--mod /mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/Manchester "
-        "--obs /mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.original360/Manchester "
-        "-v tasmax "
-        "-r 05 "
-        "--out /mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/Manchester/05/tasmax "
-        "--calib_dates 19810101-19811230 "
-        "--valid_dates 20100101-20100330"
-    )
     config: RunConfig = RunConfig()
-    assert config.to_cli_preprocess_str() == correct_cli_str
+    assert config.to_cli_preprocess_str() == CORRECT_CLI_DEBIASING_DEFAULT_COMMAND
