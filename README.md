@@ -14,28 +14,27 @@ Clim-recal is an **Extensive guide to application of BC methods**:
 
 ## Table of Contents
 
-1. [Introduction](#)
-2. [Overview: Bias Correction Pipeline](#bias-correction-pipeline)
+2. [Overview: Bias Correction Pipeline](#overview-bias-correction-pipeline)
 3. [Documentation](#documentation)
 4. [The dataset](#the-dataset)
 4. [Guidance for Non-Climate Scientists](#guidance-for-non-climate-scientists)
 5. [Guidance for Climate Scientists](#guidance-for-non-climate-scientists)
 6. [Research](#research)
 7. [References](#references)
-8. [License](#contributors)
-9. [Contributors](#license)
+8. [License](#license)
+9. [Contributors](#contributors)
 
 ## Overview: Bias Correction Pipeline
 
 Here we provide an example of how to run a debiasing pipeline starting. The pipeline has the following steps:
 
-1. Set-up & data download
+1. **Set-up & data download**
     *We provide custom scripts to facilitate download of data*
-2. Preprocessing
+2. **Preprocessing**
     *This includes reprojecting, resampling & splitting the data prior to bias correction*
-5. Apply bias correction
+5. **Apply bias correction**
     *Our pipeline embeds two distinct methods of bias correction*
-6. Assess the debiased data
+6. **Assess the debiased data**
     *We have developed a way to assess the quality of the debiasing step across multiple alternative methods*
 
 ### Prerequisites
@@ -170,7 +169,8 @@ python run_cmethods.py --scen /Volumes/vmfileshare/ClimateData/Reprojected/UKCP2
     
 ### Assessing the corrected data
 
-## Documentation (🚧 In Progress)
+## Documentation
+🚧 In Progress
 
 We are in the process of developing comprehensive documentation for our codebase to supplement the guidance provided in this document. In the interim, for Python scripts, you can leverage the inline documentation (docstrings) available within the code. To access a summary of the available options and usage information for any Python script, you can use the `--help` flag in the command line as follows:
 
