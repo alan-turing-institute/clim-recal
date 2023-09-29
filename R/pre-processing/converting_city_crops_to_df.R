@@ -41,8 +41,8 @@ foreach(x = x,
           
     for(v in var){
       for(r in run){
-          
-        files.paths <- files.paths.all[grepl(v, files.paths.all)& grepl(r, files.paths.all)&grepl("CPM", files.paths.all)]
+          rr <- paste0("_",r,"_")
+        files.paths <- files.paths.all[grepl(v, files.paths.all)& grepl(rr, files.paths.all)&grepl("CPM", files.paths.all)]
         
           # Read in 1st runpath as df with xy coords to ensure overlay 
           p1 <- files.paths[[1]] 

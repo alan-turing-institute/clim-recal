@@ -27,64 +27,57 @@ dd <- "/mnt/vmfileshare/ClimateData/"
 
 ```
 
-## 1. Pre-processing
+## Apply bias correction by variable/run in `qmap`
 
-Qmap uses df as inpt so below CPM data is loaded and converted to df
+`qmap` offers a few different bias correction options. 
+The below chunks calls a function that wraps the qmap function to loop over the cities and apply the bias correction
+It returns a list object, where for each model, we have:
+- a matrix of the calibration observation period (01-12-1980 to 30-11-2010 )
+- a matrix of values relating to the validation obs period (hads data 01-12-2010 to 01-12-2020)
+the raw values and the adjusted values for the CPM for the 
+"t.obs", "val.df", "t.cal", "t.proj", "qm1.hist", "qm1.val.proj"
 
-```{r cpm hads processing}
+Data has been pre-processed from cropped using 'converting_city_crops_to_df.R' to .csv 
 
-cities <- c("London", "Manchester", "Glasgow")
+##1. Empirical Quantile Mapping 
 
-#file locations for cropped versions of CPM and updated hads data
-fps <- c(paste0(dd, "Cropped/three.cities/CPM/"),
-            paste0(dd, "Cropped/three.cities/Hads.updated360/"))
+```{r warning = F}
+setwd("/home/dyme/Desktop/clim-recal/clim-recal")
+source("R/bias-correction-methods/apply_qmapQuant_to_crpd_df_fn.R")
 
-x <- paste0(fps, rep(cities, 2))
+cities <- c("London", "Glasgow", "Manchester")
+run <- c("Run05", "Run06", "Run07","Run08")
+var <- c("tasmax", "tasmin", "pr")
 
-#Run the conversion to df in parallel 
-cores <- detectCores()
-cl <- makeCluster(cores[1]-1)
-registerDoParallel(cl)
-
-    foreach(x = x, 
-         .packages = c("terra", "tidyverse"),
-             .errorhandling = 'pass') %dopar% { 
-
-      fp <- paste0(x, "/")
-      files <- list.files(fp)
-      files.paths <- paste0(fp, files)
-
-      # Load and to df
-      dfL <- lapply(files.paths, function(i){
-          r <- rast(i)
-          rdf <- as.data.frame(r, xy=T) 
-          return(rdf)
-        }) 
+lapply(cities, function(x){
+  rd <- paste0(dd, "Debiased/R/QuantileMapping/three.cities/", x, "/")
   
-        names(dfL) <- files
-        
-        #assign a nice name for easy referencing
-        obj.name <- gsub("/mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/", "cpm.dfL.", x)
-        obj.name <- gsub("/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.updated360/", "obs.dfL.", obj.name)
-        
-        assign(obj.name, dfL, envir=.GlobalEnv)
-  
-             } 
+  apply_qmapQUANT_to_cropped_df(region = x,
+                                var = var,
+                                Runs = run,
+                                pd = paste0(dd, "Interim/CPM/Data_as_df/three.cities/"),#Parent directory where dataframes of cpm data are located
+                                pd.obs = paste0(dd, "Interim/HadsUK/Data_as_df/three.cities/"),#Parent directory where dataframes of obs data are
+                              val.startdate = "20101201", #The first date of the validation period. eg 20101201 All dates before this time will be taken as the calibration
+                              ## These args to be passed to qmapQUANT itself:
+                                     wet.day = ifelse(v=="pr", T, F),
+                                     qstep = 0.1, # numeric value between 0 and 1, e.g 0.1. The quantile mapping is fitted only for the quantiles defined by quantile(0,1,probs=seq(0,1,by=qstep).
+                                     nboot = 1, #numeric value 1 or greater - nboot number of bootstrap samples used for estimation of the observed quantiles. If nboot==1 the estimation is based on all (and not resampled) data.
 
- stopCluster(cl) 
-  gc()
-  
-  
+                                     type = "linear", #interpolation method to use for fitting data to the predictions )(eg linear, tricubic)
+                              rd = rd)
+})
+              
+                  
 ```
 
-## 2. Apply bias correction by variable/run 
+
 
 The called function was written to apply the following models:
 
 
 ```{r}
 
-source("/home/dyme/Desktop/clim-recal/clim-recal/R/bias-correction-methods/apply_qmapQuant_to_crpd_df_fn.R")
+dsource("/home/dyme/Desktop/clim-recal/clim-recal/R/bias-correction-methods/apply_qmapQuant_to_crpd_df_fn.R")
 
 var <- c("tasmax", "tasmin", "pr")
 Runs <-c("05", "06", "07", "08")
