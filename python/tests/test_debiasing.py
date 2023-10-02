@@ -30,11 +30,14 @@ CORRECT_CLI_DEBIASING_DEFAULT_COMMAND: Final[str] = (
 def date_to_str(date_obj: DateType, in_format_str: str = DATE_FORMAT_STR, out_format_str: str = DATE_FORMAT_STR) -> str:
     """Return a `str` in `date_format_str` of `date_obj`.
 
-    Example:
-        >>> date_to_str('20100101')
-        '20100101'
-        >>> date_to_str(date(2010, 1, 1))
-        '20100101'
+    Example
+    -------
+
+    >>> date_to_str('20100101')
+    '20100101'
+    >>> date_to_str(date(2010, 1, 1))
+    '20100101'
+
     """
     if isinstance(date_obj, str):
         date_obj = datetime.strptime(date_obj, in_format_str).date()
@@ -50,14 +53,14 @@ def date_range_to_str(
 ) -> str:
     """Take `start_date` and `end_date` `str` or `date` instances and return a range `str`.
 
-    Example:
-        ```pycon
-        >>> date_range_to_str('20100101', '20100330')
-        '20100101-20100330'
-        >>> date_range_to_str(date(2010, 1, 1), '20100330')
-        '20100101-20100330'
+    Example
+    -------
 
-        ```
+    >>> date_range_to_str('20100101', '20100330')
+    '20100101-20100330'
+    >>> date_range_to_str(date(2010, 1, 1), '20100330')
+    '20100101-20100330'
+
     """
     start_date = date_to_str(start_date,
         in_format_str=in_format_str,
@@ -101,17 +104,17 @@ class RunConfig:
             split_str: str | None = None) -> str:
         """Return date range as `str` from `calib_date_start` to `calib_date_end`.
 
-        Example:
-            ```pycon
-            >>> config: RunConfig = RunConfig()
-            >>> config.calib_dates_to_str('20100101', '20100330')
-            '20100101-20100330'
-            >>> config.calib_dates_to_str(date(2010, 1, 1), '20100330')
-            '20100101-20100330'
-            >>> config.calib_dates_to_str(date(2010, 1, 1), '20100330', split_str="_")
-            '20100101_20100330'
+        Example
+        -------
 
-            ```
+        >>> config: RunConfig = RunConfig()
+        >>> config.calib_dates_to_str('20100101', '20100330')
+        '20100101-20100330'
+        >>> config.calib_dates_to_str(date(2010, 1, 1), '20100330')
+        '20100101-20100330'
+        >>> config.calib_dates_to_str(date(2010, 1, 1), '20100330', split_str="_")
+        '20100101_20100330'
+
         """
         start_date = start_date if start_date else self.calib_date_start
         end_date = end_date if end_date else self.calib_date_end
@@ -125,17 +128,17 @@ class RunConfig:
             split_str: str | None = None) -> str:
         """Return date range as `str` from `valid_date_start` to `valid_date_end`.
 
-        Example:
-            ```pycon
-            >>> config: RunConfig = RunConfig()
-            >>> config.valid_dates_to_str('20100101', '20100330')
-            '20100101-20100330'
-            >>> config.valid_dates_to_str(date(2010, 1, 1), '20100330')
-            '20100101-20100330'
-            >>> config.valid_dates_to_str(date(2010, 1, 1), '20100330', split_str="_")
-            '20100101_20100330'
+        Example
+        -------
 
-            ```
+        >>> config: RunConfig = RunConfig()
+        >>> config.valid_dates_to_str('20100101', '20100330')
+        '20100101-20100330'
+        >>> config.valid_dates_to_str(date(2010, 1, 1), '20100330')
+        '20100101-20100330'
+        >>> config.valid_dates_to_str(date(2010, 1, 1), '20100330', split_str="_")
+        '20100101_20100330'
+
         """
         start_date = start_date if start_date else self.valid_date_start
         end_date = end_date if end_date else self.valid_date_end
@@ -149,17 +152,17 @@ class RunConfig:
             split_str: str | None = None) -> str:
         """Return date range as `str` from `calib_date_start` to `calib_date_end`.
 
-        Example:
-            ```pycon
-            >>> config: RunConfig = RunConfig()
-            >>> config._date_range_to_str('20100101', '20100330')
-            '20100101-20100330'
-            >>> config._date_range_to_str(date(2010, 1, 1), '20100330')
-            '20100101-20100330'
-            >>> config._date_range_to_str(date(2010, 1, 1), '20100330', split_str="_")
-            '20100101_20100330'
+        Example
+        -------
 
-            ```
+        >>> config: RunConfig = RunConfig()
+        >>> config._date_range_to_str('20100101', '20100330')
+        '20100101-20100330'
+        >>> config._date_range_to_str(date(2010, 1, 1), '20100330')
+        '20100101-20100330'
+        >>> config._date_range_to_str(date(2010, 1, 1), '20100330', split_str="_")
+        '20100101_20100330'
+
         """
         in_format_str = in_format_str if in_format_str else self.date_format_str
         out_format_str = out_format_str if out_format_str else self.date_format_str
@@ -174,15 +177,15 @@ class RunConfig:
     def mod_path(self, city: str | None = None) -> Path:
         """Return city estimates path.
 
-        Example:
-            ```pycon
-            >>> config: RunConfig = RunConfig()
-            >>> config.mod_path()
-            PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/Manchester')
-            >>> config.mod_path('Glasgow')
-            PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/Glasgow')
+        Example
+        -------
 
-            ```
+        >>> config: RunConfig = RunConfig()
+        >>> config.mod_path()
+        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/Manchester')
+        >>> config.mod_path('Glasgow')
+        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/Glasgow')
+
         """
         city = city if city else self.city
         return self.data_path / self.mod_folder / city
@@ -190,15 +193,15 @@ class RunConfig:
     def obs_path(self, city: str | None = None) -> Path:
         """Return city observations path.
 
-        Example:
-            ```pycon
-            >>> config: RunConfig = RunConfig()
-            >>> config.obs_path()
-            PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.original360/Manchester')
-            >>> config.obs_path('Glasgow')
-            PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.original360/Glasgow')
+        Example
+        -------
 
-            ```
+        >>> config: RunConfig = RunConfig()
+        >>> config.obs_path()
+        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.original360/Manchester')
+        >>> config.obs_path('Glasgow')
+        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.original360/Glasgow')
+
         """
         city = city if city else self.city
         return self.data_path / self.obs_folder / city
@@ -206,15 +209,15 @@ class RunConfig:
     def out_path(self, city: str | None = None, run: str | None = None, variable: str | None = None) -> Path:
         """Return path to save results.
 
-        Example:
-            ```pycon
-            >>> config: RunConfig = RunConfig()
-            >>> config.out_path()
-            PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/Manchester/05/tasmax')
-            >>> config.out_path(city='Glasgow', run='07')
-            PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/Glasgow/07/tasmax')
+        Example
+        -------
 
-            ```
+        >>> config: RunConfig = RunConfig()
+        >>> config.out_path()
+        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/Manchester/05/tasmax')
+        >>> config.out_path(city='Glasgow', run='07')
+        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/Glasgow/07/tasmax')
+
         """
         city = city if city else self.city
         run = run if run else self.run
@@ -232,15 +235,15 @@ class RunConfig:
         ) -> str:
         """Generate a command line interface str as a test example.
 
-        Example:
-            ```pycon
-            >>> config: RunConfig = RunConfig()
-            >>> config.to_cli_preprocess_str() == CORRECT_CLI_DEBIASING_DEFAULT_COMMAND
-            True
-            >>> CORRECT_CLI_DEBIASING_DEFAULT_COMMAND[:96]  #doctest: +ELLIPSIS
-            'python preprocess_data.py --mod /.../CPM/Manchester'
+        Example
+        -------
 
-            ```
+        >>> config: RunConfig = RunConfig()
+        >>> config.to_cli_preprocess_str() == CORRECT_CLI_DEBIASING_DEFAULT_COMMAND
+        True
+        >>> CORRECT_CLI_DEBIASING_DEFAULT_COMMAND[:96]  #doctest: +ELLIPSIS
+        'python preprocess_data.py --mod /.../CPM/Manchester'
+
         """
         city = city if city else self.city
         variable = variable if variable else self.variable
