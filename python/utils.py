@@ -75,17 +75,26 @@ def path_iterdir(path: Path, strict: bool = False) -> Generator[Path | None, Non
     Examples
     --------
 
+    >>> tmp_path = getfixture('tmp_path')
+    >>> from os import chdir
+    >>> chdir(tmp_path)
     >>> example_path: Path = Path('a/test/path')
     >>> example_path.exists()
     False
     >>> tuple(path_iterdir(example_path.parent))
-    FileNotFoundError...
+    ()
+    >>> tuple(path_iterdir(example_path.parent, strict=True))
+    Traceback (most recent call last):
+        ...
+    FileNotFoundError: [Errno 2] No such file or directory: 'a/test'
+    >>> example_path.parent.mkdir(parents=True)
     >>> example_path.touch()
     >>> tuple(path_iterdir(example_path.parent))
-    (PosixPath('path'),)
+    (PosixPath('a/test/path'),)
     >>> example_path.unlink()
     >>> tuple(path_iterdir(example_path.parent))
-    (,)
+    ()
+
     """
     try:
         yield from path.iterdir()

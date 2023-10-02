@@ -360,7 +360,8 @@ def test_command_line_default() -> None:
 
 @pytest.mark.parametrize(
     'run_kwargs, out_count', (
-        ({}, 0), ({'city': 'Glasgow'}, 0),
+        ({}, 0),
+        ({'city': 'Glasgow'}, 0),
     )
 )
 def test_run(run_config, run_kwargs, out_count, capsys) -> None:
