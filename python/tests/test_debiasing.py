@@ -16,17 +16,41 @@ from utils import (
 )
 
 
-DATA_PATH: Final[Path] = Path('/mnt/vmfileshare/ClimateData/Cropped/three.cities/')
+DATA_PATH_DEFAULT: Final[Path] = Path('/mnt/vmfileshare/ClimateData/Cropped/three.cities/')
+
+RUN_NAME_DEFAULT: Final[str] = '05'
+VARIABLE_NAME_DEFAULT: Final[str] = "tasmax"
+
+CITY_NAME_DEFAULT: Final[str] = "Manchester"
+
+MOD_FOLDER_DEFUALT: Final[Path] = Path('CPM')
+OBS_FOLDER_DEFUALT: Final[Path] = Path('Hads.updated360')
+OUT_FOLDER_DEFUALT: Final[Path] = Path('Preprocessed')
+
+CALIB_DATE_START_DEFAULT: DateType = date(1981, 1, 1)
+CALIB_DATE_END_DEFAULT: DateType = date(1981, 12, 30)
+
+VALID_DATE_START_DEFAULT: DateType = date(2010, 1, 1)
+VALID_DATE_END_DEFAULT: DateType = date(2010, 3, 30)
+
+CALIB_DATES_STR_DEFAULT: Final[str] = date_range_to_str(
+    CALIB_DATE_START_DEFAULT, CALIB_DATE_END_DEFAULT
+)
+VALID_DATES_STR_DEFAULT: Final[str] = date_range_to_str(
+    VALID_DATE_START_DEFAULT, VALID_DATE_END_DEFAULT
+)
+
 
 CLI_DEBIASING_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str]] = (
     "python", "preprocess_data.py",
-    "--mod", Path("/mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/Manchester"),
-    "--obs", Path("/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.original360/Manchester"),
-    "-v", "tasmax",
-    "-r", "05",
-    "--out", Path("/mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/Manchester/05/tasmax"),
-    "--calib_dates", "19810101-19811230",
-    "--valid_dates", "20100101-20100330",
+    "--mod", DATA_PATH_DEFAULT / MOD_FOLDER_DEFUALT / CITY_NAME_DEFAULT,
+    "--obs", DATA_PATH_DEFAULT / OBS_FOLDER_DEFUALT / CITY_NAME_DEFAULT,
+    "-v", VARIABLE_NAME_DEFAULT,
+    "-r", RUN_NAME_DEFAULT,
+    "--out", (DATA_PATH_DEFAULT / OUT_FOLDER_DEFUALT / CITY_NAME_DEFAULT /
+              RUN_NAME_DEFAULT  / VARIABLE_NAME_DEFAULT),
+    "--calib_dates", CALIB_DATES_STR_DEFAULT,
+    "--valid_dates", VALID_DATES_STR_DEFAULT,
 )
 CLI_DEBIASING_DEFAULT_COMMAND_STR_CORRECT: Final[str] = ' '.join(iter_to_tuple_strs(CLI_DEBIASING_DEFAULT_COMMAND_TUPLE_CORRECT))
 
@@ -37,23 +61,23 @@ OUT_FOLDER_FILES_COUNT_CORRECT: Final[int] = 4
 
 @dataclass
 class RunConfig:
-    variable: str = 'tasmax'
-    run: str = '05'
-    city: str = 'Manchester'
+    variable: str = VARIABLE_NAME_DEFAULT
+    run: str = RUN_NAME_DEFAULT
+    city: str = CITY_NAME_DEFAULT
     method_1: str = "quantile_delta_mapping"
     method_2: str = "variance_scaling"
     run_prefix: str = 'python preprocess_data.py'
 
-    data_path: Path = DATA_PATH
-    mod_folder: PathLike = 'CPM'
-    obs_folder: PathLike = 'Hads.original360'
-    out_folder: PathLike = 'Preprocessed'
+    data_path: Path = DATA_PATH_DEFAULT
+    mod_folder: PathLike = MOD_FOLDER_DEFUALT
+    obs_folder: PathLike = OBS_FOLDER_DEFUALT
+    out_folder: PathLike = OUT_FOLDER_DEFUALT
 
-    calib_date_start: DateType = date(1981, 1, 1)
-    calib_date_end: DateType = date(1981, 12, 30)
+    calib_date_start: DateType = CALIB_DATE_START_DEFAULT
+    calib_date_end: DateType = CALIB_DATE_END_DEFAULT
 
-    valid_date_start: DateType = date(2010, 1, 1)
-    valid_date_end: DateType = date(2010, 3, 30)
+    valid_date_start: DateType = VALID_DATE_START_DEFAULT
+    valid_date_end: DateType =  VALID_DATE_END_DEFAULT
 
     processes: int = 32
 
@@ -162,9 +186,9 @@ class RunConfig:
 
         >>> config: RunConfig = RunConfig()
         >>> config.obs_path()
-        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.original360/Manchester')
+        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.updated360/Manchester')
         >>> config.obs_path('Glasgow')
-        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.original360/Glasgow')
+        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.updated360/Glasgow')
 
         """
         city = city if city else self.city
