@@ -598,18 +598,36 @@ def test_run(run_config, city) -> None:
     """Test running generated command script via a subprocess."""
     chdir(run_config.command_path)
     assert PREPROCESS_FILE_NAME in tuple(Path().iterdir())
-    process: subprocess.CompletedProcess = (
+    preprocess_run: subprocess.CompletedProcess = (
         subprocess.run(
             run_config.to_cli_preprocess_tuple_strs(city=city),
             capture_output=True, text=True
         )
     )
-    assert process.returncode == 0
+    assert preprocess_run.returncode == 0
     assert len(tuple(run_config.list_mod_folder(city=city))) == MOD_FOLDER_FILES_COUNT_CORRECT
     assert len(tuple(run_config.list_obs_folder(city=city))) == OBS_FOLDER_FILES_COUNT_CORRECT
-    assert len(tuple(run_config.list_preprocess_out_folder(city=city))) == PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT
-    city = CityOptions.default() if city is None else city
+    assert (len(tuple(run_config.list_preprocess_out_folder(city=city))) == 
+            PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT)
+    test_city = CityOptions.default() if city is None else city
     for log_txt in (
             "Saved observed (HADs) data for validation, period ('2010-01-01', '2010-12-30')",
-            f"{city}/05/tasmax/modv_var-tasmax_run-05_20100101_20101230.nc"):
-        assert log_txt in process.stdout
+            f"{test_city}/05/tasmax/modv_var-tasmax_run-05_20100101_20101230.nc"):
+        assert log_txt in preprocess_run.stdout
+    cmethods_run: subprocess.CompletedProcess = (
+        subprocess.run(
+            run_config.to_cli_run_cmethods_1_tuple_strs(city=city),
+            capture_output=True, text=True
+        )
+    )
+    assert cmethods_run.returncode == 0
+    for log_txt in (
+            "Loading modelled calibration data (CPM)",
+
+        (
+            f"Debiased/three.cities.cropped/{test_city}/05/tasmax/"
+            "debiased_quantile_delta_mapping_result_var"
+            "-tasmax_quantiles-1000_kind-+_group-None_20100101_20101229.nc"
+        ),
+            ):
+        assert log_txt in cmethods_run.stdout
