@@ -7,6 +7,7 @@ from pathlib import Path
 from os import system, PathLike, chdir
 from dataclasses import dataclass
 from typing import Final, Generator
+from enum import StrEnum, auto
 from datetime import date, datetime
 import subprocess
 
@@ -17,17 +18,73 @@ from utils import (
 
 
 DATA_PATH_DEFAULT: Final[Path] = Path('/mnt/vmfileshare/ClimateData/Cropped/three.cities/')
+
 COMMAND_DIR_DEFAULT: Final[Path] = Path('debiasing').resolve()
-COMMAND_FILE_NAME: Final[Path] = Path("preprocess_data.py")
+PREPROCESS_FILE_NAME: Final[Path] = Path("preprocess_data.py")
+CMETHODS_FILE_NAME: Final[Path] = Path("run_cmethods.py")
 
-RUN_NAME_DEFAULT: Final[str] = '05'
-VARIABLE_NAME_DEFAULT: Final[str] = "tasmax"
 
-CITY_NAME_DEFAULT: Final[str] = "Manchester"
+class VariableOptions(StrEnum):
+    """Supported options for variables"""
+    TASMAX = auto()
+    RAINFALL = auto()
+    TASMIN = auto()
 
-MOD_FOLDER_DEFUALT: Final[Path] = Path('CPM')
-OBS_FOLDER_DEFUALT: Final[Path] = Path('Hads.updated360')
-OUT_FOLDER_DEFUALT: Final[Path] = Path('Preprocessed')
+    @classmethod
+    def default(cls) -> str:
+        """Default option."""
+        return cls.TASMAX.value
+
+
+class RunOptions(StrEnum):
+    """Supported options for variables"""
+    FIVE = '05'
+    SEVEN = '07'
+    EIGHT = '08'
+    SIX = '06'
+
+    @classmethod
+    def default(cls) -> str:
+        """Default option."""
+        return cls.FIVE.value
+
+
+class CityOptions(StrEnum):
+    """Supported options for variables."""
+    GLASGOW = "Glasgow"
+    MANCHESTER = "Manchester"
+    LONDON = "London"
+
+    @classmethod
+    def default(cls) -> str:
+        """Default option."""
+        return cls.MANCHESTER.value
+
+
+class MethodOptions(StrEnum):
+    """Supported options for methods."""
+    QUANTILE_DELTA_MAPPING = auto()
+    QUANTILE_MAPPING = auto()
+    VARIANCE_SCALING = auto()
+    DELTA_METHODS = auto()
+
+    @classmethod
+    def default_method_1(cls) -> str:
+        """Default method_1 option."""
+        return cls.QUANTILE_DELTA_MAPPING.value
+
+    @classmethod
+    def default_method_2(cls) -> str:
+        """Default method_2 option."""
+        return cls.VARIANCE_SCALING.value
+
+PROCESSESORS_DEFAULT: Final[int] = 32
+RUN_PREFIX_DEFAULT: Final[str] = "python"
+
+MOD_FOLDER_DEFAULT: Final[Path] = Path('CPM')
+OBS_FOLDER_DEFAULT: Final[Path] = Path('Hads.updated360')
+PREPROCESS_OUT_FOLDER_DEFAULT: Final[Path] = Path('Preprocessed')
+CMETHODS_OUT_FOLDER_DEFAULT: Final[Path] = Path('../../Debiased/three.cities.cropped')
 
 CALIB_DATE_START_DEFAULT: DateType = date(1981, 1, 1)
 CALIB_DATE_END_DEFAULT: DateType = date(1981, 12, 30)
@@ -43,38 +100,60 @@ VALID_DATES_STR_DEFAULT: Final[str] = date_range_to_str(
 )
 
 
-CLI_DEBIASING_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str]] = (
-    "python", str(COMMAND_FILE_NAME),
-    "--mod", DATA_PATH_DEFAULT / MOD_FOLDER_DEFUALT / CITY_NAME_DEFAULT,
-    "--obs", DATA_PATH_DEFAULT / OBS_FOLDER_DEFUALT / CITY_NAME_DEFAULT,
-    "-v", VARIABLE_NAME_DEFAULT,
-    "-r", RUN_NAME_DEFAULT,
-    "--out", (DATA_PATH_DEFAULT / OUT_FOLDER_DEFUALT / CITY_NAME_DEFAULT /
-              RUN_NAME_DEFAULT  / VARIABLE_NAME_DEFAULT),
+CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str]] = (
+    "python", PREPROCESS_FILE_NAME,
+    "--mod", DATA_PATH_DEFAULT / MOD_FOLDER_DEFAULT / CityOptions.default(),
+    "--obs", DATA_PATH_DEFAULT / OBS_FOLDER_DEFAULT / CityOptions.default(),
+    "-v", VariableOptions.default(),
+    "-r", RunOptions.default(),
+    "--out", (DATA_PATH_DEFAULT / PREPROCESS_OUT_FOLDER_DEFAULT / CityOptions.default() /
+              RunOptions.default()  / VariableOptions.default()),
     "--calib_dates", CALIB_DATES_STR_DEFAULT,
     "--valid_dates", VALID_DATES_STR_DEFAULT,
 )
-CLI_DEBIASING_DEFAULT_COMMAND_STR_CORRECT: Final[str] = ' '.join(iter_to_tuple_strs(CLI_DEBIASING_DEFAULT_COMMAND_TUPLE_CORRECT))
+CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = ' '.join(iter_to_tuple_strs(
+    CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT
+))
+
+CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str]] = (
+    "python", CMETHODS_FILE_NAME,
+    "--input_data_folder", CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT[11],
+    "--out", (DATA_PATH_DEFAULT / CMETHODS_OUT_FOLDER_DEFAULT /
+              CityOptions.default() / RunOptions.default()).resolve(),
+    "--method", MethodOptions.default_method_1(),
+    "-v", VariableOptions.default(),
+    "-p", PROCESSESORS_DEFAULT,
+)
+CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = ' '.join(iter_to_tuple_strs(
+    CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT
+))
+
 
 MOD_FOLDER_FILES_COUNT_CORRECT: Final[int] = 1478
 OBS_FOLDER_FILES_COUNT_CORRECT: Final[int] = MOD_FOLDER_FILES_COUNT_CORRECT
-OUT_FOLDER_FILES_COUNT_CORRECT: Final[int] = 4
+PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT: Final[int] = 4
 
 
 @dataclass
 class RunConfig:
+
+    """Manage creating command line scripts to run `debiasing` `cli`."""
+
     command_dir: Path = COMMAND_DIR_DEFAULT
-    variable: str = VARIABLE_NAME_DEFAULT
-    run: str = RUN_NAME_DEFAULT
-    city: str = CITY_NAME_DEFAULT
-    method_1: str = "quantile_delta_mapping"
-    method_2: str = "variance_scaling"
-    run_prefix: str = 'python preprocess_data.py'
+    variable: str = VariableOptions.default()
+    run: str = RunOptions.default()
+    city: str = CityOptions.default()
+    method_1: str = MethodOptions.default_method_1()
+    method_2: str = MethodOptions.default_method_2()
+    run_prefix: str = RUN_PREFIX_DEFAULT
+    preprocess_data_file: PathLike = PREPROCESS_FILE_NAME
+    run_cmethods_file: PathLike = CMETHODS_FILE_NAME
 
     data_path: Path = DATA_PATH_DEFAULT
-    mod_folder: PathLike = MOD_FOLDER_DEFUALT
-    obs_folder: PathLike = OBS_FOLDER_DEFUALT
-    out_folder: PathLike = OUT_FOLDER_DEFUALT
+    mod_folder: PathLike = MOD_FOLDER_DEFAULT
+    obs_folder: PathLike = OBS_FOLDER_DEFAULT
+    preprocess_out_folder: PathLike = PREPROCESS_OUT_FOLDER_DEFAULT
+    cmethods_out_folder: PathLike = CMETHODS_OUT_FOLDER_DEFAULT
 
     calib_date_start: DateType = CALIB_DATE_START_DEFAULT
     calib_date_end: DateType = CALIB_DATE_END_DEFAULT
@@ -82,7 +161,7 @@ class RunConfig:
     valid_date_start: DateType = VALID_DATE_START_DEFAULT
     valid_date_end: DateType =  VALID_DATE_END_DEFAULT
 
-    processes: int = 32
+    processors: int = PROCESSESORS_DEFAULT
 
     date_format_str: str = DATE_FORMAT_STR
     date_split_str: str = DATE_FORMAT_SPLIT_STR
@@ -97,7 +176,6 @@ class RunConfig:
 
         Example
         -------
-
         >>> config: RunConfig = RunConfig()
         >>> config.calib_dates_to_str('20100101', '20100330')
         '20100101-20100330'
@@ -105,7 +183,6 @@ class RunConfig:
         '20100101-20100330'
         >>> config.calib_dates_to_str(date(2010, 1, 1), '20100330', split_str="_")
         '20100101_20100330'
-
         """
         start_date = start_date if start_date else self.calib_date_start
         end_date = end_date if end_date else self.calib_date_end
@@ -121,7 +198,6 @@ class RunConfig:
 
         Example
         -------
-
         >>> config: RunConfig = RunConfig()
         >>> config.valid_dates_to_str('20100101', '20100330')
         '20100101-20100330'
@@ -129,7 +205,6 @@ class RunConfig:
         '20100101-20100330'
         >>> config.valid_dates_to_str(date(2010, 1, 1), '20100330', split_str="_")
         '20100101_20100330'
-
         """
         start_date = start_date if start_date else self.valid_date_start
         end_date = end_date if end_date else self.valid_date_end
@@ -145,7 +220,6 @@ class RunConfig:
 
         Example
         -------
-
         >>> config: RunConfig = RunConfig()
         >>> config._date_range_to_str('20100101', '20100330')
         '20100101-20100330'
@@ -153,7 +227,6 @@ class RunConfig:
         '20100101-20100330'
         >>> config._date_range_to_str(date(2010, 1, 1), '20100330', split_str="_")
         '20100101_20100330'
-
         """
         in_format_str = in_format_str if in_format_str else self.date_format_str
         out_format_str = out_format_str if out_format_str else self.date_format_str
@@ -170,13 +243,11 @@ class RunConfig:
 
         Example
         -------
-
         >>> config: RunConfig = RunConfig()
         >>> config.mod_path()
         PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/Manchester')
         >>> config.mod_path('Glasgow')
         PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/Glasgow')
-
         """
         city = city if city else self.city
         return self.data_path / self.mod_folder / city
@@ -186,34 +257,54 @@ class RunConfig:
 
         Example
         -------
-
         >>> config: RunConfig = RunConfig()
         >>> config.obs_path()
         PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.updated360/Manchester')
         >>> config.obs_path('Glasgow')
         PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.updated360/Glasgow')
-
         """
         city = city if city else self.city
         return self.data_path / self.obs_folder / city
     
-    def out_path(self, city: str | None = None, run: str | None = None, variable: str | None = None) -> Path:
+    def preprocess_out_path(
+            self,
+            city: str | None = None,
+            run: str | None = None,
+            variable: str | None = None
+        ) -> Path:
         """Return path to save results.
 
         Example
         -------
-
         >>> config: RunConfig = RunConfig()
-        >>> config.out_path()
+        >>> config.preprocess_out_path()
         PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/Manchester/05/tasmax')
-        >>> config.out_path(city='Glasgow', run='07')
+        >>> config.preprocess_out_path(city='Glasgow', run='07')
         PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/Glasgow/07/tasmax')
-
         """
         city = city if city else self.city
         run = run if run else self.run
         variable = variable if variable else self.variable
-        return self.data_path / self.out_folder / city / run / variable
+        return (self.data_path / self.preprocess_out_folder / city / run / variable).resolve()
+    
+    def cmethods_out_path(
+            self,
+            city: str | None = None,
+            run: str | None = None,
+        ) -> Path:
+        """Return path to save cmethods results.
+
+        Example
+        -------
+        >>> config: RunConfig = RunConfig()
+        >>> config.cmethods_out_path()
+        PosixPath('/mnt/vmfileshare/ClimateData/Debiased/three.cities.cropped/Manchester/05')
+        >>> config.cmethods_out_path(city='Glasgow', run='07')
+        PosixPath('/mnt/vmfileshare/ClimateData/Debiased/three.cities.cropped/Glasgow/07')
+        """
+        city = city if city else self.city
+        run = run if run else self.run
+        return (self.data_path / self.cmethods_out_folder / city / run).resolve()
 
     @property
     def run_prefix_tuple(self) -> tuple[str, ...]:
@@ -221,11 +312,9 @@ class RunConfig:
 
         Example
         -------
-
-        >>> config: RunConfig = RunConfig()
+        >>> config: RunConfig = RunConfig(run_prefix='python -m')
         >>> config.run_prefix_tuple
-        ('python', 'preprocess_data.py')
-
+        ('python', '-m')
         """
         return tuple(self.run_prefix.split(' '))
 
@@ -242,17 +331,14 @@ class RunConfig:
 
         Note
         ----
-
         This will leave `Path` objects uncoverted. See
         `self.to_cli_preprocess_tuple_strs` for passing to a terminal.
 
         Example
         -------
-
         >>> config: RunConfig = RunConfig()
         >>> command_str_tuple: tuple[str, ...] = config.to_cli_preprocess_tuple()
-        >>> assert command_str_tuple == CLI_DEBIASING_DEFAULT_COMMAND_TUPLE_CORRECT
-
+        >>> assert command_str_tuple == CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT
         """
         city = city if city else self.city
         variable = variable if variable else self.variable
@@ -260,17 +346,18 @@ class RunConfig:
 
         mod_path: Path = self.mod_path(city=city)
         obs_path: Path = self.obs_path(city=city)
-        out_path: Path = self.out_path(city=city, run=run, variable=variable)
+        preprocess_out_path: Path = self.preprocess_out_path(city=city, run=run, variable=variable)
         calib_dates_str: str = self.calib_dates_to_str(start_date=calib_start, end_date=calib_end)
         valid_dates_str: str = self.valid_dates_to_str(start_date=valid_start, end_date=valid_end)
 
         return (
             *self.run_prefix_tuple, 
+            self.preprocess_data_file,
             '--mod', mod_path,
             '--obs', obs_path, 
             '-v', variable,
             '-r', run,
-            '--out', out_path,
+            '--out', preprocess_out_path,
             '--calib_dates', calib_dates_str,
             '--valid_dates', valid_dates_str,
         )
@@ -288,11 +375,9 @@ class RunConfig:
 
         Example
         -------
-
         >>> config: RunConfig = RunConfig()
         >>> command_str_tuple: tuple[str, ...] = config.to_cli_preprocess_tuple()
-        >>> assert command_str_tuple == CLI_DEBIASING_DEFAULT_COMMAND_TUPLE_CORRECT
-
+        >>> assert command_str_tuple == CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT
         """
         return iter_to_tuple_strs(self.to_cli_preprocess_tuple(
             variable=variable,
@@ -318,13 +403,11 @@ class RunConfig:
 
         Example
         -------
-
         >>> config: RunConfig = RunConfig()
-        >>> config.to_cli_preprocess_str() == CLI_DEBIASING_DEFAULT_COMMAND_STR_CORRECT
+        >>> config.to_cli_preprocess_str() == CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
         True
-        >>> CLI_DEBIASING_DEFAULT_COMMAND_STR_CORRECT[:96]  #doctest: +ELLIPSIS
+        >>> CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT[:96]  #doctest: +ELLIPSIS
         'python preprocess_data.py --mod /.../CPM/Manchester'
-
         """
         return ' '.join(self.to_cli_preprocess_tuple_strs(
             variable=variable,
@@ -341,7 +424,6 @@ class RunConfig:
 
         Example
         -------
-
         >>> config: RunConfig = RunConfig()
         >>> len(tuple(config.list_mod_folder())) == MOD_FOLDER_FILES_COUNT_CORRECT
         True
@@ -353,41 +435,149 @@ class RunConfig:
 
         Example
         -------
-
         >>> config: RunConfig = RunConfig()
         >>> len(tuple(config.list_obs_folder())) == OBS_FOLDER_FILES_COUNT_CORRECT
         True
         """
         return path_iterdir(self.obs_path(city=city))
 
-    def list_out_folder(self, city: str | None = None, run: str | None = None, variable: str | None = None) -> Generator[Path, None, None]:
-        """`Iterable` of all `Path`s in `self.out_folder`.
+    def list_preprocess_out_folder(self,
+            city: str | None = None,
+            run: str | None = None,
+            variable: str | None = None
+        ) -> Generator[Path, None, None]:
+        """`Iterable` of all `Path`s in `self.preprocess_out_folder`.
 
         Example
         -------
-
         >>> config: RunConfig = RunConfig()
-        >>> len(tuple(config.list_out_folder())) == OUT_FOLDER_FILES_COUNT_CORRECT
+        >>> len(tuple(config.list_preprocess_out_folder())) == PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT
         True
         """
-        return path_iterdir(self.out_path(city=city, run=run, variable=variable))
+        return path_iterdir(self.preprocess_out_path(city=city, run=run, variable=variable))
 
     @property
     def command_path(self) -> Path:
         """Return command path relative to running tests."""
         return (Path() / self.command_dir).absolute()
 
+    def to_cli_run_cmethods_1_tuple(self,
+            city: str | None = None,
+            run: str | None = None,
+            variable: str | None = None,
+            method_1: str | None = None,
+            input_data_path: PathLike | None = None,
+            cmethods_out_path: PathLike | None = None,
+            processors: int | None = None,
+        ) -> tuple[str | PathLike, ...]:
+        """Generate a `tuple` of `str` for a command line command.
+
+        Note
+        ----
+        This will leave `Path` objects uncoverted. See
+        `self.to_cli_run_cmethods_tuple_strs` for passing to a terminal.
+
+        Example
+        -------
+        >>> config: RunConfig = RunConfig()
+        >>> command_str_tuple: tuple[str, ...] = config.to_cli_run_cmethods_1_tuple()
+        >>> assert command_str_tuple == CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT
+        """
+        city = city if city else self.city
+        variable = variable if variable else self.variable
+        run = run if run else self.run
+        method_1 = method_1 if method_1 else self.method_1
+
+        input_data_path: PathLike = (
+            input_data_path if input_data_path
+            else self.preprocess_out_path(city=city, run=run, variable=variable)
+        )
+        
+        cmethods_out_path = (
+            cmethods_out_path if cmethods_out_path else
+            self.cmethods_out_path(city=city, run=run)
+        )
+
+        processors = processors if processors else self.processors
+
+        return (
+            *self.run_prefix_tuple, 
+            self.run_cmethods_file,
+            '--input_data_folder', input_data_path,
+            '--out', cmethods_out_path,
+            '--method', method_1,
+            '-v', variable,
+            '-p', processors,
+        )
+
+    # def to_cli_run_cmethods_tuple_strs(self,
+    #         variable: str | None = None,
+    #         run: str | None = None,
+    #         city: str | None = None,
+    #         calib_start: DateType | None = None,
+    #         calib_end: DateType | None = None,
+    #         valid_start: DateType | None = None,
+    #         valid_end: DateType | None = None,
+    #     ) -> tuple[str, ...]:
+    #     """Generate a command line interface `str` `tuple` a test example.
+
+    #     Example
+    #     -------
+    #     >>> config: RunConfig = RunConfig()
+    #     >>> command_str_tuple: tuple[str, ...] = config.to_cli_preprocess_tuple()
+    #     >>> assert command_str_tuple == CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT
+    #     """
+    #     return iter_to_tuple_strs(self.to_cli_preprocess_tuple(
+    #         variable=variable,
+    #         run=run,
+    #         city=city,
+    #         calib_start=calib_start,
+    #         calib_end=calib_end,
+    #         valid_start=valid_start,
+    #         valid_end=valid_end,
+    #     ))
+
+
+    # def to_cli_run_cmethods_str(self,
+    #         variable: str | None = None,
+    #         run: str | None = None,
+    #         city: str | None = None,
+    #         calib_start: DateType | None = None,
+    #         calib_end: DateType | None = None,
+    #         valid_start: DateType | None = None,
+    #         valid_end: DateType | None = None,
+    #     ) -> str:
+    #     """Generate a command line interface str as a test example.
+
+    #     Example
+    #     -------
+    #     >>> config: RunConfig = RunConfig()
+    #     >>> config.to_cli_preprocess_str() == CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
+    #     True
+    #     >>> CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT[:96]  #doctest: +ELLIPSIS
+    #     'python preprocess_data.py --mod /.../CPM/Manchester'
+    #     """
+    #     return ' '.join(self.to_cli_preprocess_tuple_strs(
+    #         variable=variable,
+    #         run=run,
+    #         city=city,
+    #         calib_start=calib_start,
+    #         calib_end=calib_end,
+    #         valid_start=valid_start,
+    #         valid_end=valid_end,
+    #     ))
+
 
 @pytest.fixture
 def run_config(tmp_path: Path) -> RunConfig:
     """Generate a `RunConfig` instance to ease paramaterizing tests."""
-    return RunConfig(out_folder=tmp_path)
+    return RunConfig(preprocess_out_folder=tmp_path)
 
 
 def test_command_line_default() -> None:
     """Test default generated cli `str`."""
     run_config: RunConfig = RunConfig()
-    assert run_config.to_cli_preprocess_str() == CLI_DEBIASING_DEFAULT_COMMAND_STR_CORRECT
+    assert run_config.to_cli_preprocess_str() == CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
 
 
 @pytest.mark.slow
@@ -397,7 +587,7 @@ def test_command_line_default() -> None:
 def test_run(run_config, city) -> None:
     """Test running generated command script via a subprocess."""
     chdir(run_config.command_path)
-    assert COMMAND_FILE_NAME in tuple(Path().iterdir())
+    assert PREPROCESS_FILE_NAME in tuple(Path().iterdir())
     process: subprocess.CompletedProcess = (
         subprocess.run(
             run_config.to_cli_preprocess_tuple_strs(city=city),
@@ -407,8 +597,8 @@ def test_run(run_config, city) -> None:
     assert process.returncode == 0
     assert len(tuple(run_config.list_mod_folder(city=city))) == MOD_FOLDER_FILES_COUNT_CORRECT
     assert len(tuple(run_config.list_obs_folder(city=city))) == OBS_FOLDER_FILES_COUNT_CORRECT
-    assert len(tuple(run_config.list_out_folder(city=city))) == OUT_FOLDER_FILES_COUNT_CORRECT
-    city = CITY_NAME_DEFAULT if city is None else city
+    assert len(tuple(run_config.list_preprocess_out_folder(city=city))) == PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT
+    city = CityOptions.default() if city is None else city
     for log_txt in (
             "Saved observed (HADs) data for validation, period ('2010-01-01', '2010-12-30')",
             f"{city}/05/tasmax/modv_var-tasmax_run-05_20100101_20101230.nc"):
