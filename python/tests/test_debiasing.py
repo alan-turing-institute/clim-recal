@@ -4,7 +4,7 @@ Test generating and running `debiasing` scripts
 """
 import pytest
 from pathlib import Path
-from os import system, PathLike
+from os import system, PathLike, chdir
 from dataclasses import dataclass
 from typing import Final, Generator
 from datetime import date, datetime
@@ -17,6 +17,8 @@ from utils import (
 
 
 DATA_PATH_DEFAULT: Final[Path] = Path('/mnt/vmfileshare/ClimateData/Cropped/three.cities/')
+COMMAND_DIR_DEFAULT: Final[Path] = Path('debiasing').resolve()
+COMMAND_FILE_NAME: Final[Path] = Path("preprocess_data.py")
 
 RUN_NAME_DEFAULT: Final[str] = '05'
 VARIABLE_NAME_DEFAULT: Final[str] = "tasmax"
@@ -31,7 +33,7 @@ CALIB_DATE_START_DEFAULT: DateType = date(1981, 1, 1)
 CALIB_DATE_END_DEFAULT: DateType = date(1981, 12, 30)
 
 VALID_DATE_START_DEFAULT: DateType = date(2010, 1, 1)
-VALID_DATE_END_DEFAULT: DateType = date(2010, 3, 30)
+VALID_DATE_END_DEFAULT: DateType = date(2010, 12, 30)
 
 CALIB_DATES_STR_DEFAULT: Final[str] = date_range_to_str(
     CALIB_DATE_START_DEFAULT, CALIB_DATE_END_DEFAULT
@@ -42,7 +44,7 @@ VALID_DATES_STR_DEFAULT: Final[str] = date_range_to_str(
 
 
 CLI_DEBIASING_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str]] = (
-    "python", "preprocess_data.py",
+    "python", str(COMMAND_FILE_NAME),
     "--mod", DATA_PATH_DEFAULT / MOD_FOLDER_DEFUALT / CITY_NAME_DEFAULT,
     "--obs", DATA_PATH_DEFAULT / OBS_FOLDER_DEFUALT / CITY_NAME_DEFAULT,
     "-v", VARIABLE_NAME_DEFAULT,
@@ -61,6 +63,7 @@ OUT_FOLDER_FILES_COUNT_CORRECT: Final[int] = 4
 
 @dataclass
 class RunConfig:
+    command_dir: Path = COMMAND_DIR_DEFAULT
     variable: str = VARIABLE_NAME_DEFAULT
     run: str = RUN_NAME_DEFAULT
     city: str = CITY_NAME_DEFAULT
@@ -369,6 +372,11 @@ class RunConfig:
         """
         return path_iterdir(self.out_path(city=city, run=run, variable=variable))
 
+    @property
+    def command_path(self) -> Path:
+        """Return command path relative to running tests."""
+        return (Path() / self.command_dir).absolute()
+
 
 @pytest.fixture
 def run_config(tmp_path: Path) -> RunConfig:
@@ -382,18 +390,26 @@ def test_command_line_default() -> None:
     assert run_config.to_cli_preprocess_str() == CLI_DEBIASING_DEFAULT_COMMAND_STR_CORRECT
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
-    'run_kwargs, out_count', (
-        ({}, 0),
-        ({'city': 'Glasgow'}, 0),
-    )
+    'city', (None, 'Glasgow',)
 )
-def test_run(run_config, run_kwargs, out_count, capsys) -> None:
+def test_run(run_config, city) -> None:
     """Test running generated command script via a subprocess."""
-    process_complete: subprocess.CompletedProcess = (
-        subprocess.run(run_config.to_cli_preprocess_tuple_strs(**run_kwargs), shell=True, check=True)
+    chdir(run_config.command_path)
+    assert COMMAND_FILE_NAME in tuple(Path().iterdir())
+    process: subprocess.CompletedProcess = (
+        subprocess.run(
+            run_config.to_cli_preprocess_tuple_strs(city=city),
+            capture_output=True, text=True
+        )
     )
-    assert process_complete.returncode == 0
-    assert len(tuple(run_config.list_mod_folder())) == MOD_FOLDER_FILES_COUNT_CORRECT
-    assert len(tuple(run_config.list_obs_folder())) == OBS_FOLDER_FILES_COUNT_CORRECT
-    assert len(tuple(run_config.list_out_folder())) == out_count
+    assert process.returncode == 0
+    assert len(tuple(run_config.list_mod_folder(city=city))) == MOD_FOLDER_FILES_COUNT_CORRECT
+    assert len(tuple(run_config.list_obs_folder(city=city))) == OBS_FOLDER_FILES_COUNT_CORRECT
+    assert len(tuple(run_config.list_out_folder(city=city))) == OUT_FOLDER_FILES_COUNT_CORRECT
+    city = CITY_NAME_DEFAULT if city is None else city
+    for log_txt in (
+            "Saved observed (HADs) data for validation, period ('2010-01-01', '2010-12-30')",
+            f"{city}/05/tasmax/modv_var-tasmax_run-05_20100101_20101230.nc"):
+        assert log_txt in process.stdout
