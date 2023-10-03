@@ -41,6 +41,8 @@ Data has been pre-processed from cropped using 'converting_city_crops_to_df.R' t
 
 ##1. Empirical Quantile Mapping 
 
+
+
 ```{r warning = F}
 setwd("/home/dyme/Desktop/clim-recal/clim-recal")
 source("R/bias-correction-methods/apply_qmapQuant_to_crpd_df_fn.R")
@@ -59,7 +61,6 @@ lapply(cities, function(x){
                                 pd.obs = paste0(dd, "Interim/HadsUK/Data_as_df/three.cities/"),#Parent directory where dataframes of obs data are
                               val.startdate = "20101201", #The first date of the validation period. eg 20101201 All dates before this time will be taken as the calibration
                               ## These args to be passed to qmapQUANT itself:
-                                     wet.day = ifelse(v=="pr", T, F),
                                      qstep = 0.1, # numeric value between 0 and 1, e.g 0.1. The quantile mapping is fitted only for the quantiles defined by quantile(0,1,probs=seq(0,1,by=qstep).
                                      nboot = 1, #numeric value 1 or greater - nboot number of bootstrap samples used for estimation of the observed quantiles. If nboot==1 the estimation is based on all (and not resampled) data.
 
@@ -71,20 +72,6 @@ lapply(cities, function(x){
 ```
 
 
-
-The called function was written to apply the following models:
-
-
 ```{r}
 
-dsource("/home/dyme/Desktop/clim-recal/clim-recal/R/bias-correction-methods/apply_qmapQuant_to_crpd_df_fn.R")
-
-var <- c("tasmax", "tasmin", "pr")
-Runs <-c("05", "06", "07", "08")
-
-lapply(cities, function(x){
-  apply_qmap_to_cropped_dfL(region=x, var=var, Runs = Runs)})
-
-
 ```
-
