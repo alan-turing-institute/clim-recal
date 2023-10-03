@@ -100,7 +100,7 @@ VALID_DATES_STR_DEFAULT: Final[str] = date_range_to_str(
 )
 
 
-CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str]] = (
+CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str, ...]] = (
     "python", PREPROCESS_FILE_NAME,
     "--mod", DATA_PATH_DEFAULT / MOD_FOLDER_DEFAULT / CityOptions.default(),
     "--obs", DATA_PATH_DEFAULT / OBS_FOLDER_DEFAULT / CityOptions.default(),
@@ -111,9 +111,14 @@ CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str]] = (
     "--calib_dates", CALIB_DATES_STR_DEFAULT,
     "--valid_dates", VALID_DATES_STR_DEFAULT,
 )
-CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = ' '.join(iter_to_tuple_strs(
-    CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT
-))
+
+CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT: Final[tuple[str, ...]] = (
+    iter_to_tuple_strs(CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT)
+)
+
+CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = ' '.join(
+    CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
+)
 
 CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str]] = (
     "python", CMETHODS_FILE_NAME,
@@ -124,9 +129,13 @@ CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str]] = (
     "-v", VariableOptions.default(),
     "-p", PROCESSESORS_DEFAULT,
 )
-CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = ' '.join(iter_to_tuple_strs(
-    CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT
-))
+
+CLI_CMEHTODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT: Final[tuple[str, ...]] = (
+    iter_to_tuple_strs(CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT)
+)
+CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = ' '.join(
+    CLI_CMEHTODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
+)
 
 
 MOD_FOLDER_FILES_COUNT_CORRECT: Final[int] = 1478
@@ -376,8 +385,8 @@ class RunConfig:
         Example
         -------
         >>> config: RunConfig = RunConfig()
-        >>> command_str_tuple: tuple[str, ...] = config.to_cli_preprocess_tuple()
-        >>> assert command_str_tuple == CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT
+        >>> command_str_tuple: tuple[str, ...] = config.to_cli_preprocess_tuple_strs()
+        >>> assert command_str_tuple == CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
         """
         return iter_to_tuple_strs(self.to_cli_preprocess_tuple(
             variable=variable,
@@ -451,7 +460,8 @@ class RunConfig:
         Example
         -------
         >>> config: RunConfig = RunConfig()
-        >>> len(tuple(config.list_preprocess_out_folder())) == PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT
+        >>> (len(tuple(config.list_preprocess_out_folder())) ==
+        ...  PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT)
         True
         """
         return path_iterdir(self.preprocess_out_path(city=city, run=run, variable=variable))
@@ -510,62 +520,62 @@ class RunConfig:
             '-p', processors,
         )
 
-    # def to_cli_run_cmethods_tuple_strs(self,
-    #         variable: str | None = None,
-    #         run: str | None = None,
-    #         city: str | None = None,
-    #         calib_start: DateType | None = None,
-    #         calib_end: DateType | None = None,
-    #         valid_start: DateType | None = None,
-    #         valid_end: DateType | None = None,
-    #     ) -> tuple[str, ...]:
-    #     """Generate a command line interface `str` `tuple` a test example.
+    def to_cli_run_cmethods_1_tuple_strs(self,
+            city: str | None = None,
+            run: str | None = None,
+            variable: str | None = None,
+            method_1: str | None = None,
+            input_data_path: PathLike | None = None,
+            cmethods_out_path: PathLike | None = None,
+            processors: int | None = None,
+        ) -> tuple[str, ...]:
+        """Generate a command line interface `str` `tuple` a test example.
 
-    #     Example
-    #     -------
-    #     >>> config: RunConfig = RunConfig()
-    #     >>> command_str_tuple: tuple[str, ...] = config.to_cli_preprocess_tuple()
-    #     >>> assert command_str_tuple == CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT
-    #     """
-    #     return iter_to_tuple_strs(self.to_cli_preprocess_tuple(
-    #         variable=variable,
-    #         run=run,
-    #         city=city,
-    #         calib_start=calib_start,
-    #         calib_end=calib_end,
-    #         valid_start=valid_start,
-    #         valid_end=valid_end,
-    #     ))
+        Example
+        -------
+        >>> config: RunConfig = RunConfig()
+        >>> command_str_tuple: tuple[str, ...] = config.to_cli_run_cmethods_1_tuple_strs()
+        >>> assert command_str_tuple == CLI_CMEHTODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
+        """
+        return iter_to_tuple_strs(self.to_cli_run_cmethods_1_tuple(
+            city=city,
+            run=run,
+            variable=variable,
+            method_1=method_1,
+            input_data_path=input_data_path,
+            cmethods_out_path=cmethods_out_path,
+            processors=processors,
+        ))
 
 
-    # def to_cli_run_cmethods_str(self,
-    #         variable: str | None = None,
-    #         run: str | None = None,
-    #         city: str | None = None,
-    #         calib_start: DateType | None = None,
-    #         calib_end: DateType | None = None,
-    #         valid_start: DateType | None = None,
-    #         valid_end: DateType | None = None,
-    #     ) -> str:
-    #     """Generate a command line interface str as a test example.
+    def to_cli_run_cmethods_1_str(self,
+            city: str | None = None,
+            run: str | None = None,
+            variable: str | None = None,
+            method_1: str | None = None,
+            input_data_path: PathLike | None = None,
+            cmethods_out_path: PathLike | None = None,
+            processors: int | None = None,
+        ) -> str:
+        """Generate a command line interface str as a test example.
 
-    #     Example
-    #     -------
-    #     >>> config: RunConfig = RunConfig()
-    #     >>> config.to_cli_preprocess_str() == CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
-    #     True
-    #     >>> CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT[:96]  #doctest: +ELLIPSIS
-    #     'python preprocess_data.py --mod /.../CPM/Manchester'
-    #     """
-    #     return ' '.join(self.to_cli_preprocess_tuple_strs(
-    #         variable=variable,
-    #         run=run,
-    #         city=city,
-    #         calib_start=calib_start,
-    #         calib_end=calib_end,
-    #         valid_start=valid_start,
-    #         valid_end=valid_end,
-    #     ))
+        Example
+        -------
+        >>> config: RunConfig = RunConfig()
+        >>> config.to_cli_run_cmethods_1_str() == CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
+        True
+        >>> CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT  #doctest: +ELLIPSIS
+        'python run_cmethods.py...--method quantile_delta_mapping...'
+        """
+        return ' '.join(self.to_cli_run_cmethods_1_tuple_strs(
+            city=city,
+            run=run,
+            variable=variable,
+            method_1=method_1,
+            input_data_path=input_data_path,
+            cmethods_out_path=cmethods_out_path,
+            processors=processors,
+        ))
 
 
 @pytest.fixture
