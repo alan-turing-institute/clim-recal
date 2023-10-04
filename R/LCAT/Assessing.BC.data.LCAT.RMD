@@ -1,5 +1,5 @@
 ---
-title: "Bias correction assessment"
+title: "Bias correction assessment of LCAT data"
 author: "Ruth Bowyer"
 date: "`r format(Sys.Date())`"
 output:
@@ -24,156 +24,52 @@ library(tmap) #pretty maps
 library(RColorBrewer)
 library(tidyverse)
 library(kableExtra)
+library(plotrix) #For taylor diagrams 
+
+dd <- "/mnt/vmfileshare/ClimateData/"
 
 ```
 
 
 ## **0. About**
 
-This is an example notebook for the assessment of bias corrected data, using output from the R 'qmap' package for the city of Glasgow and the variable 'tasmax'. 
+LCAT require 'bias corrected' data for the whole of the UK. 
+We have applied a widely used approach, quantile mapping, to the data. Specifically, we have used *non-parametric quantile mapping using empirical quantiles* as available in the `Qmap` package. 
+Because the data is so large, we have applied this bias correction to the UK broked down into regions, with Scotland brokedn down into further regions (see `R/LCAT/Region.Refs.csv`)
 
-**Input data**
+We will now:
 
-This script requires the following data: 
+- Assess the bias correction using some of the segments
+- Process the data back to geotiff 
+- Either process as monthly data or as UK wide rasters (maybe just write them seperately) and av across runs
 
-- 'obs.cal' - observation (HADs data) for the *calibration* period - the dataset used as the reference dataset in the bias correction
-- 'obs.val' - as above, for the *validation* period 
-- 'cpm.cal.raw' - the raw (uncorrected) data for the *calibration* period 
-- 'cpm.cal.adj' - the adjusted (bias-corrected)  data for the *calibration* period 
-- 'cpm.val.raw' - the raw (uncorrected) data for the *valibration* period 
-- 'cpm.val.adj' - the adjusted (bias-corrected) data for the *valibration* period 
-- 'cpm.proj.raw' - the raw (uncorrected) data for the *future/projected* period (optional)
-- 'cpm.proj.radj' - the adjusted (bias-corrected) data for the *future/projected* period (optional)
+The data is within `ClimateData/Debiased/R/QuantileMapping` and is in RDS format, with each object containing a list.
 
-The data is required in raster format and dataframe formats
-
-**Calibration vs Validation dates**
-
-The calibration period runs between 01-12-1980 to the day prior to 01-12-2010
-The validation period runs between 01-12-2010 to the day prior to 01-12-2020 
-
-```{r data loading, include=FALSE}
-
-#This chunk attempts to apply the conversion to python output data to a form that this script will also use. This could (and probably should) be moved to a source script -- also the R pre-processing should probably be moved to the bias correction script? 
-
-dd <- "/mnt/vmfileshare/ClimateData/" #Data directoy of all data used in this script
-
-input <- "RDS" #Either df or raster -- R outputs are a group of dfs in list form saved as an RDS, python input is a raster
-city <- "Glasgow" 
-var <- "tasmax" 
-runs <- c("05", "06", "07", "08")
-
-if(input=="raster"){
-
-####### PYTHON INPUTS HERE ######
-  # This script uses both raster data and the raw data
-  # This script uses Lists to group everything by runs
-  # Therefore what is require from this here is to create a list object for each of the sets of the data as listed above, where the list items are the rasters or dataframes by run (ie each level of the list is a run)
-  # .nc and .tif files can be read with rast("path/to/file.nc")
-  # Conversion to df is just  as.data.frame(raster, xy=T) - easiest thing is just to loop using lapply the files 
-  #dfs are assumed to be cells x time 
-
-}
-
- } else if(input=="RDS"){
-  ### This R bit is a bit crazy because of the format output from the bias correction - at some point to be cleaned up and moved to a different script. 
-  ## Load a source raster to extract the crs
-   ## Also to add needs to be changing the names of the dfs to make then same acorss all methods 
-  r <- list.files(paste0(dd, "Reprojected/UKCP2.2/tasmax/05/latest/"))
-  r <- r[1]
-  rp <- paste0(dd, "Reprojected/UKCP2.2/tasmax/05/latest/", r)
-  rast <- rast(rp)
-  
-  crs <- crs(rast)
-  
-  ## The output created from the R bias correction framework is a list of dataframes containing all the data we need for this doc (although some are transposed).
-  rd <- "Debiased/R/QuantileMapping/three.cities/" 
-  
-  files <- list.files(paste0(dd,rd,city),full.names=T)
-  files.v <- files[grepl(var, files)]
-  
-  allruns <- lapply(files.v, readRDS)
-  
-  names <- gsub(paste0(dd,rd,city,"|/|.RDS"),"",files.v)
-  names(allruns) <- names
-  
-  obs.val.df.L <- lapply(allruns, function(L){t(L[["t.obs"]])}) #This object stored in the results transposed for applying bias correction - maybe look at adding this to the bias correction script rather than here? 
-  obs.cal.df.L <- lapply(allruns, function(L){L[["val.df"]]})
-  
-  cpm.cal.raw.df.L <- lapply(allruns, function(L){t(L[["t.cal"]])}) 
-  
-  #In the R scirpt, the validation is corrected with the projected data as well - so needs to be seperated out (and transposed)
-  cpm.val.raw.df.L <- lapply(allruns, function(L){
-    proj <- as.data.frame(t(L[["t.proj"]]))
-    val.end.date <- min(grep("20201201-", names(proj)))-1
-    cpm.val.raw.df <- proj[,1:val.end.date] 
-  })
-  
-    cpm.proj.raw.df.L <- lapply(allruns, function(L){
-    proj <- as.data.frame(t(L[["t.proj"]]))
-    val.end.date <- min(grep("20201201-", names(proj)))
-    cpm.val.raw.df <- proj[,val.end.date:ncol(proj)] 
-  })
-  
-  cpm.cal.adj.df.L <- lapply(allruns, function(L){
-    adj <- as.data.frame(t(L[["qm1.hist"]]))
-  })
-  
-    cpm.val.adj.df.L <- lapply(allruns, function(L){
-    proj <- as.data.frame(t(L[["qm1.val.proj"]]))
-    val.end.date <- min(grep("20201201-", names(proj)))-1
-    proj[,1:val.end.date] 
-  })
-  
-      cpm.proj.adj.df.L <- lapply(allruns, function(L){
-    proj <- as.data.frame(t(L[["qm1.val.proj"]]))
-    val.end.date <- min(grep("20201201-", names(proj)))
-    proj[,val.end.date:ncol(proj)] 
-  })
-  
-  ## Convert to rasters --requires creation of x and y cols from row names
-```
-
-#here - sorting out inputs and rasters in single chunk
-```{r}
-  
-  df.rL <- lapply(runs, function(i){
-    L <- allruns[[i]]
-      lapply(L, function(x){
-      df <- t(x)
-      df <- as.data.frame(df)                      
-      rn <- row.names(df) #The rownames were saves as x_y coordinates
-      xi <- gsub("_.*", "", rn)
-      yi <- gsub(".*_", "", rn)
-      xy <- data.frame(x = xi, y = yi)
-      df <- cbind(xy, df)
-        L <- df.rL[[i]]
-    lapply(L, function(x){
-      r <- rast(x, type="xyz")
-      crs(r) <- crs
-      return(r)
-      })
-    })
-  
-  names(df.rL) <- runs
-  
-names(rasts) <- runs
-
- } else {
-  print("Invalid input")
-}
-
-
-
-```
-
+The objects within this R list are as follows:
+- 't.obs': transposed observation df
+- 't.cal': transposed calibration df
+- 't.proj': transposed projection df (included the validation period)
+- 'qm1.hist.a' - bias corrected values for the historical period, values fitted with linear interpolation
+- 'qm1.hist.b' - bias corrected values for the historical period, values fitted with tricubic interpolation
+- 'qm1.proj.a' - bias corrected values for the validation/projection period, values fitted with linear interpolation
+- 'qm1.proj.b' - bias corrected values for the validation/projection period, values fitted with tricubic interpolation
 
 ## **1. Bias Correction Assessment: trends**
-
 
 ### **London - tasmax = Run 08**
 
 Using the London region (UKI) as this is the smallest -- not this is the same regional area as the 'three.cities' crops but cut to shapefile edges rather than the square grid 
+
+```{r}
+
+runs <- c("Run05", "Run06", "Run07", "Run08")
+
+London.allruns <- lapply(runs, function(i){
+  rds <- paste0(dd,"/Debiased/R/QuantileMapping/resultsL",i,"_UKI_tasmax.RDS")
+  readRDS(rds)})
+
+names(London.allruns) <- runs
+```
 
 Load in Hads validation data 
 (So this can be run for all of the LCAT data, I'm going to read in the whole HADs files for the calibration years)
@@ -200,6 +96,40 @@ The next set of chunks visualise the data
 
 This next chunk converts the dfs back to raster with the correct CRS
 ```{r convert to df and raster}
+
+## Load a source raster to extract the crs
+r <- list.files(paste0(dd, "Reprojected/UKCP2.2/tasmax/05/latest/"))
+r <- r[1]
+rp <- paste0(dd, "Reprojected/UKCP2.2/tasmax/05/latest/", r)
+rast <- rast(rp)
+
+crs <- crs(rast)
+
+## Convert from matrix to df, transpose, create x and y cols - when run in chunk this works fine but for some reason can throw an error when run otherwise
+London.df.rL <- lapply(runs, function(i){
+  L <- London.allruns[[i]]
+    lapply(L, function(x){
+    df <- t(x)
+    df <- as.data.frame(df)                      
+    rn <- row.names(df) #The rownames were saves as x_y coordinates
+    xi <- gsub("_.*", "", rn)
+    yi <- gsub(".*_", "", rn)
+    xy <- data.frame(x = xi, y = yi)
+    df <- cbind(xy, df)})
+  })
+
+names(London.df.rL) <- runs
+
+## Convert to rasters
+London.rasts <- lapply(runs, function(i){
+  L <- London.df.rL[[i]]
+  lapply(L, function(x){
+    r <- rast(x, type="xyz")
+    crs(r) <- crs
+    return(r)}) 
+})
+
+names(London.rasts) <- runs
 
 
 ```
@@ -793,5 +723,3 @@ over30 %>% reduce(left_join, "year")
 #### **For future work**
 
 The number of quantiles selected will effect the efficacy of the bias correction: lots of options therefore with this specific method
-
-
