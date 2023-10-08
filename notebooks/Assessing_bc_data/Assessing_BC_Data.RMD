@@ -56,7 +56,7 @@ The validation period runs between 01-12-2010 to the day prior to 01-12-2020
 
 #This chunk attempts to apply the conversion to python output data to a form that this script will also use. This could (and probably should) be moved to a source script -- also the R pre-processing should probably be moved to the bias correction script? 
 
-dd <- "/mnt/vmfileshare/ClimateData/" #Data directoy of all data used in this script
+dd <- "/mnt/vmfileshare/ClimateData/" #Data directory of all data used in this script
 
 input <- "RDS" #Either df or raster -- R outputs are a group of dfs in list form saved as an RDS, python input is a raster
 city <- "Glasgow" 
@@ -73,17 +73,11 @@ if(input=="raster"){
   # Conversion to df is just  as.data.frame(raster, xy=T) - easiest thing is just to loop using lapply the files 
   #dfs are assumed to be cells x time 
 
-}
-
- } else if(input=="RDS"){
+} else if (input=="RDS"){
   ### This R bit is a bit crazy because of the format output from the bias correction - at some point to be cleaned up and moved to a different script. 
   ## Load a source raster to extract the crs
-   ## Also to add needs to be changing the names of the dfs to make then same acorss all methods 
-  r <- list.files(paste0(dd, "Reprojected/UKCP2.2/tasmax/05/latest/"))
-  r <- r[1]
-  rp <- paste0(dd, "Reprojected/UKCP2.2/tasmax/05/latest/", r)
-  rast <- rast(rp)
-  
+  r <- list.files(paste0(dd, "Reprojected_infill/UKCP2.2/tasmax/05/latest/"), full.names = T)[1]
+  rast <- rast(r)
   crs <- crs(rast)
   
   ## The output created from the R bias correction framework is a list of dataframes containing all the data we need for this doc (although some are transposed).
@@ -97,10 +91,13 @@ if(input=="raster"){
   names <- gsub(paste0(dd,rd,city,"|/|.RDS"),"",files.v)
   names(allruns) <- names
   
-  obs.val.df.L <- lapply(allruns, function(L){t(L[["t.obs"]])}) #This object stored in the results transposed for applying bias correction - maybe look at adding this to the bias correction script rather than here? 
-  obs.cal.df.L <- lapply(allruns, function(L){L[["val.df"]]})
+  #This was returned for ease where multiple runs have been looped to apply this paritcular function, but actually we don't need a cope for each nor this data in a list. Therefore: 
+  obs.cal.df <- as.data.frame(t(allruns[[1]]$t.obs))
+  obs.val.df <- allruns[[1]]$val.df 
   
-  cpm.cal.raw.df.L <- lapply(allruns, function(L){t(L[["t.cal"]])}) 
+  cpm.cal.raw.df.L <- lapply(allruns, function(L){
+    as.data.frame(t(L[["t.cal"]]))
+    }) 
   
   #In the R scirpt, the validation is corrected with the projected data as well - so needs to be seperated out (and transposed)
   cpm.val.raw.df.L <- lapply(allruns, function(L){
@@ -109,7 +106,7 @@ if(input=="raster"){
     cpm.val.raw.df <- proj[,1:val.end.date] 
   })
   
-    cpm.proj.raw.df.L <- lapply(allruns, function(L){
+  cpm.proj.raw.df.L <- lapply(allruns, function(L){
     proj <- as.data.frame(t(L[["t.proj"]]))
     val.end.date <- min(grep("20201201-", names(proj)))
     cpm.val.raw.df <- proj[,val.end.date:ncol(proj)] 
@@ -132,32 +129,50 @@ if(input=="raster"){
   })
   
   ## Convert to rasters --requires creation of x and y cols from row names
-```
+## For the comparison, just converting the observation and cpm for the cal and val perios (ie not the projection datasets)      
+      
+obsrastL <- lapply(list(obs.cal.df, obs.val.df), function(i){
+  rn <- row.names(i) #The rownames were saves as x_y coordinates
+      xi <- gsub("_.*", "", rn)
+      yi <- gsub(".*_", "", rn)
+      xy <- data.frame(x = xi, y = yi)
+      df <- cbind(xy, i)
+      r <- rast(df, type="xyz")
+      crs(r) <- crs
+      return(r)
+}) 
 
-#here - sorting out inputs and rasters in single chunk
-```{r}
+names(obsrastL) <- c("obs.cal.rasts", "obs.val.rasts")
+list2env(obsrastL, .GlobalEnv)
+remove(obsrastL)
+      
+list2rast <- list(cpm.cal.raw.df.L, cpm.cal.adj.df.L, cpm.val.raw.df.L, cpm.val.adj.df.L)
   
+rastsL <- lapply(list2rast, function(x){
+  allruns <- x
   df.rL <- lapply(runs, function(i){
-    L <- allruns[[i]]
-      lapply(L, function(x){
-      df <- t(x)
-      df <- as.data.frame(df)                      
+      df <- allruns[[grep(i, names(allruns))]] #extract df based on run id
       rn <- row.names(df) #The rownames were saves as x_y coordinates
       xi <- gsub("_.*", "", rn)
       yi <- gsub(".*_", "", rn)
       xy <- data.frame(x = xi, y = yi)
       df <- cbind(xy, df)
-        L <- df.rL[[i]]
-    lapply(L, function(x){
-      r <- rast(x, type="xyz")
+      r <- rast(df, type="xyz")
       crs(r) <- crs
       return(r)
       })
-    })
-  
   names(df.rL) <- runs
+  return(df.rL)
+    })
+
+names(rastsL) <- c("cpm.cal.raw.rasts.L", "cpm.cal.adj.rasts.L", "cpm.val.raw.rasts.L", "cpm.val.adj.rasts.L")
   
-names(rasts) <- runs
+list2env(rastsL, .GlobalEnv)
+
+remove(rastsL) 
+remove(list2rast)
+
+gc()
 
  } else {
   print("Invalid input")
@@ -170,132 +185,316 @@ names(rasts) <- runs
 
 ## **1. Bias Correction Assessment: trends**
 
+An visual comparison of trends across observation, raw and adjusted data for the same time period
 
-### **London - tasmax = Run 08**
-
-Using the London region (UKI) as this is the smallest -- not this is the same regional area as the 'three.cities' crops but cut to shapefile edges rather than the square grid 
-
-Load in Hads validation data 
-(So this can be run for all of the LCAT data, I'm going to read in the whole HADs files for the calibration years)
-
-**The calibration period is 2009-12-01 to 2019-11-30 to relate to the CPM month grouping**
-
-Hads data were also cropped to the regional files for the calibration years - some of the dates might need to be added from the observation (or just be ignored for ease)
-
-```{r}
-fp <- paste0(dd, "Interim/HadsUK/Data_as_df/")
-f <- list.files(fp)
-v <- "tasmax"
-reg <- "UKI"
-f <- f[grepl("2010_2020", f)&grepl(v,f)&grepl(reg, f)]
-
-obs.val.df <- read.csv(paste0(fp,f)) # Starts here from 2010 - 01 -01 -- because for the BC I removed these vals to align with the cpm years we're missing the month of Dec - so need to update the cpm data to reflect this in the assessment -- wont be a problem for other BC data 
-
-```
-
-
-### **1b. Check trends**
-
-The next set of chunks visualise the data 
-
-This next chunk converts the dfs back to raster with the correct CRS
-```{r convert to df and raster}
-
-
-```
-
-#### **Raster vis comparison**
+### **1a. Raster comparison**
 
 Random selection of 3 days of the observation, calibration and two adjusted cals, for three historic days
-(Note: I'm just plotting the bias corrected with linear interpolation so as to overwhelm with plots)
 
-##### Fig. *Day 1 - 1980-12-01*
+Adding in the city shapeoutline for prettier maps
 
-```{r, fig.show="hold", out.width="33%"}
-tm_shape(London.rasts$Run05$t.obs[[1]]) + tm_raster(title="Observation, 1980-12-01") #Obviously just one call of the observation 
-tm_shape(London.rasts$Run05$t.cal[[1]]) + tm_raster(title="Calibration, Run 05, Raw 1980-12-01")
-tm_shape(London.rasts$Run06$t.cal[[1]]) + tm_raster(title="Calibration, Run 06, Raw 1980-12-01")
-tm_shape(London.rasts$Run07$t.cal[[1]]) + tm_raster(title="Calibration, Run 07, Raw 1980-12-01")
-tm_shape(London.rasts$Run08$t.cal[[1]]) + tm_raster(title="Calibration, Run 08, Raw 1980-12-01")
-tm_shape(London.rasts$Run05$qm1.hist.a[[1]]) + tm_raster(title="Calibration, Run 05, BC 1980-12-01")
-tm_shape(London.rasts$Run06$qm1.hist.a[[1]]) + tm_raster(title="Calibration, Run 06, BC 1980-12-01")
-tm_shape(London.rasts$Run07$qm1.hist.a[[1]]) + tm_raster(title="Calibration, Run 07, BC 1980-12-01")
-tm_shape(London.rasts$Run08$qm1.hist.a[[1]]) + tm_raster(title="Calibration, Run 08, BC 1980-12-01")
+```{r}
 
-
-```
-
-##### Fig. *Day 2 - 1991-06-01*
-
-Just to note I was so suprised by how much lower the observation data was for this raster I loaded the raw HADs to check (in resampled_2.2km/tasmax and the original 1km grid it does reflect it - it just seems very low)
-
-```{r, fig.show="hold", out.width="33%"}
-tm_shape(London.rasts$Run05$t.obs[[3781]]) + tm_raster(title="Observation, 1991-06-01") #Obviously just one call of the observation 
-tm_shape(London.rasts$Run05$t.cal[[3781]]) + tm_raster(title="Calibration, Run 05, Raw 1991-06-01")
-tm_shape(London.rasts$Run06$t.cal[[3781]]) + tm_raster(title="Calibration, Run 06, Raw 1991-06-01")
-tm_shape(London.rasts$Run07$t.cal[[3781]]) + tm_raster(title="Calibration, Run 07, Raw 1991-06-01")
-tm_shape(London.rasts$Run08$t.cal[[3781]]) + tm_raster(title="Calibration, Run 08, Raw 1991-06-01")
-tm_shape(London.rasts$Run05$qm1.hist.a[[3781]]) + tm_raster(title="Calibration, Run 05, BC 1991-06-01")
-tm_shape(London.rasts$Run06$qm1.hist.a[[3781]]) + tm_raster(title="Calibration, Run 06, BC 1991-06-01")
-tm_shape(London.rasts$Run07$qm1.hist.a[[3781]]) + tm_raster(title="Calibration, Run 07, BC 1991-06-01")
-tm_shape(London.rasts$Run08$qm1.hist.a[[3781]]) + tm_raster(title="Calibration, Run 08, BC 1991-06-01")
+shape <-sf::st_as_sf(vect(paste0(dd, "shapefiles/three.cities/", city, "/", city, ".shp")))
 
 ```
 
 
 
-##### Fig. *Day 3 - 2000-08-01*
+#### **Day 1 - 1980-12-01 - calibration period ** {.tabset}
 
+##### Run05  
 
 ```{r, fig.show="hold", out.width="33%"}
-tm_shape(London.rasts$Run05$t.obs[[7081]]) + tm_raster(title="Observation, 2000-08-01") #Obviously just one call of the observation 
-tm_shape(London.rasts$Run05$t.cal[[7081]]) + tm_raster(title="Calibration, Run 05, Raw 2000-08-01")
-tm_shape(London.rasts$Run06$t.cal[[7081]]) + tm_raster(title="Calibration, Run 06, Raw 2000-08-01")
-tm_shape(London.rasts$Run07$t.cal[[7081]]) + tm_raster(title="Calibration, Run 07, Raw 2000-08-01")
-tm_shape(London.rasts$Run08$t.cal[[7081]]) + tm_raster(title="Calibration, Run 08, Raw 2000-08-01")
-tm_shape(London.rasts$Run05$qm1.hist.a[[7081]]) + tm_raster(title="Calibration, Run 05, BC 2000-08-01")
-tm_shape(London.rasts$Run06$qm1.hist.a[[7081]]) + tm_raster(title="Calibration, Run 06, BC 2000-08-01")
-tm_shape(London.rasts$Run07$qm1.hist.a[[7081]]) + tm_raster(title="Calibration, Run 07, BC 2000-08-01")
-tm_shape(London.rasts$Run08$qm1.hist.a[[7081]]) + tm_raster(title="Calibration, Run 08, BC 2000-08-01")
+
+ tm_shape(obs.cal.rasts[[1]]) + 
+  tm_raster(title="Observation") + 
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+
+tm_shape(cpm.cal.raw.rasts.L$`05`[[1]]) + 
+  tm_raster(title="CPM, Raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`05`[[1]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
 
 ```
+
+
+##### Run06  
+
+```{r, fig.show="hold", out.width="33%"}
+tm_shape(obs.cal.rasts.L[[1]]) + tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.raw.rasts.L$`06`[[1]]) + 
+  tm_raster(title="CPM, Raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`06`[[1]]) +
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+```
+
+
+##### Run07  
+
+```{r, fig.show="hold", out.width="33%"}
+
+tm_shape(obs.cal.rasts[[1]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.raw.rasts.L$`07`[[1]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`07`[[1]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+```
+
+
+##### Run08
+
+```{r, fig.show="hold", out.width="33%"}
+
+tm_shape(obs.cal.rasts[[1]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.raw.rasts.L$`08`[[1]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`08`[[1]]) + tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+```
+
+#### **Day 2 - 2008-08-01 - calibration period ** {.tabset}
+
+##### Run05  
+
+```{r, fig.show="hold", out.width="33%"}
+
+ tm_shape(obs.cal.rasts[[7081]]) + 
+  tm_raster(title="Observation") + 
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+
+tm_shape(cpm.cal.raw.rasts.L$`05`[[7081]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`05`[[7081]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+```
+
+
+##### Run06  
+
+```{r, fig.show="hold", out.width="33%"}
+tm_shape(obs.cal.rasts[[7081]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.raw.rasts.L$`06`[[7081]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`06`[[7081]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+```
+
+
+##### Run07  
+
+```{r, fig.show="hold", out.width="33%"}
+
+tm_shape(obs.cal.rasts[[7081]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.raw.rasts.L$`07`[[7081]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`07`[[7081]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+```
+
+
+##### Run08
+
+```{r, fig.show="hold", out.width="33%"}
+
+tm_shape(obs.cal.rasts[[7081]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.raw.rasts.L$`08`[[7081]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`08`[[7081]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+```
+
+
+
+#### **Day 3 - 2015-05-01 - calibration period ** {.tabset}
+
+##### Run05  
+
+```{r, fig.show="hold", out.width="33%"}
+
+ tm_shape(obs.val.rasts[[1590]]) + 
+  tm_raster(title="Observation") + 
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+
+tm_shape(cpm.val.raw.rasts.L$`05`[[1590]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.val.adj.rasts.L$`05`[[1590]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+```
+
+
+##### Run06  
+
+```{r, fig.show="hold", out.width="33%"}
+tm_shape(obs.val.rasts[[1590]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.val.raw.rasts.L$`06`[[1590]]) + 
+  tm_raster(title="CPM, Raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.val.adj.rasts.L$`06`[[1590]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+```
+
+
+##### Run07  
+
+```{r, fig.show="hold", out.width="33%"}
+
+tm_shape(obs.val.rasts[[1590]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.val.raw.rasts.L$`07`[[1590]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.val.adj.rasts.L$`07`[[1590]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+```
+
+
+##### Run08
+
+```{r, fig.show="hold", out.width="33%"}
+
+tm_shape(obs.val.rasts[[1590]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.val.raw.rasts.L$`08`[[1590]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.val.adj.rasts.L$`08`[[1590]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+```
+
+#### {-}
+
+### **1b. Trend comparison**
 
 #### **Calibration period - annual trends**
 
+# HERE --check works with your adjustment above! 
 
 ```{r}
+
+dfL <- c(list(obs.cal.df), cpm.cal.raw.df.L, cpm.cal.adj.df.L)
+names(dfL) <- c("obs.df", paste0("cpm.cal.raw.", names(cpm.cal.raw.df.L)),
+                paste0("cpm.cal.adj.", names(cpm.cal.raw.df.L)))
+
 #Returns a list of dfs in handy format for graphing
-London.dfg.rL <- lapply(runs, function(i){
-  L <- London.df.rL[[i]]
-  names(L)[1:3] <- c("obs", "cal", "proj") 
-    dfg <- lapply(names(L), function(ii){
-      dfi <- L[[ii]]
-      x <- 3:ncol(dfi) #ignore cols 1 & 2 with x y
+dfg.rL <- lapply(dfL, function(i){
+      x <- 3:ncol(i) #ignore cols 1 & 2 with x y
       #Calc mean and sd
       dfx <- lapply(x, function(x){
-        y <- dfi[,x]
+        y <- i[,x]
         mean <- mean(y, na.rm=T)
         sd <- sd(y, na.rm=T)
         dfr <- data.frame(mean=mean, 
              sd.high=mean+sd,
              sd.low=mean-sd)
-        names(dfr) <- paste0(ii, ".", names(dfr))
-        dfr$day <- names(dfi)[x]
+        dfr$day <- names(i)[x]
         return(dfr)
       })
-
       dfx_g <- dfx %>% purrr::reduce(rbind)
     })
 
-    names(dfg) <- c("obs.daymeans", "raw.cal.daymeans",
-                       "raw.proj.daymeans", "bc.a.cal.daymeans",
-                       "bc.b.cal.daymeans", "bc.a.proj.daymeans",
-                       "bc.b.proj.daymeans")
-    
-    return(dfg)
-})
 
-names(London.dfg.rL) <- runs
+names(dfg.rL) <- names(dfL)
 ```
 
 
@@ -303,8 +502,8 @@ names(London.dfg.rL) <- runs
 #Create a df for all of the runs to plot
 ##Add a day index to align the cal and obs 
 
-London.dfg.calp.L <- lapply(runs, function(i){
-   dfg <- London.dfg.rL[[i]]
+dfg.calp.L <- lapply(runs, function(i){
+   dfg <- dfg.rL[[i]]
   dfg.calp <- dfg[c("obs.daymeans", "raw.cal.daymeans",
                        "bc.b.cal.daymeans", "bc.a.cal.daymeans")]
 
@@ -319,24 +518,24 @@ London.dfg.calp.L <- lapply(runs, function(i){
   dfg.calp$Run <- i
   return(dfg.calp)})
 
-names(London.dfg.calp.L) <- runs
+names(dfg.calp.L) <- runs
 
-London.dfg.calp <- London.dfg.calp.L %>% reduce(rbind)
+dfg.calp <- dfg.calp.L %>% reduce(rbind)
 
 ```
 
 ```{r}
 
-London.dfg.calp_m <- reshape2::melt(London.dfg.calp, id=c("dayi", "Run")) #create long df for plotting multiple lines
+dfg.calp_m <- reshape2::melt(dfg.calp, id=c("dayi", "Run")) #create long df for plotting multiple lines
 
-London.dfg.calp_mm <- London.dfg.calp_m[grepl("mean", London.dfg.calp_m$variable),] #For easy vis, only keep mean vals
+dfg.calp_mm <- dfg.calp_m[grepl("mean", dfg.calp_m$variable),] #For easy vis, only keep mean vals
 ```
 
 #### Fig. Calibration period - annual mean
 
 ```{r Historic trend 1}
 
-ggplot(London.dfg.calp_mm, aes(dayi, value, group=variable, colour=variable)) + 
+ggplot(dfg.calp_mm, aes(dayi, value, group=variable, colour=variable)) + 
   geom_line(alpha=0.7) +
   facet_wrap(.~Run) +
   theme_bw() + ylab("Av daily max temp oC") + 
@@ -353,7 +552,7 @@ Annotate season based on month index - the dates have different formats dependin
 ```{r}
 
 seasonal.means <- lapply(runs, function(r){
-  dfg <- London.dfg.rL[[r]]
+  dfg <- dfg.rL[[r]]
     #Hads/obs df
     obs.daymeans.df <- dfg$obs.daymeans
 
@@ -478,8 +677,8 @@ For tasmax - grouping to season and calculating the seasonal maxima vals (i.e. r
 ```{r}
 
 #Convert to max, out put a df in easy fig format 
-London.dfg.max <- lapply(runs, function(r){
-  L <- London.df.rL[[r]]
+dfg.max <- lapply(runs, function(r){
+  L <- df.rL[[r]]
   names(L)[1:3] <- c("obs", "cal", "proj") 
     dfg <- lapply(names(L), function(ii){
       dfi <- L[[ii]]
@@ -497,10 +696,10 @@ London.dfg.max <- lapply(runs, function(r){
     return(dfg)
 })
 
-names(London.dfg.max) <- runs
+names(dfg.max) <- runs
 
 seasonal.max.cal <- lapply(runs, function(r){
-  dfg <- London.dfg.max[[r]]
+  dfg <- dfg.max[[r]]
     #Hads/obs df
     df1 <- dfg$obs.max
       x <- df1$day
@@ -586,37 +785,6 @@ ggplot(dfg_sm, aes(season_year, max, group=model, colour=model)) +
  scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Seasonal Summer averages, 1980.12.01 - 2009.12.01") +
   scale_color_brewer(palette="Set1", name="Model")
 
-```
-
-#### Create validaton df list
-
-Adding in the observational HADs data and aligning based on dates
-
-*Note* So as not to re-run the UK wide LCAT data processing, a workaround was added to the bias correction function used to group the obs data - this means that to align the validation cpm data we have to remove a month in the beginning 
-
-```{r}
-
-#Extract validation period of raw and bias corrected CPM data
-val.dfs <- lapply(runs, function(r){
-    London.df <- London.df.rL[[r]]
-    cpm.val.dfs <- lapply(London.df[c("t.proj", "qm1.proj.a", "qm1.proj.b")], function(x){
-    i <- grep("20191201-20201130_30", names(x))[1]
-    df <- x[,1:i]
-  })
-
-    #Using the old cpm data for the hads obs - so need to remove the dates to ensure theres 30 days per year
-    remove <- c("0229_29", "0430_30", "0731_31", "0930_30", "1130_30")
-    remove <- paste0(remove, collapse = "|")
-      
-    obs.val.df <- obs.val.df[,!grepl(remove, names(obs.val.df))]
-    row.names(obs.val.df) <- paste0(obs.val.df$x, "_", obs.val.df$y)
-
-    val.dfs <- c(list(obs.val.df), cpm.val.dfs)
-    names(val.dfs) <- c("obs.val.df", "raw.cpm.val", "bc1.cpm.val", "bc2.cpm.val")
-    return(val.dfs)
-    })
-
-names(val.dfs) <- runs
 ```
 
 
