@@ -93,7 +93,8 @@ if(input=="raster"){
   
   #This was returned for ease where multiple runs have been looped to apply this paritcular function, but actually we don't need a cope for each nor this data in a list. Therefore: 
   obs.cal.df <- as.data.frame(t(allruns[[1]]$t.obs))
-  obs.val.df <- allruns[[1]]$val.df 
+  
+  obs.val.df <- allruns[[1]]$val.df[c(1:3601)] #To run until 30th Nov 2020
   
   cpm.cal.raw.df.L <- lapply(allruns, function(L){
     as.data.frame(t(L[["t.cal"]]))
@@ -229,7 +230,7 @@ tm_shape(cpm.cal.adj.rasts.L$`05`[[1]]) +
 ##### Run06  
 
 ```{r, fig.show="hold", out.width="33%"}
-tm_shape(obs.cal.rasts.L[[1]]) + tm_raster(title="Observation") +
+tm_shape(obs.cal.rasts[[1]]) + tm_raster(title="Observation") +
   tm_layout(legend.outside = T) + 
               tm_shape(shape) + tm_borders(col="black")
 
@@ -466,19 +467,15 @@ tm_shape(cpm.val.adj.rasts.L$`08`[[1590]]) +
 
 ### **1b. Trend comparison**
 
-#### **Calibration period - annual trends**
-
-# HERE --check works with your adjustment above! 
-
 ```{r}
-
+#Lists of dfs to summarise the means of 
 dfL <- c(list(obs.cal.df), cpm.cal.raw.df.L, cpm.cal.adj.df.L)
-names(dfL) <- c("obs.df", paste0("cpm.cal.raw.", names(cpm.cal.raw.df.L)),
+names(dfL) <- c("obs.cal", paste0("cpm.cal.raw.", names(cpm.cal.raw.df.L)),
                 paste0("cpm.cal.adj.", names(cpm.cal.raw.df.L)))
 
 #Returns a list of dfs in handy format for graphing
-dfg.rL <- lapply(dfL, function(i){
-      x <- 3:ncol(i) #ignore cols 1 & 2 with x y
+dfg.daily.means <- lapply(dfL, function(i){
+      x <- 1:ncol(i) #ignore cols 1 & 2 with x y
       #Calc mean and sd
       dfx <- lapply(x, function(x){
         y <- i[,x]
@@ -494,94 +491,52 @@ dfg.rL <- lapply(dfL, function(i){
     })
 
 
-names(dfg.rL) <- names(dfL)
+names(dfg.daily.means) <- names(dfL)
 ```
 
-
-```{r}
-#Create a df for all of the runs to plot
-##Add a day index to align the cal and obs 
-
-dfg.calp.L <- lapply(runs, function(i){
-   dfg <- dfg.rL[[i]]
-  dfg.calp <- dfg[c("obs.daymeans", "raw.cal.daymeans",
-                       "bc.b.cal.daymeans", "bc.a.cal.daymeans")]
-
-    dfg.calp <- lapply(dfg.calp, function(x){
-    x$dayi <- 1:nrow(x)
-    x$day<- NULL
-    return(x)
-    })
-    
-    
-  dfg.calp <- dfg.calp %>% reduce(merge, "dayi")
-  dfg.calp$Run <- i
-  return(dfg.calp)})
-
-names(dfg.calp.L) <- runs
-
-dfg.calp <- dfg.calp.L %>% reduce(rbind)
-
-```
-
-```{r}
-
-dfg.calp_m <- reshape2::melt(dfg.calp, id=c("dayi", "Run")) #create long df for plotting multiple lines
-
-dfg.calp_mm <- dfg.calp_m[grepl("mean", dfg.calp_m$variable),] #For easy vis, only keep mean vals
-```
-
-#### Fig. Calibration period - annual mean
-
-```{r Historic trend 1}
-
-ggplot(dfg.calp_mm, aes(dayi, value, group=variable, colour=variable)) + 
-  geom_line(alpha=0.7) +
-  facet_wrap(.~Run) +
-  theme_bw() + ylab("Av daily max temp oC") + 
-  ggtitle("Tasmax Hisotric trends") +
- scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day, 1980.12.01 - 2009.12.01") +
-  scale_color_brewer(palette="Set1", name="Model", labels=c("Obs (Hads)", "Raw CPM", "BC CPM 1", "BC CPM 2"))
-
-```
+*Note* : Can add a plot here for daily averages but it's quite visually confusing so omitting for now 
 
 #### **Seasonal trends - Calibration period **
 
-Annotate season based on month index - the dates have different formats depending on the input data (ie hads vs cpm) so am pulling out the necessary to adjust sep 
 
 ```{r}
 
-seasonal.means <- lapply(runs, function(r){
-  dfg <- dfg.rL[[r]]
-    #Hads/obs df
-    obs.daymeans.df <- dfg$obs.daymeans
+#Annotate season based on month index - the dates have different formats depending on the input data (ie hads vs cpm) so am pulling out the necessary to adjust sep 
 
-      x <- obs.daymeans.df$day
-      obs.daymeans.df$season <- ifelse(grepl("1231_|0131_|0228_|0229_", x),
+obs.cal.season.mean <- dfg.daily.means$obs.cal
+
+x <- dfg.daily.means$obs.cal$day
+
+obs.cal.season.mean$season <- ifelse(grepl("1231_|0131_|0228_|0229_", x),
                                        "Winter",
                       ifelse(grepl("0331_|0430_|0531_", x), "Spring",
                           ifelse(grepl("0630_|0731_|0831_", x), "Summer", "Autumn")))
 
-#Note: the seasons should each have 90 days but seemingly Winter and Autumn have 89 and Spring and Summer have 91 - this is due to how the manual aligning worked out and should be updated when the hads data is re-run 
+#Note = the n days per season is not quite evenly split between the 4 seasons because of how the hads resamples across the year for 360 days
 
     #Create season_year - All Winter months apart from Dec to be added to the previous year (ie     Winter 2000) would be the Dec of 2000 to the Feb of 2001
-    year <- gsub("^[^_]*_", "", x)
+    rem <- nchar(var) + 39
+    year <- substr(x, rem, rem+3)
     year <- as.numeric(substr(year, 1,4))
-    obs.daymeans.df$season_year <- ifelse(grepl("0131_|0228_|0229_", x), 
-                                      paste0(year-1, obs.daymeans.df$season), 
-                                      paste0(year, obs.daymeans.df$season))
+    obs.cal.season.mean$season_year <- ifelse(grepl("0131_|0228_|0229_", x), 
+                                      paste0(year-1, obs.cal.season.mean$season), 
+                                      paste0(year, obs.cal.season.mean$season))
     # Mutate to a seasonal mean df 
-    obs.seasonal.mean.df <- aggregate(obs.daymeans.df[[1]], list(obs.daymeans.df[["season_year"]]), function(x) c(seasonal.mean = mean(x), sd.high.seasonal = mean(x) + sd(x), sd.low.seasonal = mean(x) - sd(x)))
-    obs.seasonal.mean.df<- data.frame(season_year=obs.seasonal.mean.df$Group.1,
-                                        seasonal.mean=obs.seasonal.mean.df$x[,"seasonal.mean"],
-                                        sd.high.seasonal = obs.seasonal.mean.df$x[,"sd.high.seasonal"],
-                                        sd.low.seasonal = obs.seasonal.mean.df$x[,"sd.low.seasonal"])
+    obs.cal.season.mean <- aggregate(obs.cal.season.mean[[1]], list(obs.cal.season.mean[["season_year"]]), function(x) c(seasonal.mean = mean(x), sd.high.seasonal = mean(x) + sd(x), sd.low.seasonal = mean(x) - sd(x)))
+    obs.cal.season.mean<- data.frame(season_year=obs.cal.season.mean$Group.1,
+                                        seasonal.mean=obs.cal.season.mean$x[,"seasonal.mean"],
+                                        sd.high.seasonal = obs.cal.season.mean$x[,"sd.high.seasonal"],
+                                        sd.low.seasonal = obs.cal.season.mean$x[,"sd.low.seasonal"])
     
 
   #Grouping variable for later vars 
-  obs.seasonal.mean.df$model <- "obs"
-   
-   
+  obs.cal.season.mean$model <- "obs"
+
+```
+
+## Ruth to finish cleaning up this bit (it won't run at the moment)
+
+```{r eval=FALSE, include=FALSE}
     dfg.seasonal.mean <- lapply(c("raw.cal.daymeans", "bc.b.cal.daymeans",
                                          "bc.a.cal.daymeans"), function(i){
         df <- dfg[[i]]
@@ -625,7 +580,7 @@ seasonal.means.df <- seasonal.means %>% reduce(rbind)
 
 #### Fig. Calibration period - seasonal mean
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 ggplot(seasonal.means.df, aes(season_year, seasonal.mean, group=model, colour=model)) + 
   geom_line() +
@@ -640,7 +595,7 @@ ggplot(seasonal.means.df, aes(season_year, seasonal.mean, group=model, colour=mo
 
 ##### *Summer only*
 
-```{r Raw seasonal winter}
+```{r Raw seasonal winter, eval=FALSE, include=FALSE}
 
 dfg_sm<- subset(seasonal.means.df, grepl("Summer", season_year))
 
@@ -653,28 +608,13 @@ ggplot(dfg_sm, aes(season_year, seasonal.mean, group=model, colour=model)) +
   scale_color_brewer(palette="Set1", name="Model")
 
 ```
-It looks purple because the two bc methods aren't revealing much difference so subsetting to just one instead
 
-
-```{r}
-
-dfg_sm<- subset(seasonal.means.df, !grepl("bc.b.cal", model)&grepl("Summer", season_year))
-
-ggplot(dfg_sm, aes(season_year, seasonal.mean, group=model, colour=model)) + 
-  geom_line(alpha=0.7) +
-  facet_wrap(.~Run) +
-  theme_bw() + ylab("Av daily max temp oC -Summer average") + 
-  ggtitle("Tasmax Hisotric trends") +
- scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Seasonal averages, 1980.12.01 - 2009.12.01") +
-  scale_color_brewer(palette="Set1", name="Model")
-
-```
 
 #### *Annual trends - seasonal max*
 
 For tasmax - grouping to season and calculating the seasonal maxima vals (i.e. rather than means above) 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 #Convert to max, out put a df in easy fig format 
 dfg.max <- lapply(runs, function(r){
@@ -759,7 +699,7 @@ names(seasonal.maxima.df) <- c("season_year", "max", "model", "Run")
 
 #### Fig. Calibration period - seasonal max
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 ggplot(seasonal.maxima.df, aes(season_year, max, group=model, colour=model)) + 
   geom_line() +
@@ -773,7 +713,7 @@ ggplot(seasonal.maxima.df, aes(season_year, max, group=model, colour=model)) +
 
 #### Fig. Calibration period -  *Summer only*
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 dfg_sm<- subset(seasonal.maxima.df, !grepl("qm1.hist.b", model)&grepl("Summer", season_year))
 
@@ -802,82 +742,50 @@ Using the validation data set for this
 
 
 ```{r}
+
+val.dfs <- c(list(obs.val.df), cpm.val.raw.df.L, cpm.val.adj.df.L)
+
 #Convert dfs to a vector
-val.dfs.v <- lapply(runs, function(r){
-  dfs <- val.dfs[[r]]
-  dfs2 <- lapply(dfs, function(d){
-  #Remove x and y 
-  d$x <- NULL
-  d$y <- NULL
+val.dfs.v <- lapply(val.dfs, function(d){
   #Convert to single vector
   unlist(as.vector(d))})
-  names(dfs2) <- names(dfs)
 
-val.dfs.v.df <- dfs2 %>% reduce(cbind)
-val.dfs.v.df <- as.data.frame(val.dfs.v.df)})
+val.dfs.v.df <- as.data.frame(val.dfs.v)
+names(val.dfs.v.df) <- c("obs.val", paste0("Run", rep(runs, 2), "_", var, ".",rep(c("raw", "adj", 4)))) # Names for easy reference
 
-names(val.dfs.v) <- runs
 ```
 
-```{r}
-val.dfs.v <- lapply(runs, function(r){
-  df <- val.dfs.v[[r]]
-  names(df) <-paste0(r, ".", c("obs.val.df", "raw.cpm.val", "bc1.cpm.val", "bc2.cpm.val"))
-  return(df)
-})
-
-#Convert to a single df 
-val.dfs.v.allruns <- val.dfs.v %>% reduce(cbind)
-
-#Remove duplicate obs (pulled through across each run)
-val.dfs.v.allruns[c("Run06.obs.val.df", "Run07.obs.val.df", "Run08.obs.val.df")] <- NULL
-names(val.dfs.v.allruns)[1] <- "obs.val"
-```
 
 ### **2a. Descriptive statistics**
 
 ```{r descriptives validation}
 
-descriptives <- apply(val.dfs.v.allruns,2, function(x){ 
+descriptives <- apply(val.dfs.v.df, 2, function(x){ 
   per <- data.frame(as.list(quantile(x, probs=c(0.1, 0.9))))
   data.frame(mean=mean(x), sd=sd(x), min = min(x), per10th=per$X10.,per90th=per$X90., max = max(x))
 })
 
 descriptives <- descriptives %>% reduce(rbind)
-row.names(descriptives) <- names(val.dfs.v.allruns)
+row.names(descriptives) <- names(val.dfs.v.df)
 t(descriptives)
 ```
 
 
-
-#### **Distribution**
-
-```{r}
-
-names(val.dfs.v) <- runs
-val.dfs.v_fordist <- lapply(runs, function(r){
-  df <- val.dfs.v[[r]]
-  names(df) <- c("obs", "raw.cpm", "bc1.cpm", "bc2.cpm")
-  df$run <- paste0(r)
-  return(df)
-})
-
-#Convert to a single df 
-val.dfs.v.allruns_fordist <- val.dfs.v_fordist %>% reduce(rbind)
-val.dfg <- reshape2::melt(val.dfs.v.allruns_fordist, id="run")
-```
-
 #### Fig.Density plot of validation period 
 
+**Note** - need to add back in some facetting to this fig 
+
 ```{r}
-ggplot(subset(val.dfg, variable!="bc2.cpm"), aes(value, fill=variable, colour=variable)) + 
+m <- reshape2::melt(val.dfs.v.df)
+
+ggplot(m, aes(value, fill=variable, colour=variable)) + 
   geom_density(alpha = 0.3, position="identity") + 
- facet_wrap(.~ run) +
   theme_minimal() +
   scale_fill_brewer(palette = "Set1") +
   scale_color_brewer(palette = "Set1")
 
 ```
+
 ### **2b. Model fit statistics**
 
 Using the following to assess overall fit: 
@@ -888,18 +796,17 @@ Using the following to assess overall fit:
 - **Percent bias (PBIAS):** The optimal value of PBIAS is 0.0, with low-magnitude values indicating accurate model simulation. Positive values indicate overestimation bias, whereas negative values indicate model underestimation bias.
 
 ```{r rsq}
-actual <- val.dfs.v.allruns$obs.val
+actual <- val.dfs.v.df$obs.val
 
-rsq <- sapply(val.dfs.v.allruns[c(2:ncol(val.dfs.v.allruns))], function(x){
+rsq <- sapply(val.dfs.v.df[c(2:ncol(val.dfs.v.df))], function(x){
   cor(actual, x)^2
 })
 
- t(data.frame(as.list(rsq), row.names = "RSQ"))
 ```
 
 ```{r rmse}
 
-rmse <- sapply(val.dfs.v.allruns[c(2:ncol(val.dfs.v.allruns))], function(x){
+rmse <- sapply(val.dfs.v.df[c(2:ncol(val.dfs.v.df))], function(x){
   sqrt(mean((actual - x)^2))
 })
 
@@ -907,14 +814,14 @@ rmse <- sapply(val.dfs.v.allruns[c(2:ncol(val.dfs.v.allruns))], function(x){
 
 ```{r pbias}
 
-pbias <- sapply(val.dfs.v.allruns[c(2:ncol(val.dfs.v.allruns))], function(x){
+pbias <- sapply(val.dfs.v.df[c(2:ncol(val.dfs.v.df))], function(x){
   hydroGOF::pbias(x, actual)
 })
 
 ```
 
 ```{r nse}
-nse <- sapply(val.dfs.v.allruns[c(2:ncol(val.dfs.v.allruns))], function(x){
+nse <- sapply(val.dfs.v.df[c(2:ncol(val.dfs.v.df))], function(x){
   hydroGOF::NSE(x, actual)
 })
 
@@ -933,19 +840,21 @@ k %>%
 ```
 
 
-
 ## **3. Bias Correction Assessment: Metric specific - tasmax**
 
 ### **3b Days above 30 degrees**
 
 (Not considered consecutively here)
 
-```{r}
-val.dfs.v.allruns$year <- substr(row.names(val.dfs.v.allruns), 8,11)
+```{r eval=FALSE, include=FALSE}
 
-over30 <- lapply(names(val.dfs.v.allruns), function(i){
-  x <- val.dfs.v.allruns[,i]
-  df <- aggregate(x, list(val.dfs.v.allruns$year), function(x){sum(x>=30)})
+### Ruth to update 
+
+val.dfs.v.df$year <- substr(row.names(val.dfs.v.df), 8,11)
+
+over30 <- lapply(names(val.dfs.v.df), function(i){
+  x <- val.dfs.v.df[,i]
+  df <- aggregate(x, list(val.dfs.v.df$year), function(x){sum(x>=30)})
   names(df) <- c("year", paste0("Days.over.30.", i))
                  return(df)
 })
