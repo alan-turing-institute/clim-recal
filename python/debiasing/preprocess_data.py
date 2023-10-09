@@ -209,8 +209,8 @@ def preprocess_data() -> None:
         ds_modv.attrs['unit'] = unit
 
         # write ds_modv and ds_obsv to .nc files in output directory
-        ds_modv_filename = f'modv_var-{var}_run-{run_number}_{f_date_period[0]}_{f_date_period[1]}'
-        ds_obsv_filename = f'obsv_var-{var}_run-{run_number}_{f_date_period[0]}_{f_date_period[1]}'
+        ds_modv_filename = f'modv_var-{var}_run-{run_number}_{f_date_period[0].replace("-","")}_{f_date_period[1].replace("-","")}'
+        ds_obsv_filename = f'obsv_var-{var}_run-{run_number}_{f_date_period[0].replace("-","")}_{f_date_period[1].replace("-","")}'
         ds_modv_path = os.path.join(out_fpath, f'{ds_modv_filename}.nc')
         ds_obsv_path = os.path.join(out_fpath, f'{ds_obsv_filename}.nc')
         if not os.path.exists(os.path.dirname(ds_modv_path)):
