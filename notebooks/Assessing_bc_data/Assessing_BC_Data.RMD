@@ -767,7 +767,13 @@ descriptives <- apply(val.dfs.v.df, 2, function(x){
 
 descriptives <- descriptives %>% reduce(rbind)
 row.names(descriptives) <- names(val.dfs.v.df)
-t(descriptives)
+d <- t(descriptives)
+
+d %>% 
+  kable(booktabs = T) %>%
+  kable_styling() %>%
+  row_spec(grep(".bc.",row.names(d)), background = "lightgrey")
+
 ```
 
 
@@ -775,7 +781,7 @@ t(descriptives)
 
 **Note** - need to add back in some facetting to this fig 
 
-```{r}
+```{r warning=F, message=F}
 m <- reshape2::melt(val.dfs.v.df)
 
 ggplot(m, aes(value, fill=variable, colour=variable)) + 
