@@ -42,6 +42,15 @@ environment file for ease-of-use.
 ```
 conda env create -f environment.yml
 ```
+
+> **Warning**:
+> To reproduce our exact outputs, you will require GDAL version 3.4. Please be aware that this specific version of GDAL requires a different Python version than the one specified in our environment file. Therefore, we have not included it in the environment file and instead, for the reprojection step, you'll need to set up a new environment:
+> ```
+> conda create -n gdal_env python=3.10 gdal=3.4
+> ```
+
+In order to paralellize the reprojection step, we make use of the [GNU parallel shell tool](https://www.gnu.org/software/parallel/).
+
 #### Downloading the data
 
 This streamlined pipeline is designed for raw data provided by the Met Office, accessible through the [CEDA archive]((https://catalogue.ceda.ac.uk/uuid/ad2ac0ddd3f34210b0d6e19bfc335539)). It utilizes [UKCP](https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km) control, scenario data at 2.2km resolution, and [HADs](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km) observational data. For those unfamiliar with this data, refer to our [the dataset](#the-dataset) section.
@@ -64,32 +73,20 @@ The `--change_hierarchy` flag modifies the folder hierarchy to fit with the hier
 ### Reproject the data
 The HADs data and the UKCP projections have different resolution and coordinate system. For example the HADs dataset uses the British National Grid coordinate system.
 
-The first step in our analysis pipeline is to reproject the data. For this purpose, we utilize the GDAL package. GDAL, or the Geospatial Data Abstraction Library, is a computer software library designed for reading and writing raster and vector geospatial data formats. It provides a unified abstract data model to the calling application for all supported formats and can be equipped with various command line interface utilities for data translation and processing. Projections and transformations are further supported by the PROJ library.
+The first step in our analysis pipeline is to reproject the data. For this purpose, we utilize the Geospatial Data Abstraction Library (GDAL), designed for reading and writing raster and vector geospatial data formats.
 
 > **Warning**:
-> To reproduce our exact pipeline, make sure you use GDAL version 3.4. Please be aware that this specific version of GDAL requires a different Python version than the one specified in our environment file. Therefore, for this step, you'll need to set up a new environment:
+> Note that, to reproduce our exact pipeline, we switch environments here as explained in the requirements. 
 > ```
-> conda create -n gdal_env python=3.10 gdal=3.4
 > conda activate gdal_env
 > ```
-> 
 
-To execute the reprojection, run the `reproject_all.sh` script from your shell. First, ensure the scripts have the necessary permissions and that the parallel package is installed:
-
-```bash
-chmod +x ./reproject_one.sh
-chmod +x ./reproject_all.sh
-sudo apt-get update
-sudo apt-get install parallel
-```
-
-Once the above steps are completed, you can run the script with the following command:
+To execute the reprojection in parallel fashion, run the `reproject_all.sh` script from your shell. First, ensure the scripts have the necessary permissions and that the parallel package is installed:
 
 ```bash
-./reproject_all.sh
+sh bash/reproject_all.sh
 ```
 
- 
 ### Resample the data
 
 In [python/load_data/data_loader.py] we have written a few functions for loading and concatenating data into a single xarray which can be used for running debiasing methods. Instructions in how to use these functions can be found in python/notebooks/load_data_python.ipynb.

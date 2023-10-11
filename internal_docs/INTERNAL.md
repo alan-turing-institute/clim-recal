@@ -47,3 +47,15 @@ All the data used in this project can be found in the `/Volumes/vmfileshare/Clim
     ├── Middle_Layer_Super_Output_Areas_(December_2011)_Boundaries
     └── infuse_ctry_2011_clipped
 ```
+## Running the pipeline
+
+### Reprojection
+
+In order to run the [reprojection step](https://github.com/alan-turing-institute/clim-recal/tree/documentation#reproject-the-data) of the pipeline on the Azure VM there are some additional steps that need to be taken: You need to set permissions and install the parallel package.
+
+```
+chmod +x ./reproject_one.sh
+chmod +x ./reproject_all.sh
+sudo apt-get update
+sudo apt-get install parallel
+```
