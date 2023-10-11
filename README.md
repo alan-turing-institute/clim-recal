@@ -31,6 +31,8 @@ Here we provide an example of how to run a debiasing pipeline starting. The pipe
 6. **Assess the debiased data**
     *We have developed a way to assess the quality of the debiasing step across multiple alternative methods*
 
+*see also this [flowchart viz](https://github.com/alan-turing-institute/clim-recal/blob/documentation/docs/pipeline.md) of the pipeline*
+
 ### Prerequisites
 
 #### Setting up your environment
