@@ -68,6 +68,14 @@ You need to replace `uuu` and `ppp` with your CEDA username and FTP password res
 
 The `--change_hierarchy` flag modifies the folder hierarchy to fit with the hierarchy in the Turing Azure file store. This flag only applies to the UKCP data and should not be used with HADs data. You can use the same script without the `--change_hierarchy` flag in order to download files without any changes to the hierarchy.
 
+**Shapefiles**
+In addition to the climate data we use geospatial data to divide the data into smaller chunks. Specifically we use the following datasets for city boundaries:
+
+- Scottish localities boundaries for cropping out Glasgow. Downloaded from [nrscotland.gov.uk](https://www.nrscotland.gov.uk/statistics-and-data/geography/our-products/settlements-and-localities-dataset/settlements-and-localities-digital-boundaries) on 1st Aug 2023
+
+- Major Towns and Cities boundaries for cropping out Manchester. Downloaded from [https://geoportal.statistics.gov.uk/](https://geoportal.statistics.gov.uk/datasets/980da620a0264647bd679642f96b42c1/explore)
+
+
 > 📢 If you are an internal collaborator you can access the raw data as well as intermediate steps through our Azure server. [See here for a How-to]().
 
 ### Reproject the data
@@ -98,6 +106,15 @@ conda activate clim-recal
 # run resampling
 python python/resampling/resampling_hads.py --input path_to_reprojected --grid path_to_grid_file --output path_to_resampled
 ```
+> **Warning**:
+> Note that the resampling script has to be run separately for different metrics. In our pipeline we bias corrected data for `tasmax`, `tasmin` and `rainfall`
+
+## Splitting data
+
+Because the bias correction process is computationally intensive, handling large datasets can be challenging and time-consuming. To make the pipeline more manageable and efficient, it is recommended to split the data into smaller subsets. For the purposes of our example pipeline, we've opted for reducing the data to three specific cities as sub-regions from the broader UK data, London, Glasgow and Manchester.
+
+
+
 
 ### Preparing the bias correction and assessment
 **Data loaders** functions for loading and concatenating data into a single xarray which can be used for running debiasing methods.
