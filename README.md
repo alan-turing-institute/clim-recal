@@ -64,6 +64,31 @@ The `--change_hierarchy` flag modifies the folder hierarchy to fit with the hier
 ### Reproject the data
 The HADs data and the UKCP projections have different resolution and coordinate system. For example the HADs dataset uses the British National Grid coordinate system.
 
+The first step in our analysis pipeline is to reproject the data. For this purpose, we utilize the GDAL package. GDAL, or the Geospatial Data Abstraction Library, is a computer software library designed for reading and writing raster and vector geospatial data formats. It provides a unified abstract data model to the calling application for all supported formats and can be equipped with various command line interface utilities for data translation and processing. Projections and transformations are further supported by the PROJ library.
+
+> **Warning**:
+> To reproduce our exact pipeline, make sure you use GDAL version 3.4. Please be aware that this specific version of GDAL requires a different Python version than the one specified in our environment file. Therefore, for this step, you'll need to set up a new environment:
+> ```
+> conda create -n gdal_env python=3.10 gdal=3.4
+> conda activate gdal_env
+> ```
+> 
+
+To execute the reprojection, run the `reproject_all.sh` script from your shell. First, ensure the scripts have the necessary permissions and that the parallel package is installed:
+
+```bash
+chmod +x ./reproject_one.sh
+chmod +x ./reproject_all.sh
+sudo apt-get update
+sudo apt-get install parallel
+```
+
+Once the above steps are completed, you can run the script with the following command:
+
+```bash
+./reproject_all.sh
+```
+
  
 ### Resample the data
 
