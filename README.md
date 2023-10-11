@@ -73,7 +73,7 @@ The `--change_hierarchy` flag modifies the folder hierarchy to fit with the hier
 ### Reproject the data
 The HADs data and the UKCP projections have different resolution and coordinate system. For example the HADs dataset uses the British National Grid coordinate system.
 
-The first step in our analysis pipeline is to reproject the data. For this purpose, we utilize the Geospatial Data Abstraction Library (GDAL), designed for reading and writing raster and vector geospatial data formats.
+The first step in our analysis pipeline is to reproject the UKCP datasets to the British National Grid coordinate system. For this purpose, we utilize the Geospatial Data Abstraction Library (GDAL), designed for reading and writing raster and vector geospatial data formats.
 
 > **Warning**:
 > Note that, to reproduce our exact pipeline, we switch environments here as explained in the requirements. 
@@ -89,15 +89,16 @@ sh bash/reproject_all.sh
 
 ### Resample the data
 
-In [python/load_data/data_loader.py] we have written a few functions for loading and concatenating data into a single xarray which can be used for running debiasing methods. Instructions in how to use these functions can be found in python/notebooks/load_data_python.ipynb.
+Resample the HADsUK dataset from 1km to 2.2km grid to match the UKCP reprojected grid. We run the resampling python script specifying the `--input` location of the reprojected files from the previous step, the UKCP `--grid` file an the `--output` location for saving the resampled files.
 
-Resample the HADs data from 1km to 2.2km grid to match the UKCP reprojected grid.
+```
+python python/resampling/resampling_hads.py --input path_to_reprojected --grid path_to_grid_file --output path_to_resampled
 
-reproject the UKCP datasets to the British National Grid coordinate system.
-**Resampling** for the HADsUK datasets from 1km to a 2.2 km grid to match the UKCP re-projected grid.
-**Data loaders** functions for loading and concatenating data into a single xarray which can be used for running debiasing methods.
+```
 
 ### Preparing the bias correction and assessment
+**Data loaders** functions for loading and concatenating data into a single xarray which can be used for running debiasing methods.
+In [python/load_data/data_loader.py] we have written a few functions for loading and concatenating data into a single xarray which can be used for running debiasing methods. Instructions in how to use these functions can be found in python/notebooks/load_data_python.ipynb.
 
 ### Applying the bias correction
   - **Debiasing scripts** that interface with implementations of the debiasing (bias correction) methods implemented by different libraries (by March 2023 we have only implemented the python-cmethods library).
