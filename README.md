@@ -1,26 +1,20 @@
 # Welcome to the `clim-recal` repository! 
 
-
 Welcome to clim-recal, a specialized resource designed to tackle systematic errors or biases in Regional Climate Models (RCMs). As researchers, policy-makers, and various stakeholders explore publicly available RCMs, they need to consider the challenge of biases that can affect the accurate representation of climate change signals. Clim-recal provides both a **broad review** of available bias correction methods as well as **practical tutorials** and **guidance** on how to easily apply those methods to various datasets.
 
 Clim-recal is an **Extensive guide to application of BC methods**: 
 
-- Accessible information for non quantitative researchers and lay-audience stakeholders 
-- Technical resource for application BC methods
-- Framework for open additions
+- Accessible information about the [why and how of bias correction for climate data]()
+- Technical resource for application BC methods (see our full pipeline for bias-correction of the ground-breaking local-scale (2.2km)[Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf))
 - In partnership with the MetOffice to ensure the propriety, quality, and usability of our work
-- Full pipeline for bias-corrected data of the ground-breaking local-scale (2.2km)[Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf). 
-
+- Framework for open additions (in planning)
 
 ## Table of Contents
 
 2. [Overview: Bias Correction Pipeline](#overview-bias-correction-pipeline)
 3. [Documentation](#documentation)
 4. [The dataset](#the-dataset)
-4. [Guidance for Non-Climate Scientists](#guidance-for-non-climate-scientists)
-5. [Guidance for Climate Scientists](#guidance-for-non-climate-scientists)
-6. [Research](#research)
-7. [References](#references)
+4. [Why bias correction?](#why-bias-correction)
 8. [License](#license)
 9. [Contributors](#contributors)
 
@@ -203,13 +197,19 @@ The UK Climate Projections 2018 (UKCP18) dataset offers insights into the potent
 ### HADS
 [HadUK-Grid](https://www.metoffice.gov.uk/research/climate/maps-and-data/data/haduk-grid/haduk-grid) is a comprehensive collection of climate data for the UK, compiled from various land surface observations across the country. This data is organized into a uniform grid to ensure consistent coverage throughout the UK at up to 1km x 1km resolution. The dataset, spanning from 1836 to the present, includes a variety of climate variables such as air temperature, precipitation, sunshine, and wind speed, available on daily, monthly, seasonal, and annual timescales. 
 
-## Guidance for Non-Climate Scientists
+## Why bias correction?
 
 Regional climate models (RCMs) contain systematic errors, or biases in their output [1]. Biases arise in RCMs for a number of reasons, such as the assumptions in the general circulation models (GCMs), and in the downscaling process from GCM to RCM [1,2].
 
 Researchers, policy-makers and other stakeholders wishing to use publicly available RCMs need to consider a range of "bias correction” methods (sometimes referred to as "bias adjustment" or "recalibration"). Bias correction methods offer a means of adjusting the outputs of RCM in a manner that might better reflect future climate change signals whilst preserving the natural and internal variability of climate [2]. 
 
-## Guidance for Climate Scientists
+Part of the clim-recal project is to review several bias correction methods. This work is ongoing and you can find our initial [taxonomy here](https://docs.google.com/spreadsheets/d/18LIc8omSMTzOWM60aFNv1EZUl1qQN_DG8HFy1_0NdWk/edit?usp=sharing). When we've completed our literature review, it will be submitted for publication in an open peer-reviewed journal. 
+
+Our work is however, just like climate data,  intended to be dynamic, and we are in the process of setting up a pipeline for researchers creating new methods of bias correction to be able to submit their methods for inclusion on in the **clim-recal** repository. 
+
+ 1. Senatore et al., 2022, https://doi.org/10.1016/j.ejrh.2022.101120 
+ 2. Ayar et al., 2021, https://doi.org/10.1038/s41598-021-82715-1 
+
 
 ### Let's collaborate!
 
@@ -236,22 +236,10 @@ and installing with:
 pip install -r requirements.txt
 ```
 
-## Research
-### Methods taxonomy 
-
-Our work-in-progress taxonomy can be viewed [here](https://docs.google.com/spreadsheets/d/18LIc8omSMTzOWM60aFNv1EZUl1qQN_DG8HFy1_0NdWk/edit?usp=sharing). When we've completed our literature review, it will be submitted for publication in an open peer-reviewed journal. 
-
-Our work is however, just like climate data,  intended to be dynamic, and we are in the process of setting up a pipeline for researchers creating new methods of bias correction to be able to submit their methods for inclusion on in the **clim-recal** repository. 
-
 ## 🚧 Future plans
 
 - **More BC Methods**: Further bias correction of UKCP18 products. *This is planned for a future release and is not available yet.*
 - **Pipeline for adding new methods**: *This is planned for a future release and is not available yet.*
-
-## References
-
- 1. Senatore et al., 2022, https://doi.org/10.1016/j.ejrh.2022.101120 
- 2. Ayar et al., 2021, https://doi.org/10.1038/s41598-021-82715-1 
 
 ## License
 
