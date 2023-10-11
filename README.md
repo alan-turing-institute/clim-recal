@@ -63,6 +63,7 @@ git submodule update --init --recursive
 
 #### Downloading the data
 
+**Climate data**
 This streamlined pipeline is designed for raw data provided by the Met Office, accessible through the [CEDA archive]((https://catalogue.ceda.ac.uk/uuid/ad2ac0ddd3f34210b0d6e19bfc335539)). It utilizes [UKCP](https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km) control, scenario data at 2.2km resolution, and [HADs](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km) observational data. For those unfamiliar with this data, refer to our [the dataset](#the-dataset) section.
 
 To access the data,[register here]((https://archive.ceda.ac.uk/)) at the CEDA archive and configure your FTP credentials in "My Account". Utilize our [ceda_ftp_download.py](python/data_download/) script to download the data.
@@ -78,12 +79,13 @@ You need to replace `uuu` and `ppp` with your CEDA username and FTP password res
 
 The `--change_hierarchy` flag modifies the folder hierarchy to fit with the hierarchy in the Turing Azure file store. This flag only applies to the UKCP data and should not be used with HADs data. You can use the same script without the `--change_hierarchy` flag in order to download files without any changes to the hierarchy.
 
-**Shapefiles**
+**Geospatial data**
 In addition to the climate data we use geospatial data to divide the data into smaller chunks. Specifically we use the following datasets for city boundaries:
 
 - Scottish localities boundaries for cropping out Glasgow. Downloaded from [nrscotland.gov.uk](https://www.nrscotland.gov.uk/statistics-and-data/geography/our-products/settlements-and-localities-dataset/settlements-and-localities-digital-boundaries) on 1st Aug 2023
 
 - Major Towns and Cities boundaries for cropping out Manchester. Downloaded from [https://geoportal.statistics.gov.uk/](https://geoportal.statistics.gov.uk/datasets/980da620a0264647bd679642f96b42c1/explore)
+
 
 
 > 📢 If you are an internal collaborator you can access the raw data as well as intermediate steps through our Azure server. [See here for a How-to]().
@@ -132,7 +134,7 @@ python preprocess_data.py --mod /mnt/vmfileshare/ClimateData/Cropped/three.citie
 The preprocess_data.py script also aligns the calendars of the historical simulation data and observed data, ensuring that they have the same time dimension and checks that the observed and simulated historical data have the same dimensions.
 
 > **Note**:
-> preprocess_data.py makes use of our custom data loader functions. In [python/load_data/data_loader.py] we have written a few functions for loading and concatenating data into a single xarray which can be used for running debiasing methods. Instructions in how to use these functions can be found in python/notebooks/load_data_python.ipynb.
+> preprocess_data.py makes use of our custom data loader functions. In [`data_loader/`](python/load_data/data_loader.py) we have written a few functions for loading and concatenating data into a single xarray which can be used for running debiasing methods. Instructions in how to use these functions can be found in python/notebooks/load_data_python.ipynb.
 
 
 ### Applying the bias correction
@@ -153,13 +155,6 @@ The run_cmethods.py script loops over the time periods and applies debiasing in 
   - Creates diagnotic figues of the output dataset (time series and time dependent maps) and saves it into the specified directory.
 
 For each 10 year time period it will produce an `.nc` output file with the adjusted data and a time-series plot and a time dependent map plot of the adjusted data. 
-
-**Working example**.
-
-Example of code working on the **clim-recal** dataset:
-```
-python run_cmethods.py --scen /Volumes/vmfileshare/ClimateData/Reprojected/UKCP2.2/tasmax/01/latest --contr /Volumes/vmfileshare/ClimateData/Reprojected/UKCP2.2/tasmax/01/latest/ --obs /Volumes/vmfileshare/ClimateData/Processed/HadsUKgrid/resampled_2.2km/tasmax/day/ --shape ../../data/Scotland/Scotland.bbox.shp -v tasmax --method delta_method --group time.month -p 5
-```
     
 ### Assessing the corrected data
 
