@@ -92,8 +92,11 @@ sh bash/reproject_all.sh
 Resample the HADsUK dataset from 1km to 2.2km grid to match the UKCP reprojected grid. We run the resampling python script specifying the `--input` location of the reprojected files from the previous step, the UKCP `--grid` file an the `--output` location for saving the resampled files.
 
 ```
-python python/resampling/resampling_hads.py --input path_to_reprojected --grid path_to_grid_file --output path_to_resampled
+# switch to main environment
+conda activate clim-recal
 
+# run resampling
+python python/resampling/resampling_hads.py --input path_to_reprojected --grid path_to_grid_file --output path_to_resampled
 ```
 
 ### Preparing the bias correction and assessment
