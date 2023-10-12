@@ -93,6 +93,8 @@ The fileshare will be mounted under
 
 `/Volumes/vmfileshare/`
 
+You might also need to add your IP address to the Firewall IP expections list in the Azure portal by going to the `dymestorage1` resource and selecting `Networking`.
+
 Instructions on how the mount in other operating systems can be found in [the azure how-tos](https://learn.microsoft.com/en-us/azure/storage/files/storage-how-to-use-files-linux?tabs=smb311). 
 
 Alternatively, you can access the Azure Portal, go to the dymestorage1 fileshare and click the "Connect" button to get an automatically generated script. This script can be used from within an Azure VM to mount the drive.
