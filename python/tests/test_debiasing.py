@@ -252,6 +252,8 @@ class RunConfig:
 
         Example
         -------
+        >>> if is_platform_darwin:
+        ...     pytest.skip('paths fail if not linux')
         >>> config: RunConfig = RunConfig()
         >>> config.mod_path()
         PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/Manchester')
@@ -266,6 +268,8 @@ class RunConfig:
 
         Example
         -------
+        >>> if is_platform_darwin:
+        ...     pytest.skip('paths fail if not linux')
         >>> config: RunConfig = RunConfig()
         >>> config.obs_path()
         PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.updated360/Manchester')
@@ -285,6 +289,8 @@ class RunConfig:
 
         Example
         -------
+        >>> if is_platform_darwin:
+        ...     pytest.skip('paths fail if not linux')
         >>> config: RunConfig = RunConfig()
         >>> config.preprocess_out_path()
         PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/Manchester/05/tasmax')
@@ -590,6 +596,7 @@ def test_command_line_default() -> None:
     assert run_config.to_cli_preprocess_str() == CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
 
 
+@pytest.mark.server
 @pytest.mark.slow
 @pytest.mark.parametrize(
     'city', (None, 'Glasgow',)
