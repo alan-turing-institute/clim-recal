@@ -9,3 +9,25 @@ project:
     - "docs/"
     - "!clim-recal.Rproj"
     - "!R"
+
+# tell quarto to read the generated sidebar
+metadata-files:
+  - _sidebar.yml
+
+
+quartodoc:
+  # the name used to import the package you want to create reference docs for
+  package: null
+  dir: docs/reference
+
+  # write sidebar data to this file
+  sidebar: _sidebar.yml
+  source_dir: ./python/data_download/
+
+  sections:
+    - title: Data Source Management
+      desc: How data is downloaded for use
+      contents:
+        # the functions being documented in the package.
+        # you can refer to anything: class methods, modules, etc..
+        - ceda_ftp_download.download_ftp
