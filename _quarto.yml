@@ -1,0 +1,11 @@
+project:
+  title: "."
+  type: website
+  output-dir: _site
+  preview:
+    port: 8888
+    browser: false
+  render:
+    - "docs/"
+    - "!clim-recal.Rproj"
+    - "!R"
