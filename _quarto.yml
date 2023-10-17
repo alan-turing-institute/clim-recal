@@ -10,6 +10,7 @@ project:
     - "!clim-recal.Rproj"
     - "R/README.md"
     - "R/misc/Identifying_Runs.md"
+    - "docs/reference"
       # - "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
     - "python/README.md"
 
@@ -44,6 +45,11 @@ website:
       - section: "python"
         contents:
           - "python/README.md"
+          - section: "Reference"
+            contents:
+              - href: "docs/reference/ceda_ftp_download.download_ftp.qmd"
+                text: "download_ftp"
+
 
 quartodoc:
   # the name used to import the package you want to create reference docs for
