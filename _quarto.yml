@@ -1,19 +1,49 @@
 project:
-  title: "."
+  title: "clim-recal"
   type: website
   output-dir: _site
   preview:
     port: 8888
     browser: false
   render:
-    - "docs/"
+    - "README.md"
     - "!clim-recal.Rproj"
-    - "!R"
+    - "R/README.md"
+    - "R/misc/Identifying_Runs.md"
+      # - "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
+    - "python/README.md"
+
+toc: True
+number-sections: True
+
 
 # tell quarto to read the generated sidebar
 metadata-files:
   - _sidebar.yml
 
+
+website:
+  back-to-top-navigation: true
+  sidebar:
+    style: "docked"
+    search: true
+    contents:
+      - text: "Summary"
+        href: "README.md"
+      - section: "R"
+        contents:
+          - href: "R/README.md"
+            text: Overview
+          - href: "R/misc/Identifying_Runs.md"
+            text: Identifying Runs
+              # - section: "Comparing R and Python"
+              #   contents:
+              #     - href: "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
+              #       text: "WIP Comparing HADs grids"
+                
+      - section: "python"
+        contents:
+          - "python/README.md"
 
 quartodoc:
   # the name used to import the package you want to create reference docs for
