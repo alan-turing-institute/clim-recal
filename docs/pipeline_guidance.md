@@ -1,18 +1,28 @@
 
 # Analysis pipeline guidance
 
-This is a detailed guide to our analyiss pipeline.
+This is a detailed guide to our analysis pipeline.
 *see also this [flowchart viz](https://github.com/alan-turing-institute/clim-recal/blob/documentation/docs/pipeline.md) of the pipeline*
+
+**Contents:**
+* [Prerequisites](#prerequisites)
+    * [Setting up your R environment](#setting-up-your-r-environment)
+    * [Setting up your python environment](#setting-up-your-python-environment)
+* [Downloading the data](#downloading-the-data)
+* [Reproject the data](#reproject-the-data)
+* [Resample the data](#resample-the-data)
+* [Preparing the bias correction and assessment](#preparing-the-bias-correction-and-assessment)
+* [Applying the bias correction](#applying-the-bias-correction)
+
 
 ### Prerequisites
 
-We use sophisticated bias correction methods, tapping into dedicated packages in both Python and R ecosystems. The integration of these languages allows us to utilize the cutting-edge functionalities specific to each. Given this dual-language nature of our analysis pipeline, we also provide preprocessing scripts written in both Python and R. To facilitate a seamless experience, users are required to set up both Python and R environments as detailed below.
+For our bias correction methods, we tap into dedicated packages in both Python and R ecosystems. The integration of these languages allows us to utilize the cutting-edge functionalities implemented in each. Given this dual-language nature of our analysis pipeline, we also provide preprocessing scripts written in both Python and R. To facilitate a seamless experience, users are required to set up both Python and R environments as detailed below.
 
-### Setting up your R environment
+#### Setting up your R environment
 
-- **Download and Install R:** Visit [CRAN (The Comprehensive R Archive Network)](https://cran.r-project.org/) to download the latest version of R compatible with your operating system.
+- **Download and Install R:** Visit [CRAN (The Comprehensive R Archive Network)](https://cran.r-project.org/) to download the latest version of R compatible with your operating system. Then verify successful installation via command line:
 
-- **Verify R Installation:** Open your command line interface (CLI) and type the following command and press enter to confirm that R is successfully installed on your system.:
 ```
 R --version
 ```
@@ -26,8 +36,7 @@ R --version
 
 #### Setting up your python environment
 
-Methods can be used with a custom environment, here we provide an Anaconda
-environment file for ease-of-use. 
+For your python environment, we provide an Anaconda environment file for ease-of-use. 
 ```
 conda env create -f environment.yml
 ```
@@ -140,7 +149,7 @@ The preprocess_data.py script also aligns the calendars of the historical simula
 Note: By March 2023 we have only implemented the [python-cmethods](https://github.com/alan-turing-institute/python-cmethods) library.
 
 
-The [run_cmethods.py](debiasing/run_cmethods.py) allow us to adjusts climate biases in climate data using the python-cmethods library. It takes as input observation data (HADs data), control data (historical UKCP data), and scenario data (future UKCP data), 
+The [run_cmethods.py](../debiasing/run_cmethods.py) allow us to adjusts climate biases in climate data using the python-cmethods library. It takes as input observation data (HADs data), control data (historical UKCP data), and scenario data (future UKCP data), 
 and applies a correction method to the scenario data. The resulting output is saved as a `.nc` to a specified directory. The script will also produce a time-series and a map plot of the debiased data. To run this you need to replace `path_to_validation_data` with the output directories of the previous step and specify `path_to_corrected_data` as your output directory for the bias corrected data. You can also specify your preferred `bias_correction_method` (e.g. quantile_delta_mapping).
 
 ```
@@ -155,4 +164,3 @@ The run_cmethods.py script loops over the time periods and applies debiasing in 
 
 For each 10 year time period it will produce an `.nc` output file with the adjusted data and a time-series plot and a time dependent map plot of the adjusted data. 
     
-### Assessing the corrected data
