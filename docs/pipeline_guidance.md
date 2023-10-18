@@ -55,6 +55,8 @@ You need to replace `uuu` and `ppp` with your CEDA username and FTP password res
 
 The `--change_hierarchy` flag modifies the folder hierarchy to fit with the hierarchy in the Turing Azure file store. This flag only applies to the UKCP data and should not be used with HADs data. You can use the same script without the `--change_hierarchy` flag in order to download files without any changes to the hierarchy.
 
+> 📢 If you are an internal collaborator you can access the raw data as well as intermediate steps through our Azure server. [See here for a How-to]().
+
 **Geospatial data**
 
 In addition to the climate data we use geospatial data to divide the data into smaller chunks. Specifically we use the following datasets for city boundaries:
@@ -63,9 +65,6 @@ In addition to the climate data we use geospatial data to divide the data into s
 
 - Major Towns and Cities boundaries for cropping out Manchester. Downloaded from [https://geoportal.statistics.gov.uk/](https://geoportal.statistics.gov.uk/datasets/980da620a0264647bd679642f96b42c1/explore)
 
-
-
-> 📢 If you are an internal collaborator you can access the raw data as well as intermediate steps through our Azure server. [See here for a How-to]().
 
 ### Reproject the data
 The HADs data and the UKCP projections have different resolution and coordinate system. For example the HADs dataset uses the British National Grid coordinate system.
@@ -78,10 +77,11 @@ The first step in our analysis pipeline is to reproject the UKCP datasets to the
 > conda activate gdal_env
 > ```
 
-To execute the reprojection in parallel fashion, run the `reproject_all.sh` script from your shell. First, ensure the scripts have the necessary permissions and that the parallel package is installed:
+To execute the reprojection in parallel fashion, run the `reproject_all.sh` script from your shell. As an input to the script we provide the path to the raw netCDF files
 
 ```bash
-sh bash/reproject_all.sh
+cd bash
+sh reproject_all.sh path_to_netcdf_files
 ```
 
 ### Resample the data
@@ -93,19 +93,26 @@ Resample the HADsUK dataset from 1km to 2.2km grid to match the UKCP reprojected
 conda activate clim-recal
 
 # run resampling
-python python/resampling/resampling_hads.py --input path_to_reprojected --grid path_to_grid_file --output path_to_resampled
+cd ../python/resampling
+python resampling_hads.py --input path_to_reprojected --grid path_to_grid_file --output path_to_resampled
 ```
 ### Preparing the bias correction and assessment
 
 **Spatial cropping**
-Because the bias correction process is computationally intensive, handling large datasets can be challenging and time-consuming. To make the pipeline more manageable and efficient, it is recommended to split the data into smaller subsets. For the purposes of our example pipeline, we've opted for reducing the data to three specific cities as sub-regions from the broader UK data, London, Glasgow and Manchester using the `Cropping_Rasters_to_three_cities.R script`. 
-
-**calibration-validation data split**
-For the purpose of assessing our bias correction, we then split our data, both the projection as well as the ground-truth observations by dates, such that we can calibrate the bias correction based on the years 1981 to 1983. We then use data from year 2010 to validate the quality of the bias correction.
+Because the bias correction process is computationally intensive, handling large datasets can be challenging and time-consuming. Therefore, to make the pipeline more manageable and efficient, it is recommended to split the data into smaller subsets. For the purposes of our example pipeline, we've opted for reducing the data to individual city boundaries. To crop you need to adjust the paths in `Cropping_Rasters_to_three_cities.R` script to fit 1your own directory sturcture. The cropping is implemented in the `cpm_read_crop` and `hads_read_crop` functions. 
 
 ```
-cd debiasing
-python preprocess_data.py --mod /mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/$city --obs /mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.updated360/$city -v $var -r $run --out /mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/$city/$run/$var --calib_dates 19810101-19831230 --valid_dates 20100101-20101230
+Rscript Cropping_Rasters_to_three_cities.R
+```
+
+>>>>>>> 3718d6b (update guidance to dummy paths)
+
+**calibration-validation data split**
+For the purpose of assessing our bias correction, we then split our data, both the projection as well as the ground-truth observations by dates. In this example here we calibrate the bias correction based on the years 1981 to 1983. We then use data from year 2010 to validate the quality of the bias correction. You need to replace `path_to_cropped` with the path where the data from the previous cropping step was saved and  `path_to_preprocessed` with the output directory you choose. You can leave the `-v` and `-r` flags as specified below or choose another metric and run if you prefer.
+
+```
+cd ../debiasing
+python preprocess_data.py --mod path_to_cropped --obs path_to_cropped -v tasmax -r '05' --out path_to_preprocessed --calib_dates 19810101-19831230 --valid_dates 20100101-20101230
 ```
 
 The preprocess_data.py script also aligns the calendars of the historical simulation data and observed data, ensuring that they have the same time dimension and checks that the observed and simulated historical data have the same dimensions.
@@ -119,10 +126,10 @@ Note: By March 2023 we have only implemented the [python-cmethods](https://githu
 
 
 The [run_cmethods.py](debiasing/run_cmethods.py) allow us to adjusts climate biases in climate data using the python-cmethods library. It takes as input observation data (HADs data), control data (historical UKCP data), and scenario data (future UKCP data), 
-and applies a correction method to the scenario data. The resulting output is saved as a `.nc` to a specified directory. The script will also produce a time-series and a map plot of the debiased data.
+and applies a correction method to the scenario data. The resulting output is saved as a `.nc` to a specified directory. The script will also produce a time-series and a map plot of the debiased data. To run this you need to replace `path_to_validation_data` with the output directories of the previous step and specify `path_to_corrected_data` as your output directory for the bias corrected data. You can also specify your preferred `bias_correction_method` (e.g. quantile_delta_mapping).
 
 ```
-python3 run_cmethods.py --input_data_folder <path to observation datasets> --out <path for bias corrected data> --method <bias correction method> --group <???> --v <metric for type of data> -p <number of processes>
+python3 run_cmethods.py --input_data_folder path_to_validation_data --out path_to_corrected_data --method bias_correction_method --v 'tas'
 ```
 
 The run_cmethods.py script loops over the time periods and applies debiasing in periods of 10 years in the following steps:
