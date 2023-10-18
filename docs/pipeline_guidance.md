@@ -6,9 +6,27 @@ This is a detailed guide to our analyiss pipeline.
 
 ### Prerequisites
 
-#### Setting up your environment
+We use sophisticated bias correction methods, tapping into dedicated packages in both Python and R ecosystems. The integration of these languages allows us to utilize the cutting-edge functionalities specific to each. Given this dual-language nature of our analysis pipeline, we also provide preprocessing scripts written in both Python and R. To facilitate a seamless experience, users are required to set up both Python and R environments as detailed below.
 
-Methods can be used with a custom environment, here we provide a Anaconda
+### Setting up your R environment
+
+- **Download and Install R:** Visit [CRAN (The Comprehensive R Archive Network)](https://cran.r-project.org/) to download the latest version of R compatible with your operating system.
+
+- **Verify R Installation:** Open your command line interface (CLI) and type the following command and press enter to confirm that R is successfully installed on your system.:
+```
+R --version
+```
+- **Install Necessary R Packages:** Our analysis utilizes several R packages. You can install these packages by starting R (just type `R` in your command line and press enter) and entering the following commands in the R console:
+     ```R
+     install.packages("package1")
+     install.packages("package2")
+     #... (continue for all necessary packages)
+     ```
+- Replace `"package1"`, `"package2"`, etc., with the actual names of the required packages. A list of required R packages is provided in the 'R_Package_Requirements.txt' file.
+
+#### Setting up your python environment
+
+Methods can be used with a custom environment, here we provide an Anaconda
 environment file for ease-of-use. 
 ```
 conda env create -f environment.yml
@@ -77,7 +95,7 @@ The first step in our analysis pipeline is to reproject the UKCP datasets to the
 > conda activate gdal_env
 > ```
 
-To execute the reprojection in parallel fashion, run the `reproject_all.sh` script from your shell. As an input to the script we provide the path to the raw netCDF files
+To execute the reprojection in parallel fashion, run the `reproject_all.sh` script from your shell. As an input to the script replace `path_to_netcdf_files` with the path to the raw netCDF files.
 
 ```bash
 cd bash
@@ -104,9 +122,6 @@ Because the bias correction process is computationally intensive, handling large
 ```
 Rscript Cropping_Rasters_to_three_cities.R
 ```
-
->>>>>>> 3718d6b (update guidance to dummy paths)
-
 **calibration-validation data split**
 For the purpose of assessing our bias correction, we then split our data, both the projection as well as the ground-truth observations by dates. In this example here we calibrate the bias correction based on the years 1981 to 1983. We then use data from year 2010 to validate the quality of the bias correction. You need to replace `path_to_cropped` with the path where the data from the previous cropping step was saved and  `path_to_preprocessed` with the output directory you choose. You can leave the `-v` and `-r` flags as specified below or choose another metric and run if you prefer.
 
