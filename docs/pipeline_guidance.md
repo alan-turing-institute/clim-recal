@@ -9,8 +9,8 @@ This is a detailed guide to our analysis pipeline.
     * [Setting up your R environment](#setting-up-your-r-environment)
     * [Setting up your python environment](#setting-up-your-python-environment)
 * [Downloading the data](#downloading-the-data)
-* [Reproject the data](#reproject-the-data)
-* [Resample the data](#resample-the-data)
+* [Reprojecting the data](#reprojecting-the-data)
+* [Resampling the data](#resampling-the-data)
 * [Preparing the bias correction and assessment](#preparing-the-bias-correction-and-assessment)
 * [Applying the bias correction](#applying-the-bias-correction)
 
@@ -93,7 +93,7 @@ In addition to the climate data we use geospatial data to divide the data into s
 - Major Towns and Cities boundaries for cropping out Manchester. Downloaded from [https://geoportal.statistics.gov.uk/](https://geoportal.statistics.gov.uk/datasets/980da620a0264647bd679642f96b42c1/explore)
 
 
-### Reproject the data
+### Reprojecting the data
 The HADs data and the UKCP projections have different resolution and coordinate system. For example the HADs dataset uses the British National Grid coordinate system.
 
 The first step in our analysis pipeline is to reproject the UKCP datasets to the British National Grid coordinate system. For this purpose, we utilize the Geospatial Data Abstraction Library (GDAL), designed for reading and writing raster and vector geospatial data formats.
@@ -111,7 +111,7 @@ cd bash
 sh reproject_all.sh path_to_netcdf_files
 ```
 
-### Resample the data
+### Resampling the data
 
 Resample the HADsUK dataset from 1km to 2.2km grid to match the UKCP reprojected grid. We run the resampling python script specifying the `--input` location of the reprojected files from the previous step, the UKCP `--grid` file an the `--output` location for saving the resampled files.
 
