@@ -246,7 +246,11 @@ vignettes/*.pdf
 .Renviron
 
 # pkgdown site
-docs/
+# Commented out by @griff-rees in configuring quarto
+# docs/
+
+# Add as a replacement for use of quarto
+docs/reference
 
 # translation temp files
 po/*~
