@@ -252,6 +252,8 @@ class RunConfig:
 
         Example
         -------
+        >>> if is_platform_darwin:
+        ...     pytest.skip('paths fail if not linux')
         >>> config: RunConfig = RunConfig()
         >>> config.mod_path()
         PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/Manchester')
@@ -266,6 +268,8 @@ class RunConfig:
 
         Example
         -------
+        >>> if is_platform_darwin:
+        ...     pytest.skip('paths fail if not linux')
         >>> config: RunConfig = RunConfig()
         >>> config.obs_path()
         PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.updated360/Manchester')
@@ -285,6 +289,8 @@ class RunConfig:
 
         Example
         -------
+        >>> if is_platform_darwin:
+        ...     pytest.skip('paths fail if not linux')
         >>> config: RunConfig = RunConfig()
         >>> config.preprocess_out_path()
         PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/Manchester/05/tasmax')
