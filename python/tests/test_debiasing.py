@@ -590,6 +590,7 @@ def test_command_line_default() -> None:
     assert run_config.to_cli_preprocess_str() == CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
 
 
+@pytest.mark.server
 @pytest.mark.slow
 @pytest.mark.parametrize(
     'city', (None, 'Glasgow',)
