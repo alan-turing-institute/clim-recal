@@ -89,7 +89,7 @@ class MethodOptions(StrEnum):
         return cls.VARIANCE_SCALING.value
 
 
-PROCESSESORS_DEFAULT: Final[int] = 32
+PROCESSESORS_DEFAULT: Final[int] = 2
 RUN_PREFIX_DEFAULT: Final[str] = "python"
 
 MOD_FOLDER_DEFAULT: Final[Path] = Path("CPM")
