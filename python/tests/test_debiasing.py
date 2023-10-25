@@ -79,14 +79,9 @@ class MethodOptions(StrEnum):
     DELTA_METHOD = auto()
 
     @classmethod
-    def default_method_1(cls) -> str:
-        """Default method_1 option."""
+    def default(cls) -> str:
+        """Default method option."""
         return cls.QUANTILE_DELTA_MAPPING.value
-
-    @classmethod
-    def default_method_2(cls) -> str:
-        """Default method_2 option."""
-        return cls.VARIANCE_SCALING.value
 
 
 PROCESSESORS_DEFAULT: Final[int] = 2
@@ -157,7 +152,7 @@ CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str]] = (
         / RunOptions.default()
     ).resolve(),
     "--method",
-    MethodOptions.default_method_1(),
+    MethodOptions.default(),
     "-v",
     VariableOptions.default(),
     "-p",
@@ -186,8 +181,7 @@ class RunConfig:
     variable: str = VariableOptions.default()
     run: str = RunOptions.default()
     city: str = CityOptions.default()
-    method_1: str = MethodOptions.default_method_1()
-    method_2: str = MethodOptions.default_method_2()
+    method: str = MethodOptions.default()
     run_prefix: str = RUN_PREFIX_DEFAULT
     preprocess_data_file: PathLike = PREPROCESS_FILE_NAME
     run_cmethods_file: PathLike = CMETHODS_FILE_NAME
@@ -500,7 +494,7 @@ class RunConfig:
             )
         )
 
-    def list_mod_folder(self, city: str | None = None) -> Generator[Path, None, None]:
+    def yield_mod_folder(self, city: str | None = None) -> Generator[Path, None, None]:
         """`Iterable` of all `Path`s in `self.mod_folder`.
 
         Example
@@ -508,12 +502,12 @@ class RunConfig:
         >>> if is_platform_darwin:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
-        >>> len(tuple(config.list_mod_folder())) == MOD_FOLDER_FILES_COUNT_CORRECT
+        >>> len(tuple(config.yield_mod_folder())) == MOD_FOLDER_FILES_COUNT_CORRECT
         True
         """
         return path_iterdir(self.obs_path(city=city))
 
-    def list_obs_folder(self, city: str | None = None) -> Generator[Path, None, None]:
+    def yield_obs_folder(self, city: str | None = None) -> Generator[Path, None, None]:
         """`Iterable` of all `Path`s in `self.obs_folder`.
 
         Example
@@ -521,12 +515,12 @@ class RunConfig:
         >>> if is_platform_darwin:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
-        >>> len(tuple(config.list_obs_folder())) == OBS_FOLDER_FILES_COUNT_CORRECT
+        >>> len(tuple(config.yield_obs_folder())) == OBS_FOLDER_FILES_COUNT_CORRECT
         True
         """
         return path_iterdir(self.obs_path(city=city))
 
-    def list_preprocess_out_folder(
+    def yield_preprocess_out_folder(
         self,
         city: str | None = None,
         run: str | None = None,
@@ -539,7 +533,7 @@ class RunConfig:
         >>> if is_platform_darwin:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
-        >>> (len(tuple(config.list_preprocess_out_folder())) ==
+        >>> (len(tuple(config.yield_preprocess_out_folder())) ==
         ...  PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT)
         True
         """
@@ -552,12 +546,12 @@ class RunConfig:
         """Return command path relative to running tests."""
         return (Path() / self.command_dir).absolute()
 
-    def to_cli_run_cmethods_1_tuple(
+    def to_cli_run_cmethods_tuple(
         self,
         city: str | None = None,
         run: str | None = None,
         variable: str | None = None,
-        method_1: str | None = None,
+        method: str | None = None,
         input_data_path: PathLike | None = None,
         cmethods_out_path: PathLike | None = None,
         processors: int | None = None,
@@ -572,13 +566,13 @@ class RunConfig:
         Example
         -------
         >>> config: RunConfig = RunConfig()
-        >>> command_str_tuple: tuple[str, ...] = config.to_cli_run_cmethods_1_tuple()
+        >>> command_str_tuple: tuple[str, ...] = config.to_cli_run_cmethods_tuple()
         >>> assert command_str_tuple == CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT
         """
         city = city if city else self.city
         variable = variable if variable else self.variable
         run = run if run else self.run
-        method_1 = method_1 if method_1 else self.method_1
+        method = method if method else self.method
 
         input_data_path: PathLike = (
             input_data_path
@@ -602,19 +596,19 @@ class RunConfig:
             "--out",
             cmethods_out_path,
             "--method",
-            method_1,
+            method,
             "-v",
             variable,
             "-p",
             processors,
         )
 
-    def to_cli_run_cmethods_1_tuple_strs(
+    def to_cli_run_cmethods_tuple_strs(
         self,
         city: str | None = None,
         run: str | None = None,
         variable: str | None = None,
-        method_1: str | None = None,
+        method: str | None = None,
         input_data_path: PathLike | None = None,
         cmethods_out_path: PathLike | None = None,
         processors: int | None = None,
@@ -624,27 +618,27 @@ class RunConfig:
         Example
         -------
         >>> config: RunConfig = RunConfig()
-        >>> command_str_tuple: tuple[str, ...] = config.to_cli_run_cmethods_1_tuple_strs()
+        >>> command_str_tuple: tuple[str, ...] = config.to_cli_run_cmethods_tuple_strs()
         >>> assert command_str_tuple == CLI_CMEHTODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
         """
         return iter_to_tuple_strs(
-            self.to_cli_run_cmethods_1_tuple(
+            self.to_cli_run_cmethods_tuple(
                 city=city,
                 run=run,
                 variable=variable,
-                method_1=method_1,
+                method=method,
                 input_data_path=input_data_path,
                 cmethods_out_path=cmethods_out_path,
                 processors=processors,
             )
         )
 
-    def to_cli_run_cmethods_1_str(
+    def to_cli_run_cmethods_str(
         self,
         city: str | None = None,
         run: str | None = None,
         variable: str | None = None,
-        method_1: str | None = None,
+        method: str | None = None,
         input_data_path: PathLike | None = None,
         cmethods_out_path: PathLike | None = None,
         processors: int | None = None,
@@ -654,17 +648,17 @@ class RunConfig:
         Example
         -------
         >>> config: RunConfig = RunConfig()
-        >>> config.to_cli_run_cmethods_1_str() == CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
+        >>> config.to_cli_run_cmethods_str() == CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
         True
         >>> CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT  #doctest: +ELLIPSIS
         'python run_cmethods.py...--method quantile_delta_mapping...'
         """
         return " ".join(
-            self.to_cli_run_cmethods_1_tuple_strs(
+            self.to_cli_run_cmethods_tuple_strs(
                 city=city,
                 run=run,
                 variable=variable,
-                method_1=method_1,
+                method=method,
                 input_data_path=input_data_path,
                 cmethods_out_path=cmethods_out_path,
                 processors=processors,
@@ -689,26 +683,42 @@ def test_command_line_default() -> None:
 @pytest.mark.server
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "city, variable, run, method_1, method_2",
+    "city, variable, run, method",
     (
-        (None, None, None, None, None),
-        ("Glasgow", None, None, None, None),
         (
-            "London",
+            CityOptions.default(),  # 'Manchester'
+            VariableOptions.default(),  # 'tasmax`
+            RunOptions.default(),  # '05'
+            MethodOptions.default(),  # 'quantile_delta_mapping'
+        ),
+        (
+            CityOptions.GLASGOW,
+            VariableOptions.default(),
+            RunOptions.default(),
+            MethodOptions.default(),
+        ),
+        pytest.param(
+            CityOptions.LONDON,
+            VariableOptions.default(),
+            RunOptions.default(),
+            MethodOptions.default(),
+            marks=pytest.mark.slow,
+        ),
+        pytest.param(
+            CityOptions.LONDON,
             VariableOptions.RAINFALL,
             RunOptions.SIX,
-            None,
             MethodOptions.DELTA_METHOD,
+            marks=pytest.mark.slow,
         ),
     ),
 )
-def test_run(run_config, city, variable, run, method_1, method_2) -> None:
+def test_run(run_config, city, variable, run, method) -> None:
     """Test running generated command script via a subprocess."""
+    initial_folder: path = Path().resolve()
     chdir(run_config.command_path)
     assert PREPROCESS_FILE_NAME in tuple(Path().iterdir())
-    if method_1 or method_2:
-        run_config.method_1 = method_1
-        run_config.method_2 = method_2
+    # run_config.method = method
     preprocess_run: subprocess.CompletedProcess = subprocess.run(
         run_config.to_cli_preprocess_tuple_strs(city=city, variable=variable, run=run),
         capture_output=True,
@@ -716,35 +726,50 @@ def test_run(run_config, city, variable, run, method_1, method_2) -> None:
     )
     assert preprocess_run.returncode == 0
     assert (
-        len(tuple(run_config.list_mod_folder(city=city)))
+        len(tuple(run_config.yield_mod_folder(city=city)))
         == MOD_FOLDER_FILES_COUNT_CORRECT
     )
     assert (
-        len(tuple(run_config.list_obs_folder(city=city)))
+        len(tuple(run_config.yield_obs_folder(city=city)))
         == OBS_FOLDER_FILES_COUNT_CORRECT
     )
-    assert (
-        len(tuple(run_config.list_preprocess_out_folder(city=city)))
-        == PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT
-    )
-    test_city = CityOptions.default() if city is None else city
+
+    if method == MethodOptions.default():
+        assert (
+            len(tuple(run_config.yield_preprocess_out_folder(city=city)))
+            == PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT
+        )
     for log_txt in (
         "Saved observed (HADs) data for validation, period ('2010-01-01', '2010-12-30')",
-        f"{test_city}/{run}/{variable}/modv_var-{variable}_run-{run}_20100101_20101230.nc",
+        f"{city}/{run}/{variable}/modv_var-{variable}_run-{run}_20100101_20101230.nc",
     ):
         assert log_txt in preprocess_run.stdout
     cmethods_run: subprocess.CompletedProcess = subprocess.run(
-        run_config.to_cli_run_cmethods_1_tuple_strs(city=city),
+        run_config.to_cli_run_cmethods_tuple_strs(
+            city=city, run=run, variable=variable, method=method
+        ),
         capture_output=True,
         text=True,
     )
     assert cmethods_run.returncode == 0
     for log_txt in (
         "Loading modelled calibration data (CPM)",
+        # (
+        #     f"Debiased/three.cities.cropped/{city}/{run}/{variable}/"
+        #     f"debiased_{method}_result_var"
+        #     f"-{variable}_quantiles-1000_kind-+_group-None_20100101_20101229.nc"
+        # ),
         (
-            f"Debiased/three.cities.cropped/{test_city}/{run}/{variable}/"
-            "debiased_quantile_delta_mapping_result_var"
-            f"-{variable}_quantiles-1000_kind-+_group-None_20100101_20101229.nc"
+            f"Debiased/three.cities.cropped/{city}/{run}/{variable}/"
+            f"debiased_{method}_result_var"
         ),
+        "Saving to",
+        # (
+        #     f"Saving to {DATA_PATH_DEFAULT}/{city}/{run}/{variable}/"
+        #     f"debiased_{method}_result_var-{variable}_kind-+None_20100101_20101229.nc"
+        # ),
+        (f"{city}/{run}/{variable}/debiased_{method}_result_var-"),
     ):
         assert log_txt in cmethods_run.stdout
+
+    chdir(initial_folder)
