@@ -76,7 +76,7 @@ class MethodOptions(StrEnum):
     QUANTILE_DELTA_MAPPING = auto()
     QUANTILE_MAPPING = auto()
     VARIANCE_SCALING = auto()
-    DELTA_METHODS = auto()
+    DELTA_METHOD = auto()
 
     @classmethod
     def default_method_1(cls) -> str:
@@ -689,18 +689,28 @@ def test_command_line_default() -> None:
 @pytest.mark.server
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "city",
+    "city, variable, run, method_1, method_2",
     (
-        None,
-        "Glasgow",
+        (None, None, None, None, None),
+        ("Glasgow", None, None, None, None),
+        (
+            "London",
+            VariableOptions.RAINFALL,
+            RunOptions.SIX,
+            None,
+            MethodOptions.DELTA_METHOD,
+        ),
     ),
 )
-def test_run(run_config, city) -> None:
+def test_run(run_config, city, variable, run, method_1, method_2) -> None:
     """Test running generated command script via a subprocess."""
     chdir(run_config.command_path)
     assert PREPROCESS_FILE_NAME in tuple(Path().iterdir())
+    if method_1 or method_2:
+        run_config.method_1 = method_1
+        run_config.method_2 = method_2
     preprocess_run: subprocess.CompletedProcess = subprocess.run(
-        run_config.to_cli_preprocess_tuple_strs(city=city),
+        run_config.to_cli_preprocess_tuple_strs(city=city, variable=variable, run=run),
         capture_output=True,
         text=True,
     )
@@ -720,7 +730,7 @@ def test_run(run_config, city) -> None:
     test_city = CityOptions.default() if city is None else city
     for log_txt in (
         "Saved observed (HADs) data for validation, period ('2010-01-01', '2010-12-30')",
-        f"{test_city}/05/tasmax/modv_var-tasmax_run-05_20100101_20101230.nc",
+        f"{test_city}/{run}/{variable}/modv_var-{variable}_run-{run}_20100101_20101230.nc",
     ):
         assert log_txt in preprocess_run.stdout
     cmethods_run: subprocess.CompletedProcess = subprocess.run(
@@ -732,9 +742,9 @@ def test_run(run_config, city) -> None:
     for log_txt in (
         "Loading modelled calibration data (CPM)",
         (
-            f"Debiased/three.cities.cropped/{test_city}/05/tasmax/"
+            f"Debiased/three.cities.cropped/{test_city}/{run}/{variable}/"
             "debiased_quantile_delta_mapping_result_var"
-            "-tasmax_quantiles-1000_kind-+_group-None_20100101_20101229.nc"
+            f"-{variable}_quantiles-1000_kind-+_group-None_20100101_20101229.nc"
         ),
     ):
         assert log_txt in cmethods_run.stdout
