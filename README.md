@@ -1,6 +1,8 @@
 # Welcome to the `clim-recal` repository! 
 
-Welcome to clim-recal, a specialized resource designed to tackle systematic errors or biases in Regional Climate Models (RCMs). As researchers, policy-makers, and various stakeholders explore publicly available RCMs, they need to consider the challenge of biases that can affect the accurate representation of climate change signals. Clim-recal provides both a **broad review** of available bias correction methods as well as **practical tutorials** and **guidance** on how to easily apply those methods to various datasets.
+Welcome to clim-recal, a specialized resource designed to tackle systematic errors or biases in Regional Climate Models (RCMs). As researchers, policy-makers, and various stakeholders explore publicly available RCMs, they need to consider the challenge of biases that can affect the accurate representation of climate change signals. 
+
+Clim-recal provides both a **broad review** of available bias correction methods as well as **software**, **practical tutorials** and **guidance** that helps users apply these methods methods to various datasets.
 
 Clim-recal is an **Extensive guide to application of BC methods**: 
 
