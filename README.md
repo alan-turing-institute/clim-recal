@@ -8,7 +8,7 @@ Clim-recal is an **extensive software library and guide to application of BC met
 
 - Contains accessible information about the [why and how of bias correction for climate data](#why-bias-correction)
 - Is a software library for for the application of BC methods (see our full pipeline for bias-correction of the ground-breaking local-scale (2.2km)[Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf)). Clim-recal brings together different software packages in Python and R that implement a variety of bias correction methods, making it easy to apply them to data and compare their outputs.
-- In partnership with the MetOffice to ensure the propriety, quality, and usability of our work
+- Was developed in partnership with the MetOffice to ensure the propriety, quality, and usability of our work
 - Provides a framework for open additions of new software libraries/bias correction methods (in planning)
 
 ## Table of Contents
