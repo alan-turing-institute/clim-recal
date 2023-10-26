@@ -139,7 +139,7 @@ CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = " ".join(
     CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
 )
 
-CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str]] = (
+CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str, ...]] = (
     "python",
     CMETHODS_FILE_NAME,
     "--input_data_folder",
@@ -505,6 +505,7 @@ class RunConfig:
         >>> len(tuple(config.yield_mod_folder())) == MOD_FOLDER_FILES_COUNT_CORRECT
         True
         """
+        city = city if city else self.city
         return path_iterdir(self.obs_path(city=city))
 
     def yield_obs_folder(self, city: str | None = None) -> Generator[Path, None, None]:
@@ -518,6 +519,7 @@ class RunConfig:
         >>> len(tuple(config.yield_obs_folder())) == OBS_FOLDER_FILES_COUNT_CORRECT
         True
         """
+        city = city if city else self.city
         return path_iterdir(self.obs_path(city=city))
 
     def yield_preprocess_out_folder(
@@ -537,6 +539,9 @@ class RunConfig:
         ...  PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT)
         True
         """
+        city = city if city else self.city
+        run = run if run else self.run
+        variable = variable if variable else self.variable
         return path_iterdir(
             self.preprocess_out_path(city=city, run=run, variable=variable)
         )
@@ -573,8 +578,9 @@ class RunConfig:
         variable = variable if variable else self.variable
         run = run if run else self.run
         method = method if method else self.method
+        processors = processors if processors else self.processors
 
-        input_data_path: PathLike = (
+        input_data_path = (
             input_data_path
             if input_data_path
             else self.preprocess_out_path(city=city, run=run, variable=variable)
@@ -585,8 +591,6 @@ class RunConfig:
             if cmethods_out_path
             else self.cmethods_out_path(city=city, run=run)
         )
-
-        processors = processors if processors else self.processors
 
         return (
             *self.run_prefix_tuple,
@@ -715,7 +719,7 @@ def test_command_line_default() -> None:
 )
 def test_run(run_config, city, variable, run, method) -> None:
     """Test running generated command script via a subprocess."""
-    initial_folder: path = Path().resolve()
+    initial_folder: Path = Path().resolve()
     chdir(run_config.command_path)
     assert PREPROCESS_FILE_NAME in tuple(Path().iterdir())
     # run_config.method = method
