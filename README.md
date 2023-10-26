@@ -4,7 +4,7 @@ Welcome to clim-recal, a specialized resource designed to tackle systematic erro
 
 Clim-recal provides both a **broad review** of available bias correction methods as well as **software**, **practical tutorials** and **guidance** that helps users apply these methods methods to various datasets.
 
-Clim-recal is an **Extensive guide to application of BC methods**: 
+Clim-recal is an **extensive software library and guide to application of BC methods.** Clim-recal: 
 
 - Accessible information about the [why and how of bias correction for climate data](#why-bias-correction)
 - Technical resource for application BC methods (see our full pipeline for bias-correction of the ground-breaking local-scale (2.2km)[Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf))
