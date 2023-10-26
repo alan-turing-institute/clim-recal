@@ -42,8 +42,9 @@ conda env create -f environment.yml
 ```
 
 > **Warning**:
-> To reproduce our exact outputs, you will require GDAL version 3.4. Please be aware that this specific version of GDAL requires a different Python version than the one specified in our environment file. Therefore, we have not included it in the environment file and instead, for the reprojection step, you'll need to set up a new environment:
+> To reproduce our exact outputs, you will require GDAL version 3.4. Please be aware that this specific version of GDAL requires a different Python version than the one specified in our environment file. Therefore, we have not included it in the environment file and instead, for the reprojection step, you'll need to install GDAL (for example using conda) and set up a new environment:
 > ```
+> conda install -c conda-forge gdal
 > conda create -n gdal_env python=3.10 gdal=3.4
 > ```
 
