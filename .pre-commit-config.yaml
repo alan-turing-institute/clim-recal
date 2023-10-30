@@ -37,3 +37,10 @@ repos:
       - id: isort
         name: isort (python)
         args: ["--profile", "black"]
+
+  # Currently fails to build.
+  # See: https://github.com/lorenzwalthert/precommit/issues/476
+  # - repo: https://github.com/lorenzwalthert/precommit
+  #   rev: v0.3.2
+  #   hooks:
+  #     - id: readme-rmd-rendered
