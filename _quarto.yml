@@ -11,7 +11,7 @@ project:
     - "R/README.md"
     - "R/misc/Identifying_Runs.md"
     - "docs/reference"
-    - "docs/workflow.qmd"
+    - "docs/pipeline.qmd"
       # - "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
     - "python/README.md"
 
