@@ -1,36 +1,36 @@
 # Welcome to the `clim-recal` repository! 
 
-Welcome to clim-recal, a specialized resource designed to tackle systematic errors or biases in Regional Climate Models (RCMs). As researchers, policy-makers, and various stakeholders explore publicly available RCMs, they need to consider the challenge of biases that can affect the accurate representation of climate change signals. 
+Welcome to `clim-recal`, a specialized resource designed to tackle systematic errors or biases in Regional Climate Models (RCMs). As researchers, policy-makers, and various stakeholders explore publicly available RCMs, they need to consider the challenge of biases that can affect the accurate representation of climate change signals. 
 
-Clim-recal provides both a **broad review** of available bias correction methods as well as **software**, **practical tutorials** and **guidance** that helps users apply these methods methods to various datasets.
+`clim-recal` provides both a **broad review** of available bias correction methods as well as **software**, **practical tutorials** and **guidance** that helps users apply these methods methods to various datasets.
 
-Clim-recal is an **extensive software library and guide to application of BC methods.** Clim-recal: 
+`clim-recal` is an **extensive software library and guide to application of Bias Correction (BC) methods.** `clim-recal`: 
 
 - Contains accessible information about the [why and how of bias correction for climate data](#why-bias-correction)
-- Is a software library for for the application of BC methods (see our full pipeline for bias-correction of the ground-breaking local-scale (2.2km) [Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf)). Clim-recal brings together different software packages in Python and R that implement a variety of bias correction methods, making it easy to apply them to data and compare their outputs.
+- Is a software library for for the application of BC methods (see our full pipeline for bias-correction of the ground-breaking local-scale (2.2km) [Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf)). `clim-recal` brings together different software packages in `python` and `R` that implement a variety of bias correction methods, making it easy to apply them to data and compare their outputs.
 - Was developed in partnership with the MetOffice to ensure the propriety, quality, and usability of our work
 - Provides a framework for open additions of new software libraries/bias correction methods (in planning)
 
 ## Table of Contents
 
 1. [Overview: Bias Correction Pipeline](#overview-bias-correction-pipeline)
-3. [Documentation](#documentation)
-4. [The dataset](#the-dataset)
+2. [Documentation](#documentation)
+3. [The dataset](#the-dataset)
 4. [Why bias correction?](#why-bias-correction)
-8. [License](#license)
-9. [Contributors](#contributors)
+5. [License](#license)
+6. [Contributors](#contributors)
 
 ## Overview: Bias Correction Pipeline
 
-Here we provide an example of how to run a debiasing pipeline starting. The pipeline has the following steps:
+`clim-recal` is a debiasing pipeline,  with the following steps:
 
 1. **Set-up & data download**
     *We provide custom scripts to facilitate download of data*
 2. **Preprocessing**
     *This includes reprojecting, resampling & splitting the data prior to bias correction*
-5. **Apply bias correction**
+3. **Apply bias correction**
     *Our pipeline embeds two distinct methods of bias correction*
-6. **Assess the debiased data**
+4. **Assess the debiased data**
     *We have developed a way to assess the quality of the debiasing step across multiple alternative methods*
 
 For a quick start on bias correction, refer to our [comprehensive analysis pipeline guide](https://github.com/alan-turing-institute/clim-recal/blob/documentation/docs/pipeline_guidance.md).
@@ -38,7 +38,16 @@ For a quick start on bias correction, refer to our [comprehensive analysis pipel
 ## Documentation
 🚧 In Progress
 
-We are in the process of developing comprehensive documentation for our codebase to supplement the guidance provided in this document. In the interim, for Python scripts, you can leverage the inline documentation (docstrings) available within the code. To access a summary of the available options and usage information for any Python script, you can use the `--help` flag in the command line as follows:
+We are in the process of developing comprehensive documentation for our codebase to supplement the guidance provided in this document and other `README.md` files in this code base. In the interim, you can:
+
+- Comments within `R` scripts
+- See command line `--help` documentation for some of our `python` scripts
+- See documentation within `python` function and class  [`docstrings`](https://docs.python.org/3/library/doctest.html)
+- Locally render documentation via [`quarto`](https://quarto.org/)
+
+For `R` scripts, please refer to contextual information and usage guidelines, and feel free to reach out with any specific queries.
+
+To access a summary of the available options and usage information for any `python` script, you can use the `--help` flag in the command line as follows:
 
 ```sh
 $ python resampling_hads.py --help
@@ -54,7 +63,23 @@ options:
 
 This will display all available options for the script, including their purposes.
 
-For R scripts, please refer to the comments within the R scripts for contextual information and usage guidelines, and feel free to reach out with any specific queries.
+We also hope to provide comprehensive documentation via [`quarto`](https://quarto.org/). This is a work in progress, but if you would like to render that locally you can do so via [`conda`](https://docs.conda.io): 
+
+1. Ensure you have a local installation of [`conda`](https://docs.conda.io).
+1. Checkout a copy of our `git` repository
+1. Create a local `conda` `environment` via our `environment.yml` file. This should install `quarto`. 
+1. Activate that environment
+1. Run `quarto preview`.
+
+Below are example `bash` shell commands to render locally (assuming you have a `conda` install):  
+
+```sh
+$ git clone https://github.com/alan-turing-institute/clim-recal
+$ cd clim-recal
+$ conda create -n clim-recal -f environment.yml
+$ conda activate clim-recal
+$ quarto preview
+```
 
 We appreciate your patience and encourage you to check back for updates on our ongoing documentation efforts.
 
@@ -74,7 +99,7 @@ Researchers, policy-makers and other stakeholders wishing to use publicly availa
 
 Part of the `clim-recal` project is to review several bias correction methods. This work is ongoing and you can find our initial [taxonomy here](https://docs.google.com/spreadsheets/d/18LIc8omSMTzOWM60aFNv1EZUl1qQN_DG8HFy1_0NdWk/edit?usp=sharing). When we've completed our literature review, it will be submitted for publication in an open peer-reviewed journal. 
 
-Our work is however, just like climate data, intended to be dynamic, and we are in the process of setting up a pipeline for researchers creating new methods of bias correction to be able to submit their methods for inclusion on in the **`clim-recal`** repository. 
+Our work is however, just like climate data, intended to be dynamic, and we are in the process of setting up a pipeline for researchers creating new methods of bias correction to be able to submit their methods for inclusion on in the `clim-recal` repository. 
 
  1. Senatore et al., 2022, https://doi.org/10.1016/j.ejrh.2022.101120 
  2. Ayar et al., 2021, https://doi.org/10.1038/s41598-021-82715-1 
