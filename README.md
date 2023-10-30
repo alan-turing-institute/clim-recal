@@ -36,7 +36,7 @@ Welcome to `clim-recal`, a specialized resource designed to tackle systematic er
 
 For a quick start on bias correction, refer to our [comprehensive analysis pipeline guide](https://github.com/alan-turing-institute/clim-recal/blob/documentation/docs/pipeline_guidance.md).
 
-## Documentation [🚧](#documentation)
+## Documentation
 
 We are in the process of developing comprehensive documentation for our code base to supplement the guidance provided in this and other `README.md` files. In the interim, there is documentation available in the following forms:
 
@@ -136,6 +136,6 @@ and installing with:
 $ pip install -r requirements.txt
 ```
 
-## Future plans [🚧](#future-plans)
+## Future plans
 - **More BC Methods**: Further bias correction of UKCP18 products. *This is planned for a future release and is not available yet.*
 - **Pipeline for adding new methods**: *This is planned for a future release and is not available yet.*
