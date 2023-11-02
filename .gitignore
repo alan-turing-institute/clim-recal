@@ -261,4 +261,4 @@ rsconnect/
 # End of https://www.toptal.com/developers/gitignore/api/macos,python,r
 
 # Some custom adds 
-data/*
+ data/*
