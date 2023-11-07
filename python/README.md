@@ -137,3 +137,16 @@ SKIPPED [1] <doctest test_debiasing.RunConfig.yield_obs_folder[0]>:2: requires l
 SKIPPED [1] <doctest test_debiasing.RunConfig.yield_preprocess_out_folder[0]>:2: requires linux server mount paths
 16 passed, 6 skipped, 4 deselected in 0.26s
 ```
+
+<!--
+### Python
+
+In the `python` subdirectory you can find code for the different data download, processing and debiasing steps:
+   - **Data download** for a script to download data from the CEDA archive.
+   - **Resampling** for the HADsUK datasets from 1km to a 2.2 km grid to match the UKCP re-projected grid.
+   - **Data loaders** functions for loading and concatenating data into a single xarray which can be used for running debiasing methods.
+   - **Debiasing scripts** that interface with implementations of the debiasing (bias correction) methods implemented by different libraries (by March 2023 we have only implemented the python-cmethods library).
+    
+More details in how to use this code can be found in [the python README file](python/README.md) and the environment used in this [environment setup file](setup-instructions.md).
+
+-->
