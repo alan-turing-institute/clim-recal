@@ -6,6 +6,7 @@ from typing import Final
 
 import pytest
 
+TEST_PATH = Path().absolute()
 PYTHON_DIR_NAME: Final[Path] = Path("python")
 MODULE_NAMES: Final[tuple[PathLike, ...]] = (
     "debiasing",
@@ -24,8 +25,7 @@ def is_platform_darwin() -> bool:
 @pytest.fixture(autouse=True)
 def ensure_python_path() -> None:
     """Return path for test running."""
-    path: Path = Path()
-    if not set(Path(p) for p in MODULE_NAMES) <= set(path.iterdir()):
+    if not set(MODULE_NAMES) <= set(path.name for path in TEST_PATH.iterdir()):
         raise ValueError(
             f"'clim-recal' python tests must be "
             f"run in 'clim-recal/{PYTHON_DIR_NAME}', "
