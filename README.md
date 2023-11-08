@@ -1,136 +1,141 @@
 # Welcome to the `clim-recal` repository! 
 
-## Background
+Welcome to `clim-recal`, a specialized resource designed to tackle systematic errors or biases in **Regional Climate Models (RCMs)**. As researchers, policy-makers, and various stakeholders explore publicly available RCMs, they need to consider the challenge of biases that can affect the accurate representation of climate change signals. 
 
-Regional climate models (RCMs) contain systematic errors, or biases in their output [1]. Biases arise in RCMs for a number of reasons, such as the assumptions in the general circulation models (GCMs), and in the downscaling process from GCM to RCM [1,2].
+`clim-recal` provides both a **broad review** of available bias correction methods as well as **software**, **practical tutorials** and **guidance** that helps users apply these methods methods to various datasets.
+
+`clim-recal` is an **extensive software library and guide to application of Bias Correction (BC) methods**:
+
+- Contains accessible information about the [why and how of bias correction for climate data](#why-bias-correction)
+- Is a software library for for the application of BC methods (see our full pipeline for bias-correction of the ground-breaking local-scale (2.2km) [Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf). `clim-recal` brings together different software packages in `python` and `R` that implement a variety of bias correction methods, making it easy to apply them to data and compare their outputs.
+- Was developed in partnership with the MetOffice to ensure the propriety, quality, and usability of our work
+- Provides a framework for open additions of new software libraries/bias correction methods (in planning)
+
+## Table of Contents
+
+1. [Overview: Bias Correction Pipeline](#overview-bias-correction-pipeline)
+1. [Documentation](#documentation)
+1. [The Datasets](#the-datasets)
+1. [Why Bias Correction?](#why-bias-correction)
+1. [Contributing](#contributing)
+1. [Future Plans](#future-plans)
+1. [License](/LICENSE)
+
+## Overview: Bias Correction Pipeline
+
+`clim-recal` is a debiasing pipeline,  with the following steps:
+
+1. **Set-up & data download**
+    *We provide custom scripts to facilitate download of data*
+2. **Preprocessing**
+    *This includes reprojecting, resampling & splitting the data prior to bias correction*
+3. **Apply bias correction**
+    *Our pipeline embeds two distinct methods of bias correction*
+4. **Assess the debiased data**
+    *We have developed a way to assess the quality of the debiasing step across multiple alternative methods*
+
+For a quick start on bias correction, refer to our [comprehensive analysis pipeline guide](https://github.com/alan-turing-institute/clim-recal/blob/documentation/docs/pipeline_guidance.md).
+
+## Documentation
+
+We are in the process of developing comprehensive documentation for our code base to supplement the guidance provided in this and other `README.md` files. In the interim, there is documentation available in the following forms:
+
+- Comments within `R` scripts
+- Command line `--help` documentation for some of our `python` scripts
+- `python` `function` and `class` [`docstrings`](https://docs.python.org/3/library/doctest.html)
+- Local render of documentation via [`quarto`](https://quarto.org/)
+
+### `R`
+
+For `R` scripts, please refer to contextual information and usage guidelines, and feel free to reach out with any specific queries.
+
+### `python`
+
+For many of our `python` command line scripts, you can use the `--help` flag to access a summary of the available options and usage information:
+
+```sh
+$ python resampling_hads.py --help
+
+usage: resampling_hads.py [-h] --input INPUT [--output OUTPUT] [--grid_data GRID_DATA]
+
+options:
+-h, --help            show this help message and exit
+--input INPUT         Path where the .nc files to resample is located
+--output OUTPUT       Path to save the resampled data data
+--grid_data GRID_DATA Path where the .nc file with the grid to resample is located
+```
+
+This will display all available options for the script, including their purposes.
+
+### Quarto
+
+We also hope to provide comprehensive documentation via [`quarto`](https://quarto.org/). This is a work in progress, but if you would like to render documentation locally you can do so via `quarto` and [`conda`](https://docs.conda.io): 
+
+1. Ensure you have a [local installation](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) of `conda` or [`anaconda`](https://www.anaconda.com/download) .
+1. Checkout a copy of our `git` repository
+1. Create a local `conda` `environment` via our `environment.yml` file. This should install `quarto`. 
+1. Activate that environment
+1. Run `quarto preview`.
+
+Below are example `bash` shell commands to render locally after installing `conda`:  
+
+```sh
+$ git clone https://github.com/alan-turing-institute/clim-recal
+$ cd clim-recal
+$ conda create -n clim-recal -f environment.yml
+$ conda activate clim-recal
+$ quarto preview
+```
+
+We appreciate your patience and encourage you to check back for updates on our ongoing documentation efforts.
+
+## The Datasets
+
+### UKCP18
+The UK Climate Projections 2018 (UKCP18) dataset offers insights into the potential climate changes in the UK. UKCP18 is an advancement of the UKCP09 projections and delivers the latest evaluations of the UK's possible climate alterations in land and marine regions throughout the 21st century. This crucial information aids in future Climate Change Risk Assessments and supports the UK’s adaptation to climate change challenges and opportunities as per the National Adaptation Programme.
+
+### HADS
+[HadUK-Grid](https://www.metoffice.gov.uk/research/climate/maps-and-data/data/haduk-grid/haduk-grid) is a comprehensive collection of climate data for the UK, compiled from various land surface observations across the country. This data is organized into a uniform grid to ensure consistent coverage throughout the UK at up to 1km x 1km resolution. The dataset, spanning from 1836 to the present, includes a variety of climate variables such as air temperature, precipitation, sunshine, and wind speed, available on daily, monthly, seasonal, and annual timescales. 
+
+## Why Bias Correction?
+
+Regional climate models contain systematic errors, or biases in their output [1]. Biases arise in RCMs for a number of reasons, such as the assumptions in the general circulation models (GCMs), and in the downscaling process from GCM to RCM [1,2].
 
 Researchers, policy-makers and other stakeholders wishing to use publicly available RCMs need to consider a range of "bias correction” methods (sometimes referred to as "bias adjustment" or "recalibration"). Bias correction methods offer a means of adjusting the outputs of RCM in a manner that might better reflect future climate change signals whilst preserving the natural and internal variability of climate [2]. 
 
-The aim of **clim-recal** is therefore to: 
+Part of the `clim-recal` project is to review several bias correction methods. This work is ongoing and you can find our initial [taxonomy here](https://docs.google.com/spreadsheets/d/18LIc8omSMTzOWM60aFNv1EZUl1qQN_DG8HFy1_0NdWk/edit?usp=sharing). When we've completed our literature review, it will be submitted for publication in an open peer-reviewed journal. 
 
-* To provide non-climate scientists with an extensive guide to the application, disadvantages/advantages and use of BC methods 
-* To provide researchers with a collated set of resources for how to technically apply the BC methods, with a framework for open additions 
-* To create accessible information on bias adjustment methods for non quantitative researchers and lay-audience stakeholders 
-
-We are working in partnership with the MetOffice to ensure the propriety, quality, and usability of our work. We're focusing on the UKCP18 suite of products, with the first dataset of focus their ground-breaking local-scale (2.2km) [Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf). 
-
-### Let's collaborate!
-
-We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an issue or [get in touch](mailto:clim-recal@turing.ac.uk)! 
-
-### Methods taxonomy 
-
-Our work-in-progress taxonomy can be viewed [here](https://docs.google.com/spreadsheets/d/18LIc8omSMTzOWM60aFNv1EZUl1qQN_DG8HFy1_0NdWk/edit?usp=sharing). When we've completed our literature review, it will be submitted for publication in an open peer-reviewed journal. 
-
-Our work is however, just like climate data,  intended to be dynamic, and we are in the process of setting up a pipeline for researchers creating new methods of bias correction to be able to submit their methods for inclusion on in the **clim-recal** repository. 
-
-
-## Code
-
-In this repo we aim to provide examples of how to run the debiasing pipeline starting from the raw data available from the [MET office via CEDA](https://catalogue.ceda.ac.uk/uuid/ad2ac0ddd3f34210b0d6e19bfc335539) to the creation of debiased (bias corrected) datasets for different time periods. The pipeline has the following steps:
-
-1. Reproject the [UKCP](https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km) control and scenario data to the same coordinate system as the [HADs](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km) observational data (British National Grid).
-2. Resample the HADs data from 1km to 2.2km grid to match the UKCP reprojected grid.
-3. Run debiasing method on the control and observational data and project it into the scenario dataset. 
-
-After each of these steps the reprojected, resampled and debiased scenario datasets are produced and saved in an Azure fileshare storage (more details about this bellow).
-
-
-### Bash
-
-Here you find scripts to reproject the UKCP datasets to the British National Grid coordinate system.
-
-### Python
-
-In the `python` subdirectory you can find code for the different data download, processing and debiasing steps:
-   - **Data download** for a script to download data from the CEDA archive.
-   - **Resampling** for the HADsUK datasets from 1km to a 2.2 km grid to match the UKCP re-projected grid.
-   - **Data loaders** functions for loading and concatenating data into a single xarray which can be used for running debiasing methods.
-   - **Debiasing scripts** that interface with implementations of the debiasing (bias correction) methods implemented by different libraries (by March 2023 we have only implemented the python-cmethods library).
-    
-More details in how to use this code can be found in [the python README file](python/README.md) and the environment used in this [environment setup file](setup-instructions.md).
-
-### R 
-
-In the `R` subdirectory you can find code for replicating the different data processing and debiasing steps as above, along with comparisons of methods between the two languages. 
-- **bias-correction-methods** for bias correction (debiasing) methods available specifically in `R` libraries
-- **comparing-r-and-python** for replication of resampling and reviewing the bias correction methods applied in `python`.
-- **Resampling** for resampling the HADsUK datasets from 1km to 2.2km grid in `R`.
-
-
-## Data access
-
-### How to download the data
-
-You can download the raw UKCP2.2 climate data from the CEDA archive. Go [here](https://archive.ceda.ac.uk/), create an account and set up your FTP credentials in "My Account". You can then use the python script under `python/data_download/` to download the data: 
-```
-python3 ceda_ftp_download.py --input /badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/ --output 'output_dir' --username 'uuu' --psw 'ppp' --change_hierarchy
-```
-You need to replace `uuu` and `ppp` with your CEDA username and FTP password respectively and replace 'output_dir' with the directory you want to write the data to.
-
-Note that the `--change_hierarchy` flag is used, which modifies the folder hierarchy to fit with the hierarchy in the Turing Azure file store. You can use the same script without the `--change_hierarchy` flag in order to download files without any changes in the hierarchy.
-
-You can download the HADs observational data from the CEDA archive using the same python script, with a different input (note the `change_hierarchy` flag should not be used with HADs data - only applies to UKCP data):
-```
-python3 ceda_ftp_download.py --input /badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km --output output_dir --username 'uuu' --psw 'ppp'
-```
-
-### Accessing the pre-downloaded/pre-processed data
-
-Datasets used in this project (raw, processed and debiased) have been pre-downloaded/pre-processed and stored in an Azure fileshare set-up for the clim-recal project (https://dymestorage1.file.core.windows.net/vmfileshare). You need to be given access, and register your IP address to the approved list in the following way from the azure portal:
-
-- Go to dymestorage1 page `Home > Storage accounts > dymestorage1`
-- Navigate to *Networking* tab under Security + networking
-- Add your IP under the Firewall section
-
-Once you have access you can mount the fileshare. On a Mac you can do it from a terminal:
-
-`open smb://dymestorage1.file.core.windows.net/vmfileshare`
-
-username is `dymestorage1` and the password can be found in the access keys as described in [here](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal#view-account-access-keys).
-
-The fileshare will be mounted under
-
-`/Volumes/vmfileshare/`
-
-Instructions on how the mount in other operating systems can be found in [the azure how-tos](https://learn.microsoft.com/en-us/azure/storage/files/storage-how-to-use-files-linux?tabs=smb311). 
-
-Alternatively, you can access the Azure Portal, go to the dymestorage1 fileshare and click the "Connect" button to get an automatically generated script. This script can be used from within an Azure VM to mount the drive.
-
-### Pre-downloaded/pre-processed data description
-
-All the data used in this project can be found in the `/Volumes/vmfileshare/ClimateData/` directory. 
-
-```
-.
-├── Debiased  # Directory where debiased datasets are stored.
-│   └── tasmax
-├── Processed # Directory where processed climate datasets are stored. 
-│   ├── CHESS-SCAPE
-│   ├── HadsUKgrid # Resampled HADs grid.
-│   └── UKCP2.2_Reproj # Old reprojections (to delete).
-├── Raw # Raw climate data
-│   ├── CHESS-SCAPE
-│   ├── HadsUKgrid
-│   ├── UKCP2.2
-│   └── ceda_fpt_download.py # script to download data from CEDA database. 
-├── Reprojected # Directory where reprojected UKCP datasets are stored.
-│   └── UKCP2.2
-├── Reprojected_infill # Directory where reprojected UKCP datasets are stored, including the newest infill UKCP2.2 data published in May 2023.
-└── shapefiles
-    ├── Middle_Layer_Super_Output_Areas_(December_2011)_Boundaries
-    └── infuse_ctry_2011_clipped
-```
-
-## Future directions
-
-In future, we're hoping to include:
-
-- Further bias correction of UKCP18 products 
-- Assessment of the influence of different observational data 
-- Pipelines for adding an additional method 
-
-## References
+Our work is however, just like climate data, intended to be dynamic, and we are in the process of setting up a pipeline for researchers creating new methods of bias correction to be able to submit their methods for inclusion on in the `clim-recal` repository. 
 
  1. Senatore et al., 2022, https://doi.org/10.1016/j.ejrh.2022.101120 
  2. Ayar et al., 2021, https://doi.org/10.1038/s41598-021-82715-1 
+
+
+## Contributing
+
+We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an issue or [get in touch](mailto:clim-recal@turing.ac.uk)! 
+
+### Adding to the conda environment file 
+
+To use `R` in `anaconda` you may need to specify the `conda-forge` channel:
+
+```sh
+$ conda config --env --add channels conda-forge
+```
+
+Some libraries may be only available through `pip`, for example, these may
+require the generation / update of a `requirements.txt`:
+
+```sh
+$ pip freeze > requirements.txt
+```
+
+and installing with:
+
+```sh
+$ pip install -r requirements.txt
+```
+
+## Future plans
+- **More BC Methods**: Further bias correction of UKCP18 products. *This is planned for a future release and is not available yet.*
+- **Pipeline for adding new methods**: *This is planned for a future release and is not available yet.*

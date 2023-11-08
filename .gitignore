@@ -246,7 +246,11 @@ vignettes/*.pdf
 .Renviron
 
 # pkgdown site
-docs/
+# Commented out by @griff-rees in configuring quarto
+# docs/
+
+# Add as a replacement for use of quarto
+docs/reference
 
 # translation temp files
 po/*~
@@ -260,5 +264,7 @@ rsconnect/
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,python,r
 
-# Some custom adds 
+# Some custom adds
 data/*
+
+/.quarto/

@@ -1,0 +1,46 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: "23.9.1"
+    hooks:
+      - id: black-jupyter
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-yaml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: requirements-txt-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: "v1.10.0"
+    hooks:
+      - id: rst-backticks
+      - id: rst-directive-colons
+      - id: rst-inline-touching-normal
+
+  - repo: https://github.com/hadialqattan/pycln
+    rev: v2.2.2
+    hooks:
+      - id: pycln
+        args: ["python/"]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        name: isort (python)
+        args: ["--profile", "black"]
+
+  # Currently fails to build.
+  # See: https://github.com/lorenzwalthert/precommit/issues/476
+  # - repo: https://github.com/lorenzwalthert/precommit
+  #   rev: v0.3.2
+  #   hooks:
+  #     - id: readme-rmd-rendered
