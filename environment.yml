@@ -5,55 +5,58 @@ channels:
   - conda-forge
 dependencies:
   - bzip2=1.0.8
-  - c-ares=1.18.1
-  - ca-certificates=2022.9.24
-  - hdf5=1.12.2
-  - krb5=1.19.3
+  - c-ares=1.19.1
+  - ca-certificates=2023.08.22
+  - hdf5=1.12.1
+  - krb5=1.20.1
   - libcurl=7.86.0
   - libcxx=14.0.6
-  - libedit=3.1.20191231
-  - libev=4.33
-  - libffi=3.4.2
+  - libedit=3.1.20221030
+  - libev=5.33
+  - libffi=3.4.4
   - libgfortran5=11.3.0
-  - libnghttp2=1.47.0
+  - libnghttp2=1.57.0
   - libsqlite=3.39.4
   - libssh2=1.10.0
   - libzlib=1.2.13
-  - llvm-openmp=14.0.4
-  - ncurses=6.3
-  - openssl=3.0.5
-  - pip=22.3
-  - python=3.11.0
-  - readline=8.1.2
-  - setuptools=65.5.0
+  - llvm-openmp=14.0.6
+  - ncurses=6.4
+  - openssl=3.0.12
+  - pip=23.3
+  - python=3.11.5
+  - r-quarto=1.3
+  - readline=8.2
+  - setuptools=68.0.0
   - tk=8.6.12
-  - tzdata=2022e
-  - wheel=0.37.1
-  - xz=5.2.6
+  - tzdata=2023c
+  - wheel=0.41.2
+  - xz=5.4.2
   - pip:
     - affine==2.3.1
     - attrs==22.1.0
-    - certifi==2022.9.24
+    - certifi==2023.07.22
     - cftime==1.6.2
     - click==8.1.3
     - click-plugins==1.1.1
     - cligj==0.7.2
     - geopandas==0.12.2
+    - ipython==8.15.0
+    - matplotlib==3.6.1
     - netcdf4==1.6.1
     - numpy==1.23.4
     - packaging==21.3
     - pandas==1.5.1
+    - pillow==9.4.0
+    - quartodoc==0.6.3
     - pyparsing==3.0.9
     - pyproj==3.4.0
     - python-dateutil==2.8.2
+    - pytest-sugar==0.9.7
     - pytz==2022.5
-    - pytest-sugar=0.9.7
     - rasterio==1.3.3
     - rioxarray==0.12.3
+    - scipy==1.10.0
     - six==1.16.0
     - snuggs==1.4.7
     - tqdm==4.64.1
     - xarray==2023.2.0
-    - matplotlib==3.6.1
-    - scipy==1.10.0
-    - pillow==9.4.0
