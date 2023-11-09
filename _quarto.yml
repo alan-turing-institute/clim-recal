@@ -3,7 +3,7 @@ project:
   type: website
   output-dir: _site
   preview:
-    port: 8888
+    port: 8080
     browser: false
   render:
     - "README.md"
@@ -13,7 +13,7 @@ project:
     - "docs/reference"
     - "docs/pipeline.qmd"
       # - "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
-    - "python/README.md"
+    # - "python/README.md"
 
 toc: True
 number-sections: True
@@ -44,7 +44,7 @@ website:
               #   contents:
               #     - href: "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
               #       text: "WIP Comparing HADs grids"
-                
+
       - section: "python"
         contents:
           - "python/README.md"

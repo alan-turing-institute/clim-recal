@@ -1,0 +1,23 @@
+version: "3"
+
+# volumes:
+# mount
+
+services:
+
+  jupyter:
+    build:
+      context: .
+      dockerfile: ./compose/local/Dockerfile
+      target: clim-recal-base
+    ports:
+      - "8888:8888"
+
+  docs:
+    build:
+      context: .
+      dockerfile: ./compose/local/docs/Dockerfile
+      # target: clim-recal-docs
+    ports:
+      - "8080:80"
+      # command: quarto preview --port 8080
