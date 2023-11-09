@@ -29,10 +29,10 @@ ARG env_name=clim-recal
 ARG py_ver=3.11
 
 # The local_data_path is an absolute local path to ClimateData on the machine hosting running `docker`
-ARG local_data_path=/Volumes/vmfileshare/ClimateData
+ARG HOST_DATA_PATH=/Volumes/vmfileshare
 
 # The local_data_path is an absolute path to mount ClimateData within `docker`
-ARG docker_data_path=/Volumes/vmfileshare/ClimateData
+ARG DOCKER_DATA_PATH=/mnt/vmfileshare
 
 
 USER root
@@ -87,38 +87,38 @@ RUN cd python/debiasing && git submodule update --init --recursive
 # This will use the default launch as discussed in
 # https://jupyter-docker-stacks.readthedocs.io/en/latest/using/running.html
 
-FROM clim-recal-base as clim-recal-docs
-
-ARG port=4200
-
-USER root
-
-RUN sudo apt-get -y install \
-    pandoc \
-    pandoc-citeproc \
-    curl \
-    gdebi-core \
-    r-base \
-    r-base-dev \
-    r-cran-littler \
-    && rm -rf /var/lib/apt/lists/*
-
-# RUN Rscript -e \
-# "install.packages(c('shiny', 'jsonlite', 'renv', 'knitr', 'rmarkdown', 'quarto'), repos='https://cran.rstudio.com')"
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
-  curl -LO https://quarto.org/download/latest/quarto-linux-${arch}.deb && \
-  gdebi --non-interactive quarto-linux-${arch}.deb
-
-#    wget "http://...../${arch}.deb"
-
-# RUN curl -LO https://quarto.org/download/latest/quarto-linux-amd64.deb
-# RUN gdebi --non-interactive quarto-linux-${arch}.deb
-
-EXPOSE ${port}:${port}
-
-USER ${NB_UID}
-
-# CMD ["quarto", "preview", "--port={port}"]
-CMD ["bash"]
+# FROM clim-recal-base as clim-recal-docs
+#
+# ARG port=4200
+#
+# USER root
+#
+# RUN sudo apt-get -y install \
+#     pandoc \
+#     pandoc-citeproc \
+#     curl \
+#     gdebi-core \
+#     r-base \
+#     r-base-dev \
+#     r-cran-littler \
+#     && rm -rf /var/lib/apt/lists/*
+#
+# # RUN Rscript -e \
+# # "install.packages(c('shiny', 'jsonlite', 'renv', 'knitr', 'rmarkdown', 'quarto'), repos='https://cran.rstudio.com')"
+# SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+#
+# RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
+#   curl -LO https://quarto.org/download/latest/quarto-linux-${arch}.deb && \
+#   gdebi --non-interactive quarto-linux-${arch}.deb
+#
+# #    wget "http://...../${arch}.deb"
+#
+# # RUN curl -LO https://quarto.org/download/latest/quarto-linux-amd64.deb
+# # RUN gdebi --non-interactive quarto-linux-${arch}.deb
+#
+# EXPOSE ${port}:${port}
+#
+# USER ${NB_UID}
+#
+# # CMD ["quarto", "preview", "--port={port}"]
+# CMD ["bash"]
