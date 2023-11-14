@@ -6,6 +6,7 @@ from typing import Final
 
 import pytest
 
+CLIMATE_DATA_MOUNT_PATH = Path("/mnt/vmfileshare/ClimateData")
 TEST_PATH = Path().absolute()
 PYTHON_DIR_NAME: Final[Path] = Path("python")
 MODULE_NAMES: Final[tuple[PathLike, ...]] = (
@@ -22,6 +23,12 @@ def is_platform_darwin() -> bool:
     return sys.platform.startswith("darwin")
 
 
+@pytest.fixture()
+def is_climate_data_mounted() -> bool:
+    """Check if `sys.platform` is `Darwin` (macOS)."""
+    return CLIMATE_DATA_MOUNT_PATH.exists()
+
+
 @pytest.fixture(autouse=True)
 def ensure_python_path() -> None:
     """Return path for test running."""
@@ -34,8 +41,11 @@ def ensure_python_path() -> None:
 
 
 @pytest.fixture(autouse=True)
-def doctest_auto_fixtures(doctest_namespace: dict, is_platform_darwin: bool) -> None:
+def doctest_auto_fixtures(
+    doctest_namespace: dict, is_platform_darwin: bool, is_climate_data_mounted: bool
+) -> None:
     """Elements to add to default `doctest` namespace."""
     doctest_namespace["is_platform_darwin"] = is_platform_darwin
+    doctest_namespace["is_climate_data_mounted"] = is_climate_data_mounted
     doctest_namespace["pprint"] = pprint
     doctest_namespace["pytest"] = pytest

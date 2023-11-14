@@ -7,23 +7,16 @@ dependencies:
   - bzip2=1.0.8
   - c-ares=1.19.1
   - ca-certificates=2023.08.22
-  - hdf5=1.12.1
-  - krb5=1.20.1
-  - libcurl=7.86.0
-  - libcxx=14.0.6
   - libedit=3.1.20221030
   - libev=4.33
-  - libffi=3.4.4
   - libgfortran5=11.3.0
-  - libnghttp2=1.57.0
-  - libsqlite=3.39.4
   - libssh2=1.10.0
   - libzlib=1.2.13
   - llvm-openmp=14.0.6
   - ncurses=6.4
-  - openssl=3.0.12
   - pip=23.3
-  - python=3.11.5
+  - python=3.9
+  - gdal=3.3.2
   # - r-quarto=1.3
   - readline=8.2
   - setuptools=68.0.0
@@ -34,6 +27,7 @@ dependencies:
   - pip:
     - affine==2.3.1
     - attrs==22.1.0
+    - backports.strenum==1.2.8
     - certifi==2023.07.22
     - cftime==1.6.2
     - click==8.1.3

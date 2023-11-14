@@ -64,7 +64,7 @@ RUN "${CONDA_DIR}/envs/${env_name}/bin/python" -m ipykernel install --user --nam
     fix-permissions "/home/${NB_USER}"
 
 # Copy the rest of the  clim-recal code to volume
-COPY --chown=${NB_UID}:${NB_GID} . .
+ADD --chown=${NB_UID}:${NB_GID} . .
 
 
 # Add custom activate script to reflect environment

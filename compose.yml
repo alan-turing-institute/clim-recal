@@ -10,7 +10,7 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - climate_data:/mnt/vmfileshare
+      # - climate_data:/mnt/vmfileshare
       # - type: bind
       #   source: /Volumes/vmfileshare
       #   target: /mnt/vmfileshare
@@ -24,10 +24,10 @@ services:
       - "8080:80"
       # command: quarto preview --port 8080
 
-volumes:
-  climate_data:
-    driver: local
-    driver_opts:
-      type: none
-      device: /Volumes/vmfileshare
-      o: bind
+# volumes:
+#   climate_data:
+#     driver: local
+#     driver_opts:
+#       type: none
+#       device: /Volumes/vmfileshare
+#       o: bind
