@@ -9,7 +9,7 @@ services:
       target: clim-recal-base
     ports:
       - "8888:8888"
-    volumes:
+    # volumes:
       # - climate_data:/mnt/vmfileshare
       # - type: bind
       #   source: /Volumes/vmfileshare
