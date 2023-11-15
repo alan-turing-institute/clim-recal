@@ -5,7 +5,9 @@ from pathlib import Path
 from typing import Final
 
 import pytest
+from coverage_badge.__main__ import main as gen_cov_badge
 
+BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
 CLIMATE_DATA_MOUNT_PATH = Path("/mnt/vmfileshare/ClimateData")
 TEST_PATH = Path().absolute()
 PYTHON_DIR_NAME: Final[Path] = Path("python")
@@ -49,3 +51,10 @@ def doctest_auto_fixtures(
     doctest_namespace["is_climate_data_mounted"] = is_climate_data_mounted
     doctest_namespace["pprint"] = pprint
     doctest_namespace["pytest"] = pytest
+
+
+def pytest_sessionfinish(session, exitstatus):
+    """Generate badges for docs after tests finish."""
+    if exitstatus == 0:
+        BADGE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        gen_cov_badge(["-o", f"{BADGE_PATH}", "-f"])

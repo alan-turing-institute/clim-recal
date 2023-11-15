@@ -26,9 +26,6 @@ permissions:
 jobs:
   linter:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: config/
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@main
@@ -36,7 +33,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@main
         with:
-          python-version: $MIN_PYTHON_VERSION
+          python-version: ${{ env.MIN_PYTHON_VERSION }}
 
       - name: Run pre-commit
         uses: pre-commit/action@main
