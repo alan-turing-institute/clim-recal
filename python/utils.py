@@ -1,7 +1,4 @@
-"""
-Utility functions.
-
-"""
+"""Utility functions."""
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Final, Generator, Iterable, Optional, Union
@@ -18,8 +15,8 @@ def date_to_str(
 ) -> str:
     """Return a `str` in `date_format_str` of `date_obj`.
 
-    Example
-    -------
+    Examples
+    --------
 
     >>> date_to_str('20100101')
     '20100101'
@@ -41,8 +38,8 @@ def date_range_to_str(
 ) -> str:
     """Take `start_date` and `end_date` `str` or `date` instances and return a range `str`.
 
-    Example
-    -------
+    Examples
+    --------
 
     >>> date_range_to_str('20100101', '20100330')
     '20100101-20100330'

@@ -50,8 +50,10 @@ website:
           - "python/README.md"
           - section: "Reference"
             contents:
-              - href: "docs/reference/ceda_ftp_download.download_ftp.qmd"
+              - href: "docs/reference/data_download.ceda_ftp_download.download_ftp.qmd"
                 text: "download_ftp"
+              - href: "docs/reference/utils.qmd"
+                text: "Utilities"
 
 
 quartodoc:
@@ -61,7 +63,7 @@ quartodoc:
 
   # write sidebar data to this file
   sidebar: _sidebar.yml
-  source_dir: ./python/data_download/
+  source_dir: ./python/
 
   sections:
     - title: Data Source Management
@@ -69,4 +71,5 @@ quartodoc:
       contents:
         # the functions being documented in the package.
         # you can refer to anything: class methods, modules, etc..
-        - ceda_ftp_download.download_ftp
+        - data_download.ceda_ftp_download.download_ftp
+        - utils
