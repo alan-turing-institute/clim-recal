@@ -97,6 +97,9 @@ The UK Climate Projections 2018 (UKCP18) dataset offers insights into the potent
 ### HADS
 [HadUK-Grid](https://www.metoffice.gov.uk/research/climate/maps-and-data/data/haduk-grid/haduk-grid) is a comprehensive collection of climate data for the UK, compiled from various land surface observations across the country. This data is organized into a uniform grid to ensure consistent coverage throughout the UK at up to 1km x 1km resolution. The dataset, spanning from 1836 to the present, includes a variety of climate variables such as air temperature, precipitation, sunshine, and wind speed, available on daily, monthly, seasonal, and annual timescales. 
 
+### Geographical Dataset
+
+The geographical dataset is used to visualise the geographical extent associated with the climate data. It mainly includes administrative boundaries data published by the Office for National Statistics (ONS). The dataset is sharable under the Open Government Licence v.3.0 and is available for download via this [link](https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom_2022/FeatureServer/replicafilescache/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom_2022_7279368953270783580.zip).
 ## Why Bias Correction?
 
 Regional climate models contain systematic errors, or biases in their output [1]. Biases arise in RCMs for a number of reasons, such as the assumptions in the general circulation models (GCMs), and in the downscaling process from GCM to RCM [1,2].
