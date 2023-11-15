@@ -89,10 +89,16 @@ jobs:
 
       - uses: actions/setup-python@v4
         with:
-          python-version: MIN_PYTHON_VERSION
+          python-version: ${{ env.MIN_PYTHON_VERSION }}
 
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
         name: Update cache_id
+
+      - name: Download coverage svg
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-badge
+          path: ${{ env.COVERAGE_SVG_PATH }}
 
       - name: Build quarto
         run: |
@@ -101,17 +107,13 @@ jobs:
           docker compose up --detach
           docker cp $(docker compose ps -q docs):/usr/local/apache2/htdocs/ .
 
-      - name: Download coverage svg
-        uses: actions/download-artifact@v3
-        with:
-          name: coverage-badge
-          path: assets/
       # - name: Build docker quarto
       #   run: |
       #     docker compose build
       #     docker cp ${{ env.jupyter_id }}:app/docs/assets/coverage.svg docs/assets/
       #     docker compose up --detach
-      #     docker cp /app/_site/ /usr/local/apache2/htdocs/
+      #     docker cp $(docker compose ps -q docs):/usr/local/apache2/htdocs/ .
+          # docker cp $(docker compose ps -q docs)/app/_site/ /usr/local/apache2/htdocs/
       # - name: Apply mkdocs cache
       #   uses: actions/cache@v3
       #   with:
