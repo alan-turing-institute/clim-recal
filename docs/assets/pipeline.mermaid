@@ -10,8 +10,8 @@ subgraph Legend
     var[parameter]:::var
 end
 
-%%% INPUT DATA 
-subgraph CEDA 
+%%% INPUT DATA
+subgraph CEDA
     data_hads[(HADS)]
     data_cpm[(UKCP2.2)]
     data_hads --> script_load
@@ -31,14 +31,14 @@ subgraph Core pipeline
     subgraph Preprocessing
         %% resampling & reprojecting
         script_resampling([resampling_hads.py])
-        script_reproject([reproject_all.sh])  
+        script_reproject([reproject_all.sh])
 
         data_hads_res[Processed/HadsUKgrid/../*.nc]
         data_cpm_rep[Reprojected/UKCP2.2/../*.tiff]
 
         script_resampling --> data_hads_res
         script_reproject --> data_cpm_rep
-        
+
         %% cropping
         script_crop_city([Cropping_Rasters_to_three_cities.R])
 
@@ -67,7 +67,7 @@ subgraph Core pipeline
         data_outdir --> data_out_groundtruth_h
         data_outdir --> data_out_groundtruth_p
     end
-    
+
     subgraph bc[Bias Correction]
         script_bc_py([run_cmethods.py])
         script_bc_r([run_cmethods.R])
@@ -88,7 +88,7 @@ subgraph Core pipeline
         script_bc_py-->data_out_py
         function_bc_r-->data_out_r
     end
-    
+
     subgraph Assessment
         script_asses[tbc]
         data_out_groundtruth_p --> script_asses
@@ -102,8 +102,8 @@ subgraph nner_py[Execute Python pipeline for MO dataset]
     data_shape_uk[(shape London)]
     data_shape_gl[(shape Glasgow)]
     data_shape_ma[(shape Manchester)]
-    
-    
+
+
     script_BC_wrapper[three_cities_debiasing.sh]
     param1["metric (eg tasmax)"]:::var
     param2["runs (eg 05)"]:::var
@@ -124,9 +124,9 @@ end
 
 subgraph nner_jupyter[Jupyter Notebook for Guidance]
     direction BT
-    data_shape_gl2[(shape Glasgow)]    
+    data_shape_gl2[(shape Glasgow)]
     data_cpm2[(UKCP2.2_Monthly)]
-    
+
     param5["tasmax"]:::var
     param6["quantile_mapping"]:::var
     param7[Glasgow]:::var
@@ -146,7 +146,7 @@ data_hads_raw --> script_resampling
 data_cpm_raw --> script_reproject
 %% input cropping
 data_cpm_rep --> script_crop_city
-    
+
 data_hads_res --> script_crop_city
 data_shape_uk --> script_crop_city
 data_shape_ma --> script_crop_city
@@ -164,7 +164,7 @@ classDef python fill:#4CAF50;
 classDef r fill:#FF5722;
 classDef bash fill:#f9f
 classDef var fill:none,stroke:#0f0;
-classDef dashed stroke-dasharray: 5 5; 
+classDef dashed stroke-dasharray: 5 5;
 
 class script_crop_city,script_crop_uk,function_bc_r,script_r,script_df_uk,function_bc,function_crop_bc,fn_crop_cpm,fn_crop_hads,fn_bc,script_bc_r r;
 class script_load,script_resampling,script_preproc,script_bc_py,script_py python;

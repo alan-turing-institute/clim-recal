@@ -1,15 +1,15 @@
 # clim-recal setup
 
-## Setup 
+## Setup
 Methods can be used with a custom environment, here we provide a Anaconda
-environment file for ease-of-use. 
+environment file for ease-of-use.
 ```
 conda env create -f environment.yml
 ```
 
-## Contributing 
+## Contributing
 
-### Adding to the conda environment file 
+### Adding to the conda environment file
 
 To use `R` in anaconda you may need to specify the `conda-forge` channel:
 

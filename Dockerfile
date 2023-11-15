@@ -9,7 +9,7 @@ FROM jupyter/r-notebook
 # This will require a mount of `vmfileshare` from `dymestorage1`
 # On macOS this can be solved via:
 # open smb://dymestorage1.file.core.windows.net/vmfileshare
-# Using user: dymestorage1 
+# Using user: dymestorage1
 # And password specified via:
 # https://learn.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal#view-account-access-keys
 
@@ -26,7 +26,7 @@ ARG env_name=clim-recal
 
 # `py_ver` is not currently used below and is specified in `environment.yaml`
 # here as reminder and clarity if future change needed.
-ARG py_ver=3.11 
+ARG py_ver=3.11
 
 # The local_data_path is an absolute local path to ClimateData on the machine hosting running `docker`
 ARG local_data_path=/Volumes/vmfileshare/ClimateData
@@ -74,7 +74,7 @@ RUN activate_custom_env_script=/usr/local/bin/before-notebook.d/activate_custom_
     echo "eval \"$(conda shell.bash activate "${env_name}")\"" >> ${activate_custom_env_script} && \
     chmod +x ${activate_custom_env_script}
 
-# Switch to default jupyter user 
+# Switch to default jupyter user
 USER ${NB_UID}
 
 # Set this for default `conda activate` configuration

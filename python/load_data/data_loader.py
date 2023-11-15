@@ -1,13 +1,22 @@
-import xarray as xr
 import glob
-import geopandas as gp
 import os
 from datetime import datetime
 
+import geopandas as gp
+import xarray as xr
 
-def load_data(input_path, date_range, variable, filter_filenames_on_variable=False,
-              run_number=None, filter_filenames_on_run_number=False, use_pr=False,
-              shapefile_path=None, extension='nc'):
+
+def load_data(
+    input_path,
+    date_range,
+    variable,
+    filter_filenames_on_variable=False,
+    run_number=None,
+    filter_filenames_on_run_number=False,
+    use_pr=False,
+    shapefile_path=None,
+    extension="nc",
+):
     """
     This function takes a date range and a variable and loads and merges xarrays based on those parameters.
     If shapefile is provided it crops the data to that region.
@@ -44,28 +53,37 @@ def load_data(input_path, date_range, variable, filter_filenames_on_variable=Fal
         An xarray containing all loaded and merged and clipped data
     """
 
-    if extension not in ('nc', 'tif'):
+    if extension not in ("nc", "tif"):
         raise Exception("We only accept .nc or .tif extension for the input data")
 
     if filter_filenames_on_variable:
         if filter_filenames_on_run_number:
             if use_pr:
                 # when run_number is used, use it to select files from CPM file list
-                files = glob.glob(f"{input_path}/pr*2.2km_{run_number}_*.{extension}", recursive=True)
+                files = glob.glob(
+                    f"{input_path}/pr*2.2km_{run_number}_*.{extension}", recursive=True
+                )
             else:
                 # when run_number is used, use it to select files from CPM file list
-                files = glob.glob(f"{input_path}/{variable}*2.2km_{run_number}_*.{extension}", recursive=True)
+                files = glob.glob(
+                    f"{input_path}/{variable}*2.2km_{run_number}_*.{extension}",
+                    recursive=True,
+                )
         else:
             if use_pr:
                 # when run_number is not used, select files only based on variable (either CPM or HADs)
                 files = glob.glob(f"{input_path}/pr*.{extension}", recursive=True)
             else:
                 # when run_number is not used, select files only based on variable (either CPM or HADs)
-                files = glob.glob(f"{input_path}/{variable}*.{extension}", recursive=True)
+                files = glob.glob(
+                    f"{input_path}/{variable}*.{extension}", recursive=True
+                )
     else:
         if filter_filenames_on_run_number:
             # when run_number is used, use it to select files from CPM file list
-            files = glob.glob(f"{input_path}/*2.2km_{run_number}_*.{extension}", recursive=True)
+            files = glob.glob(
+                f"{input_path}/*2.2km_{run_number}_*.{extension}", recursive=True
+            )
         else:
             # when run_number is not used, select files only based on variable (either CPM or HADs)
             files = glob.glob(f"{input_path}/*.{extension}", recursive=True)
@@ -103,18 +121,27 @@ def clip_dataset(xa, variable, shapefile):
     geodf = gp.read_file(shapefile)
 
     # assign projection
-    xa_mask = xa[variable].rename({"projection_x_coordinate": "x", "projection_y_coordinate": "y"}) \
-        .rio.write_crs('epsg:27700')
+    xa_mask = (
+        xa[variable]
+        .rename({"projection_x_coordinate": "x", "projection_y_coordinate": "y"})
+        .rio.write_crs("epsg:27700")
+    )
 
     # clip and turn back to Dataset with original coordinate names
-    xa = xa_mask.rio.clip(geodf['geometry']).to_dataset().rename({
-        "x": "projection_x_coordinate",
-        "y": "projection_y_coordinate",
-    })
+    xa = (
+        xa_mask.rio.clip(geodf["geometry"])
+        .to_dataset()
+        .rename(
+            {
+                "x": "projection_x_coordinate",
+                "y": "projection_y_coordinate",
+            }
+        )
+    )
 
     try:
         # this is creating issues after clipping for hads
-        del xa[variable].attrs['grid_mapping']
+        del xa[variable].attrs["grid_mapping"]
     except:
         pass
 
@@ -126,27 +153,40 @@ def reformat_file(file, variable):
     Load tif file and reformat xarray into expected format.
     """
     print(f"File: {file} needs rasterio library, trying...")
-    filename = os.path.basename(file).split('_')
+    filename = os.path.basename(file).split("_")
 
-    start = filename[-1].split('-')[0]
-    stop = filename[-1].split('-')[1].split('.')[0]
-    time_index = xr.cftime_range(start, stop, freq='D', calendar='360_day', inclusive='both')
+    start = filename[-1].split("-")[0]
+    stop = filename[-1].split("-")[1].split(".")[0]
+    time_index = xr.cftime_range(
+        start, stop, freq="D", calendar="360_day", inclusive="both"
+    )
 
     try:
-        with xr.open_dataset(file, engine='rasterio') as x:
-            xa = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time", 'band_data': variable}) \
-                .rio.write_crs('epsg:27700')
-            xa.coords['time'] = time_index
+        with xr.open_dataset(file, engine="rasterio") as x:
+            xa = x.rename(
+                {
+                    "x": "projection_x_coordinate",
+                    "y": "projection_y_coordinate",
+                    "band": "time",
+                    "band_data": variable,
+                }
+            ).rio.write_crs("epsg:27700")
+            xa.coords["time"] = time_index
 
     except Exception as e:
         with xr.open_rasterio(file) as x:
-            xa = x.rename({"x": "projection_x_coordinate", "y": "projection_y_coordinate", "band": "time"}) \
-                .rio.write_crs('epsg:27700')
-        xa.coords['time'] = time_index
+            xa = x.rename(
+                {
+                    "x": "projection_x_coordinate",
+                    "y": "projection_y_coordinate",
+                    "band": "time",
+                }
+            ).rio.write_crs("epsg:27700")
+        xa.coords["time"] = time_index
 
-        xa = xa.transpose('time', 'projection_y_coordinate',
-                                     'projection_x_coordinate').to_dataset(
-                name=variable)
+        xa = xa.transpose(
+            "time", "projection_y_coordinate", "projection_x_coordinate"
+        ).to_dataset(name=variable)
 
     return xa
 
@@ -175,13 +215,14 @@ def load_and_merge(date_range, files, variable):
     xarray_list = []
     # Iterate through the variables
     for file in files:
+        filename = os.path.basename(file).split("_")
+        start_file = datetime.strptime(filename[-1].split("-")[0], "%Y%m%d")
+        stop_file = datetime.strptime(
+            filename[-1].split("-")[1].split(".")[0], "%Y%m%d"
+        )
 
-        filename = os.path.basename(file).split('_')
-        start_file = datetime.strptime(filename[-1].split('-')[0], '%Y%m%d')
-        stop_file = datetime.strptime(filename[-1].split('-')[1].split('.')[0], '%Y%m%d')
-
-        start_range = datetime.strptime(date_range[0], '%Y-%m-%d')
-        stop_range = datetime.strptime(date_range[1], '%Y-%m-%d')
+        start_range = datetime.strptime(date_range[0], "%Y-%m-%d")
+        stop_range = datetime.strptime(date_range[1], "%Y-%m-%d")
 
         if (stop_file < start_range) | (start_file > stop_range):
             continue
@@ -189,16 +230,25 @@ def load_and_merge(date_range, files, variable):
         # Load the xarray
         try:
             try:
-                print('Loading and selecting ', file)
-                with xr.open_dataset(file, engine='netcdf4') as ds:
+                print("Loading and selecting ", file)
+                with xr.open_dataset(file, engine="netcdf4") as ds:
                     x = ds.load()
                     dv = list(x.data_vars)
-                    if len(dv) > 1 and dv[0] == os.path.basename(file)[:-3] and dv[1] == "crs":
-                        x = x.rename({"northing": "projection_y_coordinate",
-                                      "easting": "projection_x_coordinate",
-                                      os.path.basename(file)[:-3]: variable}) \
-                            .rio.write_crs('epsg:27700')
-                        x = x.convert_calendar(dim='time', calendar='360_day', align_on='year')
+                    if (
+                        len(dv) > 1
+                        and dv[0] == os.path.basename(file)[:-3]
+                        and dv[1] == "crs"
+                    ):
+                        x = x.rename(
+                            {
+                                "northing": "projection_y_coordinate",
+                                "easting": "projection_x_coordinate",
+                                os.path.basename(file)[:-3]: variable,
+                            }
+                        ).rio.write_crs("epsg:27700")
+                        x = x.convert_calendar(
+                            dim="time", calendar="360_day", align_on="year"
+                        )
                     x = x.sel(time=slice(*date_range))
             except Exception as e:
                 x = reformat_file(file, variable).sel(time=slice(*date_range))
@@ -213,9 +263,13 @@ def load_and_merge(date_range, files, variable):
 
     # Merge all xarrays in the list
     if len(xarray_list) == 0:
-        raise RuntimeError('No files passed the time selection. No merged output produced.')
+        raise RuntimeError(
+            "No files passed the time selection. No merged output produced."
+        )
     else:
         print("Merging arrays from different files...")
-        merged_xarray = xr.concat(xarray_list, dim="time", coords='minimal').sortby('time')
+        merged_xarray = xr.concat(xarray_list, dim="time", coords="minimal").sortby(
+            "time"
+        )
 
     return merged_xarray

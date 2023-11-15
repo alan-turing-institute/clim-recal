@@ -19,19 +19,19 @@ The fileshare will be mounted under
 
 `/Volumes/vmfileshare/`
 
-Instructions on how the mount in other operating systems can be found in [the azure how-tos](https://learn.microsoft.com/en-us/azure/storage/files/storage-how-to-use-files-linux?tabs=smb311). 
+Instructions on how the mount in other operating systems can be found in [the azure how-tos](https://learn.microsoft.com/en-us/azure/storage/files/storage-how-to-use-files-linux?tabs=smb311).
 
 Alternatively, you can access the Azure Portal, go to the dymestorage1 fileshare and click the "Connect" button to get an automatically generated script. This script can be used from within an Azure VM to mount the drive.
 
 ### Pre-downloaded/pre-processed data description
 
-All the data used in this project can be found in the `/Volumes/vmfileshare/ClimateData/` directory. 
+All the data used in this project can be found in the `/Volumes/vmfileshare/ClimateData/` directory.
 
 ```
 .
 ├── Debiased  # Directory where debiased datasets are stored.
 │   └── tasmax
-├── Processed # Directory where processed climate datasets are stored. 
+├── Processed # Directory where processed climate datasets are stored.
 │   ├── CHESS-SCAPE
 │   ├── HadsUKgrid # Resampled HADs grid.
 │   └── UKCP2.2_Reproj # Old reprojections (to delete).
@@ -39,7 +39,7 @@ All the data used in this project can be found in the `/Volumes/vmfileshare/Clim
 │   ├── CHESS-SCAPE
 │   ├── HadsUKgrid
 │   ├── UKCP2.2
-│   └── ceda_fpt_download.py # script to download data from CEDA database. 
+│   └── ceda_fpt_download.py # script to download data from CEDA database.
 ├── Reprojected # Directory where reprojected UKCP datasets are stored.
 │   └── UKCP2.2
 ├── Reprojected_infill # Directory where reprojected UKCP datasets are stored, including the newest infill UKCP2.2 data published in May 2023.
