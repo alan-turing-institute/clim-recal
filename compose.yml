@@ -5,7 +5,7 @@ services:
   jupyter:
     build:
       context: .
-      dockerfile: ./compose/local/Dockerfile
+      dockerfile: ./compose/Dockerfile
       target: clim-recal-base
     ports:
       - "8888:8888"
@@ -18,7 +18,7 @@ services:
   docs:
     build:
       context: .
-      dockerfile: ./compose/local/docs/Dockerfile
+      dockerfile: ./compose/docs/Dockerfile
       # target: clim-recal-docs
     ports:
       - "8080:80"

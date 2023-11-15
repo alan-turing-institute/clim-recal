@@ -29,6 +29,7 @@ dependencies:
     - attrs==22.1.0
     - backports.strenum==1.2.8
     - certifi==2023.07.22
+    - coverage-badge==1.1.0
     - cftime==1.6.2
     - click==8.1.3
     - click-plugins==1.1.1
@@ -41,12 +42,14 @@ dependencies:
     - packaging==21.3
     - pandas==1.5.1
     - pillow==9.4.0
-    - quartodoc==0.6.3
+    - pre-commit==3.5.0
     - pyparsing==3.0.9
     - pyproj==3.4.0
     - python-dateutil==2.8.2
+    - pytest-cov==4.1.0
     - pytest-sugar==0.9.7
     - pytz==2022.5
+    - quartodoc==0.6.3
     - rasterio==1.3.3
     - rioxarray==0.12.3
     - scipy==1.10.0

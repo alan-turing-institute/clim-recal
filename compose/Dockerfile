@@ -26,7 +26,7 @@ ARG env_name=clim-recal
 
 # `py_ver` is not currently used below and is specified in `environment.yaml`
 # here as reminder and clarity if future change needed.
-ARG py_ver=3.11
+ARG py_ver=3.9
 
 # The local_data_path is an absolute local path to ClimateData on the machine hosting running `docker`
 ARG HOST_DATA_PATH=/Volumes/vmfileshare
@@ -77,11 +77,16 @@ RUN activate_custom_env_script=/usr/local/bin/before-notebook.d/activate_custom_
 # Switch to default jupyter user
 USER ${NB_UID}
 
+# This eases running shell commands outside docker following:
+# https://pythonspeed.com/articles/activate-conda-dockerfile/
+
 # Set this for default `conda activate` configuration
 # You can comment this line to keep the default environment in Terminal
 RUN echo "conda activate ${env_name}" >> "${HOME}/.bashrc"
 
 RUN cd python/debiasing && git submodule update --init --recursive
+
+# SHELL ["conda", "run", "-n", "clim-recal", "/bin/bash", "-c"]
 
 
 # This will use the default launch as discussed in
