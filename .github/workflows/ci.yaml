@@ -6,6 +6,9 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   CONDA_ENV_NAME: clim-recal
   MIN_PYTHON_VERSION: 3.9
+  COVERAGE_SVG_FOLDER: docs/assets/
+  COVERAGE_SVG_FILE_NAME: coverage.svg
+  COVERAGE_SVG_PATH: ${{ env.COVERAGE_SVG_FOLDER }}${{ env.COVERAGE_SVG_FILE_NAME }}
 
 on:
   pull_request:
@@ -65,13 +68,13 @@ jobs:
 
       - name: Copy test coverage results
         run: |
-          docker cp ${{ env.jupyter_id }}:app/docs/assets/coverage.svg docs/assets/
+          docker cp ${{ env.jupyter_id }}:${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
 
       - name: Archive coverage svg
         uses: actions/upload-artifact@v3
         with:
           name: coverage-badge
-          path: docs/assets/coverage.svg
+          path: ${{ env.COVERAGE_SVG_PATH }}
 
       - name: Tear down the Stack
         run: docker compose down
