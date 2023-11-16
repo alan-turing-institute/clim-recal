@@ -10,11 +10,11 @@ project:
     - "!clim-recal.Rproj"
     - "R/README.md"
     - "R/misc/Identifying_Runs.md"
+    - "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
     - "docs/reference"
     - "docs/pipeline.qmd"
     - "docs/contributing.md"
-      # - "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
-    # - "python/README.md"
+    - "python/README.md"
 
 toc: True
 number-sections: True
@@ -43,10 +43,10 @@ website:
             text: Overview
           - href: "R/misc/Identifying_Runs.md"
             text: Identifying Runs
-              # - section: "Comparing R and Python"
-              #   contents:
-              #     - href: "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
-              #       text: "WIP Comparing HADs grids"
+          - section: "Comparing R and Python"
+            contents:
+              - href: "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
+                text: "WIP Comparing HADs grids"
 
       - section: "python"
         contents:

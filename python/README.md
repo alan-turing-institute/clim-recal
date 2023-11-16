@@ -12,7 +12,7 @@ default grid in `data/rcp85_land-cpm_uk_2.2km_grid.nc`).
 The script runs under the conda environment created on the main [README.md](../README.md) and has several options that can be understood by
 running the following from the `resampling` directory:
 
-```console
+```sh
 $ python resampling_hads.py --help
 
 usage: resampling_hads.py [-h] --input INPUT [--output OUTPUT] [--grid_data GRID_DATA]
@@ -34,7 +34,7 @@ Furthermore, the layer/variable to be resampled must be on the beginning of the 
 
 For example, to run the resampling on `tasmax` daily data found in the fileshare (https://dymestorage1.file.core.windows.net/vmfileshare).
 
-```console
+```sh
 $ cd python/resampling
 $ python resampling_hads.py --input /Volumes/vmfileshare/ClimateData/Raw/HadsUKgrid/tasmax/day --output <local-directory-path>
 ```
@@ -63,7 +63,7 @@ module written by Benjamin Thomas Schwertfeger's , which has
 been modified to function with the dataset used in the clim-recal project. This library has been included as a
 submodule to this project, so you must run the following command to pull the submodules required.
 
-```console
+```sh
 $ cd debiasing
 $ git submodule update --init --recursive
 ```
@@ -76,18 +76,18 @@ It takes as input observation data (HADs data) and modelled data (historical CPM
 
 The scripts can be run from the command line using the following arguments:
 
-```consle
+```sh
 $ python3 preprocess_data.py --mod <path to modelled datasets> --obs <path to observation datasets> --shp <shapefile> --out <output file path> -v <variable> -u <unit> -r <CPM model run number> --calib_dates <date range for calibration> --valid_dates <date range for validation>
 
 $ python3 run_cmethods.py --input_data_folder <input files directory> --out <output directory> -m <method> -v <variable> -g <group> -k <kind> -n <number of quantiles> -p <number of processes>
 ```
 
 For more details on the scripts and options you can run:
-```console
+```sh
 $ python3 preprocess_data.py --help
 ```
 and
-```console
+```sh
 python3 run_cmethods.py --help
 ```
 **Main Functionality**:
@@ -112,7 +112,7 @@ The `run_cmethods.py` script performs the following steps:
 **Working example**.
 
 Example of how to run the two scripts using data stored in the Azure fileshare, running the scripts locally (uses input data that have been cropped to contain only the city of Glasgow. The two scripts will debias only the `tasmax` variable, run 05 of the CPM, for calibration years 1980-2009 and validation years 2010-2019. It uses the `quantile_delta_mapping` debiasing method:
-```console
+```sh
 $ python3 preprocess_data.py --mod /Volumes/vmfileshare/ClimateData/Cropped/three.cities/CPM/Glasgow/ --obs /Volumes/vmfileshare/ClimateData/Cropped/three.cities/Hads.original360/Glasgow/ -v tasmax --out ./preprocessed_data/ --calib_dates 19800101-20091230 --valid_dates 20100101-20191230 --run_number 05
 
 $ python3 run_cmethods.py --input_data_folder ./preprocessed_data/  --out ./debiased_data/  --method quantile_delta_mapping --v tasmax -p 4
@@ -122,11 +122,11 @@ $ python3 run_cmethods.py --input_data_folder ./preprocessed_data/  --out ./debi
 
 Testing for `python` components uses `pytest`, with configuration specified in `clim-recal/python/.pytest.ini`. To run tests, ensure the `environment.yml` environment is installed and activated, then run `pytest` from within the `clim-recal/python` checkout directory. Note: tests are skipped unless run on a specific linux server wth data mounted to a specific path.
 
-```console
-$ cd clim-recal
-$ conda activate clim-recal
-$ cd python
-$ pytest
+```sh
+(clim-recal)$ cd clim-recal
+(clim-recal)$ conda activate clim-recal
+(clim-recal)$ cd python
+(clim-recal)$ pytest
 ...sss........sss.....                                                         [100%]
 ============================== short test summary info ===============================
 SKIPPED [1] <doctest test_debiasing.RunConfig.mod_path[0]>:2: requires linux server mount paths

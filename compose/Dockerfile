@@ -22,18 +22,16 @@ ENV LC_ALL en_GB.UTF-8
 ENV LANG en_GB.UTF-8
 ENV LANGUAGE en_GB.UTF-8
 ENV SHELL /bin/bash
-ARG env_name=clim-recal
-
-# `py_ver` is not currently used below and is specified in `environment.yaml`
-# here as reminder and clarity if future change needed.
-ARG py_ver=3.9
 
 # The local_data_path is an absolute local path to ClimateData on the machine hosting running `docker`
 ARG HOST_DATA_PATH=/Volumes/vmfileshare
 
 # The local_data_path is an absolute path to mount ClimateData within `docker`
-ARG DOCKER_DATA_PATH=/mnt/vmfileshare
+ARG DOCKER_DATA_PATH=/mnt/vmfileshareRG env_name=clim-recal
 
+# `py_ver` is not currently used below and is specified in `environment.yaml`
+# here as reminder and clarity if future change needed.
+ARG py_ver=3.9
 
 USER root
 
@@ -84,46 +82,13 @@ USER ${NB_UID}
 # You can comment this line to keep the default environment in Terminal
 RUN echo "conda activate ${env_name}" >> "${HOME}/.bashrc"
 
+# Try adding access to drive files if mounted
+# RUN --mount=type=bind,source=$HOST_DATA_PATH,target=$DOCKER_DATA_PATH
+
+# RUN --mount=type=bind,source=$HOST_DATA_PATH,target=$DOCKER_DATA_PATH \
+#  find /build/jars -type f -name '*.jar' -maxdepth 1  -print0 \
+#  | xargs -0 --no-run-if-empty --replace=source cp --force source >"${INSTALL_PATH}/modules/"
+
+
+
 RUN cd python/debiasing && git submodule update --init --recursive
-
-# SHELL ["conda", "run", "-n", "clim-recal", "/bin/bash", "-c"]
-
-
-# This will use the default launch as discussed in
-# https://jupyter-docker-stacks.readthedocs.io/en/latest/using/running.html
-
-# FROM clim-recal-base as clim-recal-docs
-#
-# ARG port=4200
-#
-# USER root
-#
-# RUN sudo apt-get -y install \
-#     pandoc \
-#     pandoc-citeproc \
-#     curl \
-#     gdebi-core \
-#     r-base \
-#     r-base-dev \
-#     r-cran-littler \
-#     && rm -rf /var/lib/apt/lists/*
-#
-# # RUN Rscript -e \
-# # "install.packages(c('shiny', 'jsonlite', 'renv', 'knitr', 'rmarkdown', 'quarto'), repos='https://cran.rstudio.com')"
-# SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-#
-# RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
-#   curl -LO https://quarto.org/download/latest/quarto-linux-${arch}.deb && \
-#   gdebi --non-interactive quarto-linux-${arch}.deb
-#
-# #    wget "http://...../${arch}.deb"
-#
-# # RUN curl -LO https://quarto.org/download/latest/quarto-linux-amd64.deb
-# # RUN gdebi --non-interactive quarto-linux-${arch}.deb
-#
-# EXPOSE ${port}:${port}
-#
-# USER ${NB_UID}
-#
-# # CMD ["quarto", "preview", "--port={port}"]
-# CMD ["bash"]
