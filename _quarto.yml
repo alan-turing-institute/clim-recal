@@ -12,6 +12,7 @@ project:
     - "R/misc/Identifying_Runs.md"
     - "docs/reference"
     - "docs/pipeline.qmd"
+    - "docs/contributing.md"
       # - "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
     # - "python/README.md"
 
@@ -34,6 +35,8 @@ website:
         href: "README.md"
       - text: "Pipeline"
         href: "docs/pipeline.qmd"
+      - text: "Contributing"
+        href: "docs/contributing.md"
       - section: "R"
         contents:
           - href: "R/README.md"
