@@ -5,7 +5,7 @@
 CHECKOUT_PATH=$HOME/code/clim-recal
 ANACONDA_INSTALL_FOLDER=$HOME/code/anaconda-install
 ANACONDA_INSTALL_SCRIPT_FILE_NAME=Anaconda3-2023.07-2-Linux-x86_64.sh
-ANACONDA_INSTALL_URL=https://repo.anaconda.com/archive/$ANACONDA_INSTALL_SCRIPT_FILE_NAME			
+ANACONDA_INSTALL_URL=https://repo.anaconda.com/archive/$ANACONDA_INSTALL_SCRIPT_FILE_NAME
 VMFILESHARE_PATH=/mnt/vmfileshare
 AZURE_STORAGE_NAME=dymestorage1
 
@@ -37,7 +37,7 @@ function set_azure_credentials {
 
 function mount_vmfileshare {
     echo $VMFILESHARE_PATH is needed to run default model configurations
-    echo 
+    echo
 
     while true; do
         read -p "Would you like to mount vmfileshare to $VMFILESHARE_PATH (needed for running models)? " yn
@@ -54,7 +54,7 @@ function mount_vmfileshare {
 
     read -s -p "Access key for $AZURE_STORAGE_NAME: " PASSWORD
     echo
-    
+
     if [ ! -d "/etc/smbcredentials" ]; then
 	echo Createing /etc/smbcredentials
         sudo mkdir /etc/smbcredentials

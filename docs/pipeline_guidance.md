@@ -36,7 +36,7 @@ R --version
 
 #### Setting up your python environment
 
-For your python environment, we provide an Anaconda environment file for ease-of-use. 
+For your python environment, we provide an Anaconda environment file for ease-of-use.
 ```
 conda env create -f environment.yml
 ```
@@ -56,8 +56,8 @@ parallel --version
 
 #### The cmethods library
 
-This repository contains a python script used to run debiasing in climate data using a fork of the [original python-cmethods](https://github.com/btschwertfeger/python-cmethods) module written by Benjamin Thomas Schwertfeger's , which has 
-been modified to function with the dataset used in the clim-recal project. This library has been included as a 
+This repository contains a python script used to run debiasing in climate data using a fork of the [original python-cmethods](https://github.com/btschwertfeger/python-cmethods) module written by Benjamin Thomas Schwertfeger's , which has
+been modified to function with the dataset used in the clim-recal project. This library has been included as a
 submodule to this project, so you must run the following command to pull the submodules required.
 
 ```
@@ -100,7 +100,7 @@ The HADs data and the UKCP projections have different resolution and coordinate 
 The first step in our analysis pipeline is to reproject the UKCP datasets to the British National Grid coordinate system. For this purpose, we utilize the Geospatial Data Abstraction Library (GDAL), designed for reading and writing raster and vector geospatial data formats.
 
 > **Warning**:
-> Note that, to reproduce our exact pipeline, we switch environments here as explained in the requirements. 
+> Note that, to reproduce our exact pipeline, we switch environments here as explained in the requirements.
 > ```
 > conda activate gdal_env
 > ```
@@ -127,7 +127,7 @@ python resampling_hads.py --input path_to_reprojected --grid path_to_grid_file -
 ### Preparing the bias correction and assessment
 
 **Spatial cropping**
-Because the bias correction process is computationally intensive, handling large datasets can be challenging and time-consuming. Therefore, to make the pipeline more manageable and efficient, it is recommended to split the data into smaller subsets. For the purposes of our example pipeline, we've opted for reducing the data to individual city boundaries. To crop you need to adjust the paths in `Cropping_Rasters_to_three_cities.R` script to fit 1your own directory sturcture. The cropping is implemented in the `cpm_read_crop` and `hads_read_crop` functions. 
+Because the bias correction process is computationally intensive, handling large datasets can be challenging and time-consuming. Therefore, to make the pipeline more manageable and efficient, it is recommended to split the data into smaller subsets. For the purposes of our example pipeline, we've opted for reducing the data to individual city boundaries. To crop you need to adjust the paths in `Cropping_Rasters_to_three_cities.R` script to fit 1your own directory sturcture. The cropping is implemented in the `cpm_read_crop` and `hads_read_crop` functions.
 
 ```
 Rscript Cropping_Rasters_to_three_cities.R
@@ -150,7 +150,7 @@ The preprocess_data.py script also aligns the calendars of the historical simula
 Note: By March 2023 we have only implemented the [python-cmethods](https://github.com/alan-turing-institute/python-cmethods) library.
 
 
-The [run_cmethods.py](../debiasing/run_cmethods.py) allow us to adjusts climate biases in climate data using the python-cmethods library. It takes as input observation data (HADs data), control data (historical UKCP data), and scenario data (future UKCP data), 
+The [run_cmethods.py](../debiasing/run_cmethods.py) allow us to adjusts climate biases in climate data using the python-cmethods library. It takes as input observation data (HADs data), control data (historical UKCP data), and scenario data (future UKCP data),
 and applies a correction method to the scenario data. The resulting output is saved as a `.nc` to a specified directory. The script will also produce a time-series and a map plot of the debiased data. To run this you need to replace `path_to_validation_data` with the output directories of the previous step and specify `path_to_corrected_data` as your output directory for the bias corrected data. You can also specify your preferred `bias_correction_method` (e.g. quantile_delta_mapping).
 
 ```
@@ -163,5 +163,4 @@ The run_cmethods.py script loops over the time periods and applies debiasing in 
   - Saves the resulting output to the specified directory.
   - Creates diagnotic figues of the output dataset (time series and time dependent maps) and saves it into the specified directory.
 
-For each 10 year time period it will produce an `.nc` output file with the adjusted data and a time-series plot and a time dependent map plot of the adjusted data. 
-    
+For each 10 year time period it will produce an `.nc` output file with the adjusted data and a time-series plot and a time dependent map plot of the adjusted data.

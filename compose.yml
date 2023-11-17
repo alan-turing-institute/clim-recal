@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+
+  jupyter:
+    build:
+      context: .
+      dockerfile: ./compose/Dockerfile
+      target: clim-recal-base
+    ports:
+      - "8888:8888"
+    # volumes:
+      # - climate_data:/mnt/vmfileshare
+      # - type: bind
+      #   source: /Volumes/vmfileshare
+      #   target: /mnt/vmfileshare
+
+  docs:
+    build:
+      context: .
+      dockerfile: ./compose/docs/Dockerfile
+      # target: clim-recal-docs
+    ports:
+      - "8080:80"
+      # command: quarto preview --port 8080
+
+# volumes:
+#   climate_data:
+#     driver: local
+#     driver_opts:
+#       type: none
+#       device: /Volumes/vmfileshare
+#       o: bind

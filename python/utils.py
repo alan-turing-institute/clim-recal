@@ -1,22 +1,22 @@
-"""
-Utility functions.
-
-"""
-from typing import Final, Any, Iterable, Generator
+"""Utility functions."""
 from datetime import date, datetime
 from pathlib import Path
+from typing import Any, Final, Generator, Iterable, Optional, Union
+
+DateType = Union[date, str]
+DATE_FORMAT_STR: Final[str] = "%Y%m%d"
+DATE_FORMAT_SPLIT_STR: Final[str] = "-"
 
 
-DateType = date | str
-DATE_FORMAT_STR: Final[str] = '%Y%m%d'
-DATE_FORMAT_SPLIT_STR: Final[str] = '-'
-
-    
-def date_to_str(date_obj: DateType, in_format_str: str = DATE_FORMAT_STR, out_format_str: str = DATE_FORMAT_STR) -> str:
+def date_to_str(
+    date_obj: DateType,
+    in_format_str: str = DATE_FORMAT_STR,
+    out_format_str: str = DATE_FORMAT_STR,
+) -> str:
     """Return a `str` in `date_format_str` of `date_obj`.
 
-    Example
-    -------
+    Examples
+    --------
 
     >>> date_to_str('20100101')
     '20100101'
@@ -31,15 +31,15 @@ def date_to_str(date_obj: DateType, in_format_str: str = DATE_FORMAT_STR, out_fo
 
 def date_range_to_str(
     start_date: DateType,
-    end_date: DateType, 
+    end_date: DateType,
     split_str: str = DATE_FORMAT_SPLIT_STR,
     in_format_str: str = DATE_FORMAT_STR,
     out_format_str: str = DATE_FORMAT_STR,
 ) -> str:
     """Take `start_date` and `end_date` `str` or `date` instances and return a range `str`.
 
-    Example
-    -------
+    Examples
+    --------
 
     >>> date_range_to_str('20100101', '20100330')
     '20100101-20100330'
@@ -47,13 +47,13 @@ def date_range_to_str(
     '20100101-20100330'
 
     """
-    start_date = date_to_str(start_date,
-        in_format_str=in_format_str,
-        out_format_str=out_format_str)
-    end_date = date_to_str(end_date,
-        in_format_str=in_format_str,
-        out_format_str=out_format_str)
-    return f'{start_date}{split_str}{end_date}'
+    start_date = date_to_str(
+        start_date, in_format_str=in_format_str, out_format_str=out_format_str
+    )
+    end_date = date_to_str(
+        end_date, in_format_str=in_format_str, out_format_str=out_format_str
+    )
+    return f"{start_date}{split_str}{end_date}"
 
 
 def iter_to_tuple_strs(iter_var: Iterable[Any]) -> tuple[str, ...]:
@@ -69,7 +69,9 @@ def iter_to_tuple_strs(iter_var: Iterable[Any]) -> tuple[str, ...]:
     return tuple(str(obj) for obj in iter_var)
 
 
-def path_iterdir(path: Path, strict: bool = False) -> Generator[Path | None, None, None]:
+def path_iterdir(
+    path: Path, strict: bool = False
+) -> Generator[Optional[Path], None, None]:
     """Return an `Generator` after ensuring `path` exists.
 
     Examples
@@ -102,4 +104,4 @@ def path_iterdir(path: Path, strict: bool = False) -> Generator[Path | None, Non
         if strict:
             raise error
         else:
-            return 
+            return

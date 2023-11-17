@@ -3,12 +3,13 @@ Test generating and running `debiasing` scripts
 
 """
 import subprocess
+import sys
 from dataclasses import dataclass
 from datetime import date
-from enum import StrEnum, auto
+from enum import auto
 from os import PathLike, chdir
 from pathlib import Path
-from typing import Final, Generator
+from typing import Final, Generator, Optional, Union
 
 import pytest
 from utils import (
@@ -16,10 +17,14 @@ from utils import (
     DATE_FORMAT_STR,
     DateType,
     date_range_to_str,
-    date_to_str,
     iter_to_tuple_strs,
     path_iterdir,
 )
+
+if sys.version_info >= (3, 11):
+    from enum import StrEnum
+else:
+    from backports.strenum import StrEnum
 
 DATA_PATH_DEFAULT: Final[Path] = Path(
     "/mnt/vmfileshare/ClimateData/Cropped/three.cities/"
@@ -207,9 +212,9 @@ class RunConfig:
         self,
         start_date: DateType,
         end_date: DateType,
-        in_format_str: str | None = None,
-        out_format_str: str | None = None,
-        split_str: str | None = None,
+        in_format_str: Optional[str] = None,
+        out_format_str: Optional[str] = None,
+        split_str: Optional[str] = None,
     ) -> str:
         """Return date range as `str` from `calib_date_start` to `calib_date_end`.
 
@@ -233,9 +238,9 @@ class RunConfig:
         self,
         start_date: DateType,
         end_date: DateType,
-        in_format_str: str | None = None,
-        out_format_str: str | None = None,
-        split_str: str | None = None,
+        in_format_str: Optional[str] = None,
+        out_format_str: Optional[str] = None,
+        split_str: Optional[str] = None,
     ) -> str:
         """Return date range as `str` from `valid_date_start` to `valid_date_end`.
 
@@ -259,9 +264,9 @@ class RunConfig:
         self,
         start_date: DateType,
         end_date: DateType,
-        in_format_str: str | None = None,
-        out_format_str: str | None = None,
-        split_str: str | None = None,
+        in_format_str: Optional[str] = None,
+        out_format_str: Optional[str] = None,
+        split_str: Optional[str] = None,
     ) -> str:
         """Return date range as `str` from `calib_date_start` to `calib_date_end`.
 
@@ -286,12 +291,12 @@ class RunConfig:
             split_str=split_str,
         )
 
-    def mod_path(self, city: str | None = None) -> Path:
+    def mod_path(self, city: Optional[str] = None) -> Path:
         """Return city estimates path.
 
         Example
         -------
-        >>> if is_platform_darwin:
+        >>> if not is_climate_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
         >>> config.mod_path()
@@ -302,12 +307,12 @@ class RunConfig:
         city = city if city else self.city
         return self.data_path / self.mod_folder / city
 
-    def obs_path(self, city: str | None = None) -> Path:
+    def obs_path(self, city: Optional[str] = None) -> Path:
         """Return city observations path.
 
         Example
         -------
-        >>> if is_platform_darwin:
+        >>> if not is_climate_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
         >>> config.obs_path()
@@ -320,15 +325,15 @@ class RunConfig:
 
     def preprocess_out_path(
         self,
-        city: str | None = None,
-        run: str | None = None,
-        variable: str | None = None,
+        city: Optional[str] = None,
+        run: Optional[str] = None,
+        variable: Optional[str] = None,
     ) -> Path:
         """Return path to save results.
 
         Example
         -------
-        >>> if is_platform_darwin:
+        >>> if not is_climate_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
         >>> config.preprocess_out_path()
@@ -345,8 +350,8 @@ class RunConfig:
 
     def cmethods_out_path(
         self,
-        city: str | None = None,
-        run: str | None = None,
+        city: Optional[str] = None,
+        run: Optional[str] = None,
     ) -> Path:
         """Return path to save cmethods results.
 
@@ -376,14 +381,14 @@ class RunConfig:
 
     def to_cli_preprocess_tuple(
         self,
-        variable: str | None = None,
-        run: str | None = None,
-        city: str | None = None,
-        calib_start: DateType | None = None,
-        calib_end: DateType | None = None,
-        valid_start: DateType | None = None,
-        valid_end: DateType | None = None,
-    ) -> tuple[str | PathLike, ...]:
+        variable: Optional[str] = None,
+        run: Optional[str] = None,
+        city: Optional[str] = None,
+        calib_start: Optional[DateType] = None,
+        calib_end: Optional[DateType] = None,
+        valid_start: Optional[DateType] = None,
+        valid_end: Optional[DateType] = None,
+    ) -> tuple[Union[str, PathLike], ...]:
         """Generate a `tuple` of `str` for a command line command.
 
         Note
@@ -434,13 +439,13 @@ class RunConfig:
 
     def to_cli_preprocess_tuple_strs(
         self,
-        variable: str | None = None,
-        run: str | None = None,
-        city: str | None = None,
-        calib_start: DateType | None = None,
-        calib_end: DateType | None = None,
-        valid_start: DateType | None = None,
-        valid_end: DateType | None = None,
+        variable: Optional[str] = None,
+        run: Optional[str] = None,
+        city: Optional[str] = None,
+        calib_start: Optional[DateType] = None,
+        calib_end: Optional[DateType] = None,
+        valid_start: Optional[DateType] = None,
+        valid_end: Optional[DateType] = None,
     ) -> tuple[str, ...]:
         """Generate a command line interface `str` `tuple` a test example.
 
@@ -464,13 +469,13 @@ class RunConfig:
 
     def to_cli_preprocess_str(
         self,
-        variable: str | None = None,
-        run: str | None = None,
-        city: str | None = None,
-        calib_start: DateType | None = None,
-        calib_end: DateType | None = None,
-        valid_start: DateType | None = None,
-        valid_end: DateType | None = None,
+        variable: Optional[str] = None,
+        run: Optional[str] = None,
+        city: Optional[str] = None,
+        calib_start: Optional[DateType] = None,
+        calib_end: Optional[DateType] = None,
+        valid_start: Optional[DateType] = None,
+        valid_end: Optional[DateType] = None,
     ) -> str:
         """Generate a command line interface str as a test example.
 
@@ -494,12 +499,14 @@ class RunConfig:
             )
         )
 
-    def yield_mod_folder(self, city: str | None = None) -> Generator[Path, None, None]:
+    def yield_mod_folder(
+        self, city: Optional[str] = None
+    ) -> Generator[Path, None, None]:
         """`Iterable` of all `Path`s in `self.mod_folder`.
 
         Example
         -------
-        >>> if is_platform_darwin:
+        >>> if not is_climate_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
         >>> len(tuple(config.yield_mod_folder())) == MOD_FOLDER_FILES_COUNT_CORRECT
@@ -508,12 +515,14 @@ class RunConfig:
         city = city if city else self.city
         return path_iterdir(self.obs_path(city=city))
 
-    def yield_obs_folder(self, city: str | None = None) -> Generator[Path, None, None]:
+    def yield_obs_folder(
+        self, city: Optional[str] = None
+    ) -> Generator[Path, None, None]:
         """`Iterable` of all `Path`s in `self.obs_folder`.
 
         Example
         -------
-        >>> if is_platform_darwin:
+        >>> if not is_climate_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
         >>> len(tuple(config.yield_obs_folder())) == OBS_FOLDER_FILES_COUNT_CORRECT
@@ -524,15 +533,15 @@ class RunConfig:
 
     def yield_preprocess_out_folder(
         self,
-        city: str | None = None,
-        run: str | None = None,
-        variable: str | None = None,
+        city: Optional[str] = None,
+        run: Optional[str] = None,
+        variable: Optional[str] = None,
     ) -> Generator[Path, None, None]:
         """`Iterable` of all `Path`s in `self.preprocess_out_folder`.
 
         Example
         -------
-        >>> if is_platform_darwin:
+        >>> if not is_climate_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
         >>> (len(tuple(config.yield_preprocess_out_folder())) ==
@@ -553,14 +562,14 @@ class RunConfig:
 
     def to_cli_run_cmethods_tuple(
         self,
-        city: str | None = None,
-        run: str | None = None,
-        variable: str | None = None,
-        method: str | None = None,
-        input_data_path: PathLike | None = None,
-        cmethods_out_path: PathLike | None = None,
-        processors: int | None = None,
-    ) -> tuple[str | PathLike, ...]:
+        city: Optional[str] = None,
+        run: Optional[str] = None,
+        variable: Optional[str] = None,
+        method: Optional[str] = None,
+        input_data_path: Optional[PathLike] = None,
+        cmethods_out_path: Optional[PathLike] = None,
+        processors: Optional[int] = None,
+    ) -> tuple[Union[str, PathLike], ...]:
         """Generate a `tuple` of `str` for a command line command.
 
         Note
@@ -609,13 +618,13 @@ class RunConfig:
 
     def to_cli_run_cmethods_tuple_strs(
         self,
-        city: str | None = None,
-        run: str | None = None,
-        variable: str | None = None,
-        method: str | None = None,
-        input_data_path: PathLike | None = None,
-        cmethods_out_path: PathLike | None = None,
-        processors: int | None = None,
+        city: Optional[str] = None,
+        run: Optional[str] = None,
+        variable: Optional[str] = None,
+        method: Optional[str] = None,
+        input_data_path: Optional[PathLike] = None,
+        cmethods_out_path: Optional[PathLike] = None,
+        processors: Optional[int] = None,
     ) -> tuple[str, ...]:
         """Generate a command line interface `str` `tuple` a test example.
 
@@ -639,13 +648,13 @@ class RunConfig:
 
     def to_cli_run_cmethods_str(
         self,
-        city: str | None = None,
-        run: str | None = None,
-        variable: str | None = None,
-        method: str | None = None,
-        input_data_path: PathLike | None = None,
-        cmethods_out_path: PathLike | None = None,
-        processors: int | None = None,
+        city: Optional[str] = None,
+        run: Optional[str] = None,
+        variable: Optional[str] = None,
+        method: Optional[str] = None,
+        input_data_path: Optional[PathLike] = None,
+        cmethods_out_path: Optional[PathLike] = None,
+        processors: Optional[int] = None,
     ) -> str:
         """Generate a command line interface str as a test example.
 

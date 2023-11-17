@@ -1,6 +1,6 @@
-# Welcome to the `clim-recal` repository! 
+# Welcome to the `clim-recal` repository!
 
-Welcome to `clim-recal`, a specialized resource designed to tackle systematic errors or biases in **Regional Climate Models (RCMs)**. As researchers, policy-makers, and various stakeholders explore publicly available RCMs, they need to consider the challenge of biases that can affect the accurate representation of climate change signals. 
+Welcome to `clim-recal`, a specialized resource designed to tackle systematic errors or biases in **Regional Climate Models (RCMs)**. As researchers, policy-makers, and various stakeholders explore publicly available RCMs, they need to consider the challenge of biases that can affect the accurate representation of climate change signals.
 
 `clim-recal` provides both a **broad review** of available bias correction methods as well as **software**, **practical tutorials** and **guidance** that helps users apply these methods methods to various datasets.
 
@@ -69,15 +69,15 @@ This will display all available options for the script, including their purposes
 
 ### Quarto
 
-We also hope to provide comprehensive documentation via [`quarto`](https://quarto.org/). This is a work in progress, but if you would like to render documentation locally you can do so via `quarto` and [`conda`](https://docs.conda.io): 
+We also hope to provide comprehensive documentation via [`quarto`](https://quarto.org/). This is a work in progress, but if you would like to render documentation locally you can do so via `quarto` and [`conda`](https://docs.conda.io):
 
 1. Ensure you have a [local installation](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) of `conda` or [`anaconda`](https://www.anaconda.com/download) .
 1. Checkout a copy of our `git` repository
-1. Create a local `conda` `environment` via our `environment.yml` file. This should install `quarto`. 
+1. Create a local `conda` `environment` via our `environment.yml` file. This should install `quarto`.
 1. Activate that environment
 1. Run `quarto preview`.
 
-Below are example `bash` shell commands to render locally after installing `conda`:  
+Below are example `bash` shell commands to render locally after installing `conda`:
 
 ```sh
 $ git clone https://github.com/alan-turing-institute/clim-recal
@@ -95,7 +95,7 @@ We appreciate your patience and encourage you to check back for updates on our o
 The UK Climate Projections 2018 (UKCP18) dataset offers insights into the potential climate changes in the UK. UKCP18 is an advancement of the UKCP09 projections and delivers the latest evaluations of the UK's possible climate alterations in land and marine regions throughout the 21st century. This crucial information aids in future Climate Change Risk Assessments and supports the UK’s adaptation to climate change challenges and opportunities as per the National Adaptation Programme.
 
 ### HADS
-[HadUK-Grid](https://www.metoffice.gov.uk/research/climate/maps-and-data/data/haduk-grid/haduk-grid) is a comprehensive collection of climate data for the UK, compiled from various land surface observations across the country. This data is organized into a uniform grid to ensure consistent coverage throughout the UK at up to 1km x 1km resolution. The dataset, spanning from 1836 to the present, includes a variety of climate variables such as air temperature, precipitation, sunshine, and wind speed, available on daily, monthly, seasonal, and annual timescales. 
+[HadUK-Grid](https://www.metoffice.gov.uk/research/climate/maps-and-data/data/haduk-grid/haduk-grid) is a comprehensive collection of climate data for the UK, compiled from various land surface observations across the country. This data is organized into a uniform grid to ensure consistent coverage throughout the UK at up to 1km x 1km resolution. The dataset, spanning from 1836 to the present, includes a variety of climate variables such as air temperature, precipitation, sunshine, and wind speed, available on daily, monthly, seasonal, and annual timescales.
 
 ### Geographical Dataset
 The geographical dataset can be used for visualising climate data. It mainly includes administrative boundaries published by the Office for National Statistics (ONS). The dataset is sharable under the [Open Government Licence v.3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) and is available for download via this [link](https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom_2022/FeatureServer/replicafilescache/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom_2022_7279368953270783580.zip). We include a copy in the `data/Geofiles` folder for convenience. In addition, the clips for three cities' boundaries from the same dataset are copied to `three.cities` subfolder. 
@@ -104,21 +104,21 @@ The geographical dataset can be used for visualising climate data. It mainly inc
 
 Regional climate models contain systematic errors, or biases in their output [1]. Biases arise in RCMs for a number of reasons, such as the assumptions in the general circulation models (GCMs), and in the downscaling process from GCM to RCM [1,2].
 
-Researchers, policy-makers and other stakeholders wishing to use publicly available RCMs need to consider a range of "bias correction” methods (sometimes referred to as "bias adjustment" or "recalibration"). Bias correction methods offer a means of adjusting the outputs of RCM in a manner that might better reflect future climate change signals whilst preserving the natural and internal variability of climate [2]. 
+Researchers, policy-makers and other stakeholders wishing to use publicly available RCMs need to consider a range of "bias correction” methods (sometimes referred to as "bias adjustment" or "recalibration"). Bias correction methods offer a means of adjusting the outputs of RCM in a manner that might better reflect future climate change signals whilst preserving the natural and internal variability of climate [2].
 
-Part of the `clim-recal` project is to review several bias correction methods. This work is ongoing and you can find our initial [taxonomy here](https://docs.google.com/spreadsheets/d/18LIc8omSMTzOWM60aFNv1EZUl1qQN_DG8HFy1_0NdWk/edit?usp=sharing). When we've completed our literature review, it will be submitted for publication in an open peer-reviewed journal. 
+Part of the `clim-recal` project is to review several bias correction methods. This work is ongoing and you can find our initial [taxonomy here](https://docs.google.com/spreadsheets/d/18LIc8omSMTzOWM60aFNv1EZUl1qQN_DG8HFy1_0NdWk/edit?usp=sharing). When we've completed our literature review, it will be submitted for publication in an open peer-reviewed journal.
 
-Our work is however, just like climate data, intended to be dynamic, and we are in the process of setting up a pipeline for researchers creating new methods of bias correction to be able to submit their methods for inclusion on in the `clim-recal` repository. 
+Our work is however, just like climate data, intended to be dynamic, and we are in the process of setting up a pipeline for researchers creating new methods of bias correction to be able to submit their methods for inclusion on in the `clim-recal` repository.
 
- 1. Senatore et al., 2022, https://doi.org/10.1016/j.ejrh.2022.101120 
- 2. Ayar et al., 2021, https://doi.org/10.1038/s41598-021-82715-1 
+ 1. Senatore et al., 2022, https://doi.org/10.1016/j.ejrh.2022.101120
+ 2. Ayar et al., 2021, https://doi.org/10.1038/s41598-021-82715-1
 
 
 ## Contributing
 
-We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an issue or [get in touch](mailto:clim-recal@turing.ac.uk)! 
+We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an issue or [get in touch](mailto:clim-recal@turing.ac.uk)!
 
-### Adding to the conda environment file 
+### Adding to the conda environment file
 
 To use `R` in `anaconda` you may need to specify the `conda-forge` channel:
 
