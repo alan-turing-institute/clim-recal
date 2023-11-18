@@ -83,16 +83,16 @@ jobs:
         run: docker compose down
 
   docs:
-    # needs: [linter, pytest]
+    needs: [linter, pytest]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      # - name: Download coverage svg
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: coverage-badge
-      #     path: ${{ env.COVERAGE_SVG_PATH }}
+      - name: Download coverage svg
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-badge
+          path: ${{ env.COVERAGE_SVG_PATH }}
       #
       # - name: Set up conda environment
       #   uses: conda-incubator/setup-miniconda@v2
@@ -125,7 +125,7 @@ jobs:
           docker compose up --detach
           # docker cp $(docker compose ps -q docs):/app/_site/ .
           docker cp $(docker compose ps -q docs):/usr/local/apache2/htdocs/ ${{ env.GH_PAGE_PATH }}
-          # cp ${{ env.jupyter_id }}:app/docs/assets/coverage.svg ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
+          cp ${{ env.jupyter_id }}:app/docs/assets/coverage.svg ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
 
       - name: Publish
         uses: peaceiris/actions-gh-pages@v3
@@ -133,20 +133,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ${{ env.GH_PAGE_PATH }}
           keep_files: false
-
-        # - name: Apply mkdocs cache
-        #   uses: actions/cache@v3
-        #   with:
-        #     key: mkdocs-material-${{ env.cache_id }}
-        #     path: .cache
-        #     restore-keys: |
-        #       mkdocs-material-
-        #
-        # - name: Install doc dependencies via poetry
-        #   run: |
-        #     pip install poetry
-        #     poetry install --with docs
-        #
-        # - name: Build docs with gh-deploy --force
-        #   run: |
-        #     poetry run mkdocs gh-deploy --force
