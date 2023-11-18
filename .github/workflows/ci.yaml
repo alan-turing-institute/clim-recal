@@ -15,11 +15,11 @@ env:
 
 on:
   pull_request:
-    branches: ['main', 'docker-config']
+    branches: ['main', 'doc-deploy']
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['main', 'docker-config']
+    branches: ['main', 'doc-deploy']
     paths-ignore: ['docs/**']
 
 concurrency:
