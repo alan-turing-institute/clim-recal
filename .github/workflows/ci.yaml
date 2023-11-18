@@ -125,7 +125,7 @@ jobs:
           docker compose up --detach
           # docker cp $(docker compose ps -q docs):/app/_site/ .
           docker cp $(docker compose ps -q docs):/usr/local/apache2/htdocs/ ${{ env.GH_PAGE_PATH }}
-          cp ${{ env.jupyter_id }}:app/docs/assets/coverage.svg ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
+          # cp ${{ env.jupyter_id }}:app/docs/assets/coverage.svg ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
 
       - name: Publish
         uses: peaceiris/actions-gh-pages@v3
