@@ -11,6 +11,7 @@ env:
   COVERAGE_SVG_FILE_NAME: coverage.svg
   # replace below with references to previous config lines
   COVERAGE_SVG_PATH: docs/assets/coverage.svg
+  GH_PAGE_PATH: _gh-page
 
 on:
   pull_request:
@@ -82,51 +83,70 @@ jobs:
         run: docker compose down
 
   docs:
-    needs: [linter, pytest]
+    # needs: [linter, pytest]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.MIN_PYTHON_VERSION }}
-
-      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
-        name: Update cache_id
-
-      - name: Download coverage svg
-        uses: actions/download-artifact@v3
-        with:
-          name: coverage-badge
-          path: ${{ env.COVERAGE_SVG_PATH }}
-
-      - name: Build quarto
-        run: |
-          docker compose build
-          # docker cp ${{ env.jupyter_id }}:app/docs/assets/coverage.svg docs/assets/
-          docker compose up --detach
-          docker cp $(docker compose ps -q docs):/usr/local/apache2/htdocs/ .
-
-      # - name: Build docker quarto
-      #   run: |
-      #     docker compose build
-      #     docker cp ${{ env.jupyter_id }}:app/docs/assets/coverage.svg docs/assets/
-      #     docker compose up --detach
-      #     docker cp $(docker compose ps -q docs):/usr/local/apache2/htdocs/ .
-          # docker cp $(docker compose ps -q docs)/app/_site/ /usr/local/apache2/htdocs/
-      # - name: Apply mkdocs cache
-      #   uses: actions/cache@v3
+      # - name: Download coverage svg
+      #   uses: actions/download-artifact@v3
       #   with:
-      #     key: mkdocs-material-${{ env.cache_id }}
-      #     path: .cache
-      #     restore-keys: |
-      #       mkdocs-material-
+      #     name: coverage-badge
+      #     path: ${{ env.COVERAGE_SVG_PATH }}
       #
-      # - name: Install doc dependencies via poetry
-      #   run: |
-      #     pip install poetry
-      #     poetry install --with docs
+      # - name: Set up conda environment
+      #   uses: conda-incubator/setup-miniconda@v2
+      #   with:
+      #     activate-environment: environment.yml
+
+      # From https://github.com/r-lib/actions/tree/v2-branch/setup-r
+      # - name: Setup R
+      #   uses: r-lib/actions/setup-r@v2
+
+
+      # - name: Install node
+      #   uses: actions/setup-node@v2
+      #   with:
+      #     node-version: 18.x
+      #     cache: 'npm'
+      #     cache-dependency-path: web/package-lock.json
       #
-      # - name: Build docs with gh-deploy --force
+      # - name: Build web app
       #   run: |
-      #     poetry run mkdocs gh-deploy --force
+      #     cd web
+      #     npm ci
+      #     npm run build --if-present
+      #     mv dist ../docs/_book/app
+
+      - name: Build docker quarto
+        run: |
+          # DOCKER_BUILDKIT=1 docker build --no-cache -f compose/docs/Dockerfile --target builder --tag 'clim-recal-docs' .
+          docker compose build
+          docker compose up --detach
+          # docker cp $(docker compose ps -q docs):/app/_site/ .
+          docker cp $(docker compose ps -q docs):/usr/local/apache2/htdocs/ ${{ env.GH_PAGE_PATH }}
+          cp ${{ env.jupyter_id }}:app/docs/assets/coverage.svg ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
+
+      - name: Publish
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ env.GH_PAGE_PATH }}
+          keep: false
+
+        # - name: Apply mkdocs cache
+        #   uses: actions/cache@v3
+        #   with:
+        #     key: mkdocs-material-${{ env.cache_id }}
+        #     path: .cache
+        #     restore-keys: |
+        #       mkdocs-material-
+        #
+        # - name: Install doc dependencies via poetry
+        #   run: |
+        #     pip install poetry
+        #     poetry install --with docs
+        #
+        # - name: Build docs with gh-deploy --force
+        #   run: |
+        #     poetry run mkdocs gh-deploy --force
