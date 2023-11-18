@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>clim-recal – identifying_runs</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../R/README.html">R</a></li><li class="breadcrumb-item"><a href="../../R/misc/Identifying_Runs.html">Identifying Runs</a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">clim-recal</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../README.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Summary</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/pipeline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Pipeline</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/contributing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Contributing</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+ <span class="menu-text">R</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../R/README.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Overview</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../R/misc/Identifying_Runs.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Identifying Runs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="false">
+ <span class="menu-text">Comparing R and Python</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">WIP Comparing HADs grids</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+ <span class="menu-text">python</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../python/README.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Methods implemented in Python</span></a>
+  </div>
+</li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false">
+ <span class="menu-text">Reference</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data_download.ceda_ftp_download.download_ftp.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">download_ftp</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Utilities</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#identifying-runs-for-bias-correction" id="toc-identifying-runs-for-bias-correction" class="nav-link active" data-scroll-target="#identifying-runs-for-bias-correction"><span class="header-section-number">1</span> <strong>Identifying Runs for bias correction</strong></a>
+  <ul class="collapse">
+  <li><a href="#about" id="toc-about" class="nav-link" data-scroll-target="#about"><span class="header-section-number">1.1</span> <strong>0. About</strong></a></li>
+  <li><a href="#load-data" id="toc-load-data" class="nav-link" data-scroll-target="#load-data"><span class="header-section-number">1.2</span> <strong>1. Load Data</strong></a></li>
+  <li><a href="#comparing-runs" id="toc-comparing-runs" class="nav-link" data-scroll-target="#comparing-runs"><span class="header-section-number">1.3</span> <strong>2. Comparing Runs</strong></a>
+  <ul class="collapse">
+  <li><a href="#a.-historical-figures" id="toc-a.-historical-figures" class="nav-link" data-scroll-target="#a.-historical-figures"><span class="header-section-number">1.3.1</span> <strong>2a. Historical figures</strong></a></li>
+  <li><a href="#time-series---daily" id="toc-time-series---daily" class="nav-link" data-scroll-target="#time-series---daily"><span class="header-section-number">1.3.2</span> <strong>Time series - daily</strong></a></li>
+  <li><a href="#boxplot---mean-historical" id="toc-boxplot---mean-historical" class="nav-link" data-scroll-target="#boxplot---mean-historical"><span class="header-section-number">1.3.3</span> <strong>boxplot - mean historical</strong></a></li>
+  <li><a href="#qqplot---daily-means" id="toc-qqplot---daily-means" class="nav-link" data-scroll-target="#qqplot---daily-means"><span class="header-section-number">1.3.4</span> <strong>qqplot - daily means</strong></a></li>
+  <li><a href="#time-series---annual-mean" id="toc-time-series---annual-mean" class="nav-link" data-scroll-target="#time-series---annual-mean"><span class="header-section-number">1.3.5</span> <strong>Time series - annual mean</strong></a></li>
+  <li><a href="#boxplot---annual-mean-historical" id="toc-boxplot---annual-mean-historical" class="nav-link" data-scroll-target="#boxplot---annual-mean-historical"><span class="header-section-number">1.3.6</span> <strong>boxplot - annual mean historical</strong></a></li>
+  <li><a href="#qqplot---annual-means" id="toc-qqplot---annual-means" class="nav-link" data-scroll-target="#qqplot---annual-means"><span class="header-section-number">1.3.7</span> <strong>qqplot - annual means</strong></a></li>
+  <li><a href="#time-series---annual-max" id="toc-time-series---annual-max" class="nav-link" data-scroll-target="#time-series---annual-max"><span class="header-section-number">1.3.8</span> <strong>Time series - annual max</strong></a></li>
+  <li><a href="#boxplot---annual-max" id="toc-boxplot---annual-max" class="nav-link" data-scroll-target="#boxplot---annual-max"><span class="header-section-number">1.3.9</span> <strong>boxplot - annual max</strong></a></li>
+  <li><a href="#anova" id="toc-anova" class="nav-link" data-scroll-target="#anova"><span class="header-section-number">1.3.10</span> <strong>ANOVA</strong></a></li>
+  <li><a href="#b.-y2020---y2040" id="toc-b.-y2020---y2040" class="nav-link" data-scroll-target="#b.-y2020---y2040"><span class="header-section-number">1.3.11</span> <strong>2b. Y2020 - Y2040</strong></a></li>
+  <li><a href="#time-series---daily-1" id="toc-time-series---daily-1" class="nav-link" data-scroll-target="#time-series---daily-1"><span class="header-section-number">1.3.12</span> <strong>Time series - daily</strong></a></li>
+  <li><a href="#boxplot---mean-y21_y40" id="toc-boxplot---mean-y21_y40" class="nav-link" data-scroll-target="#boxplot---mean-y21_y40"><span class="header-section-number">1.3.13</span> <strong>boxplot - mean Y21_Y40</strong></a></li>
+  <li><a href="#qqplot---daily-means-1" id="toc-qqplot---daily-means-1" class="nav-link" data-scroll-target="#qqplot---daily-means-1"><span class="header-section-number">1.3.14</span> <strong>qqplot - daily means</strong></a></li>
+  <li><a href="#time-series---annual-mean-1" id="toc-time-series---annual-mean-1" class="nav-link" data-scroll-target="#time-series---annual-mean-1"><span class="header-section-number">1.3.15</span> <strong>Time series - annual mean</strong></a></li>
+  <li><a href="#boxplot---annual-mean-2021---2040" id="toc-boxplot---annual-mean-2021---2040" class="nav-link" data-scroll-target="#boxplot---annual-mean-2021---2040"><span class="header-section-number">1.3.16</span> <strong>boxplot - annual mean 2021 - 2040</strong></a></li>
+  <li><a href="#qqplot---annual-means-1" id="toc-qqplot---annual-means-1" class="nav-link" data-scroll-target="#qqplot---annual-means-1"><span class="header-section-number">1.3.17</span> <strong>qqplot - annual means</strong></a></li>
+  <li><a href="#time-series---annual-max-1" id="toc-time-series---annual-max-1" class="nav-link" data-scroll-target="#time-series---annual-max-1"><span class="header-section-number">1.3.18</span> <strong>Time series - annual max</strong></a></li>
+  <li><a href="#boxplot---annual-max-1" id="toc-boxplot---annual-max-1" class="nav-link" data-scroll-target="#boxplot---annual-max-1"><span class="header-section-number">1.3.19</span> <strong>boxplot - annual max</strong></a></li>
+  <li><a href="#anova-1" id="toc-anova-1" class="nav-link" data-scroll-target="#anova-1"><span class="header-section-number">1.3.20</span> <strong>ANOVA</strong></a></li>
+  <li><a href="#c.-y2061---y2080" id="toc-c.-y2061---y2080" class="nav-link" data-scroll-target="#c.-y2061---y2080"><span class="header-section-number">1.3.21</span> <strong>2c. Y2061 - Y2080</strong></a></li>
+  <li><a href="#time-series---daily-2" id="toc-time-series---daily-2" class="nav-link" data-scroll-target="#time-series---daily-2"><span class="header-section-number">1.3.22</span> <strong>Time series - daily</strong></a></li>
+  <li><a href="#boxplot---mean-y61_y80" id="toc-boxplot---mean-y61_y80" class="nav-link" data-scroll-target="#boxplot---mean-y61_y80"><span class="header-section-number">1.3.23</span> <strong>boxplot - mean Y61_Y80</strong></a></li>
+  <li><a href="#qqplot---daily-means-2" id="toc-qqplot---daily-means-2" class="nav-link" data-scroll-target="#qqplot---daily-means-2"><span class="header-section-number">1.3.24</span> <strong>qqplot - daily means</strong></a></li>
+  <li><a href="#time-series---annual-mean-2" id="toc-time-series---annual-mean-2" class="nav-link" data-scroll-target="#time-series---annual-mean-2"><span class="header-section-number">1.3.25</span> <strong>Time series - annual mean</strong></a></li>
+  <li><a href="#boxplot---annual-mean-y61_y80" id="toc-boxplot---annual-mean-y61_y80" class="nav-link" data-scroll-target="#boxplot---annual-mean-y61_y80"><span class="header-section-number">1.3.26</span> <strong>boxplot - annual mean Y61_Y80</strong></a></li>
+  <li><a href="#qqplot---annual-means-2" id="toc-qqplot---annual-means-2" class="nav-link" data-scroll-target="#qqplot---annual-means-2"><span class="header-section-number">1.3.27</span> <strong>qqplot - annual means</strong></a></li>
+  <li><a href="#time-series---annual-max-2" id="toc-time-series---annual-max-2" class="nav-link" data-scroll-target="#time-series---annual-max-2"><span class="header-section-number">1.3.28</span> <strong>Time series - annual max</strong></a></li>
+  <li><a href="#boxplot---annual-max-2" id="toc-boxplot---annual-max-2" class="nav-link" data-scroll-target="#boxplot---annual-max-2"><span class="header-section-number">1.3.29</span> <strong>boxplot - annual max</strong></a></li>
+  <li><a href="#anova-2" id="toc-anova-2" class="nav-link" data-scroll-target="#anova-2"><span class="header-section-number">1.3.30</span> <strong>ANOVA</strong></a></li>
+  </ul></li>
+  <li><a href="#everything-combined" id="toc-everything-combined" class="nav-link" data-scroll-target="#everything-combined"><span class="header-section-number">1.4</span> <strong>3. Everything combined</strong></a>
+  <ul class="collapse">
+  <li><a href="#add-in-infill-data" id="toc-add-in-infill-data" class="nav-link" data-scroll-target="#add-in-infill-data"><span class="header-section-number">1.4.1</span> Add in infill data</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+
+<section id="identifying-runs-for-bias-correction" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> <strong>Identifying Runs for bias correction</strong></h1>
+<p>Ruth C E Bowyer 2023-06-13</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list=</span><span class="fu">ls</span>())</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RColorBrewer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="about" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="about"><span class="header-section-number">1.1</span> <strong>0. About</strong></h2>
+<p>Script to identify the mean, 2nd highest and 2nd lowers daily tasmax per UKCP18 CPM run.</p>
+<p>These runs will be the focus of initial bias correction focus</p>
+</section>
+<section id="load-data" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="load-data"><span class="header-section-number">1.2</span> <strong>1. Load Data</strong></h2>
+<p>Data is tasmax runs converted to dataframe using sript ‘ConvertingAllCPMdataTOdf.R’, with files later renamed.Then daily means for historical periods and future periods were calculated using ‘calc.mean.sd.daily.R’ and summaries saved as .csv</p>
+<p>In retrospect the conversion to df might not have been necessary/the most resource efficient, see comment here:<a href="https://tmieno2.github.io/R-as-GIS-for-Economists/turning-a-raster-object-into-a-data-frame.html" class="uri">https://tmieno2.github.io/R-as-GIS-for-Economists/turning-a-raster-object-into-a-data-frame.html</a> – this was tested and using <code>terra::global</code> to calculate the raster-wide mean was less efficient</p>
+<p><strong>Update 13.05.23</strong> - Adding in infill data, mean to be calculated over the whole time period</p>
+<p>As of June 2023, the tasmax-as-dataframe and tasmax daily means and the df data is located in <code>vmfileshare/Interim/tasmax_dfs/</code></p>
+<p>There is an error in the naming convention - Y00_Y20 should be Y01 to reflect the infill data time period (although this does cover a breif period of 2000) - to be updated in future</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>Runs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"01"</span>, <span class="st">"04"</span>, <span class="st">"05"</span>, <span class="st">"06"</span>, <span class="st">"07"</span>, <span class="st">"08"</span>, <span class="st">"09"</span>, <span class="st">"10"</span>, <span class="st">"11"</span>, <span class="st">"12"</span>, <span class="st">"13"</span>, <span class="st">"15"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>files <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"/Users/rbowyer/Library/CloudStorage/OneDrive-TheAlanTuringInstitute/tempdata/"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>files <span class="ot">&lt;-</span> files[<span class="fu">grepl</span>(<span class="st">".csv"</span>, files)]</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>fp <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"/Users/rbowyer/Library/CloudStorage/OneDrive-TheAlanTuringInstitute/tempdata/"</span>, files)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating objects for names and filepath for each of the timer periods, for easy loading</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>names <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">"df.avs_|.csv|df."</span>, <span class="st">""</span>, files)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>i <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"hist"</span>, <span class="st">"Y00_Y20"</span>,<span class="st">"Y21_Y40"</span>, <span class="st">"Y41_Y60"</span>, <span class="st">"Y61_Y80"</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>namesL <span class="ot">&lt;-</span> <span class="fu">lapply</span>(i, <span class="cf">function</span>(i){</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> names[<span class="fu">grepl</span>(i, names)]</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(namesL) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"names_"</span>,i)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">list2env</span>(namesL, .GlobalEnv)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code>## &lt;environment: R_GlobalEnv&gt;</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dfL <span class="ot">&lt;-</span> <span class="fu">lapply</span>(i, <span class="cf">function</span>(i){</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  fp <span class="ot">&lt;-</span> fp[<span class="fu">grepl</span>(i, fp)]</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  dfs <span class="ot">&lt;-</span> <span class="fu">lapply</span>(fp, read.csv)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> namesL[[<span class="fu">paste0</span>(<span class="st">"names_"</span>,i)]]</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(dfs) <span class="ot">&lt;-</span> n </span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(dfs)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(dfL) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"dfs_"</span>, i)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="fu">list2env</span>(dfL, .GlobalEnv)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code>## &lt;environment: R_GlobalEnv&gt;</code></pre>
+</section>
+<section id="comparing-runs" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="comparing-runs"><span class="header-section-number">1.3</span> <strong>2. Comparing Runs</strong></h2>
+<section id="a.-historical-figures" class="level3" data-number="1.3.1">
+<h3 data-number="1.3.1" class="anchored" data-anchor-id="a.-historical-figures"><span class="header-section-number">1.3.1</span> <strong>2a. Historical figures</strong></h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">1981</span><span class="sc">:</span><span class="dv">2000</span>), <span class="at">each=</span><span class="dv">360</span>)  </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>dfs_hist <span class="ot">&lt;-</span> <span class="fu">lapply</span>(names_hist, <span class="cf">function</span>(i){</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> dfs_hist[[i]]  </span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(df) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"day"</span>, <span class="st">"mean"</span>, <span class="st">"sd"</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>model <span class="ot">&lt;-</span> i</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>dn <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(df)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Y <span class="ot">&lt;-</span> Y</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a single df in long form of Runs for the historical period </span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>historical_means <span class="ot">&lt;-</span> dfs_hist <span class="sc">%&gt;%</span> <span class="fu">reduce</span>(rbind)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="time-series---daily" class="level3" data-number="1.3.2">
+<h3 data-number="1.3.2" class="anchored" data-anchor-id="time-series---daily"><span class="header-section-number">1.3.2</span> <strong>Time series - daily</strong></h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(historical_means) <span class="sc">+</span> </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x=</span>dn, <span class="at">y=</span>mean, <span class="at">group=</span>model, <span class="at">colour=</span>model)) <span class="sc">+</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Day (Historical 1980 - 2000)"</span>) <span class="sc">+</span> </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Daily mean max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> </span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span> model, <span class="at">ncol=</span><span class="dv">3</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-4-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="boxplot---mean-historical" class="level3" data-number="1.3.3">
+<h3 data-number="1.3.3" class="anchored" data-anchor-id="boxplot---mean-historical"><span class="header-section-number">1.3.3</span> <strong>boxplot - mean historical</strong></h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a pallete specific to the runs so when reordered maintain the same colours </span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>historical_means<span class="sc">$</span>model <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(historical_means<span class="sc">$</span>model)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>c <span class="ot">&lt;-</span> <span class="fu">brewer.pal</span>(<span class="dv">12</span>, <span class="st">"Paired"</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>my_colours <span class="ot">&lt;-</span> <span class="fu">setNames</span>(c, <span class="fu">levels</span>(historical_means<span class="sc">$</span>model))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>historical_means <span class="sc">%&gt;%</span> </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, mean, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean), <span class="at">y=</span>mean, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-6-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="qqplot---daily-means" class="level3" data-number="1.3.4">
+<h3 data-number="1.3.4" class="anchored" data-anchor-id="qqplot---daily-means"><span class="header-section-number">1.3.4</span> <strong>qqplot - daily means</strong></h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(historical_means, <span class="fu">aes</span>(<span class="at">sample=</span>mean, <span class="at">colour=</span><span class="fu">factor</span>(model))) <span class="sc">+</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq</span>() <span class="sc">+</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq_line</span>()<span class="sc">+</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()<span class="sc">+</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span>model, <span class="at">ncol=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-7-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="time-series---annual-mean" class="level3" data-number="1.3.5">
+<h3 data-number="1.3.5" class="anchored" data-anchor-id="time-series---annual-mean"><span class="header-section-number">1.3.5</span> <strong>Time series - annual mean</strong></h3>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Aggregating to year for annual average </span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>historical_means<span class="sc">$</span>Yf <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(historical_means<span class="sc">$</span>Y)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>historical_means_y <span class="ot">&lt;-</span> historical_means <span class="sc">%&gt;%</span> </span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Yf, model) <span class="sc">%&gt;%</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">mean.annual=</span><span class="fu">mean</span>(mean, <span class="at">na.rm=</span>T), <span class="at">sd.annual=</span><span class="fu">sd</span>(mean, <span class="at">na.rm =</span> T))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(historical_means_y) <span class="sc">+</span> </span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (Historical 1980 - 2000)"</span>) <span class="sc">+</span> </span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-9-1.png" class="img-fluid"><!-- --></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plotting with SDs in geom_ribbon to see if anything wildely different</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(historical_means_y) <span class="sc">+</span> </span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>                               <span class="at">ymin =</span> mean.annual <span class="sc">-</span> sd.annual,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>                              <span class="at">ymax=</span> mean.annual <span class="sc">+</span> sd.annual,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">fill=</span>model),  <span class="at">alpha=</span><span class="fl">0.4</span>) <span class="sc">+</span> </span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (Historical 1980 - 2000)"</span>) <span class="sc">+</span> </span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) <span class="sc">+</span> <span class="fu">facet_wrap</span>(.<span class="sc">~</span>model, <span class="at">ncol=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-10-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="boxplot---annual-mean-historical" class="level3" data-number="1.3.6">
+<h3 data-number="1.3.6" class="anchored" data-anchor-id="boxplot---annual-mean-historical"><span class="header-section-number">1.3.6</span> <strong>boxplot - annual mean historical</strong></h3>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>historical_means_y <span class="sc">%&gt;%</span> </span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, mean.annual, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean.annual), <span class="at">y=</span>mean.annual, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max daily max temp oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-11-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="qqplot---annual-means" class="level3" data-number="1.3.7">
+<h3 data-number="1.3.7" class="anchored" data-anchor-id="qqplot---annual-means"><span class="header-section-number">1.3.7</span> <strong>qqplot - annual means</strong></h3>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(historical_means_y, <span class="fu">aes</span>(<span class="at">sample=</span>mean.annual, <span class="at">colour=</span><span class="fu">factor</span>(model))) <span class="sc">+</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq</span>() <span class="sc">+</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq_line</span>()<span class="sc">+</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()<span class="sc">+</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span>model, <span class="at">ncol=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-12-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="time-series---annual-max" class="level3" data-number="1.3.8">
+<h3 data-number="1.3.8" class="anchored" data-anchor-id="time-series---annual-max"><span class="header-section-number">1.3.8</span> <strong>Time series - annual max</strong></h3>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>historical_max_y <span class="ot">&lt;-</span> historical_means <span class="sc">%&gt;%</span> </span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Yf, model) <span class="sc">%&gt;%</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">max=</span><span class="fu">max</span>(mean, <span class="at">na.rm=</span>T))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(historical_max_y) <span class="sc">+</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>max, </span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (Historical 1980 - 2000)"</span>) <span class="sc">+</span> </span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-14-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="boxplot---annual-max" class="level3" data-number="1.3.9">
+<h3 data-number="1.3.9" class="anchored" data-anchor-id="boxplot---annual-max"><span class="header-section-number">1.3.9</span> <strong>boxplot - annual max</strong></h3>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>historical_max_y <span class="sc">%&gt;%</span> </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, max, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, max), <span class="at">y=</span>max, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-15-1.png" class="img-fluid"><!-- --></p>
+<p>The daily max is quite different than the means - something to bear in mind but interesting to think about - eg Run 4 here has the 2nd lowest spread of max max temp, but is selected above based on means</p>
+</section>
+<section id="anova" class="level3" data-number="1.3.10">
+<h3 data-number="1.3.10" class="anchored" data-anchor-id="anova"><span class="header-section-number">1.3.10</span> <strong>ANOVA</strong></h3>
+<p>Daily means:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#-1 removes the intercept to compare coefficients of all Runs</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>av1 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, historical_means)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>av1<span class="sc">$</span>coefficients[<span class="fu">order</span>(av1<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code>## modelhist_Run10 modelhist_Run02 modelhist_Run05 modelhist_Run07 modelhist_Run09 
+##         9.89052        11.06863        11.21424        11.22048        11.27647 
+## modelhist_Run04 modelhist_Run03 modelhist_Run08 modelhist_Run01 modelhist_Run06 
+##        11.29057        11.35848        11.45257        11.45414        11.86451 
+## modelhist_Run11 modelhist_Run12 
+##        11.99148        12.31870</code></pre>
+<p>Annual means:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>av2 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean.annual <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, historical_means_y)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>av2<span class="sc">$</span>coefficients[<span class="fu">order</span>(av2<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code>## modelhist_Run10 modelhist_Run02 modelhist_Run05 modelhist_Run07 modelhist_Run09 
+##         9.89052        11.06863        11.21424        11.22048        11.27647 
+## modelhist_Run04 modelhist_Run03 modelhist_Run08 modelhist_Run01 modelhist_Run06 
+##        11.29057        11.35848        11.45257        11.45414        11.86451 
+## modelhist_Run11 modelhist_Run12 
+##        11.99148        12.31870</code></pre>
+<p>Max of means:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>av3 <span class="ot">&lt;-</span> <span class="fu">aov</span>(max <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, historical_max_y)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>av3<span class="sc">$</span>coefficients[<span class="fu">order</span>(av3<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code>## modelhist_Run10 modelhist_Run04 modelhist_Run02 modelhist_Run05 modelhist_Run03 
+##        18.12329        18.81126        18.90054        19.01801        19.10454 
+## modelhist_Run09 modelhist_Run01 modelhist_Run08 modelhist_Run07 modelhist_Run11 
+##        19.23705        19.31541        19.44439        19.54981        19.57548 
+## modelhist_Run06 modelhist_Run12 
+##        19.88375        20.47650</code></pre>
+<p>Max vals are different but based on means then selection would be Run 02 (2nd lowest), Run 04 &amp; Run 03, and Run 11 (2nd lowest)</p>
+</section>
+<section id="b.-y2020---y2040" class="level3" data-number="1.3.11">
+<h3 data-number="1.3.11" class="anchored" data-anchor-id="b.-y2020---y2040"><span class="header-section-number">1.3.11</span> <strong>2b. Y2020 - Y2040</strong></h3>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">2021</span><span class="sc">:</span><span class="dv">2040</span>), <span class="at">each=</span><span class="dv">360</span>)  </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>dfs_Y21_Y40 <span class="ot">&lt;-</span> <span class="fu">lapply</span>(names_Y21_Y40, <span class="cf">function</span>(i){</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> dfs_Y21_Y40[[i]]</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(df) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"day"</span>, <span class="st">"mean"</span>, <span class="st">"sd"</span>)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>model <span class="ot">&lt;-</span> i</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>dn <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(df)</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Y <span class="ot">&lt;-</span> Y</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df)</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a single df in long form of Runs for the Y21_Y40 period </span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>Y21_Y40_means <span class="ot">&lt;-</span> dfs_Y21_Y40 <span class="sc">%&gt;%</span> <span class="fu">reduce</span>(rbind)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="time-series---daily-1" class="level3" data-number="1.3.12">
+<h3 data-number="1.3.12" class="anchored" data-anchor-id="time-series---daily-1"><span class="header-section-number">1.3.12</span> <strong>Time series - daily</strong></h3>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y21_Y40_means) <span class="sc">+</span> </span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x=</span>dn, <span class="at">y=</span>mean, <span class="at">group=</span>model, <span class="at">colour=</span>model)) <span class="sc">+</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Removing sd ribbon for ease of viewing</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_ribbon(aes(x =dn, ymin = mean - sd, ymax= mean + sd), alpha=0.4) + </span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Daily (1980 - 2000)"</span>) <span class="sc">+</span> </span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Daily mean max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#scale_fill_brewer(palette = "Paired", name = "") +</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> </span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span> model, <span class="at">ncol=</span><span class="dv">3</span>) <span class="sc">+</span> <span class="fu">guides</span>(<span class="at">fill =</span> <span class="cn">FALSE</span>)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code>## Warning: The `&lt;scale&gt;` argument of `guides()` cannot be `FALSE`. Use "none" instead as
+## of ggplot2 3.3.4.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.</code></pre>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-20-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="boxplot---mean-y21_y40" class="level3" data-number="1.3.13">
+<h3 data-number="1.3.13" class="anchored" data-anchor-id="boxplot---mean-y21_y40"><span class="header-section-number">1.3.13</span> <strong>boxplot - mean Y21_Y40</strong></h3>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a pallete specific to the runs so when reordered maintain the same colours </span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>Y21_Y40_means<span class="sc">$</span>model <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(Y21_Y40_means<span class="sc">$</span>model)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>c <span class="ot">&lt;-</span> <span class="fu">brewer.pal</span>(<span class="dv">12</span>, <span class="st">"Paired"</span>)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>my_colours <span class="ot">&lt;-</span> <span class="fu">setNames</span>(c, <span class="fu">levels</span>(Y21_Y40_means<span class="sc">$</span>model))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>Y21_Y40_means <span class="sc">%&gt;%</span> </span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, mean, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean), <span class="at">y=</span>mean, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-22-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="qqplot---daily-means-1" class="level3" data-number="1.3.14">
+<h3 data-number="1.3.14" class="anchored" data-anchor-id="qqplot---daily-means-1"><span class="header-section-number">1.3.14</span> <strong>qqplot - daily means</strong></h3>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y21_Y40_means, <span class="fu">aes</span>(<span class="at">sample=</span>mean, <span class="at">colour=</span><span class="fu">factor</span>(model))) <span class="sc">+</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq</span>() <span class="sc">+</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq_line</span>()<span class="sc">+</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()<span class="sc">+</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span>model, <span class="at">ncol=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-23-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="time-series---annual-mean-1" class="level3" data-number="1.3.15">
+<h3 data-number="1.3.15" class="anchored" data-anchor-id="time-series---annual-mean-1"><span class="header-section-number">1.3.15</span> <strong>Time series - annual mean</strong></h3>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Aggregating to year for annual average </span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>Y21_Y40_means<span class="sc">$</span>Yf <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(Y21_Y40_means<span class="sc">$</span>Y)</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>Y21_Y40_means_y <span class="ot">&lt;-</span> Y21_Y40_means <span class="sc">%&gt;%</span> </span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Yf, model) <span class="sc">%&gt;%</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">mean.annual=</span><span class="fu">mean</span>(mean, <span class="at">na.rm=</span>T), <span class="at">sd.annual=</span><span class="fu">sd</span>(mean, <span class="at">na.rm =</span> T))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y21_Y40_means_y) <span class="sc">+</span> </span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2021 - 2040)"</span>) <span class="sc">+</span> </span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-25-1.png" class="img-fluid"><!-- --></p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plotting with SDs in geom_ribbon to see if anything wildely different</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y21_Y40_means_y) <span class="sc">+</span> </span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>                               <span class="at">ymin =</span> mean.annual <span class="sc">-</span> sd.annual,</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>                              <span class="at">ymax=</span> mean.annual <span class="sc">+</span> sd.annual,</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">fill=</span>model),  <span class="at">alpha=</span><span class="fl">0.4</span>) <span class="sc">+</span> </span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2021 - 2040)"</span>) <span class="sc">+</span> </span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) <span class="sc">+</span> <span class="fu">facet_wrap</span>(.<span class="sc">~</span>model, <span class="at">ncol=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-26-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="boxplot---annual-mean-2021---2040" class="level3" data-number="1.3.16">
+<h3 data-number="1.3.16" class="anchored" data-anchor-id="boxplot---annual-mean-2021---2040"><span class="header-section-number">1.3.16</span> <strong>boxplot - annual mean 2021 - 2040</strong></h3>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>Y21_Y40_means_y <span class="sc">%&gt;%</span> </span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, mean.annual, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean.annual), <span class="at">y=</span>mean.annual, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max daily max temp oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-27-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="qqplot---annual-means-1" class="level3" data-number="1.3.17">
+<h3 data-number="1.3.17" class="anchored" data-anchor-id="qqplot---annual-means-1"><span class="header-section-number">1.3.17</span> <strong>qqplot - annual means</strong></h3>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y21_Y40_means_y, <span class="fu">aes</span>(<span class="at">sample=</span>mean.annual, <span class="at">colour=</span><span class="fu">factor</span>(model))) <span class="sc">+</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq</span>() <span class="sc">+</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq_line</span>()<span class="sc">+</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()<span class="sc">+</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span>model, <span class="at">ncol=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-28-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="time-series---annual-max-1" class="level3" data-number="1.3.18">
+<h3 data-number="1.3.18" class="anchored" data-anchor-id="time-series---annual-max-1"><span class="header-section-number">1.3.18</span> <strong>Time series - annual max</strong></h3>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>Y21_Y40_max_y <span class="ot">&lt;-</span> Y21_Y40_means <span class="sc">%&gt;%</span> </span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Yf, model) <span class="sc">%&gt;%</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">max=</span><span class="fu">max</span>(mean, <span class="at">na.rm=</span>T))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y21_Y40_max_y) <span class="sc">+</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>max, </span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2021 - 2040)"</span>) <span class="sc">+</span> </span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-30-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="boxplot---annual-max-1" class="level3" data-number="1.3.19">
+<h3 data-number="1.3.19" class="anchored" data-anchor-id="boxplot---annual-max-1"><span class="header-section-number">1.3.19</span> <strong>boxplot - annual max</strong></h3>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>Y21_Y40_max_y <span class="sc">%&gt;%</span> </span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, max, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, max), <span class="at">y=</span>max, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-31-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="anova-1" class="level3" data-number="1.3.20">
+<h3 data-number="1.3.20" class="anchored" data-anchor-id="anova-1"><span class="header-section-number">1.3.20</span> <strong>ANOVA</strong></h3>
+<p>Daily means:</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co">#-1 removes the intercept to compare coefficients of all Runs</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>av1 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, Y21_Y40_means)</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>av1<span class="sc">$</span>coefficients[<span class="fu">order</span>(av1<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code>## modelY21_Y40_Run10 modelY21_Y40_Run05 modelY21_Y40_Run07 modelY21_Y40_Run02 
+##           10.93136           12.36223           12.64493           12.67791 
+## modelY21_Y40_Run09 modelY21_Y40_Run03 modelY21_Y40_Run08 modelY21_Y40_Run01 
+##           12.72584           12.85999           12.92934           13.03640 
+## modelY21_Y40_Run04 modelY21_Y40_Run12 modelY21_Y40_Run06 modelY21_Y40_Run11 
+##           13.07768           13.20011           13.38047           13.60076</code></pre>
+<p>Annual means:</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>av2 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean.annual <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, Y21_Y40_means_y)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>av2<span class="sc">$</span>coefficients[<span class="fu">order</span>(av2<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code>## modelY21_Y40_Run10 modelY21_Y40_Run05 modelY21_Y40_Run07 modelY21_Y40_Run02 
+##           10.93136           12.36223           12.64493           12.67791 
+## modelY21_Y40_Run09 modelY21_Y40_Run03 modelY21_Y40_Run08 modelY21_Y40_Run01 
+##           12.72584           12.85999           12.92934           13.03640 
+## modelY21_Y40_Run04 modelY21_Y40_Run12 modelY21_Y40_Run06 modelY21_Y40_Run11 
+##           13.07768           13.20011           13.38047           13.60076</code></pre>
+<p>Max of means</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>av3 <span class="ot">&lt;-</span> <span class="fu">aov</span>(max <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, Y21_Y40_max_y)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>av3<span class="sc">$</span>coefficients[<span class="fu">order</span>(av3<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code>## modelY21_Y40_Run10 modelY21_Y40_Run02 modelY21_Y40_Run09 modelY21_Y40_Run03 
+##           19.29044           20.69596           20.82538           21.05558 
+## modelY21_Y40_Run05 modelY21_Y40_Run07 modelY21_Y40_Run08 modelY21_Y40_Run01 
+##           21.09128           21.22942           21.33484           21.37443 
+## modelY21_Y40_Run04 modelY21_Y40_Run06 modelY21_Y40_Run12 modelY21_Y40_Run11 
+##           21.49363           21.98667           22.09476           22.65178</code></pre>
+<p>Based on means then selection would be Run 02 (2nd lowest), Run 04 &amp; Run 03, and Run 11 (2nd lowest)</p>
+<p>Based on this period, the seelction would be: Run 05, Run 03, Run 08, Run 06 (so definetly Run 3 but others to be discussed)</p>
+</section>
+<section id="c.-y2061---y2080" class="level3" data-number="1.3.21">
+<h3 data-number="1.3.21" class="anchored" data-anchor-id="c.-y2061---y2080"><span class="header-section-number">1.3.21</span> <strong>2c. Y2061 - Y2080</strong></h3>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">2061</span><span class="sc">:</span><span class="dv">2080</span>), <span class="at">each=</span><span class="dv">360</span>)  </span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>dfs_Y61_Y80 <span class="ot">&lt;-</span> <span class="fu">lapply</span>(names_Y61_Y80, <span class="cf">function</span>(i){</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> dfs_Y61_Y80[[i]]</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(df) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"day"</span>, <span class="st">"mean"</span>, <span class="st">"sd"</span>)</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>model <span class="ot">&lt;-</span> i</span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>dn <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(df)</span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Y <span class="ot">&lt;-</span> Y</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df)</span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a single df in long form of Runs for the Y61_Y80 period </span></span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>Y61_Y80_means <span class="ot">&lt;-</span> dfs_Y61_Y80 <span class="sc">%&gt;%</span> <span class="fu">reduce</span>(rbind)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="time-series---daily-2" class="level3" data-number="1.3.22">
+<h3 data-number="1.3.22" class="anchored" data-anchor-id="time-series---daily-2"><span class="header-section-number">1.3.22</span> <strong>Time series - daily</strong></h3>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y61_Y80_means) <span class="sc">+</span> </span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x=</span>dn, <span class="at">y=</span>mean, <span class="at">group=</span>model, <span class="at">colour=</span>model)) <span class="sc">+</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Removing sd ribbon for ease of viewing</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_ribbon(aes(x =dn, ymin = mean - sd, ymax= mean + sd), alpha=0.4) + </span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Day (2060 - 2080)"</span>) <span class="sc">+</span> </span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Daily mean max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#scale_fill_brewer(palette = "Paired", name = "") +</span></span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> </span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span> model, <span class="at">ncol=</span><span class="dv">3</span>) <span class="sc">+</span> <span class="fu">guides</span>(<span class="at">fill =</span> <span class="cn">FALSE</span>)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-36-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="boxplot---mean-y61_y80" class="level3" data-number="1.3.23">
+<h3 data-number="1.3.23" class="anchored" data-anchor-id="boxplot---mean-y61_y80"><span class="header-section-number">1.3.23</span> <strong>boxplot - mean Y61_Y80</strong></h3>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a pallete specific to the runs so when reordered maintain the same colours </span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>Y61_Y80_means<span class="sc">$</span>model <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(Y61_Y80_means<span class="sc">$</span>model)</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>c <span class="ot">&lt;-</span> <span class="fu">brewer.pal</span>(<span class="dv">12</span>, <span class="st">"Paired"</span>)</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>my_colours <span class="ot">&lt;-</span> <span class="fu">setNames</span>(c, <span class="fu">levels</span>(Y61_Y80_means<span class="sc">$</span>model))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>Y61_Y80_means <span class="sc">%&gt;%</span> </span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, mean, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean), <span class="at">y=</span>mean, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-38-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="qqplot---daily-means-2" class="level3" data-number="1.3.24">
+<h3 data-number="1.3.24" class="anchored" data-anchor-id="qqplot---daily-means-2"><span class="header-section-number">1.3.24</span> <strong>qqplot - daily means</strong></h3>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y61_Y80_means, <span class="fu">aes</span>(<span class="at">sample=</span>mean, <span class="at">colour=</span><span class="fu">factor</span>(model))) <span class="sc">+</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq</span>() <span class="sc">+</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq_line</span>()<span class="sc">+</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()<span class="sc">+</span></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span>model, <span class="at">ncol=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-39-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="time-series---annual-mean-2" class="level3" data-number="1.3.25">
+<h3 data-number="1.3.25" class="anchored" data-anchor-id="time-series---annual-mean-2"><span class="header-section-number">1.3.25</span> <strong>Time series - annual mean</strong></h3>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Aggregating to year for annual average </span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>Y61_Y80_means<span class="sc">$</span>Yf <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(Y61_Y80_means<span class="sc">$</span>Y)</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>Y61_Y80_means_y <span class="ot">&lt;-</span> Y61_Y80_means <span class="sc">%&gt;%</span> </span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Yf, model) <span class="sc">%&gt;%</span></span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">mean.annual=</span><span class="fu">mean</span>(mean, <span class="at">na.rm=</span>T), <span class="at">sd.annual=</span><span class="fu">sd</span>(mean, <span class="at">na.rm =</span> T))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y61_Y80_means_y) <span class="sc">+</span> </span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2061 - 2080)"</span>) <span class="sc">+</span> </span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-41-1.png" class="img-fluid"><!-- --></p>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plotting with SDs in geom_ribbon to see if anything wildely different</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y61_Y80_means_y) <span class="sc">+</span> </span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>                               <span class="at">ymin =</span> mean.annual <span class="sc">-</span> sd.annual,</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>                              <span class="at">ymax=</span> mean.annual <span class="sc">+</span> sd.annual,</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">fill=</span>model),  <span class="at">alpha=</span><span class="fl">0.4</span>) <span class="sc">+</span> </span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2061 - 2080)"</span>) <span class="sc">+</span> </span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) <span class="sc">+</span> <span class="fu">facet_wrap</span>(.<span class="sc">~</span>model, <span class="at">ncol=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-42-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="boxplot---annual-mean-y61_y80" class="level3" data-number="1.3.26">
+<h3 data-number="1.3.26" class="anchored" data-anchor-id="boxplot---annual-mean-y61_y80"><span class="header-section-number">1.3.26</span> <strong>boxplot - annual mean Y61_Y80</strong></h3>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>Y61_Y80_means_y <span class="sc">%&gt;%</span> </span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, mean.annual, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean.annual), <span class="at">y=</span>mean.annual, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max daily max temp oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-43-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="qqplot---annual-means-2" class="level3" data-number="1.3.27">
+<h3 data-number="1.3.27" class="anchored" data-anchor-id="qqplot---annual-means-2"><span class="header-section-number">1.3.27</span> <strong>qqplot - annual means</strong></h3>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y61_Y80_means_y, <span class="fu">aes</span>(<span class="at">sample=</span>mean.annual, <span class="at">colour=</span><span class="fu">factor</span>(model))) <span class="sc">+</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq</span>() <span class="sc">+</span></span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq_line</span>()<span class="sc">+</span></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()<span class="sc">+</span></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span>model, <span class="at">ncol=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-44-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="time-series---annual-max-2" class="level3" data-number="1.3.28">
+<h3 data-number="1.3.28" class="anchored" data-anchor-id="time-series---annual-max-2"><span class="header-section-number">1.3.28</span> <strong>Time series - annual max</strong></h3>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>Y61_Y80_max_y <span class="ot">&lt;-</span> Y61_Y80_means <span class="sc">%&gt;%</span> </span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Yf, model) <span class="sc">%&gt;%</span></span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">max=</span><span class="fu">max</span>(mean, <span class="at">na.rm=</span>T))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y61_Y80_max_y) <span class="sc">+</span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>max, </span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2061 - 2080)"</span>) <span class="sc">+</span> </span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-46-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="boxplot---annual-max-2" class="level3" data-number="1.3.29">
+<h3 data-number="1.3.29" class="anchored" data-anchor-id="boxplot---annual-max-2"><span class="header-section-number">1.3.29</span> <strong>boxplot - annual max</strong></h3>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>Y61_Y80_max_y <span class="sc">%&gt;%</span> </span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, max, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, max), <span class="at">y=</span>max, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-47-1.png" class="img-fluid"><!-- --></p>
+</section>
+<section id="anova-2" class="level3" data-number="1.3.30">
+<h3 data-number="1.3.30" class="anchored" data-anchor-id="anova-2"><span class="header-section-number">1.3.30</span> <strong>ANOVA</strong></h3>
+<p>Daily means:</p>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co">#-1 removes the intercept to compare coefficients of all Runs</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>av1 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, Y61_Y80_means)</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>av1<span class="sc">$</span>coefficients[<span class="fu">order</span>(av1<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code>## modelY61_Y80_Run10 modelY61_Y80_Run05 modelY61_Y80_Run01 modelY61_Y80_Run08 
+##           12.70342           13.87016           14.55815           14.65973 
+## modelY61_Y80_Run04 modelY61_Y80_Run09 modelY61_Y80_Run03 modelY61_Y80_Run12 
+##           14.69527           14.76917           14.79545           14.87939 
+## modelY61_Y80_Run07 modelY61_Y80_Run02 modelY61_Y80_Run11 modelY61_Y80_Run06 
+##           14.94320           15.01577           15.11392           15.11814</code></pre>
+<p>Annual means:</p>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>av2 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean.annual <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, Y61_Y80_means_y)</span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>av2<span class="sc">$</span>coefficients[<span class="fu">order</span>(av2<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code>## modelY61_Y80_Run10 modelY61_Y80_Run05 modelY61_Y80_Run01 modelY61_Y80_Run08 
+##           12.70342           13.87016           14.55815           14.65973 
+## modelY61_Y80_Run04 modelY61_Y80_Run09 modelY61_Y80_Run03 modelY61_Y80_Run12 
+##           14.69527           14.76917           14.79545           14.87939 
+## modelY61_Y80_Run07 modelY61_Y80_Run02 modelY61_Y80_Run11 modelY61_Y80_Run06 
+##           14.94320           15.01577           15.11392           15.11814</code></pre>
+<p>Max of means</p>
+<div class="sourceCode" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>av3 <span class="ot">&lt;-</span> <span class="fu">aov</span>(max <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, Y61_Y80_max_y)</span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>av3<span class="sc">$</span>coefficients[<span class="fu">order</span>(av3<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code>## modelY61_Y80_Run10 modelY61_Y80_Run05 modelY61_Y80_Run03 modelY61_Y80_Run04 
+##           21.83290           23.32972           23.88512           23.98220 
+## modelY61_Y80_Run02 modelY61_Y80_Run01 modelY61_Y80_Run08 modelY61_Y80_Run06 
+##           23.98610           24.03094           24.13232           24.41824 
+## modelY61_Y80_Run12 modelY61_Y80_Run09 modelY61_Y80_Run07 modelY61_Y80_Run11 
+##           24.48810           24.53152           24.77651           25.09102</code></pre>
+<p>Runs suggested by this slice are Run 05, Run 09, Run 03 and Run 11</p>
+<p>Run 3 and 5 suggested above</p>
+</section>
+</section>
+<section id="everything-combined" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="everything-combined"><span class="header-section-number">1.4</span> <strong>3. Everything combined</strong></h2>
+<p>The result per time slice suggest different runs, aside from run 5</p>
+<section id="add-in-infill-data" class="level3" data-number="1.4.1">
+<h3 data-number="1.4.1" class="anchored" data-anchor-id="add-in-infill-data"><span class="header-section-number">1.4.1</span> Add in infill data</h3>
+<p><strong>Update 13.05.23</strong> - Adding in the infill data, and taking the anova result across the whole time period</p>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">2001</span><span class="sc">:</span><span class="dv">2020</span>), <span class="at">each=</span><span class="dv">360</span>)  </span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>dfs_Y00_Y20 <span class="ot">&lt;-</span> <span class="fu">lapply</span>(names_Y00_Y20, <span class="cf">function</span>(i){</span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> dfs_Y00_Y20[[i]]  </span>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(df) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"day"</span>, <span class="st">"mean"</span>, <span class="st">"sd"</span>)</span>
+<span id="cb65-6"><a href="#cb65-6" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>model <span class="ot">&lt;-</span> i</span>
+<span id="cb65-7"><a href="#cb65-7" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>dn <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(df)</span>
+<span id="cb65-8"><a href="#cb65-8" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Y <span class="ot">&lt;-</span> Y</span>
+<span id="cb65-9"><a href="#cb65-9" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Yf <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(df<span class="sc">$</span>Y)</span>
+<span id="cb65-10"><a href="#cb65-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df)</span>
+<span id="cb65-11"><a href="#cb65-11" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb65-12"><a href="#cb65-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-13"><a href="#cb65-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-14"><a href="#cb65-14" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">2041</span><span class="sc">:</span><span class="dv">2060</span>), <span class="at">each=</span><span class="dv">360</span>)  </span>
+<span id="cb65-15"><a href="#cb65-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-16"><a href="#cb65-16" aria-hidden="true" tabindex="-1"></a>dfs_Y41_Y60 <span class="ot">&lt;-</span> <span class="fu">lapply</span>(names_Y41_Y60, <span class="cf">function</span>(i){</span>
+<span id="cb65-17"><a href="#cb65-17" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> dfs_Y41_Y60[[i]]  </span>
+<span id="cb65-18"><a href="#cb65-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(df) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"day"</span>, <span class="st">"mean"</span>, <span class="st">"sd"</span>)</span>
+<span id="cb65-19"><a href="#cb65-19" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>model <span class="ot">&lt;-</span> i</span>
+<span id="cb65-20"><a href="#cb65-20" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>dn <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(df)</span>
+<span id="cb65-21"><a href="#cb65-21" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Y <span class="ot">&lt;-</span> Y</span>
+<span id="cb65-22"><a href="#cb65-22" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Yf <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(df<span class="sc">$</span>Y)</span>
+<span id="cb65-23"><a href="#cb65-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df)</span>
+<span id="cb65-24"><a href="#cb65-24" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb65-25"><a href="#cb65-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-26"><a href="#cb65-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-27"><a href="#cb65-27" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a single df in long form as above</span></span>
+<span id="cb65-28"><a href="#cb65-28" aria-hidden="true" tabindex="-1"></a>Y00_Y20_means <span class="ot">&lt;-</span> dfs_Y00_Y20 <span class="sc">%&gt;%</span> <span class="fu">reduce</span>(rbind) </span>
+<span id="cb65-29"><a href="#cb65-29" aria-hidden="true" tabindex="-1"></a>Y41_Y60_means <span class="ot">&lt;-</span> dfs_Y41_Y60 <span class="sc">%&gt;%</span> <span class="fu">reduce</span>(rbind) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Assessing what the combined times slices suggest via anova</p>
+<section id="daily-means" class="level4" data-number="1.4.1.1">
+<h4 data-number="1.4.1.1" class="anchored" data-anchor-id="daily-means"><span class="header-section-number">1.4.1.1</span> Daily means:</h4>
+<div class="sourceCode" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="co">#-1 removes the intercept to compare coefficients of all Runs</span></span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>all.means <span class="ot">&lt;-</span> <span class="fu">rbind</span>(historical_means, Y00_Y20_means, Y21_Y40_means, Y41_Y60_means, Y61_Y80_means)</span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">as.character</span>(all.means<span class="sc">$</span>model)</span>
+<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a>all.means<span class="sc">$</span>model <span class="ot">&lt;-</span> <span class="fu">substr</span>(x, <span class="fu">nchar</span>(x)<span class="sc">-</span><span class="dv">4</span>, <span class="fu">nchar</span>(x))</span>
+<span id="cb66-6"><a href="#cb66-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-7"><a href="#cb66-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-8"><a href="#cb66-8" aria-hidden="true" tabindex="-1"></a>av1 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, all.means)</span>
+<span id="cb66-9"><a href="#cb66-9" aria-hidden="true" tabindex="-1"></a>av1<span class="sc">$</span>coefficients[<span class="fu">order</span>(av1<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code>## modelRun10 modelRun05 modelRun09 modelRun04 modelRun03 modelRun07 modelRun08 
+##   11.12464   12.48165   12.79216   12.89910   12.91685   12.91894   12.95115 
+## modelRun02 modelRun01 modelRun12 modelRun06 modelRun11 
+##   12.95347   12.97947   13.38267   13.40644   13.61157</code></pre>
+</section>
+<section id="annual-means" class="level4" data-number="1.4.1.2">
+<h4 data-number="1.4.1.2" class="anchored" data-anchor-id="annual-means"><span class="header-section-number">1.4.1.2</span> Annual means:</h4>
+<div class="sourceCode" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="co"># As above, creating annual means </span></span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>infill.L <span class="ot">&lt;-</span> <span class="fu">list</span>(Y00_Y20_means, Y41_Y60_means)</span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>infill.L_y <span class="ot">&lt;-</span> <span class="fu">lapply</span>(infill.L, <span class="cf">function</span>(x){</span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>  means_y <span class="ot">&lt;-</span> x <span class="sc">%&gt;%</span> </span>
+<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Yf, model) <span class="sc">%&gt;%</span></span>
+<span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">mean.annual=</span><span class="fu">mean</span>(mean, <span class="at">na.rm=</span>T), <span class="at">sd.annual=</span><span class="fu">sd</span>(mean, <span class="at">na.rm =</span> T))})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code>## `summarise()` has grouped output by 'Yf'. You can override using the `.groups`
+## argument.
+## `summarise()` has grouped output by 'Yf'. You can override using the `.groups`
+## argument.</code></pre>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>all.means_y <span class="ot">&lt;-</span> <span class="fu">rbind</span>(historical_means_y, </span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>                     infill.L_y[[<span class="dv">1</span>]], </span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>                     Y21_Y40_means_y, </span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a>                     infill.L_y[[<span class="dv">2</span>]], </span>
+<span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a>                     Y61_Y80_means_y)</span>
+<span id="cb70-6"><a href="#cb70-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-7"><a href="#cb70-7" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">as.character</span>(all.means_y<span class="sc">$</span>model)</span>
+<span id="cb70-8"><a href="#cb70-8" aria-hidden="true" tabindex="-1"></a>all.means_y<span class="sc">$</span>model <span class="ot">&lt;-</span> <span class="fu">substr</span>(x, <span class="fu">nchar</span>(x)<span class="sc">-</span><span class="dv">4</span>, <span class="fu">nchar</span>(x))</span>
+<span id="cb70-9"><a href="#cb70-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-10"><a href="#cb70-10" aria-hidden="true" tabindex="-1"></a>av2 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean.annual <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, all.means_y)</span>
+<span id="cb70-11"><a href="#cb70-11" aria-hidden="true" tabindex="-1"></a>av2<span class="sc">$</span>coefficients[<span class="fu">order</span>(av2<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre><code>## modelRun10 modelRun05 modelRun09 modelRun04 modelRun03 modelRun07 modelRun08 
+##   11.12464   12.48165   12.79216   12.89910   12.91685   12.91894   12.95115 
+## modelRun02 modelRun01 modelRun12 modelRun06 modelRun11 
+##   12.95347   12.97947   13.38267   13.40644   13.61157</code></pre>
+<p><strong>Updated June 13th 2023 result</strong></p>
+<p>Considering all together, suggests: Runs 05, Run07, Run08 and Run06</p>
+
+
+</section>
+</section>
+</section>
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
