@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Testing Bias Correction methods from the Qmap package in R
 
-Loading data as created in 'Data_Processing_todf.R' 
+Loading data as created in 'Data_Processing_todf.R'
 
 ```{r libraries dd}
 rm(list=ls())
@@ -42,7 +42,7 @@ dd <- "/mnt/vmfileshare/ClimateData/"
 ## **1. Load data**
 
 As this method is univariate - applying seperately to each variable - starting with tasmax
-Starting with smallest region - London - for testing 
+Starting with smallest region - London - for testing
 
 ```{r hads obs data}
 
@@ -71,9 +71,9 @@ obs.df$y <- NULL
 fp <- paste0(dd, "Interim/CPM/Data_as_df/")
 files <- list.files(fp)
 
-#Calibration years 1980 - 2010 
+#Calibration years 1980 - 2010
 cpm.cal <- files[grepl("1980|2000", files)]
-  
+
 #Subset to London (UKI)
 Ldn.cpm.cal <- cpm.cal[grepl("UKI", cpm.cal)]
 
@@ -114,14 +114,14 @@ names(cal.dfs) <- c("Run05", "Run06", "Run07", "Run08")
 
 
 ```{r}
-#Seeing if can load All the proj data - 2010 - 2020 is test, so treating with proj - 2020 - 2080 is the rest of the data 
+#Seeing if can load All the proj data - 2010 - 2020 is test, so treating with proj - 2020 - 2080 is the rest of the data
 
 proj.df1 <- lapply(cal.dfs1[5:8], function(x){
   x2 <- x[,!grepl(lyrs, names(x))]
 })
 
 cpm.proj <- files[grepl("UKI2020|UKI2040|UKI2060", files)]
-  
+
 #Subset to London (UKI)
 Ldn.cpm.proj <- cpm.proj[grepl("UKI", cpm.proj)]
 
@@ -139,18 +139,18 @@ names(proj.df2) <- Ldn.cpm.proj.tasmax
 
 ```{r}
 
-#reduce however you did above but adding it in first series as above 
+#reduce however you did above but adding it in first series as above
 
 proj.dfs <- lapply(c("Run05", "Run06", "Run07", "Run08"), function(x){
-  
+
   i1 <- paste0("CPM_UKI2000_2020tasmax_", x, ".2023.07.16.csv")
   i2 <- paste0("CPM_UKI2020_2040tasmax_", x, ".2023.07.17.csv")
   i3 <- paste0("CPM_UKI2040_2060tasmax_", x, ".2023.07.17.csv")
   #This does assume x and y are in same order but because converted from raster should be sanity checked
-  #Remove x and y from proj df 
+  #Remove x and y from proj df
   df2 <- proj.df2[[i2]][c(3:ncol(proj.df2[[i2]]))]
   df3 <- proj.df2[[i3]][c(3:ncol(proj.df2[[i3]]))]
-  df.f <- list(proj.df1[[i1]], df2, df3) %>% 
+  df.f <- list(proj.df1[[i1]], df2, df3) %>%
     reduce(cbind)
   row.names(df.f) <- paste0(df.f$x, "_", df.f$y)
   df.f$x <- NULL
@@ -164,7 +164,7 @@ names(proj.dfs) <- c("Run05", "Run06", "Run07", "Run08")
 
 ## **2. Wrangle the data**
 
-### Ensure dfs have same grid references 
+### Ensure dfs have same grid references
 
 ```{r}
 #Note there are a few squares missing in the HADs grid, I'm not sure why (could be predom water which I think looses it?)
@@ -179,7 +179,7 @@ proj.Run05 <- proj.Run05[which(row.names(proj.Run05)%in%row.names(obs.df)),]
 
 ### Update obs data to 360 days
 
-The below is a work around with the HADS dataset having 365 days on leap years - this is to be updateed and corrected when the 360 day sampling is better sorted 
+The below is a work around with the HADS dataset having 365 days on leap years - this is to be updateed and corrected when the 360 day sampling is better sorted
 
 ```{r}
 #Convert obs to 360 day year - has 40 more vars so remove the ones not in cal
@@ -192,8 +192,8 @@ had365dates <- gsub("tasmax_1980|1980", "",names(had365day))
 had360day <- obs.df[,grepl("_1981", names(obs.df))]
 had360dates <- gsub("tasmax_1981|1981", "",names(had360day))
 
-rem <- had365dates[-which(had365dates%in%had360dates)] #Pulls out all the Feb dates - 
-#Have added as issue to repo - for now going to remove: "0201-0229_29" "0401-0430_30" "0701-0731_31" "0901-0930_30" "1101-1130_30" - but needs to be checked as should just be _31s removed? 
+rem <- had365dates[-which(had365dates%in%had360dates)] #Pulls out all the Feb dates -
+#Have added as issue to repo - for now going to remove: "0201-0229_29" "0401-0430_30" "0701-0731_31" "0901-0930_30" "1101-1130_30" - but needs to be checked as should just be _31s removed?
 
 remove <- c("0229_29", "0430_30", "0731_31", "0930_30", "1130_30")
 remove <- paste0(remove, collapse = "|")
@@ -226,8 +226,8 @@ library('qmap')
 
 qm1.fit <- fitQmapQUANT(t.obs.df2, t.cal.Run05,
                         wet.day = FALSE,
-                        qstep = 0.01, 
-                        nboot = 1) #nboot number of bootstrap samples used for estimation of the observed quantiles. 
+                        qstep = 0.01,
+                        nboot = 1) #nboot number of bootstrap samples used for estimation of the observed quantiles.
 
 
 qm1.hist.a <- doQmapQUANT(t.cal.Run05, qm1.fit, type="linear")
@@ -269,6 +269,3 @@ t2 <- cbind(xydf, test)
  terra::writeRaster(dfr2, fn, overwrite=T)
 
 ```
-
-
-

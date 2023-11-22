@@ -13,14 +13,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## 0. About
 
-Testing `Qmap` for the 3 cities 
+Testing `Qmap` for the 3 cities
 
 ```{r libraries dd}
 rm(list=ls())
 
 library(qmap)
 library(terra)
-library(tidyverse) 
+library(tidyverse)
 library(doParallel)
 
 dd <- "/mnt/vmfileshare/ClimateData/"
@@ -29,17 +29,17 @@ dd <- "/mnt/vmfileshare/ClimateData/"
 
 ## Apply bias correction by variable/run in `qmap`
 
-`qmap` offers a few different bias correction options. 
+`qmap` offers a few different bias correction options.
 The below chunks calls a function that wraps the qmap function to loop over the cities and apply the bias correction
 It returns a list object, where for each model, we have:
 - a matrix of the calibration observation period (01-12-1980 to 30-11-2010 )
 - a matrix of values relating to the validation obs period (hads data 01-12-2010 to 01-12-2020)
-the raw values and the adjusted values for the CPM for the 
+the raw values and the adjusted values for the CPM for the
 "t.obs", "val.df", "t.cal", "t.proj", "qm1.hist", "qm1.val.proj"
 
-Data has been pre-processed from cropped using 'converting_city_crops_to_df.R' to .csv 
+Data has been pre-processed from cropped using 'converting_city_crops_to_df.R' to .csv
 
-##1. Empirical Quantile Mapping 
+##1. Empirical Quantile Mapping
 
 
 
@@ -53,7 +53,7 @@ var <- c("tasmax", "tasmin", "pr")
 
 lapply(cities, function(x){
   rd <- paste0(dd, "Debiased/R/QuantileMapping/three.cities/", x, "/")
-  
+
   apply_qmapQUANT_to_cropped_df(region = x,
                                 var = var,
                                 Runs = run,
@@ -67,8 +67,8 @@ lapply(cities, function(x){
                                      type = "linear", #interpolation method to use for fitting data to the predictions )(eg linear, tricubic)
                               rd = rd)
 })
-              
-                  
+
+
 ```
 
 

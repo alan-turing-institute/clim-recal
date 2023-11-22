@@ -14,11 +14,11 @@ env:
 
 on:
   pull_request:
-    branches: ['main', 'docker-config']
+    branches: ['main', 'ruth-notebook-for-workshop']
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['main', 'docker-config']
+    branches: ['main', 'ruth-notebook-for-workshop']
     paths-ignore: ['docs/**']
 
 concurrency:

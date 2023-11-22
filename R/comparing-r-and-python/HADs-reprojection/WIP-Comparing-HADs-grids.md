@@ -75,13 +75,13 @@ py.pros.tasmax <- list.files(paste0(dd,"Processed/HadsUKgrid/resampled_2.2km_new
 r2 <- py.pros.tasmax[grepl("200001", py.pros.tasmax)] #Same file as resampled above
 r2 <- paste0(paste0(dd, "Processed/HadsUKgrid/resampled_2.2km_newgrid/tasmax/day"),"/",r2)
 r2 <- rast(r2)
-crs(r2, proj=T) #check crs 
+crs(r2, proj=T) #check crs
 ```
 
     ## [1] "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +a=6377563.396 +rf=299.324961266495 +units=m +no_defs"
 
 ``` r
-## Ok so interesting is missing a crs slot on read - I wonder why this is? This could cause future problem potentially? 
+## Ok so interesting is missing a crs slot on read - I wonder why this is? This could cause future problem potentially?
 
 plot(r2$tasmax_1)
 ```
@@ -143,7 +143,7 @@ Crop extents to be the same
 #Noticed the crop takes longer on r2_c - for investigation!
 
 b <- Sys.time()
-r1_c <- terra::crop(r1, scotland, snap="in") 
+r1_c <- terra::crop(r1, scotland, snap="in")
 e <- Sys.time()
 e-b
 ```
@@ -158,7 +158,7 @@ plot(r1_c$tasmax_1)
 
 ``` r
 b <- Sys.time()
-r2_c <- terra::crop(r2, scotland, snap="in") 
+r2_c <- terra::crop(r2, scotland, snap="in")
 e <- Sys.time()
 e-b
 ```
@@ -172,7 +172,7 @@ plot(r2_c$tasmax_1)
 ![](WIP-Comparing-HADs-grids_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ``` r
-og_c <- terra::crop(og, scotland, snap="in") 
+og_c <- terra::crop(og, scotland, snap="in")
 plot(og_c$tasmax_1)
 ```
 
@@ -181,7 +181,7 @@ Ok there are some differences that I can see from the plot between the
 two resampled files!
 
 ``` r
-## Cropping to a small area to compare with the same orginal HADS file 
+## Cropping to a small area to compare with the same orginal HADS file
 i <- rast()
 ext(i) <- c(200000, 210000, 700000, 710000)
 ```
@@ -246,7 +246,7 @@ plot(og_ci$tasmax_1)
 ![](WIP-Comparing-HADs-grids_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 ``` r
-ukcp_c <- terra::crop(ukcp.r, i) 
+ukcp_c <- terra::crop(ukcp.r, i)
 plot(ukcp_c$`tasmax_rcp85_land-cpm_uk_2.2km_01_day_19991201-20001130_31`)
 ```
 
