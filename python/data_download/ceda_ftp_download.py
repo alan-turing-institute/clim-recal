@@ -1,10 +1,10 @@
 #!/usr/bin/env python
+import argparse
 import ftplib
 import os
 import random
 from datetime import datetime
 from pathlib import Path
-import argparse
 
 
 def download_ftp(input, output, username, password, order):
@@ -58,7 +58,7 @@ def download_ftp(input, output, username, password, order):
     for file in filelist:
         download = True
 
-        print('Downloading', file)
+        print("Downloading", file)
         current_time = datetime.now().strftime("%H:%M:%S")
         print("Current Time =", current_time)
 
@@ -77,39 +77,68 @@ def download_ftp(input, output, username, password, order):
             f.retrbinary("RETR %s" % file, open(file, "wb").write)
 
         counter += 1
-        print(counter, 'file downloaded out of', len(filelist))
+        print(counter, "file downloaded out of", len(filelist))
 
-    print('Finished: ', counter, ' files dowloaded from ', input)
+    print("Finished: ", counter, " files dowloaded from ", input)
     # Close FTP connection
     f.close()
 
 
 if __name__ == "__main__":
     """
-    Script to download CEDA data from the command line. Note you need to have a user account and 
+    Script to download CEDA data from the command line. Note you need to have a user account and
     provide your username and FTP password.
-    
+
     """
     # Initialize parser
     parser = argparse.ArgumentParser()
 
     # Adding optional argument
-    parser.add_argument("--input", help="Path where the CEDA data to download is located. This can be a path with"
-                                        "or without subdirectories. Set to `/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/`"
-                                        " to download all the raw UKCP2.2 climate projection data used in clim-recal.",
-                        required=True, type=str)
-    parser.add_argument("--output", help="Path to save the downloaded data", required=False, default=".", type=str)
-    parser.add_argument("--username", help="Username to connect to the CEDA servers", required=True, type=str)
-    parser.add_argument("--psw", help="FTP password to authenticate to the CEDA servers", required=True, type=str)
-    parser.add_argument("--reverse", help="Run download in reverse (useful to run downloads in parallel)",
-                        action='store_true')
-    parser.add_argument("--shuffle", help="Run download in shuffle mode (useful to run downloads in parallel)",
-                        action='store_true')
-    parser.add_argument("--change_hierarchy", help="Change the output sub-directories' hierarchy to fit the Turing "
-                                                   "Azure fileshare hierarchy (only applicable to UKCP climate "
-                                                   "projection data, i.e. when --input is set to "
-                                                   "`/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/`).",
-                        action='store_true')
+    parser.add_argument(
+        "--input",
+        help="Path where the CEDA data to download is located. This can be a path with"
+        "or without subdirectories. Set to `/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/`"
+        " to download all the raw UKCP2.2 climate projection data used in clim-recal.",
+        required=True,
+        type=str,
+    )
+    parser.add_argument(
+        "--output",
+        help="Path to save the downloaded data",
+        required=False,
+        default=".",
+        type=str,
+    )
+    parser.add_argument(
+        "--username",
+        help="Username to connect to the CEDA servers",
+        required=True,
+        type=str,
+    )
+    parser.add_argument(
+        "--psw",
+        help="FTP password to authenticate to the CEDA servers",
+        required=True,
+        type=str,
+    )
+    parser.add_argument(
+        "--reverse",
+        help="Run download in reverse (useful to run downloads in parallel)",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--shuffle",
+        help="Run download in shuffle mode (useful to run downloads in parallel)",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--change_hierarchy",
+        help="Change the output sub-directories' hierarchy to fit the Turing "
+        "Azure fileshare hierarchy (only applicable to UKCP climate "
+        "projection data, i.e. when --input is set to "
+        "`/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/`).",
+        action="store_true",
+    )
 
     # Read arguments from command line
     args = parser.parse_args()
@@ -132,12 +161,43 @@ if __name__ == "__main__":
         # this calls the download_ftp function multiple times to download all the CEDA UKCP data.
         # It reads them in the hierarchy that CEDA uses and converts them to a different hierarchy in
         # the destination fileshare (reverting run number and variable name and removing the "day" level)
-        for n in ["01", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "15"]:
-            for v in ["clt", "flashrate", "hurs", "huss", "pr", "prsn", "psl", "rls", "rss", "sfcWind",
-                      "snw", "tas", "tasmax", "tasmin", "uas", "vas", "wsgmax10m"]:
-                download_ftp(os.path.join(args.input, n, v, "day", "latest"),
-                             os.path.join(args.output, v, n, "latest"),
-                             args.username,
-                             args.psw,
-                             order)
-
+        for n in [
+            "01",
+            "04",
+            "05",
+            "06",
+            "07",
+            "08",
+            "09",
+            "10",
+            "11",
+            "12",
+            "13",
+            "15",
+        ]:
+            for v in [
+                "clt",
+                "flashrate",
+                "hurs",
+                "huss",
+                "pr",
+                "prsn",
+                "psl",
+                "rls",
+                "rss",
+                "sfcWind",
+                "snw",
+                "tas",
+                "tasmax",
+                "tasmin",
+                "uas",
+                "vas",
+                "wsgmax10m",
+            ]:
+                download_ftp(
+                    os.path.join(args.input, n, v, "day", "latest"),
+                    os.path.join(args.output, v, n, "latest"),
+                    args.username,
+                    args.psw,
+                    order,
+                )

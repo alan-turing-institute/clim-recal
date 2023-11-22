@@ -1,0 +1,78 @@
+project:
+  title: "clim-recal"
+  type: website
+  output-dir: _site
+  preview:
+    port: 8080
+    browser: false
+  render:
+    - "README.md"
+    - "!clim-recal.Rproj"
+    - "R/README.md"
+    - "R/misc/Identifying_Runs.md"
+    - "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
+    - "docs/reference"
+    - "docs/pipeline.qmd"
+    - "docs/contributing.md"
+    - "python/README.md"
+
+toc: True
+number-sections: True
+
+
+# tell quarto to read the generated sidebar
+metadata-files:
+  - _sidebar.yml
+
+
+website:
+  back-to-top-navigation: true
+  sidebar:
+    style: "docked"
+    search: true
+    contents:
+      - text: "Summary"
+        href: "README.md"
+      - text: "Pipeline"
+        href: "docs/pipeline.qmd"
+      - text: "Contributing"
+        href: "docs/contributing.md"
+      - section: "R"
+        contents:
+          - href: "R/README.md"
+            text: Overview
+          - href: "R/misc/Identifying_Runs.md"
+            text: Identifying Runs
+          - section: "Comparing R and Python"
+            contents:
+              - href: "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
+                text: "WIP Comparing HADs grids"
+
+      - section: "python"
+        contents:
+          - "python/README.md"
+          - section: "Reference"
+            contents:
+              - href: "docs/reference/data_download.ceda_ftp_download.download_ftp.qmd"
+                text: "download_ftp"
+              - href: "docs/reference/utils.qmd"
+                text: "Utilities"
+
+
+quartodoc:
+  # the name used to import the package you want to create reference docs for
+  package: null
+  dir: docs/reference
+
+  # write sidebar data to this file
+  sidebar: _sidebar.yml
+  source_dir: ./python/
+
+  sections:
+    - title: Data Source Management
+      desc: How data is downloaded for use
+      contents:
+        # the functions being documented in the package.
+        # you can refer to anything: class methods, modules, etc..
+        - data_download.ceda_ftp_download.download_ftp
+        - utils

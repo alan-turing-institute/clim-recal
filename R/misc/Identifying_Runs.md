@@ -1,7 +1,7 @@
 **Identifying Runs for bias correction**
 ================
 Ruth C E Bowyer
-2023-05-19
+2023-06-13
 
 ``` r
 rm(list=ls())
@@ -28,6 +28,18 @@ for historical periods and future periods were calculated using
 In retrospect the conversion to df might not have been necessary/the
 most resource efficient, see comment
 here:<https://tmieno2.github.io/R-as-GIS-for-Economists/turning-a-raster-object-into-a-data-frame.html>
+– this was tested and using `terra::global` to calculate the raster-wide
+mean was less efficient
+
+**Update 13.05.23** - Adding in infill data, mean to be calculated over
+the whole time period
+
+As of June 2023, the tasmax-as-dataframe and tasmax daily means and the
+df data is located in `vmfileshare/Interim/tasmax_dfs/`
+
+There is an error in the naming convention - Y00_Y20 should be Y01 to
+reflect the infill data time period (although this does cover a breif
+period of 2000) - to be updated in future
 
 ``` r
 Runs <- c("01", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "15")
@@ -39,25 +51,34 @@ fp <- paste0("/Users/rbowyer/Library/CloudStorage/OneDrive-TheAlanTuringInstitut
 ```
 
 ``` r
+# Creating objects for names and filepath for each of the timer periods, for easy loading
 names <- gsub("df.avs_|.csv|df.", "", files)
-names_hist <- names[grepl("hist", names)]
-names_y21_40 <- names[grepl("Y21_Y40", names)]
-names_y61_80 <- names[grepl("Y61_Y80", names)]
+i <- c("hist", "Y00_Y20","Y21_Y40", "Y41_Y60", "Y61_Y80")
 
-fp_hist <- fp[grepl("_hist", fp)]
-fp_y21_40 <- fp[grepl("Y21_Y40", fp)]
-fp_y61_80 <- fp[grepl("Y61_Y80", fp)]
+namesL <- lapply(i, function(i){
+  n <- names[grepl(i, names)]
+  })
 
-dfs_hist <- lapply(fp_hist, read.csv)
-names(dfs_hist) <- names_hist
-
-dfs_y21_40 <- lapply(fp_y21_40, read.csv)
-names(dfs_y21_40) <- names_y21_40
-
-
-dfs_y61_80 <- lapply(fp_y61_80, read.csv)
-names(dfs_y61_80) <- names_y61_80
+names(namesL) <- paste0("names_",i)
+list2env(namesL, .GlobalEnv)
 ```
+
+    ## <environment: R_GlobalEnv>
+
+``` r
+dfL <- lapply(i, function(i){
+  fp <- fp[grepl(i, fp)]
+  dfs <- lapply(fp, read.csv)
+  n <- namesL[[paste0("names_",i)]]
+  names(dfs) <- n 
+  return(dfs)
+  })
+
+names(dfL) <- paste0("dfs_", i)
+list2env(dfL, .GlobalEnv)
+```
+
+    ## <environment: R_GlobalEnv>
 
 ## **2. Comparing Runs**
 
@@ -67,7 +88,7 @@ names(dfs_y61_80) <- names_y61_80
 Y <- rep(c(1981:2000), each=360)  
 
 dfs_hist <- lapply(names_hist, function(i){
-  df <- dfs_hist[[i]]
+  df <- dfs_hist[[i]]  
   names(df) <- c("day", "mean", "sd")
   df$model <- i
   df$dn <- 1:nrow(df)
@@ -79,7 +100,7 @@ dfs_hist <- lapply(names_hist, function(i){
 historical_means <- dfs_hist %>% reduce(rbind)
 ```
 
-### **Time series - daily **
+### **Time series - daily**
 
 ``` r
 ggplot(historical_means) + 
@@ -132,7 +153,7 @@ ggplot(historical_means, aes(sample=mean, colour=factor(model))) +
 
 ![](Identifying_Runs_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
-### **Time series - annual mean **
+### **Time series - annual mean**
 
 ``` r
 #Aggregating to year for annual average 
@@ -205,7 +226,7 @@ ggplot(historical_means_y, aes(sample=mean.annual, colour=factor(model))) +
 
 ![](Identifying_Runs_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
-### **Time series - annual max **
+### **Time series - annual max**
 
 ``` r
 historical_max_y <- historical_means %>% 
@@ -300,8 +321,8 @@ Max vals are different but based on means then selection would be Run 02
 Y <- rep(c(2021:2040), each=360)  
 
 
-dfs_y21_40 <- lapply(names_y21_40, function(i){
-  df <- dfs_y21_40[[i]]
+dfs_Y21_Y40 <- lapply(names_Y21_Y40, function(i){
+  df <- dfs_Y21_Y40[[i]]
   names(df) <- c("day", "mean", "sd")
   df$model <- i
   df$dn <- 1:nrow(df)
@@ -309,18 +330,18 @@ dfs_y21_40 <- lapply(names_y21_40, function(i){
   return(df)
 })
 
-#Create a single df in long form of Runs for the y21_40 period 
-y21_40_means <- dfs_y21_40 %>% reduce(rbind)
+#Create a single df in long form of Runs for the Y21_Y40 period 
+Y21_Y40_means <- dfs_Y21_Y40 %>% reduce(rbind)
 ```
 
-### **Time series - daily **
+### **Time series - daily**
 
 ``` r
-ggplot(y21_40_means) + 
+ggplot(Y21_Y40_means) + 
     geom_line(aes(x=dn, y=mean, group=model, colour=model)) +
   # Removing sd ribbon for ease of viewing
   #geom_ribbon(aes(x =dn, ymin = mean - sd, ymax= mean + sd), alpha=0.4) + 
-    theme_bw() + xlab("Day (y21_40 1980 - 2000)") + 
+    theme_bw() + xlab("Daily (1980 - 2000)") + 
     ylab("Daily mean max temp (tasmax) oC") + 
   #scale_fill_brewer(palette = "Paired", name = "") +
    scale_colour_brewer(palette = "Paired", name = "") +
@@ -338,17 +359,17 @@ ggplot(y21_40_means) +
 
 ![](Identifying_Runs_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
-### **boxplot - mean y21_40**
+### **boxplot - mean Y21_Y40**
 
 ``` r
 #Create a pallete specific to the runs so when reordered maintain the same colours 
-y21_40_means$model <- as.factor(y21_40_means$model)
+Y21_Y40_means$model <- as.factor(Y21_Y40_means$model)
 c <- brewer.pal(12, "Paired")
-my_colours <- setNames(c, levels(y21_40_means$model))
+my_colours <- setNames(c, levels(Y21_Y40_means$model))
 ```
 
 ``` r
-y21_40_means %>% 
+Y21_Y40_means %>% 
   mutate(model = fct_reorder(model, mean, .fun='median')) %>%
     ggplot(aes(x=reorder(model, mean), y=mean, fill=model)) + 
     geom_boxplot() + theme_bw() + 
@@ -363,7 +384,7 @@ y21_40_means %>%
 ### **qqplot - daily means**
 
 ``` r
-ggplot(y21_40_means, aes(sample=mean, colour=factor(model))) +
+ggplot(Y21_Y40_means, aes(sample=mean, colour=factor(model))) +
   stat_qq() +
   stat_qq_line()+
   theme_bw()+
@@ -373,20 +394,20 @@ ggplot(y21_40_means, aes(sample=mean, colour=factor(model))) +
 
 ![](Identifying_Runs_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
 
-### **Time series - annual mean **
+### **Time series - annual mean**
 
 ``` r
 #Aggregating to year for annual average 
 
-y21_40_means$Yf <- as.factor(y21_40_means$Y)
+Y21_Y40_means$Yf <- as.factor(Y21_Y40_means$Y)
 
-y21_40_means_y <- y21_40_means %>% 
+Y21_Y40_means_y <- Y21_Y40_means %>% 
   group_by(Yf, model) %>%
   dplyr::summarise(mean.annual=mean(mean, na.rm=T), sd.annual=sd(mean, na.rm = T))
 ```
 
 ``` r
-ggplot(y21_40_means_y) + 
+ggplot(Y21_Y40_means_y) + 
     geom_line(aes(x = as.numeric(Yf), y=mean.annual, 
               color=model)) +
     theme_bw() + xlab("Year (2021 - 2040)") + 
@@ -401,7 +422,7 @@ ggplot(y21_40_means_y) +
 
 ``` r
 # Plotting with SDs in geom_ribbon to see if anything wildely different
-ggplot(y21_40_means_y) + 
+ggplot(Y21_Y40_means_y) + 
     geom_ribbon(aes(as.numeric(Yf), y=mean.annual, 
                                ymin = mean.annual - sd.annual,
                               ymax= mean.annual + sd.annual,
@@ -418,10 +439,10 @@ ggplot(y21_40_means_y) +
 
 ![](Identifying_Runs_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
 
-### **boxplot - annual mean y21_40**
+### **boxplot - annual mean 2021 - 2040**
 
 ``` r
-y21_40_means_y %>% 
+Y21_Y40_means_y %>% 
   mutate(model = fct_reorder(model, mean.annual, .fun='median')) %>%
     ggplot(aes(x=reorder(model, mean.annual), y=mean.annual, fill=model)) + 
     geom_boxplot() + theme_bw() + 
@@ -436,7 +457,7 @@ y21_40_means_y %>%
 ### **qqplot - annual means**
 
 ``` r
-ggplot(y21_40_means_y, aes(sample=mean.annual, colour=factor(model))) +
+ggplot(Y21_Y40_means_y, aes(sample=mean.annual, colour=factor(model))) +
   stat_qq() +
   stat_qq_line()+
   theme_bw()+
@@ -446,16 +467,16 @@ ggplot(y21_40_means_y, aes(sample=mean.annual, colour=factor(model))) +
 
 ![](Identifying_Runs_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
 
-### **Time series - annual max **
+### **Time series - annual max**
 
 ``` r
-y21_40_max_y <- y21_40_means %>% 
+Y21_Y40_max_y <- Y21_Y40_means %>% 
   group_by(Yf, model) %>%
   dplyr::summarise(max=max(mean, na.rm=T))
 ```
 
 ``` r
-ggplot(y21_40_max_y) +
+ggplot(Y21_Y40_max_y) +
       geom_line(aes(x = as.numeric(Yf), y=max, 
               color=model)) +
     theme_bw() + xlab("Year (2021 - 2040)") + 
@@ -471,7 +492,7 @@ ggplot(y21_40_max_y) +
 ### **boxplot - annual max**
 
 ``` r
-y21_40_max_y %>% 
+Y21_Y40_max_y %>% 
   mutate(model = fct_reorder(model, max, .fun='median')) %>%
     ggplot(aes(x=reorder(model, max), y=max, fill=model)) + 
     geom_boxplot() + theme_bw() + 
@@ -489,7 +510,7 @@ Daily means:
 
 ``` r
 #-1 removes the intercept to compare coefficients of all Runs
-av1 <- aov(mean ~ model - 1, y21_40_means)
+av1 <- aov(mean ~ model - 1, Y21_Y40_means)
 av1$coefficients[order(av1$coefficients)]
 ```
 
@@ -503,7 +524,7 @@ av1$coefficients[order(av1$coefficients)]
 Annual means:
 
 ``` r
-av2 <- aov(mean.annual ~ model - 1, y21_40_means_y)
+av2 <- aov(mean.annual ~ model - 1, Y21_Y40_means_y)
 av2$coefficients[order(av2$coefficients)]
 ```
 
@@ -517,7 +538,7 @@ av2$coefficients[order(av2$coefficients)]
 Max of means
 
 ``` r
-av3 <- aov(max ~ model - 1, y21_40_max_y)
+av3 <- aov(max ~ model - 1, Y21_Y40_max_y)
 av3$coefficients[order(av3$coefficients)]
 ```
 
@@ -540,8 +561,8 @@ Run 06 (so definetly Run 3 but others to be discussed)
 Y <- rep(c(2061:2080), each=360)  
 
 
-dfs_y61_80 <- lapply(names_y61_80, function(i){
-  df <- dfs_y61_80[[i]]
+dfs_Y61_Y80 <- lapply(names_Y61_Y80, function(i){
+  df <- dfs_Y61_Y80[[i]]
   names(df) <- c("day", "mean", "sd")
   df$model <- i
   df$dn <- 1:nrow(df)
@@ -549,18 +570,18 @@ dfs_y61_80 <- lapply(names_y61_80, function(i){
   return(df)
 })
 
-#Create a single df in long form of Runs for the y61_80 period 
-y61_80_means <- dfs_y61_80 %>% reduce(rbind)
+#Create a single df in long form of Runs for the Y61_Y80 period 
+Y61_Y80_means <- dfs_Y61_Y80 %>% reduce(rbind)
 ```
 
-### **Time series - daily **
+### **Time series - daily**
 
 ``` r
-ggplot(y61_80_means) + 
+ggplot(Y61_Y80_means) + 
     geom_line(aes(x=dn, y=mean, group=model, colour=model)) +
   # Removing sd ribbon for ease of viewing
   #geom_ribbon(aes(x =dn, ymin = mean - sd, ymax= mean + sd), alpha=0.4) + 
-    theme_bw() + xlab("Day (y61_80 1980 - 2000)") + 
+    theme_bw() + xlab("Day (2060 - 2080)") + 
     ylab("Daily mean max temp (tasmax) oC") + 
   #scale_fill_brewer(palette = "Paired", name = "") +
    scale_colour_brewer(palette = "Paired", name = "") +
@@ -572,17 +593,17 @@ ggplot(y61_80_means) +
 
 ![](Identifying_Runs_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
 
-### **boxplot - mean y61_80**
+### **boxplot - mean Y61_Y80**
 
 ``` r
 #Create a pallete specific to the runs so when reordered maintain the same colours 
-y61_80_means$model <- as.factor(y61_80_means$model)
+Y61_Y80_means$model <- as.factor(Y61_Y80_means$model)
 c <- brewer.pal(12, "Paired")
-my_colours <- setNames(c, levels(y61_80_means$model))
+my_colours <- setNames(c, levels(Y61_Y80_means$model))
 ```
 
 ``` r
-y61_80_means %>% 
+Y61_Y80_means %>% 
   mutate(model = fct_reorder(model, mean, .fun='median')) %>%
     ggplot(aes(x=reorder(model, mean), y=mean, fill=model)) + 
     geom_boxplot() + theme_bw() + 
@@ -597,7 +618,7 @@ y61_80_means %>%
 ### **qqplot - daily means**
 
 ``` r
-ggplot(y61_80_means, aes(sample=mean, colour=factor(model))) +
+ggplot(Y61_Y80_means, aes(sample=mean, colour=factor(model))) +
   stat_qq() +
   stat_qq_line()+
   theme_bw()+
@@ -607,20 +628,20 @@ ggplot(y61_80_means, aes(sample=mean, colour=factor(model))) +
 
 ![](Identifying_Runs_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
 
-### **Time series - annual mean **
+### **Time series - annual mean**
 
 ``` r
 #Aggregating to year for annual average 
 
-y61_80_means$Yf <- as.factor(y61_80_means$Y)
+Y61_Y80_means$Yf <- as.factor(Y61_Y80_means$Y)
 
-y61_80_means_y <- y61_80_means %>% 
+Y61_Y80_means_y <- Y61_Y80_means %>% 
   group_by(Yf, model) %>%
   dplyr::summarise(mean.annual=mean(mean, na.rm=T), sd.annual=sd(mean, na.rm = T))
 ```
 
 ``` r
-ggplot(y61_80_means_y) + 
+ggplot(Y61_Y80_means_y) + 
     geom_line(aes(x = as.numeric(Yf), y=mean.annual, 
               color=model)) +
     theme_bw() + xlab("Year (2061 - 2080)") + 
@@ -635,7 +656,7 @@ ggplot(y61_80_means_y) +
 
 ``` r
 # Plotting with SDs in geom_ribbon to see if anything wildely different
-ggplot(y61_80_means_y) + 
+ggplot(Y61_Y80_means_y) + 
     geom_ribbon(aes(as.numeric(Yf), y=mean.annual, 
                                ymin = mean.annual - sd.annual,
                               ymax= mean.annual + sd.annual,
@@ -652,10 +673,10 @@ ggplot(y61_80_means_y) +
 
 ![](Identifying_Runs_files/figure-gfm/unnamed-chunk-42-1.png)<!-- -->
 
-### **boxplot - annual mean y61_80**
+### **boxplot - annual mean Y61_Y80**
 
 ``` r
-y61_80_means_y %>% 
+Y61_Y80_means_y %>% 
   mutate(model = fct_reorder(model, mean.annual, .fun='median')) %>%
     ggplot(aes(x=reorder(model, mean.annual), y=mean.annual, fill=model)) + 
     geom_boxplot() + theme_bw() + 
@@ -670,7 +691,7 @@ y61_80_means_y %>%
 ### **qqplot - annual means**
 
 ``` r
-ggplot(y61_80_means_y, aes(sample=mean.annual, colour=factor(model))) +
+ggplot(Y61_Y80_means_y, aes(sample=mean.annual, colour=factor(model))) +
   stat_qq() +
   stat_qq_line()+
   theme_bw()+
@@ -680,16 +701,16 @@ ggplot(y61_80_means_y, aes(sample=mean.annual, colour=factor(model))) +
 
 ![](Identifying_Runs_files/figure-gfm/unnamed-chunk-44-1.png)<!-- -->
 
-### **Time series - annual max **
+### **Time series - annual max**
 
 ``` r
-y61_80_max_y <- y61_80_means %>% 
+Y61_Y80_max_y <- Y61_Y80_means %>% 
   group_by(Yf, model) %>%
   dplyr::summarise(max=max(mean, na.rm=T))
 ```
 
 ``` r
-ggplot(y61_80_max_y) +
+ggplot(Y61_Y80_max_y) +
       geom_line(aes(x = as.numeric(Yf), y=max, 
               color=model)) +
     theme_bw() + xlab("Year (2061 - 2080)") + 
@@ -705,7 +726,7 @@ ggplot(y61_80_max_y) +
 ### **boxplot - annual max**
 
 ``` r
-y61_80_max_y %>% 
+Y61_Y80_max_y %>% 
   mutate(model = fct_reorder(model, max, .fun='median')) %>%
     ggplot(aes(x=reorder(model, max), y=max, fill=model)) + 
     geom_boxplot() + theme_bw() + 
@@ -723,7 +744,7 @@ Daily means:
 
 ``` r
 #-1 removes the intercept to compare coefficients of all Runs
-av1 <- aov(mean ~ model - 1, y61_80_means)
+av1 <- aov(mean ~ model - 1, Y61_Y80_means)
 av1$coefficients[order(av1$coefficients)]
 ```
 
@@ -737,7 +758,7 @@ av1$coefficients[order(av1$coefficients)]
 Annual means:
 
 ``` r
-av2 <- aov(mean.annual ~ model - 1, y61_80_means_y)
+av2 <- aov(mean.annual ~ model - 1, Y61_Y80_means_y)
 av2$coefficients[order(av2$coefficients)]
 ```
 
@@ -751,7 +772,7 @@ av2$coefficients[order(av2$coefficients)]
 Max of means
 
 ``` r
-av3 <- aov(max ~ model - 1, y61_80_max_y)
+av3 <- aov(max ~ model - 1, Y61_Y80_max_y)
 av3$coefficients[order(av3$coefficients)]
 ```
 
@@ -770,13 +791,50 @@ Run 3 and 5 suggested above
 
 The result per time slice suggest different runs, aside from run 5
 
+### Add in infill data
+
+**Update 13.05.23** - Adding in the infill data, and taking the anova
+result across the whole time period
+
+``` r
+Y <- rep(c(2001:2020), each=360)  
+
+dfs_Y00_Y20 <- lapply(names_Y00_Y20, function(i){
+  df <- dfs_Y00_Y20[[i]]  
+  names(df) <- c("day", "mean", "sd")
+  df$model <- i
+  df$dn <- 1:nrow(df)
+  df$Y <- Y
+  df$Yf <- as.factor(df$Y)
+  return(df)
+})
+
+
+Y <- rep(c(2041:2060), each=360)  
+
+dfs_Y41_Y60 <- lapply(names_Y41_Y60, function(i){
+  df <- dfs_Y41_Y60[[i]]  
+  names(df) <- c("day", "mean", "sd")
+  df$model <- i
+  df$dn <- 1:nrow(df)
+  df$Y <- Y
+  df$Yf <- as.factor(df$Y)
+  return(df)
+})
+
+
+#Create a single df in long form as above
+Y00_Y20_means <- dfs_Y00_Y20 %>% reduce(rbind) 
+Y41_Y60_means <- dfs_Y41_Y60 %>% reduce(rbind) 
+```
+
 Assessing what the combined times slices suggest via anova
 
-Daily means:
+#### Daily means:
 
 ``` r
 #-1 removes the intercept to compare coefficients of all Runs
-all.means <- rbind(historical_means, y21_40_means, y61_80_means)
+all.means <- rbind(historical_means, Y00_Y20_means, Y21_Y40_means, Y41_Y60_means, Y61_Y80_means)
 
 x <- as.character(all.means$model)
 all.means$model <- substr(x, nchar(x)-4, nchar(x))
@@ -786,15 +844,34 @@ av1 <- aov(mean ~ model - 1, all.means)
 av1$coefficients[order(av1$coefficients)]
 ```
 
-    ## modelRun10 modelRun05 modelRun02 modelRun09 modelRun07 modelRun03 modelRun08 
-    ##   11.17510   12.48221   12.92077   12.92383   12.93620   13.00464   13.01388 
-    ## modelRun01 modelRun04 modelRun06 modelRun12 modelRun11 
-    ##   13.01623   13.02117   13.45437   13.46607   13.56872
+    ## modelRun10 modelRun05 modelRun09 modelRun04 modelRun03 modelRun07 modelRun08 
+    ##   11.12464   12.48165   12.79216   12.89910   12.91685   12.91894   12.95115 
+    ## modelRun02 modelRun01 modelRun12 modelRun06 modelRun11 
+    ##   12.95347   12.97947   13.38267   13.40644   13.61157
 
-Annual means:
+#### Annual means:
 
 ``` r
-all.means_y <- rbind(historical_means_y, y21_40_means_y, y61_80_means_y)
+# As above, creating annual means 
+infill.L <- list(Y00_Y20_means, Y41_Y60_means)
+
+infill.L_y <- lapply(infill.L, function(x){
+  means_y <- x %>% 
+  group_by(Yf, model) %>%
+  dplyr::summarise(mean.annual=mean(mean, na.rm=T), sd.annual=sd(mean, na.rm = T))})
+```
+
+    ## `summarise()` has grouped output by 'Yf'. You can override using the `.groups`
+    ## argument.
+    ## `summarise()` has grouped output by 'Yf'. You can override using the `.groups`
+    ## argument.
+
+``` r
+all.means_y <- rbind(historical_means_y, 
+                     infill.L_y[[1]], 
+                     Y21_Y40_means_y, 
+                     infill.L_y[[2]], 
+                     Y61_Y80_means_y)
 
 x <- as.character(all.means_y$model)
 all.means_y$model <- substr(x, nchar(x)-4, nchar(x))
@@ -803,9 +880,11 @@ av2 <- aov(mean.annual ~ model - 1, all.means_y)
 av2$coefficients[order(av2$coefficients)]
 ```
 
-    ## modelRun10 modelRun05 modelRun02 modelRun09 modelRun07 modelRun03 modelRun08 
-    ##   11.17510   12.48221   12.92077   12.92383   12.93620   13.00464   13.01388 
-    ## modelRun01 modelRun04 modelRun06 modelRun12 modelRun11 
-    ##   13.01623   13.02117   13.45437   13.46607   13.56872
+    ## modelRun10 modelRun05 modelRun09 modelRun04 modelRun03 modelRun07 modelRun08 
+    ##   11.12464   12.48165   12.79216   12.89910   12.91685   12.91894   12.95115 
+    ## modelRun02 modelRun01 modelRun12 modelRun06 modelRun11 
+    ##   12.95347   12.97947   13.38267   13.40644   13.61157
 
-Considering all together, suggests: Runs 05, Run03, Run08 and Run12
+**Updated June 13th 2023 result**
+
+Considering all together, suggests: Runs 05, Run07, Run08 and Run06

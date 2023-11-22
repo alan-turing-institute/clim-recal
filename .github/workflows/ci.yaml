@@ -1,0 +1,132 @@
+name: CI
+
+# Enable Buildkit and let compose use it to speed up image building
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  CONDA_ENV_NAME: clim-recal
+  MIN_PYTHON_VERSION: 3.9
+  PYTHON_MODULE_FOLDER: /home/jovyan/python/
+  COVERAGE_SVG_FOLDER: docs/assets/
+  COVERAGE_SVG_FILE_NAME: coverage.svg
+  # replace below with references to previous config lines
+  COVERAGE_SVG_PATH: docs/assets/coverage.svg
+
+on:
+  pull_request:
+    branches: ['main', 'docker-config']
+    paths-ignore: ['docs/**']
+
+  push:
+    branches: ['main', 'docker-config']
+    paths-ignore: ['docs/**']
+
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  linter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@main
+
+      - name: Set up Python
+        uses: actions/setup-python@main
+        with:
+          python-version: ${{ env.MIN_PYTHON_VERSION }}
+
+      - name: Run pre-commit
+        uses: pre-commit/action@main
+
+      - name: Update pre-commit
+        uses: pre-commit-ci/lite-action@v1.0.1
+        if: always()
+
+  # With no caching at all the entire ci process takes 4m 30s to complete!
+  pytest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@main
+
+      - name: Build, Test and Save Test Coverage
+        run: |
+          docker compose build
+          docker compose up --detach
+          docker compose exec jupyter bash -c "conda run -n $CONDA_ENV_NAME --cwd python pytest -p no:sugar"
+          export JUPYTER_ID=$(docker compose ps -q jupyter)
+          echo "jupyter_id=$JUPYTER_ID" >> $GITHUB_ENV
+          echo "jupyter_id=$JUPYTER_ID"
+
+      - name: Check accessing saved jupyter_id
+        run: |
+          echo ${{ env.jupyter_id }}
+
+      - name: Copy test coverage results
+        run: |
+          docker cp ${{ env.jupyter_id }}:${{ env.PYTHON_MODULE_FOLDER }}${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
+
+      - name: Archive coverage svg
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-badge
+          path: ${{ env.COVERAGE_SVG_PATH }}
+
+      - name: Tear down the Stack
+        run: docker compose down
+
+  docs:
+    needs: [linter, pytest]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.MIN_PYTHON_VERSION }}
+
+      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+        name: Update cache_id
+
+      - name: Download coverage svg
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-badge
+          path: ${{ env.COVERAGE_SVG_PATH }}
+
+      - name: Build quarto
+        run: |
+          docker compose build
+          # docker cp ${{ env.jupyter_id }}:app/docs/assets/coverage.svg docs/assets/
+          docker compose up --detach
+          docker cp $(docker compose ps -q docs):/usr/local/apache2/htdocs/ .
+
+      # - name: Build docker quarto
+      #   run: |
+      #     docker compose build
+      #     docker cp ${{ env.jupyter_id }}:app/docs/assets/coverage.svg docs/assets/
+      #     docker compose up --detach
+      #     docker cp $(docker compose ps -q docs):/usr/local/apache2/htdocs/ .
+          # docker cp $(docker compose ps -q docs)/app/_site/ /usr/local/apache2/htdocs/
+      # - name: Apply mkdocs cache
+      #   uses: actions/cache@v3
+      #   with:
+      #     key: mkdocs-material-${{ env.cache_id }}
+      #     path: .cache
+      #     restore-keys: |
+      #       mkdocs-material-
+      #
+      # - name: Install doc dependencies via poetry
+      #   run: |
+      #     pip install poetry
+      #     poetry install --with docs
+      #
+      # - name: Build docs with gh-deploy --force
+      #   run: |
+      #     poetry run mkdocs gh-deploy --force
