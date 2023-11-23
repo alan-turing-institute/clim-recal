@@ -18,9 +18,9 @@ library(RColorBrewer)
 
 ## **0. About**
 
-Script to identify the mean, 2nd highest and 2nd lowers daily tasmax per UKCP18 CPM run. 
+Script to identify the mean, 2nd highest and 2nd lowers daily tasmax per UKCP18 CPM run.
 
-These runs will be the focus of initial bias correction focus 
+These runs will be the focus of initial bias correction focus
 
 ## **1. Load Data**
 
@@ -32,7 +32,7 @@ In retrospect the conversion to df might not have been necessary/the most resour
 
 As of June 2023, the tasmax-as-dataframe and tasmax daily means and the df data is located in `vmfileshare/Interim/tasmax_dfs/`
 
-There is an error in the naming convention - Y00_Y20 should be Y01 to reflect the infill data time period (although this does cover a breif period of 2000) - to be updated in future 
+There is an error in the naming convention - Y00_Y20 should be Y01 to reflect the infill data time period (although this does cover a breif period of 2000) - to be updated in future
 
 
 ```{r}
@@ -65,7 +65,7 @@ dfL <- lapply(i, function(i){
   fp <- fp[grepl(i, fp)]
   dfs <- lapply(fp, read.csv)
   n <- namesL[[paste0("names_",i)]]
-  names(dfs) <- n 
+  names(dfs) <- n
   return(dfs)
   })
 
@@ -79,10 +79,10 @@ list2env(dfL, .GlobalEnv)
 
 ```{r}
 
-Y <- rep(c(1981:2000), each=360)  
+Y <- rep(c(1981:2000), each=360)
 
 dfs_hist <- lapply(names_hist, function(i){
-  df <- dfs_hist[[i]]  
+  df <- dfs_hist[[i]]
   names(df) <- c("day", "mean", "sd")
   df$model <- i
   df$dn <- 1:nrow(df)
@@ -90,26 +90,26 @@ dfs_hist <- lapply(names_hist, function(i){
   return(df)
 })
 
-#Create a single df in long form of Runs for the historical period 
+#Create a single df in long form of Runs for the historical period
 historical_means <- dfs_hist %>% reduce(rbind)
- 
+
 ```
 
 ### **Time series - daily**
 
 ```{r fig.height=8}
 
-ggplot(historical_means) + 
+ggplot(historical_means) +
     geom_line(aes(x=dn, y=mean, group=model, colour=model)) +
 
-    theme_bw() + xlab("Day (Historical 1980 - 2000)") + 
-    ylab("Daily mean max temp (tasmax) oC") + 
+    theme_bw() + xlab("Day (Historical 1980 - 2000)") +
+    ylab("Daily mean max temp (tasmax) oC") +
 
    scale_colour_brewer(palette = "Paired", name = "") +
     theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),
-        legend.position = "none") + 
-  facet_wrap(.~ model, ncol=3) 
+        legend.position = "none") +
+  facet_wrap(.~ model, ncol=3)
 
 
 ```
@@ -118,7 +118,7 @@ ggplot(historical_means) +
 ### **boxplot - mean historical**
 
 ```{r}
-#Create a pallete specific to the runs so when reordered maintain the same colours 
+#Create a pallete specific to the runs so when reordered maintain the same colours
 historical_means$model <- as.factor(historical_means$model)
 c <- brewer.pal(12, "Paired")
 my_colours <- setNames(c, levels(historical_means$model))
@@ -128,10 +128,10 @@ my_colours <- setNames(c, levels(historical_means$model))
 
 ```{r}
 
-historical_means %>% 
+historical_means %>%
   mutate(model = fct_reorder(model, mean, .fun='median')) %>%
-    ggplot(aes(x=reorder(model, mean), y=mean, fill=model)) + 
-    geom_boxplot() + theme_bw() + 
+    ggplot(aes(x=reorder(model, mean), y=mean, fill=model)) +
+    geom_boxplot() + theme_bw() +
     ylab("Mean daily max temp (tasmax) oC") + xlab("model") +
     scale_fill_manual(values = my_colours) +
     theme(axis.text.x=element_blank(),
@@ -157,40 +157,40 @@ ggplot(historical_means, aes(sample=mean, colour=factor(model))) +
 
 ```{r message=FALSE}
 
-#Aggregating to year for annual average 
+#Aggregating to year for annual average
 
 historical_means$Yf <- as.factor(historical_means$Y)
 
-historical_means_y <- historical_means %>% 
+historical_means_y <- historical_means %>%
   group_by(Yf, model) %>%
   dplyr::summarise(mean.annual=mean(mean, na.rm=T), sd.annual=sd(mean, na.rm = T))
 ```
 
 ```{r}
-ggplot(historical_means_y) + 
-    geom_line(aes(x = as.numeric(Yf), y=mean.annual, 
+ggplot(historical_means_y) +
+    geom_line(aes(x = as.numeric(Yf), y=mean.annual,
               color=model)) +
-    theme_bw() + xlab("Year (Historical 1980 - 2000)") + 
-    ylab("Annual mean of mean daily max temp (tasmax) oC") + 
+    theme_bw() + xlab("Year (Historical 1980 - 2000)") +
+    ylab("Annual mean of mean daily max temp (tasmax) oC") +
   scale_fill_brewer(palette = "Paired", name = "") +
    scale_colour_brewer(palette = "Paired", name = "") +
     theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank()) 
+        axis.ticks.x=element_blank())
 ```
 
 
 ```{r}
 
 # Plotting with SDs in geom_ribbon to see if anything wildely different
-ggplot(historical_means_y) + 
-    geom_ribbon(aes(as.numeric(Yf), y=mean.annual, 
+ggplot(historical_means_y) +
+    geom_ribbon(aes(as.numeric(Yf), y=mean.annual,
                                ymin = mean.annual - sd.annual,
                               ymax= mean.annual + sd.annual,
-                    fill=model),  alpha=0.4) + 
-    geom_line(aes(x = as.numeric(Yf), y=mean.annual, 
+                    fill=model),  alpha=0.4) +
+    geom_line(aes(x = as.numeric(Yf), y=mean.annual,
               color=model)) +
-    theme_bw() + xlab("Year (Historical 1980 - 2000)") + 
-    ylab("Annual mean of mean daily max temp (tasmax) oC") + 
+    theme_bw() + xlab("Year (Historical 1980 - 2000)") +
+    ylab("Annual mean of mean daily max temp (tasmax) oC") +
   scale_fill_brewer(palette = "Paired", name = "") +
    scale_colour_brewer(palette = "Paired", name = "") +
     theme(axis.text.x=element_blank(),
@@ -202,10 +202,10 @@ ggplot(historical_means_y) +
 
 ```{r}
 
-historical_means_y %>% 
+historical_means_y %>%
   mutate(model = fct_reorder(model, mean.annual, .fun='median')) %>%
-    ggplot(aes(x=reorder(model, mean.annual), y=mean.annual, fill=model)) + 
-    geom_boxplot() + theme_bw() + 
+    ggplot(aes(x=reorder(model, mean.annual), y=mean.annual, fill=model)) +
+    geom_boxplot() + theme_bw() +
     ylab("Annual max daily max temp oC") + xlab("model") +
    scale_fill_manual(values = my_colours) +
     theme(axis.text.x=element_blank(),
@@ -231,7 +231,7 @@ ggplot(historical_means_y, aes(sample=mean.annual, colour=factor(model))) +
 
 ```{r message=FALSE}
 
-historical_max_y <- historical_means %>% 
+historical_max_y <- historical_means %>%
   group_by(Yf, model) %>%
   dplyr::summarise(max=max(mean, na.rm=T))
 ```
@@ -240,14 +240,14 @@ historical_max_y <- historical_means %>%
 ```{r}
 
 ggplot(historical_max_y) +
-      geom_line(aes(x = as.numeric(Yf), y=max, 
+      geom_line(aes(x = as.numeric(Yf), y=max,
               color=model)) +
-    theme_bw() + xlab("Year (Historical 1980 - 2000)") + 
-    ylab("Annual max of mean daily max temp (tasmax) oC") + 
+    theme_bw() + xlab("Year (Historical 1980 - 2000)") +
+    ylab("Annual max of mean daily max temp (tasmax) oC") +
   scale_fill_brewer(palette = "Paired", name = "") +
    scale_colour_brewer(palette = "Paired", name = "") +
     theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank()) 
+        axis.ticks.x=element_blank())
 
 ```
 
@@ -257,10 +257,10 @@ ggplot(historical_max_y) +
 
 ```{r}
 
-historical_max_y %>% 
+historical_max_y %>%
   mutate(model = fct_reorder(model, max, .fun='median')) %>%
-    ggplot(aes(x=reorder(model, max), y=max, fill=model)) + 
-    geom_boxplot() + theme_bw() + 
+    ggplot(aes(x=reorder(model, max), y=max, fill=model)) +
+    geom_boxplot() + theme_bw() +
     ylab("Annual max of mean daily max temp (tasmax) oC") + xlab("model") +
    scale_fill_manual(values = my_colours) +
     theme(axis.text.x=element_blank(),
@@ -304,7 +304,7 @@ Max vals are different but based on means then selection would be Run 02 (2nd lo
 
 ```{r}
 
-Y <- rep(c(2021:2040), each=360)  
+Y <- rep(c(2021:2040), each=360)
 
 
 dfs_Y21_Y40 <- lapply(names_Y21_Y40, function(i){
@@ -316,27 +316,27 @@ dfs_Y21_Y40 <- lapply(names_Y21_Y40, function(i){
   return(df)
 })
 
-#Create a single df in long form of Runs for the Y21_Y40 period 
+#Create a single df in long form of Runs for the Y21_Y40 period
 Y21_Y40_means <- dfs_Y21_Y40 %>% reduce(rbind)
- 
+
 ```
 
 ### **Time series - daily**
 
 ```{r}
 
-ggplot(Y21_Y40_means) + 
+ggplot(Y21_Y40_means) +
     geom_line(aes(x=dn, y=mean, group=model, colour=model)) +
   # Removing sd ribbon for ease of viewing
-  #geom_ribbon(aes(x =dn, ymin = mean - sd, ymax= mean + sd), alpha=0.4) + 
-    theme_bw() + xlab("Daily (1980 - 2000)") + 
-    ylab("Daily mean max temp (tasmax) oC") + 
+  #geom_ribbon(aes(x =dn, ymin = mean - sd, ymax= mean + sd), alpha=0.4) +
+    theme_bw() + xlab("Daily (1980 - 2000)") +
+    ylab("Daily mean max temp (tasmax) oC") +
   #scale_fill_brewer(palette = "Paired", name = "") +
    scale_colour_brewer(palette = "Paired", name = "") +
     theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),
-        legend.position = "none") + 
-  facet_wrap(.~ model, ncol=3) + guides(fill = FALSE)  
+        legend.position = "none") +
+  facet_wrap(.~ model, ncol=3) + guides(fill = FALSE)
 
 
 ```
@@ -345,7 +345,7 @@ ggplot(Y21_Y40_means) +
 ### **boxplot - mean Y21_Y40**
 
 ```{r}
-#Create a pallete specific to the runs so when reordered maintain the same colours 
+#Create a pallete specific to the runs so when reordered maintain the same colours
 Y21_Y40_means$model <- as.factor(Y21_Y40_means$model)
 c <- brewer.pal(12, "Paired")
 my_colours <- setNames(c, levels(Y21_Y40_means$model))
@@ -355,10 +355,10 @@ my_colours <- setNames(c, levels(Y21_Y40_means$model))
 
 ```{r}
 
-Y21_Y40_means %>% 
+Y21_Y40_means %>%
   mutate(model = fct_reorder(model, mean, .fun='median')) %>%
-    ggplot(aes(x=reorder(model, mean), y=mean, fill=model)) + 
-    geom_boxplot() + theme_bw() + 
+    ggplot(aes(x=reorder(model, mean), y=mean, fill=model)) +
+    geom_boxplot() + theme_bw() +
     ylab("Mean daily max temp (tasmax) oC") + xlab("model") +
     scale_fill_manual(values = my_colours) +
     theme(axis.text.x=element_blank(),
@@ -384,40 +384,40 @@ ggplot(Y21_Y40_means, aes(sample=mean, colour=factor(model))) +
 
 ```{r message= FALSE, warning=FALSE}
 
-#Aggregating to year for annual average 
+#Aggregating to year for annual average
 
 Y21_Y40_means$Yf <- as.factor(Y21_Y40_means$Y)
 
-Y21_Y40_means_y <- Y21_Y40_means %>% 
+Y21_Y40_means_y <- Y21_Y40_means %>%
   group_by(Yf, model) %>%
   dplyr::summarise(mean.annual=mean(mean, na.rm=T), sd.annual=sd(mean, na.rm = T))
 ```
 
 ```{r}
-ggplot(Y21_Y40_means_y) + 
-    geom_line(aes(x = as.numeric(Yf), y=mean.annual, 
+ggplot(Y21_Y40_means_y) +
+    geom_line(aes(x = as.numeric(Yf), y=mean.annual,
               color=model)) +
-    theme_bw() + xlab("Year (2021 - 2040)") + 
-    ylab("Annual mean of mean daily max temp (tasmax) oC") + 
+    theme_bw() + xlab("Year (2021 - 2040)") +
+    ylab("Annual mean of mean daily max temp (tasmax) oC") +
   scale_fill_brewer(palette = "Paired", name = "") +
    scale_colour_brewer(palette = "Paired", name = "") +
     theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank()) 
+        axis.ticks.x=element_blank())
 ```
 
 
 ```{r}
 
 # Plotting with SDs in geom_ribbon to see if anything wildely different
-ggplot(Y21_Y40_means_y) + 
-    geom_ribbon(aes(as.numeric(Yf), y=mean.annual, 
+ggplot(Y21_Y40_means_y) +
+    geom_ribbon(aes(as.numeric(Yf), y=mean.annual,
                                ymin = mean.annual - sd.annual,
                               ymax= mean.annual + sd.annual,
-                    fill=model),  alpha=0.4) + 
-    geom_line(aes(x = as.numeric(Yf), y=mean.annual, 
+                    fill=model),  alpha=0.4) +
+    geom_line(aes(x = as.numeric(Yf), y=mean.annual,
               color=model)) +
-    theme_bw() + xlab("Year (2021 - 2040)") + 
-    ylab("Annual mean of mean daily max temp (tasmax) oC") + 
+    theme_bw() + xlab("Year (2021 - 2040)") +
+    ylab("Annual mean of mean daily max temp (tasmax) oC") +
   scale_fill_brewer(palette = "Paired", name = "") +
    scale_colour_brewer(palette = "Paired", name = "") +
     theme(axis.text.x=element_blank(),
@@ -429,10 +429,10 @@ ggplot(Y21_Y40_means_y) +
 
 ```{r}
 
-Y21_Y40_means_y %>% 
+Y21_Y40_means_y %>%
   mutate(model = fct_reorder(model, mean.annual, .fun='median')) %>%
-    ggplot(aes(x=reorder(model, mean.annual), y=mean.annual, fill=model)) + 
-    geom_boxplot() + theme_bw() + 
+    ggplot(aes(x=reorder(model, mean.annual), y=mean.annual, fill=model)) +
+    geom_boxplot() + theme_bw() +
     ylab("Annual max daily max temp oC") + xlab("model") +
    scale_fill_manual(values = my_colours) +
     theme(axis.text.x=element_blank(),
@@ -458,7 +458,7 @@ ggplot(Y21_Y40_means_y, aes(sample=mean.annual, colour=factor(model))) +
 
 ```{r message=FALSE}
 
-Y21_Y40_max_y <- Y21_Y40_means %>% 
+Y21_Y40_max_y <- Y21_Y40_means %>%
   group_by(Yf, model) %>%
   dplyr::summarise(max=max(mean, na.rm=T))
 ```
@@ -467,14 +467,14 @@ Y21_Y40_max_y <- Y21_Y40_means %>%
 ```{r}
 
 ggplot(Y21_Y40_max_y) +
-      geom_line(aes(x = as.numeric(Yf), y=max, 
+      geom_line(aes(x = as.numeric(Yf), y=max,
               color=model)) +
-    theme_bw() + xlab("Year (2021 - 2040)") + 
-    ylab("Annual max of mean daily max temp (tasmax) oC") + 
+    theme_bw() + xlab("Year (2021 - 2040)") +
+    ylab("Annual max of mean daily max temp (tasmax) oC") +
   scale_fill_brewer(palette = "Paired", name = "") +
    scale_colour_brewer(palette = "Paired", name = "") +
     theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank()) 
+        axis.ticks.x=element_blank())
 
 ```
 
@@ -484,10 +484,10 @@ ggplot(Y21_Y40_max_y) +
 
 ```{r}
 
-Y21_Y40_max_y %>% 
+Y21_Y40_max_y %>%
   mutate(model = fct_reorder(model, max, .fun='median')) %>%
-    ggplot(aes(x=reorder(model, max), y=max, fill=model)) + 
-    geom_boxplot() + theme_bw() + 
+    ggplot(aes(x=reorder(model, max), y=max, fill=model)) +
+    geom_boxplot() + theme_bw() +
     ylab("Annual max of mean daily max temp (tasmax) oC") + xlab("model") +
    scale_fill_manual(values = my_colours) +
     theme(axis.text.x=element_blank(),
@@ -515,7 +515,7 @@ av2$coefficients[order(av2$coefficients)]
 
 ```
 
-Max of means 
+Max of means
 
 ```{r}
 
@@ -535,7 +535,7 @@ Based on this period, the seelction would be: Run 05, Run 03, Run 08, Run 06 (so
 
 ```{r}
 
-Y <- rep(c(2061:2080), each=360)  
+Y <- rep(c(2061:2080), each=360)
 
 
 dfs_Y61_Y80 <- lapply(names_Y61_Y80, function(i){
@@ -547,27 +547,27 @@ dfs_Y61_Y80 <- lapply(names_Y61_Y80, function(i){
   return(df)
 })
 
-#Create a single df in long form of Runs for the Y61_Y80 period 
+#Create a single df in long form of Runs for the Y61_Y80 period
 Y61_Y80_means <- dfs_Y61_Y80 %>% reduce(rbind)
- 
+
 ```
 
 ### **Time series - daily**
 
 ```{r}
 
-ggplot(Y61_Y80_means) + 
+ggplot(Y61_Y80_means) +
     geom_line(aes(x=dn, y=mean, group=model, colour=model)) +
   # Removing sd ribbon for ease of viewing
-  #geom_ribbon(aes(x =dn, ymin = mean - sd, ymax= mean + sd), alpha=0.4) + 
-    theme_bw() + xlab("Day (2060 - 2080)") + 
-    ylab("Daily mean max temp (tasmax) oC") + 
+  #geom_ribbon(aes(x =dn, ymin = mean - sd, ymax= mean + sd), alpha=0.4) +
+    theme_bw() + xlab("Day (2060 - 2080)") +
+    ylab("Daily mean max temp (tasmax) oC") +
   #scale_fill_brewer(palette = "Paired", name = "") +
    scale_colour_brewer(palette = "Paired", name = "") +
     theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),
-        legend.position = "none") + 
-  facet_wrap(.~ model, ncol=3) + guides(fill = FALSE)  
+        legend.position = "none") +
+  facet_wrap(.~ model, ncol=3) + guides(fill = FALSE)
 
 
 ```
@@ -576,7 +576,7 @@ ggplot(Y61_Y80_means) +
 ### **boxplot - mean Y61_Y80**
 
 ```{r}
-#Create a pallete specific to the runs so when reordered maintain the same colours 
+#Create a pallete specific to the runs so when reordered maintain the same colours
 Y61_Y80_means$model <- as.factor(Y61_Y80_means$model)
 c <- brewer.pal(12, "Paired")
 my_colours <- setNames(c, levels(Y61_Y80_means$model))
@@ -586,10 +586,10 @@ my_colours <- setNames(c, levels(Y61_Y80_means$model))
 
 ```{r}
 
-Y61_Y80_means %>% 
+Y61_Y80_means %>%
   mutate(model = fct_reorder(model, mean, .fun='median')) %>%
-    ggplot(aes(x=reorder(model, mean), y=mean, fill=model)) + 
-    geom_boxplot() + theme_bw() + 
+    ggplot(aes(x=reorder(model, mean), y=mean, fill=model)) +
+    geom_boxplot() + theme_bw() +
     ylab("Mean daily max temp (tasmax) oC") + xlab("model") +
     scale_fill_manual(values = my_colours) +
     theme(axis.text.x=element_blank(),
@@ -615,40 +615,40 @@ ggplot(Y61_Y80_means, aes(sample=mean, colour=factor(model))) +
 
 ```{r message= FALSE, warning=FALSE}
 
-#Aggregating to year for annual average 
+#Aggregating to year for annual average
 
 Y61_Y80_means$Yf <- as.factor(Y61_Y80_means$Y)
 
-Y61_Y80_means_y <- Y61_Y80_means %>% 
+Y61_Y80_means_y <- Y61_Y80_means %>%
   group_by(Yf, model) %>%
   dplyr::summarise(mean.annual=mean(mean, na.rm=T), sd.annual=sd(mean, na.rm = T))
 ```
 
 ```{r}
-ggplot(Y61_Y80_means_y) + 
-    geom_line(aes(x = as.numeric(Yf), y=mean.annual, 
+ggplot(Y61_Y80_means_y) +
+    geom_line(aes(x = as.numeric(Yf), y=mean.annual,
               color=model)) +
-    theme_bw() + xlab("Year (2061 - 2080)") + 
-    ylab("Annual mean of mean daily max temp (tasmax) oC") + 
+    theme_bw() + xlab("Year (2061 - 2080)") +
+    ylab("Annual mean of mean daily max temp (tasmax) oC") +
   scale_fill_brewer(palette = "Paired", name = "") +
    scale_colour_brewer(palette = "Paired", name = "") +
     theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank()) 
+        axis.ticks.x=element_blank())
 ```
 
 
 ```{r}
 
 # Plotting with SDs in geom_ribbon to see if anything wildely different
-ggplot(Y61_Y80_means_y) + 
-    geom_ribbon(aes(as.numeric(Yf), y=mean.annual, 
+ggplot(Y61_Y80_means_y) +
+    geom_ribbon(aes(as.numeric(Yf), y=mean.annual,
                                ymin = mean.annual - sd.annual,
                               ymax= mean.annual + sd.annual,
-                    fill=model),  alpha=0.4) + 
-    geom_line(aes(x = as.numeric(Yf), y=mean.annual, 
+                    fill=model),  alpha=0.4) +
+    geom_line(aes(x = as.numeric(Yf), y=mean.annual,
               color=model)) +
-    theme_bw() + xlab("Year (2061 - 2080)") + 
-    ylab("Annual mean of mean daily max temp (tasmax) oC") + 
+    theme_bw() + xlab("Year (2061 - 2080)") +
+    ylab("Annual mean of mean daily max temp (tasmax) oC") +
   scale_fill_brewer(palette = "Paired", name = "") +
    scale_colour_brewer(palette = "Paired", name = "") +
     theme(axis.text.x=element_blank(),
@@ -660,10 +660,10 @@ ggplot(Y61_Y80_means_y) +
 
 ```{r}
 
-Y61_Y80_means_y %>% 
+Y61_Y80_means_y %>%
   mutate(model = fct_reorder(model, mean.annual, .fun='median')) %>%
-    ggplot(aes(x=reorder(model, mean.annual), y=mean.annual, fill=model)) + 
-    geom_boxplot() + theme_bw() + 
+    ggplot(aes(x=reorder(model, mean.annual), y=mean.annual, fill=model)) +
+    geom_boxplot() + theme_bw() +
     ylab("Annual max daily max temp oC") + xlab("model") +
    scale_fill_manual(values = my_colours) +
     theme(axis.text.x=element_blank(),
@@ -689,7 +689,7 @@ ggplot(Y61_Y80_means_y, aes(sample=mean.annual, colour=factor(model))) +
 
 ```{r message=FALSE}
 
-Y61_Y80_max_y <- Y61_Y80_means %>% 
+Y61_Y80_max_y <- Y61_Y80_means %>%
   group_by(Yf, model) %>%
   dplyr::summarise(max=max(mean, na.rm=T))
 ```
@@ -698,14 +698,14 @@ Y61_Y80_max_y <- Y61_Y80_means %>%
 ```{r}
 
 ggplot(Y61_Y80_max_y) +
-      geom_line(aes(x = as.numeric(Yf), y=max, 
+      geom_line(aes(x = as.numeric(Yf), y=max,
               color=model)) +
-    theme_bw() + xlab("Year (2061 - 2080)") + 
-    ylab("Annual max of mean daily max temp (tasmax) oC") + 
+    theme_bw() + xlab("Year (2061 - 2080)") +
+    ylab("Annual max of mean daily max temp (tasmax) oC") +
   scale_fill_brewer(palette = "Paired", name = "") +
    scale_colour_brewer(palette = "Paired", name = "") +
     theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank()) 
+        axis.ticks.x=element_blank())
 
 ```
 
@@ -715,10 +715,10 @@ ggplot(Y61_Y80_max_y) +
 
 ```{r}
 
-Y61_Y80_max_y %>% 
+Y61_Y80_max_y %>%
   mutate(model = fct_reorder(model, max, .fun='median')) %>%
-    ggplot(aes(x=reorder(model, max), y=max, fill=model)) + 
-    geom_boxplot() + theme_bw() + 
+    ggplot(aes(x=reorder(model, max), y=max, fill=model)) +
+    geom_boxplot() + theme_bw() +
     ylab("Annual max of mean daily max temp (tasmax) oC") + xlab("model") +
    scale_fill_manual(values = my_colours) +
     theme(axis.text.x=element_blank(),
@@ -746,7 +746,7 @@ av2$coefficients[order(av2$coefficients)]
 
 ```
 
-Max of means 
+Max of means
 
 ```{r}
 
@@ -757,7 +757,7 @@ av3$coefficients[order(av3$coefficients)]
 
 Runs suggested by this slice are Run 05, Run 09, Run 03 and Run 11
 
-Run 3 and 5 suggested above 
+Run 3 and 5 suggested above
 
 ## **3. Everything combined**
 
@@ -765,14 +765,14 @@ The result per time slice suggest different runs, aside from run 5
 
 ### Add in infill data
 
-**Update 13.05.23** - Adding in the infill data, and taking the anova result across the whole time period 
+**Update 13.05.23** - Adding in the infill data, and taking the anova result across the whole time period
 
 ```{r infill means}
 
-Y <- rep(c(2001:2020), each=360)  
+Y <- rep(c(2001:2020), each=360)
 
 dfs_Y00_Y20 <- lapply(names_Y00_Y20, function(i){
-  df <- dfs_Y00_Y20[[i]]  
+  df <- dfs_Y00_Y20[[i]]
   names(df) <- c("day", "mean", "sd")
   df$model <- i
   df$dn <- 1:nrow(df)
@@ -782,10 +782,10 @@ dfs_Y00_Y20 <- lapply(names_Y00_Y20, function(i){
 })
 
 
-Y <- rep(c(2041:2060), each=360)  
+Y <- rep(c(2041:2060), each=360)
 
 dfs_Y41_Y60 <- lapply(names_Y41_Y60, function(i){
-  df <- dfs_Y41_Y60[[i]]  
+  df <- dfs_Y41_Y60[[i]]
   names(df) <- c("day", "mean", "sd")
   df$model <- i
   df$dn <- 1:nrow(df)
@@ -796,8 +796,8 @@ dfs_Y41_Y60 <- lapply(names_Y41_Y60, function(i){
 
 
 #Create a single df in long form as above
-Y00_Y20_means <- dfs_Y00_Y20 %>% reduce(rbind) 
-Y41_Y60_means <- dfs_Y41_Y60 %>% reduce(rbind) 
+Y00_Y20_means <- dfs_Y00_Y20 %>% reduce(rbind)
+Y41_Y60_means <- dfs_Y41_Y60 %>% reduce(rbind)
 ```
 
 Assessing what the combined times slices suggest via anova
@@ -819,21 +819,21 @@ av1$coefficients[order(av1$coefficients)]
 #### Annual means:
 
 ```{r}
-# As above, creating annual means 
+# As above, creating annual means
 infill.L <- list(Y00_Y20_means, Y41_Y60_means)
 
 infill.L_y <- lapply(infill.L, function(x){
-  means_y <- x %>% 
+  means_y <- x %>%
   group_by(Yf, model) %>%
   dplyr::summarise(mean.annual=mean(mean, na.rm=T), sd.annual=sd(mean, na.rm = T))})
 
 ```
 
 ```{r}
-all.means_y <- rbind(historical_means_y, 
-                     infill.L_y[[1]], 
-                     Y21_Y40_means_y, 
-                     infill.L_y[[2]], 
+all.means_y <- rbind(historical_means_y,
+                     infill.L_y[[1]],
+                     Y21_Y40_means_y,
+                     infill.L_y[[2]],
                      Y61_Y80_means_y)
 
 x <- as.character(all.means_y$model)
@@ -847,5 +847,4 @@ av2$coefficients[order(av2$coefficients)]
 
 **Updated June 13th 2023 result**
 
-Considering all together, suggests: Runs 05, Run07, Run08 and Run06 
-
+Considering all together, suggests: Runs 05, Run07, Run08 and Run06

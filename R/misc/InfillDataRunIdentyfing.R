@@ -1,6 +1,6 @@
 # Script for converting all UKCP CPM input data to dataframes
 # Updating to include infill data:
-# This script edited from: 'ConvertingallCPMdatatodf.R' 
+# This script edited from: 'ConvertingallCPMdatatodf.R'
 ## As a note for future, I did try and run this to extract the means via terra but interestingly would have taken much longer!
 
 library(terra)
@@ -25,9 +25,7 @@ file.paths <- lapply(Runs, function(i){
   fp <- paste0(dd, "Reprojected_infill/UKCP2.2/tasmax/", i, "/latest/")
   f <- list.files(fp)
   files <- f[!grepl(".aux.xml", f)]
-  # Data for infill only pulled out - if re-run use all 
+  # Data for infill only pulled out - if re-run use all
   files <- files[grepl(infill.years, files)]
   files.p <- paste0(fp, files)
 })
-
- 

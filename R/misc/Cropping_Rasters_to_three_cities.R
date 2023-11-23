@@ -1,4 +1,4 @@
-## Crop CPM and HADs 
+## Crop CPM and HADs
 
 rm(list=ls())
 #setwd("~/Desktop/clim-recal/clim-recal/")
@@ -14,7 +14,7 @@ dd <- "/mnt/vmfileshare/ClimateData/"
 
 ## Using the extents (ie full grid) rather than masking and cropping to city outlines
 
-# 1. London 
+# 1. London
 f <- paste0(dd,'shapefiles/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom_2022_7279368953270783580/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom.shp')
 UK.shape <-vect(f)
 London <- UK.shape[which(UK.shape$nuts118cd=="UKI")]
@@ -57,8 +57,8 @@ ext.L <- list(London.ext, Glasgow.ext, Manchester.ext)
 names(ext.L) <- cities
 
 lapply(cities, function(x){
-  
-  cpm_read_crop(runs=runs, var = var, 
+
+  cpm_read_crop(runs=runs, var = var,
                 fp =  paste0(dd, "Reprojected_infill/UKCP2.2/"),
                 rd = paste0(dd, "Cropped/three.cities/CPM/"),
                 crop.area=ext.L[[x]],
@@ -71,26 +71,24 @@ lapply(cities, function(x){
 var <- c("tasmax", "tasmin", "rainfall")
 
 lapply(cities, function(x){
-  
-  hads_read_crop(var = var, 
-                 fp= paste0(dd,  "Processed/HadsUKgrid/resampled_2.2km/"), 
+
+  hads_read_crop(var = var,
+                 fp= paste0(dd,  "Processed/HadsUKgrid/resampled_2.2km/"),
                  rd= paste0(dd, "Cropped/three.cities/Hads.original360/"),
                  file.date="19801201", #Start from the same date as the CPM
                  crop.area=ext.L[[x]],
                  cropname=x) })
 
 
-#### HADs - updated 360 calendar 
+#### HADs - updated 360 calendar
 
 var <- c("tasmax", "tasmin", "rainfall")
 
 lapply(cities, function(x){
-  
-  hads_read_crop(var = var, 
-                 fp= paste0(dd,  "Processed/HadsUKgrid/resampled_calendarfix/"), 
+
+  hads_read_crop(var = var,
+                 fp= paste0(dd,  "Processed/HadsUKgrid/resampled_calendarfix/"),
                  rd= paste0(dd, "Cropped/three.cities/Hads.updated360/"),
                  file.date="19801201", #Start from the same date as the CPM
                  crop.area=ext.L[[x]],
                  cropname=x) })
-
-
