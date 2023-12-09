@@ -1,0 +1,849 @@
+---
+title: "Bias correction assessment"
+author: "Ruth Bowyer"
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    theme: cosmo
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 4
+    code_folding: hide
+    df_print: paged
+params:
+  ask: false
+---
+
+
+```{r libs and setup, message=FALSE, warning=F}
+rm(list=ls())
+
+knitr::opts_knit$set(root.dir="/mnt/vmfileshare/ClimateData/")
+
+# Add in the automatic installation process
+
+library(ggplot2)
+library(terra)
+library(tmap) #pretty maps
+library(RColorBrewer)
+library(tidyverse)
+library(kableExtra)
+install.packages("ncdf4")
+library(ncdf4)
+
+if (!require(devtools)) install.packages("devtools")
+
+library(devtools)
+install_github("hzambran/hydroTSM")
+install_github("hzambran/hydroGOF")
+```
+
+
+## **0. About**
+
+This is an example notebook for the assessment of bias corrected data, using output from the R 'qmap' package for the city of Glasgow and the variable 'tasmax'. 
+
+**Input data**
+
+This script requires the following data: 
+
+- 'obs.cal' - observation (HADs data) for the *calibration* period - the dataset used as the reference dataset in the bias correction
+- 'obs.val' - as above, for the *validation* period 
+- 'cpm.cal.raw' - the raw (uncorrected) data for the *calibration* period 
+- 'cpm.cal.adj' - the adjusted (bias-corrected)  data for the *calibration* period 
+- 'cpm.val.raw' - the raw (uncorrected) data for the *valibration* period 
+- 'cpm.val.adj' - the adjusted (bias-corrected) data for the *valibration* period 
+- 'cpm.proj.raw' - the raw (uncorrected) data for the *future/projected* period (optional)
+- 'cpm.proj.radj' - the adjusted (bias-corrected) data for the *future/projected* period (optional)
+
+The data is required in raster format and dataframe formats
+
+**Calibration vs Validation dates**
+
+The calibration period runs between 01-12-1980 to the day prior to 01-12-2010
+The validation period runs between 01-12-2010 to the day prior to 01-12-2020 
+
+```{r data loading, include=FALSE}
+
+#This chunk attempts to apply the conversion to python output data to a form that this script will also use. This could (and probably should) be moved to a source script -- also the R pre-processing should probably be moved to the bias correction script? 
+
+dd <- "/mnt/vmfileshare/ClimateData/" #Data directory of all data used in this script
+
+city <- "Glasgow" 
+var <- "tasmax" 
+runs <- c("05", "06", "07", "08")
+
+
+## Load a source raster to extract the crs
+r <- list.files(paste0(dd, "Reprojected_infill/UKCP2.2/tasmax/05/latest/"), full.names = T)[1]
+rast <- rast(r)
+crs <- crs(rast)
+
+####### PYTHON INPUTS HERE ######
+# if(input=="raster"){
+# This script uses both raster data and the raw data
+# This script uses Lists to group everything by runs
+# Therefore what is require from this here is to create a list object for each of the sets of the data as listed above, where the list items are the rasters or dataframes by run (ie each level of the list is a run)
+# .nc and .tif files can be read with rast("path/to/file.nc")
+# Conversion to df is just  as.data.frame(raster, xy=T) - easiest thing is just to loop using lapply the files 
+#dfs are assumed to be cells x time 
+
+rd.python <- "Debiased/three.cities.cropped/" 
+dd.python <- "/mnt/vmfileshare/ClimateData/" #Data directory of all data used in this script
+#ncfname <- paste(dd, rd, city, runs[1], var, ".nc", sep="")
+
+r.python <- lapply(runs, function(i){
+        fp = paste0(dd.python, rd.python, "/Glasgow/", i, "/tasmax")
+        list.files(fp, pattern="debiased*", full.names = T)})
+
+
+val_py <- lapply(1:4, function(x){
+      xx <- r.python[[x]]
+     L <-  lapply(1:4, function(i){
+        rp <- xx[[i]]
+        r <- rast(rp)
+        df <- as.data.frame(r, xy=T)
+        r <- rast(df, type="xyz")
+        crs(r) <- crs
+        dfr <- list(df,r)
+        names(dfr) <- c("df", "rast")
+        return(dfr)
+       })
+  names(L) <- c("delta_method", "quantile_delta", "quantile", "var_scaling")
+  return(L)
+})
+
+names(val_py) <- paste0("python_runs", runs)
+
+# } else if (input=="RDS"){
+### This R bit is a bit crazy because of the format output from the bias correction - at some point to be cleaned up and moved to a different script. 
+
+
+## The output created from the R bias correction framework is a list of dataframes containing all the data we need for this doc (although some are transposed).
+rd <- "Debiased/R/QuantileMapping/three.cities/" 
+
+files <- list.files(paste0(dd,rd,city),full.names=T)
+files.v <- files[grepl(var, files)]
+
+allruns <- lapply(files.v, readRDS)
+
+names <- gsub(paste0(dd,rd,city,"|/|.RDS"),"",files.v)
+names(allruns) <- names
+
+#This was returned for ease where multiple runs have been looped to apply this paritcular function, but actually we don't need a cope for each nor this data in a list. Therefore: 
+obs.cal.df <- as.data.frame(t(allruns[[1]]$t.obs))
+
+obs.val.df <- allruns[[1]]$val.df[c(1:3601)] #To run until 30th Nov 2020
+
+cpm.cal.raw.df.L <- lapply(allruns, function(L){
+  as.data.frame(t(L[["t.cal"]]))
+  }) 
+
+#In the R scirpt, the validation is corrected with the projected data as well - so needs to be seperated out (and transposed)
+cpm.val.raw.df.L <- lapply(allruns, function(L){
+  proj <- as.data.frame(t(L[["t.proj"]]))
+  val.end.date <- min(grep("20201201-", names(proj)))-1
+  cpm.val.raw.df <- proj[,1:val.end.date] 
+})
+
+cpm.proj.raw.df.L <- lapply(allruns, function(L){
+  proj <- as.data.frame(t(L[["t.proj"]]))
+  val.end.date <- min(grep("20201201-", names(proj)))
+  cpm.val.raw.df <- proj[,val.end.date:ncol(proj)] 
+})
+
+cpm.cal.adj.df.L <- lapply(allruns, function(L){
+  adj <- as.data.frame(t(L[["qm1.hist"]]))
+})
+
+  cpm.val.adj.df.L <- lapply(allruns, function(L){
+  proj <- as.data.frame(t(L[["qm1.val.proj"]]))
+  val.end.date <- min(grep("20201201-", names(proj)))-1
+  proj[,1:val.end.date] 
+})
+
+    cpm.proj.adj.df.L <- lapply(allruns, function(L){
+  proj <- as.data.frame(t(L[["qm1.val.proj"]]))
+  val.end.date <- min(grep("20201201-", names(proj)))
+  proj[,val.end.date:ncol(proj)] 
+})
+
+## Convert to rasters --requires creation of x and y cols from row names
+## For the comparison, just converting the observation and cpm for the cal and val perios (ie not the projection datasets)      
+      
+obsrastL <- lapply(list(obs.cal.df, obs.val.df), function(i){
+  rn <- row.names(i) #The rownames were saves as x_y coordinates
+      xi <- gsub("_.*", "", rn)
+      yi <- gsub(".*_", "", rn)
+      xy <- data.frame(x = xi, y = yi)
+      df <- cbind(xy, i)
+      r <- rast(df, type="xyz")
+      crs(r) <- crs
+      return(r)
+}) 
+
+names(obsrastL) <- c("obs.cal.rasts", "obs.val.rasts")
+list2env(obsrastL, .GlobalEnv)
+remove(obsrastL)
+      
+list2rast <- list(cpm.cal.raw.df.L, cpm.cal.adj.df.L, cpm.val.raw.df.L, cpm.val.adj.df.L)
+  
+rastsL <- lapply(list2rast, function(x){
+  allruns <- x
+  df.rL <- lapply(runs, function(i){
+      df <- allruns[[grep(i, names(allruns))]] #extract df based on run id
+      rn <- row.names(df) #The rownames were saves as x_y coordinates
+      xi <- gsub("_.*", "", rn)
+      yi <- gsub(".*_", "", rn)
+      xy <- data.frame(x = xi, y = yi)
+      df <- cbind(xy, df)
+      r <- rast(df, type="xyz")
+      crs(r) <- crs
+      return(r)
+      })
+  names(df.rL) <- runs
+  return(df.rL)
+    })
+
+names(rastsL) <- c("cpm.cal.raw.rasts.L", "cpm.cal.adj.rasts.L", "cpm.val.raw.rasts.L", "cpm.val.adj.rasts.L")
+  
+list2env(rastsL, .GlobalEnv)
+
+remove(rastsL) 
+remove(list2rast)
+
+gc()
+
+# } else {
+#  print("Invalid input")
+#}
+
+
+
+```
+
+
+## **1. Bias Correction Assessment: trends**
+
+An visual comparison of trends across observation, raw and adjusted data for the same time period
+
+### **1a. Raster comparison**
+
+Random selection of 3 days of the observation, calibration and two adjusted cals, for three historic days
+
+Adding in the city shapeoutline for prettier maps
+
+```{r}
+
+shape <-sf::st_as_sf(vect(paste0(dd, "shapefiles/three.cities/", city, "/", city, ".shp")))
+
+```
+
+
+
+#### **Day 1 - 1980-12-01 - calibration period ** {.tabset}
+
+##### Run05  
+
+```{r}
+
+tm_shape(val_py$python_runs05$delta_method$rast$tasmax_3000) + 
+  tm_raster(title="CPM, bias-corrected") + 
+  tm_layout(legend.outside = T) + 
+  tm_shape(shape) + 
+  tm_borders(col="black")
+```
+
+
+
+```{r, fig.show="hold", out.width="33%"}
+
+ tm_shape(obs.cal.rasts[[1]]) + 
+  tm_raster(title="Observation") + 
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+
+tm_shape(cpm.cal.raw.rasts.L$`05`[[1]]) + 
+  tm_raster(title="CPM, Raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`05`[[1]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+```
+
+
+##### Run06  
+
+```{r, fig.show="hold", out.width="33%"}
+tm_shape(obs.cal.rasts[[1]]) + tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.raw.rasts.L$`06`[[1]]) + 
+  tm_raster(title="CPM, Raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`06`[[1]]) +
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+```
+
+
+##### Run07  
+
+```{r, fig.show="hold", out.width="33%"}
+
+tm_shape(obs.cal.rasts[[1]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.raw.rasts.L$`07`[[1]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`07`[[1]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+```
+
+
+##### Run08
+
+```{r, fig.show="hold", out.width="33%"}
+
+tm_shape(obs.cal.rasts[[1]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.raw.rasts.L$`08`[[1]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`08`[[1]]) + tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+```
+
+#### **Day 2 - 2008-08-01 - calibration period ** {.tabset}
+
+##### Run05  
+
+```{r, fig.show="hold", out.width="33%"}
+
+ tm_shape(obs.cal.rasts[[7081]]) + 
+  tm_raster(title="Observation") + 
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+
+tm_shape(cpm.cal.raw.rasts.L$`05`[[7081]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`05`[[7081]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+```
+
+
+##### Run06  
+
+```{r, fig.show="hold", out.width="33%"}
+tm_shape(obs.cal.rasts[[7081]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.raw.rasts.L$`06`[[7081]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`06`[[7081]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+```
+
+
+##### Run07  
+
+```{r, fig.show="hold", out.width="33%"}
+
+tm_shape(obs.cal.rasts[[7081]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.raw.rasts.L$`07`[[7081]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`07`[[7081]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+```
+
+
+##### Run08
+
+```{r, fig.show="hold", out.width="33%"}
+
+tm_shape(obs.cal.rasts[[7081]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.raw.rasts.L$`08`[[7081]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.cal.adj.rasts.L$`08`[[7081]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+```
+
+
+
+#### **Day 3 - 2015-05-01 - calibration period ** {.tabset}
+
+##### Run05  
+
+```{r, fig.show="hold", out.width="33%"}
+
+ tm_shape(obs.val.rasts[[1590]]) + 
+  tm_raster(title="Observation") + 
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+
+tm_shape(cpm.val.raw.rasts.L$`05`[[1590]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.val.adj.rasts.L$`05`[[1590]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+```
+
+
+##### Run06  
+
+```{r, fig.show="hold", out.width="33%"}
+tm_shape(obs.val.rasts[[1590]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.val.raw.rasts.L$`06`[[1590]]) + 
+  tm_raster(title="CPM, Raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.val.adj.rasts.L$`06`[[1590]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+```
+
+
+##### Run07  
+
+```{r, fig.show="hold", out.width="33%"}
+
+tm_shape(obs.val.rasts[[1590]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.val.raw.rasts.L$`07`[[1590]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.val.adj.rasts.L$`07`[[1590]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+```
+
+
+##### Run08
+
+```{r, fig.show="hold", out.width="33%"}
+
+tm_shape(obs.val.rasts[[1590]]) + 
+  tm_raster(title="Observation") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.val.raw.rasts.L$`08`[[1590]]) + 
+  tm_raster(title="CPM, raw") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+tm_shape(cpm.val.adj.rasts.L$`08`[[1590]]) + 
+  tm_raster(title="CPM, bias-corrected") +
+  tm_layout(legend.outside = T) + 
+              tm_shape(shape) + tm_borders(col="black")
+
+```
+
+#### {-}
+
+
+## **2. Bias Correction Assessment: Metrics**
+
+Using the validation data set for this
+
+#NOTE TO GRIFF - if the data has ran we can delete this bit and add in the new stuff
+
+```{r}
+
+hads <- obs.val.df[c(32:2551)]
+raw.cpm_05 <- cpm.val.raw.df.L$Run05_tasmax[c(32:2551)]
+R_quantile_05 <- cpm.val.adj.df.L$Run05_tasmax[c(32:2551)]
+
+py_quantile_05 <- val_py$python_runs05$quantile$df[c(361:2880)]
+py_quantile_delta_05 <- val_py$python_runs05$quantile_delta$df[c(361:2880)]
+py_delta_05 <- val_py$python_runs05$delta_method$df[c(361:2880)]
+py_varscaling <- val_py$python_runs05$var_scaling$df[c(361:2880)]
+
+val.dfs <- list(hads, raw.cpm_05, R_quantile_05, py_quantile_05, py_quantile_delta_05, py_delta_05, py_varscaling)
+
+#Convert dfs to a vector
+val.dfs.v <- lapply(val.dfs, function(d){
+  #Convert to single vector
+  unlist(as.vector(d))})
+
+val.dfs.v.df <- as.data.frame(val.dfs.v)
+names(val.dfs.v.df) <- c("hads","cpm.raw_Run05", "R.quantile_Run05", "py.quantile_Run05",
+                         "py.quantile_delta_Run05", "py.delta_Run05", "py.var_scaling_Run05")
+```
+
+
+### **2a. Descriptive statistics**
+
+```{r descriptives validation}
+
+descriptives <- apply(val.dfs.v.df, 2, function(x){ 
+  per <- data.frame(as.list(quantile(x, probs=c(0.1, 0.9))))
+  data.frame(mean=mean(x), sd=sd(x), min = min(x), per10th=per$X10.,per90th=per$X90., max = max(x))
+})
+
+descriptives <- descriptives %>% reduce(rbind)
+row.names(descriptives) <- names(val.dfs.v.df)
+d <- t(descriptives)
+
+d %>% 
+  kable(booktabs = T) %>%
+  kable_styling()
+
+```
+
+
+#### Fig.Density plot of validation period 
+
+**Note** - need to add back in some facetting to this fig 
+
+```{r warning=F, message=F}
+m <- reshape2::melt(val.dfs.v.df)
+
+ggplot(m, aes(value, fill=variable, colour=variable)) + 
+  geom_density(alpha = 0.3, position="identity") + 
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1") +
+  scale_color_brewer(palette = "Set1") +
+  facet_wrap(.~variable)
+
+```
+
+#### Seasonal
+#Note here: we can change the the 1:7 back to 1:9 if we have 10 years of data as a result of data rerun
+
+```{r}
+
+# Using the 360 year structure, derive row indexes for each of the seasons, assuming the first calendar date represents Dec 1st
+
+winter <- c(1:90)
+for(i in 1:6){
+  x <-1 + i*360
+  y <-1 + i*360 + 90 #60 days is 3 months
+  winter <- c(winter, x:y)
+}
+
+spring <- c(91:180)
+for(i in 1:6){
+  x <-91 + (i*360)
+  y <-91 + (i*360) + 90 #90 days is 3 months
+  sping <- c(spring, x:y)
+}
+
+summer <- c(181:270)
+for(i in 1:6){
+  x <- 181 + (i*360)
+  y <- 181 + i*360 + 60 #60 days is 3 months
+  summer <- c(summer, x:y)
+}
+
+autumn <- c(271:360)
+for(i in 1:6){
+  x <- 181 + (i*360)
+  y <- 181 + i*360 + 60 #60 days is 3 months
+  autumn <- c(autumn, x:y)
+}
+
+seasons <- list(winter, spring, summer, autumn)
+
+  
+```
+
+
+```{r seasonal descriptives}
+
+seasonal.descriptives <- lapply(seasons, function(s){
+  
+#Convert dfs to a vector
+df<- lapply(val.dfs, function(d){
+    #Convert to single vector with just the seasonally defined columns
+  d <- d[,s]
+  unlist(as.vector(d))})
+
+df <- as.data.frame(df)
+names(df) <- c("hads","cpm.raw_Run05", "R.quantile_Run05", "py.quantile_Run05",
+                         "py.quantile_delta_Run05", "py.delta_Run05", "py.var_scaling_Run05")
+  
+  
+  descriptives <- apply(df, 2, function(x){ 
+    per <- data.frame(as.list(quantile(x, probs=c(0.1, 0.9))))
+    data.frame(mean=mean(x), sd=sd(x), min = min(x), per10th=per$X10.,per90th=per$X90., max = max(x))
+  })
+
+  descriptives <- descriptives %>% reduce(rbind)
+  row.names(descriptives) <- names(df)
+  d <- t(descriptives)
+})
+
+
+```
+
+#### Winter 
+
+```{r}
+seasonal.descriptives[[1]] %>% 
+    kable(booktabs = T) %>%
+    kable_styling() 
+```
+
+#### Spring 
+
+```{r}
+seasonal.descriptives[[2]] %>% 
+    kable(booktabs = T) %>%
+    kable_styling() 
+
+
+#### Summer
+
+```{r}
+seasonal.descriptives[[3]] %>% 
+    kable(booktabs = T) %>%
+    kable_styling()
+```
+
+#### Autumn
+
+```{r}
+seasonal.descriptives[[4]] %>% 
+    kable(booktabs = T) %>%
+    kable_styling() 
+```
+
+
+
+### **2b. Model fit statistics**
+
+Using the following to assess overall fit: 
+
+- **R-squared (rsq)**
+- **Root Square Mean Error (RMSE)**
+- **Nash-Sutcliffe Efficiency (NSE):** Magnitude of residual variance compared to measured data variance, ranges -∞ to 1, 1 = perfect match to observations
+- **Percent bias (PBIAS):** The optimal value of PBIAS is 0.0, with low-magnitude values indicating accurate model simulation. Positive values indicate overestimation bias, whereas negative values indicate model underestimation bias.
+
+```{r rsq}
+actual <- val.dfs.v.df$hads
+
+rsq <- sapply(val.dfs.v.df[c(2:ncol(val.dfs.v.df))], function(x){
+  cor(actual, x)^2
+})
+
+```
+
+```{r rmse}
+
+rmse <- sapply(val.dfs.v.df[c(2:ncol(val.dfs.v.df))], function(x){
+  sqrt(mean((actual - x)^2))
+})
+
+```
+
+```{r pbias}
+
+pbias <- sapply(val.dfs.v.df[c(2:ncol(val.dfs.v.df))], function(x){
+  hydroGOF::pbias(x, actual)
+})
+
+```
+
+```{r nse}
+nse <- sapply(val.dfs.v.df[c(2:ncol(val.dfs.v.df))], function(x){
+  hydroGOF::NSE(x, actual)
+})
+
+```
+
+Highlighting the bias corrected statistics 
+
+```{r}
+
+k <- cbind(rsq, rmse, pbias, nse)
+k %>% 
+  kable(booktabs = T) %>%
+  kable_styling() %>%
+  row_spec(grep(".bc.",row.names(k)), background = "lightgrey")
+
+```
+#### Seasonal
+
+```{r rsq}
+
+
+seasonal.model.stats <- lapply(seasons, function(s){
+  
+  #Convert dfs to a vector
+  df<- lapply(val.dfs, function(d){
+  
+  #Convert to single vector with just the seasonally defined columns
+  d <- d[,s]
+  unlist(as.vector(d))})
+
+  df <- as.data.frame(df)
+  names(df) <- c("hads","cpm.raw_Run05", "R.quantile_Run05", "py.quantile_Run05",
+                         "py.quantile_delta_Run05", "py.delta_Run05", "py.var_scaling_Run05")
+
+  actual <- df$hads
+
+  rsq <- sapply(df[c(2:ncol(df))], function(x){
+    cor(actual, x)^2
+  })
+
+
+  rmse <- sapply(df[c(2:ncol(df))], function(x){
+    sqrt(mean((actual - x)^2))
+  })
+
+
+  pbias <- sapply(df[c(2:ncol(df))], function(x){
+    hydroGOF::pbias(x, actual)
+  })
+
+
+  nse <- sapply(df[c(2:ncol(df))], function(x){
+    hydroGOF::NSE(x, actual)
+  })
+
+  k <- cbind(rsq, rmse, pbias, nse)})
+
+```
+
+Highlighting the bias corrected statistics 
+
+#### Winter
+
+```{r}
+
+seasonal.model.stats[[1]]  %>% 
+  kable(booktabs = T) %>%
+  kable_styling() 
+```
+
+
+#### Spring
+
+```{r}
+
+seasonal.model.stats[[2]]  %>% 
+  kable(booktabs = T) %>%
+  kable_styling() 
+```
+
+
+#### Summer
+
+```{r}
+
+seasonal.model.stats[[3]]  %>% 
+  kable(booktabs = T) %>%
+  kable_styling() 
+```
+
+
+
+#### Autumn
+
+```{r}
+
+seasonal.model.stats[[4]]  %>% 
+  kable(booktabs = T) %>%
+  kable_styling() 
+```
+
+
+## **3. Bias Correction Assessment: Metric specific - tasmax**
+
+### **3b Days above 30 degrees**
+
+(Not considered consecutively here)
+
+```{r eval=FALSE, include=FALSE}
+
+### Ruth to update 
+
+val.dfs.v.df$year <- substr(row.names(val.dfs.v.df), 8,11)
+
+over30 <- lapply(names(val.dfs.v.df), function(i){
+  x <- val.dfs.v.df[,i]
+  df <- aggregate(x, list(val.dfs.v.df$year), function(x){sum(x>=30)})
+  names(df) <- c("year", paste0("Days.over.30.", i))
+                 return(df)
+})
+
+over30 %>% reduce(left_join, "year")
+```
+
+
+
