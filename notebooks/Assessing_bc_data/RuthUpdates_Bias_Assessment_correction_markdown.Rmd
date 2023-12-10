@@ -23,7 +23,6 @@ list.of.packages <- c("ggplot2", "terra", "tmap", "RColorBrewer", "tidyverse", "
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 if (!require(devtools)) install.packages("devtools")
-library(devtools)
 install_github("hzambran/hydroTSM")
 install_github("hzambran/hydroGOF")
 
