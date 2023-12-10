@@ -18,52 +18,44 @@ params:
 ```{r libs and setup, message=FALSE, warning=F}
 rm(list=ls())
 
-# install packages
-list.of.packages <- c("ggplot2", "terra", "tmap", "RColorBrewer", "tidyverse", "kableExtra", "ncdf4", "knitr")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages)
-if (!require(devtools)) install.packages("devtools")
-install_github("hzambran/hydroTSM")
-install_github("hzambran/hydroGOF")
+# Add in the automatic installation process
 
-knitr::opts_knit$set(root.dir="/mnt/vmfileshare/ClimateData/")
-
-# import packages
 library(ggplot2)
 library(terra)
 library(tmap) #pretty maps
 library(RColorBrewer)
 library(tidyverse)
 library(kableExtra)
+install.packages("ncdf4")
 library(ncdf4)
-library(devtools)
 
+if (!require(devtools)) install.packages("devtools")
+
+library(devtools)
+install_github("hzambran/hydroTSM")
+install_github("hzambran/hydroGOF")
 ```
 
 
 ## **0. About**
 
-This is an example notebook for the assessment of bias corrected data, using output from the R 'qmap' package for the city of Glasgow and the variable 'tasmax'. 
+This is an example notebook for the assessment of bias corrected data, comparing it with our differing outputs from different methods across R and python. 
 
-**Input data**
-
-This script requires the following data: 
-
-- 'obs.cal' - observation (HADs data) for the *calibration* period - the dataset used as the reference dataset in the bias correction
-- 'obs.val' - as above, for the *validation* period 
-- 'cpm.cal.raw' - the raw (uncorrected) data for the *calibration* period 
-- 'cpm.cal.adj' - the adjusted (bias-corrected)  data for the *calibration* period 
-- 'cpm.val.raw' - the raw (uncorrected) data for the *valibration* period 
-- 'cpm.val.adj' - the adjusted (bias-corrected) data for the *valibration* period 
-- 'cpm.proj.raw' - the raw (uncorrected) data for the *future/projected* period (optional)
-- 'cpm.proj.radj' - the adjusted (bias-corrected) data for the *future/projected* period (optional)
-
-The data is required in raster format and dataframe formats
 
 **Calibration vs Validation dates**
 
+We have used split sample testing of 30 years : 10 years for calibration and validation.
+
 The calibration period runs between 01-12-1980 to the day prior to 01-12-2010
 The validation period runs between 01-12-2010 to the day prior to 01-12-2020 
+
+
+**Data used in this script:**
+
+Here we load data from **validation** period 
+
+The dates have been aligned manually and represent xx dys whilst we fix a bug
+
 
 ```{r data loading, include=FALSE}
 
@@ -76,26 +68,25 @@ var <- "tasmax"
 runs <- c("05", "06", "07", "08")
 
 
-## Load a source raster to extract the crs
+## Load a source raster to extract the crs as this sometimes fails between python and R
 r <- list.files(paste0(dd, "Reprojected_infill/UKCP2.2/tasmax/05/latest/"), full.names = T)[1]
 rast <- rast(r)
 crs <- crs(rast)
 
-####### PYTHON INPUTS HERE ######
-# if(input=="raster"){
+####### PYTHON INPUTS ######
 # This script uses both raster data and the raw data
 # This script uses Lists to group everything by runs
 # Therefore what is require from this here is to create a list object for each of the sets of the data as listed above, where the list items are the rasters or dataframes by run (ie each level of the list is a run)
 # .nc and .tif files can be read with rast("path/to/file.nc")
 # Conversion to df is just  as.data.frame(raster, xy=T) - easiest thing is just to loop using lapply the files 
 #dfs are assumed to be cells x time 
+#/vmfileshare/ClimateData/Debiased/three.cities.cropped/workshop/
 
-rd.python <- "Debiased/three.cities.cropped/" 
+rd.python <- "Debiased/three.cities.cropped/workshop/" 
 dd.python <- "/mnt/vmfileshare/ClimateData/" #Data directory of all data used in this script
-#ncfname <- paste(dd, rd, city, runs[1], var, ".nc", sep="")
 
 r.python <- lapply(runs, function(i){
-        fp = paste0(dd.python, rd.python, "/Glasgow/", i, "/tasmax")
+        fp = paste0(dd.python, rd.python, city,"/", i, "/", var)
         list.files(fp, pattern="debiased*", full.names = T)})
 
 
@@ -111,15 +102,15 @@ val_py <- lapply(1:4, function(x){
         names(dfr) <- c("df", "rast")
         return(dfr)
        })
-  names(L) <- c("delta_method", "quantile_delta", "quantile", "var_scaling")
+  names(L) <- c("py.delta_method", "py.quantile_delta", "py.quantile", "py.var_scaling")
   return(L)
 })
 
 names(val_py) <- paste0("python_runs", runs)
 
-# } else if (input=="RDS"){
-### This R bit is a bit crazy because of the format output from the bias correction - at some point to be cleaned up and moved to a different script. 
+```
 
+```{r}
 
 ## The output created from the R bias correction framework is a list of dataframes containing all the data we need for this doc (although some are transposed).
 rd <- "Debiased/R/QuantileMapping/three.cities/" 
@@ -133,30 +124,20 @@ names <- gsub(paste0(dd,rd,city,"|/|.RDS"),"",files.v)
 names(allruns) <- names
 
 #This was returned for ease where multiple runs have been looped to apply this paritcular function, but actually we don't need a cope for each nor this data in a list. Therefore: 
-obs.cal.df <- as.data.frame(t(allruns[[1]]$t.obs))
+#obs.cal.df <- as.data.frame(t(allruns[[1]]$t.obs))
 
-obs.val.df <- allruns[[1]]$val.df[c(1:3601)] #To run until 30th Nov 2020
-
-cpm.cal.raw.df.L <- lapply(allruns, function(L){
-  as.data.frame(t(L[["t.cal"]]))
-  }) 
-
+obs.val.df <- allruns[[1]]$val.df #To run between 1st Dec 2010 and 30th Nov 2020
+obs.val.df <- obs.val.df[c(1:3600)]
+obs.val.df <- obs.val.df[,-removethisindex]
 #In the R scirpt, the validation is corrected with the projected data as well - so needs to be seperated out (and transposed)
 cpm.val.raw.df.L <- lapply(allruns, function(L){
   proj <- as.data.frame(t(L[["t.proj"]]))
-  val.end.date <- min(grep("20201201-", names(proj)))-1
+ val.end.date <- min(grep("20201201-", names(proj)))-1
   cpm.val.raw.df <- proj[,1:val.end.date] 
+  cpm.val.raw.df <- cpm.val.raw.df[,!removethisindex]
 })
 
-cpm.proj.raw.df.L <- lapply(allruns, function(L){
-  proj <- as.data.frame(t(L[["t.proj"]]))
-  val.end.date <- min(grep("20201201-", names(proj)))
-  cpm.val.raw.df <- proj[,val.end.date:ncol(proj)] 
-})
 
-cpm.cal.adj.df.L <- lapply(allruns, function(L){
-  adj <- as.data.frame(t(L[["qm1.hist"]]))
-})
 
   cpm.val.adj.df.L <- lapply(allruns, function(L){
   proj <- as.data.frame(t(L[["qm1.val.proj"]]))
@@ -164,16 +145,16 @@ cpm.cal.adj.df.L <- lapply(allruns, function(L){
   proj[,1:val.end.date] 
 })
 
-    cpm.proj.adj.df.L <- lapply(allruns, function(L){
-  proj <- as.data.frame(t(L[["qm1.val.proj"]]))
-  val.end.date <- min(grep("20201201-", names(proj)))
-  proj[,val.end.date:ncol(proj)] 
-})
+#    cpm.proj.adj.df.L <- lapply(allruns, function(L){
+ # proj <- as.data.frame(t(L[["qm1.val.proj"]]))
+#  val.end.date <- min(grep("20201201-", names(proj)))
+#  proj[,val.end.date:ncol(proj)] 
+#})
 
 ## Convert to rasters --requires creation of x and y cols from row names
 ## For the comparison, just converting the observation and cpm for the cal and val perios (ie not the projection datasets)      
       
-obsrastL <- lapply(list(obs.cal.df, obs.val.df), function(i){
+i <- obs.val.df
   rn <- row.names(i) #The rownames were saves as x_y coordinates
       xi <- gsub("_.*", "", rn)
       yi <- gsub(".*_", "", rn)
@@ -181,14 +162,11 @@ obsrastL <- lapply(list(obs.cal.df, obs.val.df), function(i){
       df <- cbind(xy, i)
       r <- rast(df, type="xyz")
       crs(r) <- crs
-      return(r)
-}) 
+obs.val.rasts <- r
 
-names(obsrastL) <- c("obs.cal.rasts", "obs.val.rasts")
-list2env(obsrastL, .GlobalEnv)
-remove(obsrastL)
+
       
-list2rast <- list(cpm.cal.raw.df.L, cpm.cal.adj.df.L, cpm.val.raw.df.L, cpm.val.adj.df.L)
+list2rast <- list(cpm.val.raw.df.L, cpm.val.adj.df.L)
   
 rastsL <- lapply(list2rast, function(x){
   allruns <- x
@@ -216,10 +194,6 @@ remove(list2rast)
 
 gc()
 
-# } else {
-#  print("Invalid input")
-#}
-
 
 
 ```
@@ -227,11 +201,11 @@ gc()
 
 ## **1. Bias Correction Assessment: trends**
 
-An visual comparison of trends across observation, raw and adjusted data for the same time period
+A visual comparison of trends across observation, raw and adjusted data for the same time period
 
 ### **1a. Raster comparison**
 
-Random selection of 3 days of the observation, calibration and two adjusted cals, for three historic days
+A visualisation across different runs and methods 
 
 Adding in the city shapeoutline for prettier maps
 
@@ -243,17 +217,52 @@ shape <-sf::st_as_sf(vect(paste0(dd, "shapefiles/three.cities/", city, "/", city
 
 
 
-#### **Day 1 - 1980-12-01 - calibration period ** {.tabset}
+#### **Compare across the same day**
 
-##### Run05  
+Here we take a day and visualise the differences between the methods and runs
+
+The example below is set up to compare Run 05, but Run 06, 07 or 08 can all be compared
 
 ```{r}
 
-tm_shape(val_py$python_runs05$delta_method$rast$tasmax_3000) + 
-  tm_raster(title="CPM, bias-corrected") + 
+t1 <- tm_shape(val_py$python_runs05$delta_method$rast$tasmax_3000) + 
+  tm_raster(title="Observation") + 
   tm_layout(legend.outside = T) + 
   tm_shape(shape) + 
   tm_borders(col="black")
+
+
+t2 <- tm_shape(val_py$python_runs05$delta_method$rast$tasmax_3000) + 
+  tm_raster(title="CPM, raw (unadjusted)") + 
+  tm_layout(legend.outside = T) + 
+  tm_shape(shape) + 
+  tm_borders(col="black")
+
+t3 <- tm_shape(val_py$python_runs05$delta_method$rast$tasmax_3000) + 
+  tm_raster(title="CPM, delta method, python") + 
+  tm_layout(legend.outside = T) + 
+  tm_shape(shape) + 
+  tm_borders(col="black")
+
+t4 <- tm_shape(val_py$python_runs05$delta_method$rast$tasmax_3000) + 
+  tm_raster(title="CPM, quantile mapping, python") + 
+  tm_layout(legend.outside = T) + 
+  tm_shape(shape) + 
+  tm_borders(col="black")
+
+
+t5 <- tm_shape(val_py$python_runs05$delta_method$rast$tasmax_3000) + 
+  tm_raster(title="CPM, quantile delta mapping, python") + 
+  tm_layout(legend.outside = T) + 
+  tm_shape(shape) + 
+  tm_borders(col="black")
+
+t5 <- tm_shape(val_py$python_runs05$delta_method$rast$tasmax_3000) + 
+  tm_raster(title="CPM, quantile delta mapping") + 
+  tm_layout(legend.outside = T) + 
+  tm_shape(shape) + 
+  tm_borders(col="black")
+
 ```
 
 
@@ -338,6 +347,8 @@ tm_shape(cpm.cal.adj.rasts.L$`08`[[1]]) + tm_raster(title="CPM, bias-corrected")
               tm_shape(shape) + tm_borders(col="black")
 
 ```
+
+#### {-} 
 
 #### **Day 2 - 2008-08-01 - calibration period ** {.tabset}
 
@@ -522,18 +533,8 @@ tm_shape(cpm.val.adj.rasts.L$`08`[[1590]]) +
 
 Using the validation data set for this
 
-#NOTE TO GRIFF - if the data has ran we can delete this bit and add in the new stuff
 
 ```{r}
-
-hads <- obs.val.df[c(32:2551)]
-raw.cpm_05 <- cpm.val.raw.df.L$Run05_tasmax[c(32:2551)]
-R_quantile_05 <- cpm.val.adj.df.L$Run05_tasmax[c(32:2551)]
-
-py_quantile_05 <- val_py$python_runs05$quantile$df[c(361:2880)]
-py_quantile_delta_05 <- val_py$python_runs05$quantile_delta$df[c(361:2880)]
-py_delta_05 <- val_py$python_runs05$delta_method$df[c(361:2880)]
-py_varscaling <- val_py$python_runs05$var_scaling$df[c(361:2880)]
 
 val.dfs <- list(hads, raw.cpm_05, R_quantile_05, py_quantile_05, py_quantile_delta_05, py_delta_05, py_varscaling)
 
@@ -668,7 +669,7 @@ seasonal.descriptives[[2]] %>%
     kable(booktabs = T) %>%
     kable_styling() 
 
-
+```
 #### Summer
 
 ```{r}
