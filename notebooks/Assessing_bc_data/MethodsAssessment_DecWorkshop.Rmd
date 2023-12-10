@@ -258,7 +258,7 @@ shape <-sf::st_as_sf(vect(paste0(dd, "shapefiles/three.cities/", city, "/", city
 
 
 
-## **Compare across the same day**
+#### **Compare across the same day**
 
 Here we take a day and visualise the differences between the methods and runs
 
