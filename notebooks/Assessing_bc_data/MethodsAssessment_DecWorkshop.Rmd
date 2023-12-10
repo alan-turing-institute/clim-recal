@@ -1,6 +1,5 @@
 ---
 title: "Bias correction assessment"
-author: "Ruth Bowyer"
 date: "`r format(Sys.Date())`"
 output:
   html_document:
