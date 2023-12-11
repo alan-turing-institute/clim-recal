@@ -1,4 +1,5 @@
 """Utility functions."""
+import subprocess
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Final, Generator, Iterable, Optional, Union
@@ -6,6 +7,8 @@ from typing import Any, Final, Generator, Iterable, Optional, Union
 DateType = Union[date, str]
 DATE_FORMAT_STR: Final[str] = "%Y%m%d"
 DATE_FORMAT_SPLIT_STR: Final[str] = "-"
+RSTUDIO_CODE_COPY_PATH: Path = Path("/home/rstudio/*")
+DEBIAN_HOME_PATH: Path = Path("/home/")
 
 
 def date_to_str(
@@ -105,3 +108,44 @@ def path_iterdir(
             raise error
         else:
             return
+
+
+def make_user(
+    name: str,
+    password: str,
+    code_path: Path = RSTUDIO_CODE_COPY_PATH,
+    user_home_path: Path = DEBIAN_HOME_PATH,
+) -> Path:
+    """Make user account and copy code to that environment.
+
+    Args:
+        name: user and home folder name
+        password: login password
+        code_path: path to copy code from to user path
+
+    Example:
+        ```pycon
+        >>> import os
+        >>> from shutil import rmtree
+        >>> if os.geteuid() != 0:
+        ...     pytest.skip('requires root permission to run')
+        >>> user_name: str = 'very_unlinkely_test_user'
+        >>> password: str = 'test_pass'
+        >>> code_path: Path = Path('/home/jovyan')
+        >>> make_user(user_name, password, code_path=code_path)
+        PosixPath('/home/very_unlinkely_test_user')
+        >>> Path(f'/home/{user_name}/python/conftest.py').is_file()
+        True
+        >>> subprocess.run(f'userdel {user_name}', shell=True)
+        CompletedProcess(args='userdel very_unlinkely_test_user', returncode=0)
+        >>> rmtree(f'/home/{user_name}')
+
+        ```
+    """
+    home_path: Path = user_home_path / name
+    subprocess.run(f"useradd {name}", shell=True)
+    subprocess.run(f"echo {name}:{password} | chpasswd", shell=True)
+    subprocess.run(f"mkdir {home_path}", shell=True)
+    subprocess.run(f"cp -r {code_path}/* {home_path}", shell=True)
+    subprocess.run(f"chown -R {name}:{name} home_path", shell=True)
+    return home_path

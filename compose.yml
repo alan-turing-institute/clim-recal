@@ -24,6 +24,13 @@ services:
       - "8080:80"
       # command: quarto preview --port 8080
 
+  rstudio:
+    build:
+      context: .
+      dockerfile: ./compose/server/Dockerfile
+    ports:
+      - "8787:8787"
+
 # volumes:
 #   climate_data:
 #     driver: local

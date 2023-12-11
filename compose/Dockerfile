@@ -1,4 +1,4 @@
-FROM jupyter/r-notebook as clim-recal-base
+FROM quay.io/jupyter/r-notebook as clim-recal-base
 
 # This is derived from documentation available at
 # https://jupyter-docker-stacks.readthedocs.io/en/latest/
@@ -27,10 +27,11 @@ ENV SHELL /bin/bash
 ARG HOST_DATA_PATH=/Volumes/vmfileshare
 
 # The local_data_path is an absolute path to mount ClimateData within `docker`
-ARG DOCKER_DATA_PATH=/mnt/vmfileshareRG env_name=clim-recal
+ARG DOCKER_DATA_PATH=/mnt/vmfileshare
+ARG env_name=clim-recal
 
 # `py_ver` is not currently used below and is specified in `environment.yaml`
-# here as reminder and clarity if future change needed.
+# included here as reminder and clarity if future change needed.
 ARG py_ver=3.9
 
 USER root

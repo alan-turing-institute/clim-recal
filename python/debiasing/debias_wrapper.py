@@ -7,7 +7,6 @@ from os import PathLike
 from pathlib import Path
 from typing import Final, Generator, Optional, Union
 
-import pytest
 from utils import (
     DATE_FORMAT_SPLIT_STR,
     DATE_FORMAT_STR,
