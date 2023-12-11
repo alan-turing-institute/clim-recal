@@ -63,8 +63,9 @@ RUN "${CONDA_DIR}/envs/${env_name}/bin/python" -m ipykernel install --user --nam
     fix-permissions "/home/${NB_USER}"
 
 # Copy the rest of the  clim-recal code to volume
-COPY --chown=${NB_UID}:${NB_GID} . .
-
+# COPY --chown=${NB_UID}:${NB_GID} . .
+# Keep below while permission ambiguity persists on compose volume mounting
+COPY . .
 
 # Switch to default jupyter user
 # USER ${NB_UID}

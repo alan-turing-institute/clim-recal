@@ -59,7 +59,7 @@ jobs:
         run: |
           docker compose build jupyter
           docker compose up jupyter --detach
-          docker compose exec jupyter bash -c "conda run -n $CONDA_ENV_NAME --cwd python pytest -p no:sugar"
+          docker compose exec jupyter bash -c "conda run -n $env_name --cwd python pytest pytest"
           export JUPYTER_ID=$(docker compose ps -q jupyter)
           echo "jupyter_id=$JUPYTER_ID" >> $GITHUB_ENV
           echo "jupyter_id=$JUPYTER_ID"
