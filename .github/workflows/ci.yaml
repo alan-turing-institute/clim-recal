@@ -57,7 +57,7 @@ jobs:
 
       - name: Build, Test and Save Test Coverage
         run: |
-          docker compose build
+          docker compose build jupyter
           docker compose up --detach
           docker compose exec jupyter bash -c "conda run -n $CONDA_ENV_NAME --cwd python pytest -p no:sugar"
           export JUPYTER_ID=$(docker compose ps -q jupyter)
