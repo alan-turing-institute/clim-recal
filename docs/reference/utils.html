@@ -247,7 +247,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#utils.date_to_str" id="toc-utils.date_to_str" class="nav-link" data-scroll-target="#utils.date_to_str"><span class="header-section-number">1.1.2</span> date_to_str</a></li>
   <li><a href="#utils.iter_to_tuple_strs" id="toc-utils.iter_to_tuple_strs" class="nav-link" data-scroll-target="#utils.iter_to_tuple_strs"><span class="header-section-number">1.1.3</span> iter_to_tuple_strs</a></li>
   <li><a href="#utils.make_user" id="toc-utils.make_user" class="nav-link" data-scroll-target="#utils.make_user"><span class="header-section-number">1.1.4</span> make_user</a></li>
-  <li><a href="#utils.path_iterdir" id="toc-utils.path_iterdir" class="nav-link" data-scroll-target="#utils.path_iterdir"><span class="header-section-number">1.1.5</span> path_iterdir</a></li>
+  <li><a href="#utils.make_users" id="toc-utils.make_users" class="nav-link" data-scroll-target="#utils.make_users"><span class="header-section-number">1.1.5</span> make_users</a></li>
+  <li><a href="#utils.path_iterdir" id="toc-utils.path_iterdir" class="nav-link" data-scroll-target="#utils.path_iterdir"><span class="header-section-number">1.1.6</span> path_iterdir</a></li>
+  <li><a href="#utils.rm_user" id="toc-utils.rm_user" class="nav-link" data-scroll-target="#utils.rm_user"><span class="header-section-number">1.1.7</span> rm_user</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -289,8 +291,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Make user account and copy code to that environment.</td>
 </tr>
 <tr class="odd">
+<td><a href="#utils.make_users">make_users</a></td>
+<td>Load a file of usernames and passwords and to pass to make_user.</td>
+</tr>
+<tr class="even">
 <td><a href="#utils.path_iterdir">path_iterdir</a></td>
 <td>Return an <code>Generator</code> after ensuring <code>path</code> exists.</td>
+</tr>
+<tr class="odd">
+<td><a href="#utils.rm_user">rm_user</a></td>
+<td>Remove user and user home folder.</td>
 </tr>
 </tbody>
 </table>
@@ -330,40 +340,56 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="utils.make_user" class="level3" data-number="1.1.4">
 <h3 data-number="1.1.4" class="anchored" data-anchor-id="utils.make_user"><span class="header-section-number">1.1.4</span> make_user</h3>
-<p><code>make_user(name, password, code_path=RSTUDIO_CODE_COPY_PATH, user_home_path=DEBIAN_HOME_PATH)</code></p>
+<p><code>make_user(user, password, code_path=RSTUDIO_DOCKER_USER_PATH, user_home_path=DEBIAN_HOME_PATH)</code></p>
 <p>Make user account and copy code to that environment.</p>
-<p>Args: name: user and home folder name password: login password code_path: path to copy code from to user path</p>
-<p>Example: ```pycon &gt;&gt;&gt; import os &gt;&gt;&gt; from shutil import rmtree &gt;&gt;&gt; if os.geteuid() != 0: … pytest.skip(‘requires root permission to run’) &gt;&gt;&gt; user_name: str = ‘very_unlinkely_test_user’ &gt;&gt;&gt; password: str = ‘test_pass’ &gt;&gt;&gt; code_path: Path = Path(‘/home/jovyan’) &gt;&gt;&gt; make_user(user_name, password, code_path=code_path) PosixPath(‘/home/very_unlinkely_test_user’) &gt;&gt;&gt; Path(f’/home/{user_name}/python/conftest.py’).is_file() True &gt;&gt;&gt; subprocess.run(f’userdel {user_name}‘, shell=True) CompletedProcess(args=’userdel very_unlinkely_test_user’, returncode=0) &gt;&gt;&gt; rmtree(f’/home/{user_name}’)</p>
+<p>Args: user: user and home folder name password: login password code_path: path to copy code from to user path</p>
+<p>Example: ```pycon &gt;&gt;&gt; import os &gt;&gt;&gt; if os.geteuid() != 0: … pytest.skip(‘requires root permission to run’) &gt;&gt;&gt; user_name: str = ‘very_unlinkely_test_user’ &gt;&gt;&gt; password: str = ‘test_pass’ &gt;&gt;&gt; code_path: Path = Path(‘/home/jovyan’) &gt;&gt;&gt; make_user(user_name, password, code_path=JUPYTER_DOCKER_USER_PATH) PosixPath(‘/home/very_unlinkely_test_user’) &gt;&gt;&gt; Path(f’/home/{user_name}/python/conftest.py’).is_file() True &gt;&gt;&gt; rm_user(user_name) ‘very_unlinkely_test_user’</p>
 <pre><code>```</code></pre>
 </section>
-<section id="utils.path_iterdir" class="level3" data-number="1.1.5">
-<h3 data-number="1.1.5" class="anchored" data-anchor-id="utils.path_iterdir"><span class="header-section-number">1.1.5</span> path_iterdir</h3>
+<section id="utils.make_users" class="level3" data-number="1.1.5">
+<h3 data-number="1.1.5" class="anchored" data-anchor-id="utils.make_users"><span class="header-section-number">1.1.5</span> make_users</h3>
+<p><code>make_users(file_path, user_col, password_col, file_reader, **kwargs)</code></p>
+<p>Load a file of usernames and passwords and to pass to make_user.</p>
+<p>Args: file_path: path to collumned file including user names and passwords per row user_col: str of column name for user names password_col: name of column name for passwords file_reader: function to read <code>file_path</code> **kwargs: additional parameters for to pass to <code>file_reader</code></p>
+<p>Example: ```pycon &gt;&gt;&gt; import os &gt;&gt;&gt; if os.geteuid() != 0: … pytest.skip(‘requires root permission to run’) &gt;&gt;&gt; from pandas import read_excel &gt;&gt;&gt; code_path: Path = Path(‘/home/jovyan’) &gt;&gt;&gt; def excel_row_iter(path: Path, <strong>kwargs) -&gt; dict: … df: DataFrame = read_excel(path, </strong>kwargs) … return df.to_dict(orient=“records”) &gt;&gt;&gt; test_accounts_path: Path = Path(‘tests/test_user_accounts.xlsx’) &gt;&gt;&gt; user_paths: tuple[Path, …] = tuple(make_users( … file_path=test_accounts_path, … user_col=“User Name”, … password_col=“Password”, … file_reader=excel_row_iter, … code_path=JUPYTER_DOCKER_USER_PATH, … )) &gt;&gt;&gt; [(path / ‘python’ / ‘conftest.py’).is_file() for path in user_paths] [True, True, True, True, True] &gt;&gt;&gt; [rm_user(user_path.name) for user_path in user_paths] [‘sally’, ‘george’, ‘jean’, ‘felicity’, ‘frank’]</p>
+<pre><code>```</code></pre>
+</section>
+<section id="utils.path_iterdir" class="level3" data-number="1.1.6">
+<h3 data-number="1.1.6" class="anchored" data-anchor-id="utils.path_iterdir"><span class="header-section-number">1.1.6</span> path_iterdir</h3>
 <p><code>path_iterdir(path, strict=False)</code></p>
 <p>Return an <code>Generator</code> after ensuring <code>path</code> exists.</p>
-<section id="examples-3" class="level4" data-number="1.1.5.1">
-<h4 data-number="1.1.5.1" class="anchored" data-anchor-id="examples-3"><span class="header-section-number">1.1.5.1</span> Examples</h4>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tmp_path <span class="op">=</span> getfixture(<span class="st">'tmp_path'</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> os <span class="im">import</span> chdir</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> chdir(tmp_path)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> example_path: Path <span class="op">=</span> Path(<span class="st">'a/test/path'</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> example_path.exists()</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="va">False</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">tuple</span>(path_iterdir(example_path.parent))</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>()</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">tuple</span>(path_iterdir(example_path.parent, strict<span class="op">=</span><span class="va">True</span>))</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>Traceback (most recent call last):</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    ...</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="pp">FileNotFoundError</span>: [Errno <span class="dv">2</span>] No such <span class="bu">file</span> <span class="kw">or</span> directory: <span class="st">'a/test'</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> example_path.parent.mkdir(parents<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> example_path.touch()</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">tuple</span>(path_iterdir(example_path.parent))</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>(PosixPath(<span class="st">'a/test/path'</span>),)</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> example_path.unlink()</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">tuple</span>(path_iterdir(example_path.parent))</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-
+<section id="examples-3" class="level4" data-number="1.1.6.1">
+<h4 data-number="1.1.6.1" class="anchored" data-anchor-id="examples-3"><span class="header-section-number">1.1.6.1</span> Examples</h4>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tmp_path <span class="op">=</span> getfixture(<span class="st">'tmp_path'</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> os <span class="im">import</span> chdir</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> chdir(tmp_path)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> example_path: Path <span class="op">=</span> Path(<span class="st">'a/test/path'</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> example_path.exists()</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="va">False</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">tuple</span>(path_iterdir(example_path.parent))</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>()</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">tuple</span>(path_iterdir(example_path.parent, strict<span class="op">=</span><span class="va">True</span>))</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>Traceback (most recent call last):</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    ...</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="pp">FileNotFoundError</span>: [Errno <span class="dv">2</span>] No such <span class="bu">file</span> <span class="kw">or</span> directory: <span class="st">'a/test'</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> example_path.parent.mkdir(parents<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> example_path.touch()</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">tuple</span>(path_iterdir(example_path.parent))</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>(PosixPath(<span class="st">'a/test/path'</span>),)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> example_path.unlink()</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">tuple</span>(path_iterdir(example_path.parent))</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
+</section>
+<section id="utils.rm_user" class="level3" data-number="1.1.7">
+<h3 data-number="1.1.7" class="anchored" data-anchor-id="utils.rm_user"><span class="header-section-number">1.1.7</span> rm_user</h3>
+<p><code>rm_user(user, user_home_path=DEBIAN_HOME_PATH)</code></p>
+<p>Remove user and user home folder.</p>
+<p>Args: user: user and home folder name password: login password</p>
+<p>Example: ```pycon &gt;&gt;&gt; import os &gt;&gt;&gt; if os.geteuid() != 0: … pytest.skip(‘requires root permission to run’) &gt;&gt;&gt; user_name: str = ‘very_unlinkely_test_user’ &gt;&gt;&gt; password: str = ‘test_pass’ &gt;&gt;&gt; make_user(user_name, password, code_path=JUPYTER_DOCKER_USER_PATH) PosixPath(‘/home/very_unlinkely_test_user’) &gt;&gt;&gt; rm_user(user_name) ‘very_unlinkely_test_user’</p>
+<pre><code>```</code></pre>
+
+
 </section>
 </section>
 </section>
