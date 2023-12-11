@@ -67,7 +67,7 @@ COPY --chown=${NB_UID}:${NB_GID} . .
 
 
 # Switch to default jupyter user
-USER ${NB_UID}
+# USER ${NB_UID}
 # Add custom activate script to reflect environment
 # USER root
 RUN activate_custom_env_script=/usr/local/bin/before-notebook.d/activate_custom_env.sh && \
@@ -75,8 +75,10 @@ RUN activate_custom_env_script=/usr/local/bin/before-notebook.d/activate_custom_
     echo "eval \"$(conda shell.bash activate "${env_name}")\"" >> ${activate_custom_env_script} && \
     chmod +x ${activate_custom_env_script}
 
+RUN chown -R ${NB_UID}:${NB_GID} .
+
 # Switch to default jupyter user
-# USER ${NB_UID}
+USER ${NB_UID}
 
 # This eases running shell commands outside docker following:
 # https://pythonspeed.com/articles/activate-conda-dockerfile/
