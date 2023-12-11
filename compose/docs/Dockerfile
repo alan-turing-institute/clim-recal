@@ -4,6 +4,7 @@ FROM ghcr.io/quarto-dev/quarto:${QUARTO_VERSION} AS builder
 
 ARG PORT=8080
 ARG py_ver=3.9
+ENV DEBIAN_FRONTEND=noninteractive
 
 # ARG RIG_VERSION="latest"
 # ARG R_VERSION="release"
@@ -15,14 +16,16 @@ ARG py_ver=3.9
 # WORKDIR /app
 # RUN Rscript -e "renv::restore()"
 # RUN quarto render .
-ADD . /app
+COPY . /app
 WORKDIR /app
 # RUN Rscript -e "renv::restore()"
 EXPOSE ${PORT}:${PORT}
 
 # RUN quarto preview --port ${PORT}:${PORT}
-RUN apt-get update && apt-get install -y python${py_ver} python3-pip
+RUN apt-get update && apt-get install -y python${py_ver} python3-pip r-base r-base-dev
 RUN pip3 install quartodoc && quartodoc build
+RUN Rscript -e 'install.packages("rmarkdown", repos="https://cloud.r-project.org")'
+
 RUN quarto render
 
 FROM httpd:alpine

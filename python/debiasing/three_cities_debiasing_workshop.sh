@@ -1,0 +1,25 @@
+#!/bin/sh
+
+declare -a vars=("tasmax" "rainfall" "tasmin")
+declare -a runs=("05" "07" "08" "06")
+declare -a cities=("Glasgow")
+declare -a methods=("quantile_delta_mapping" "quantile_mapping")
+declare -a methods_2=("variance_scaling" "delta_method")
+
+for run in "${runs[@]}"; do
+  for city in "${cities[@]}"; do
+    for var in "${vars[@]}"; do
+
+      python preprocess_data.py --mod /mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/$city --obs /mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.updated360/$city -v $var -r $run --out /mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/workshop/$city/$run/$var --calib_dates 19801201-20101129 --valid_dates 20101130-20201130
+
+      for method in "${methods[@]}"; do
+        python run_cmethods.py --input_data_folder /mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/workshop/$city/$run/$var --out /mnt/vmfileshare/ClimateData/Debiased/three.cities.cropped/workshop/$city/$run --method $method --v $var -p 32
+      done
+
+      for method in "${methods_2[@]}"; do
+        python run_cmethods.py --input_data_folder /mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/workshop/$city/$run/$var --out /mnt/vmfileshare/ClimateData/Debiased/three.cities.cropped/workshop/$city/$run --method $method --group time.month --v $var -p 32
+      done
+
+    done
+  done
+done

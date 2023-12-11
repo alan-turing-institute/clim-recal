@@ -15,11 +15,11 @@ env:
 
 on:
   pull_request:
-    branches: ['main', 'doc-deploy', 'ruth-notebook-for-workshop']
+    branches: ['main', 'doc-deploy', 'ruth-notebook-for-workshop', 'r-docker-refactor']
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['main', 'doc-deploy', 'ruth-doc-deploy']
+    branches: ['main', 'doc-deploy', 'ruth-notebook-for-workshop', 'r-docker-refactor']
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -122,7 +122,7 @@ jobs:
         run: |
           # A potentially quicker build option to try in future, requires running in detatched mode
           # DOCKER_BUILDKIT=1 docker build --no-cache -f compose/docs/Dockerfile --target builder --tag 'clim-recal-docs' .
-          docker compose build
+          docker compose build docs
           docker compose up --detach
           docker cp $(docker compose ps -q docs):/usr/local/apache2/htdocs/ ${{ env.GH_PAGE_PATH }}
 

@@ -2,12 +2,14 @@
 import subprocess
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any, Final, Generator, Iterable, Optional, Union
+from shutil import rmtree
+from typing import Any, Callable, Final, Generator, Iterable, Optional, Union
 
 DateType = Union[date, str]
 DATE_FORMAT_STR: Final[str] = "%Y%m%d"
 DATE_FORMAT_SPLIT_STR: Final[str] = "-"
-RSTUDIO_CODE_COPY_PATH: Path = Path("/home/rstudio/*")
+RSTUDIO_DOCKER_USER_PATH: Path = Path("/home/rstudio")
+JUPYTER_DOCKER_USER_PATH: Path = Path("/home/jovyan")
 DEBIAN_HOME_PATH: Path = Path("/home/")
 
 
@@ -111,41 +113,106 @@ def path_iterdir(
 
 
 def make_user(
-    name: str,
+    user: str,
     password: str,
-    code_path: Path = RSTUDIO_CODE_COPY_PATH,
+    code_path: Path = RSTUDIO_DOCKER_USER_PATH,
     user_home_path: Path = DEBIAN_HOME_PATH,
 ) -> Path:
     """Make user account and copy code to that environment.
 
     Args:
-        name: user and home folder name
+        user: user and home folder name
         password: login password
         code_path: path to copy code from to user path
 
     Example:
         ```pycon
         >>> import os
-        >>> from shutil import rmtree
         >>> if os.geteuid() != 0:
         ...     pytest.skip('requires root permission to run')
         >>> user_name: str = 'very_unlinkely_test_user'
         >>> password: str = 'test_pass'
         >>> code_path: Path = Path('/home/jovyan')
-        >>> make_user(user_name, password, code_path=code_path)
+        >>> make_user(user_name, password, code_path=JUPYTER_DOCKER_USER_PATH)
         PosixPath('/home/very_unlinkely_test_user')
         >>> Path(f'/home/{user_name}/python/conftest.py').is_file()
         True
-        >>> subprocess.run(f'userdel {user_name}', shell=True)
-        CompletedProcess(args='userdel very_unlinkely_test_user', returncode=0)
-        >>> rmtree(f'/home/{user_name}')
+        >>> rm_user(user_name)
+        'very_unlinkely_test_user'
 
         ```
     """
-    home_path: Path = user_home_path / name
-    subprocess.run(f"useradd {name}", shell=True)
-    subprocess.run(f"echo {name}:{password} | chpasswd", shell=True)
+    home_path: Path = user_home_path / user
+    subprocess.run(f"useradd {user}", shell=True)
+    subprocess.run(f"echo {user}:{password} | chpasswd", shell=True)
     subprocess.run(f"mkdir {home_path}", shell=True)
     subprocess.run(f"cp -r {code_path}/* {home_path}", shell=True)
-    subprocess.run(f"chown -R {name}:{name} home_path", shell=True)
+    subprocess.run(f"chown -R {user}:{user} home_path", shell=True)
     return home_path
+
+
+def rm_user(user: str, user_home_path: Path = DEBIAN_HOME_PATH) -> str:
+    """Remove user and user home folder.
+
+    Args:
+        user: user and home folder name
+        password: login password
+
+    Example:
+        ```pycon
+        >>> import os
+        >>> if os.geteuid() != 0:
+        ...     pytest.skip('requires root permission to run')
+        >>> user_name: str = 'very_unlinkely_test_user'
+        >>> password: str = 'test_pass'
+        >>> make_user(user_name, password, code_path=JUPYTER_DOCKER_USER_PATH)
+        PosixPath('/home/very_unlinkely_test_user')
+        >>> rm_user(user_name)
+        'very_unlinkely_test_user'
+
+        ```
+    """
+    subprocess.run(f"userdel {user}", shell=True)
+    rmtree(user_home_path / user)
+    return user
+
+
+def make_users(
+    file_path: Path, user_col: str, password_col: str, file_reader: Callable, **kwargs
+) -> Generator[Path, None, None]:
+    """Load a file of usernames and passwords and to pass to make_user.
+
+    Args:
+        file_path: path to collumned file including user names and passwords per row
+        user_col: str of column name for user names
+        password_col: name of column name for passwords
+        file_reader: function to read `file_path`
+        **kwargs: additional parameters for to pass to `file_reader`
+
+    Example:
+        ```pycon
+        >>> import os
+        >>> if os.geteuid() != 0:
+        ...     pytest.skip('requires root permission to run')
+        >>> from pandas import read_excel
+        >>> code_path: Path = Path('/home/jovyan')
+        >>> def excel_row_iter(path: Path, **kwargs) -> dict:
+        ...     df: DataFrame = read_excel(path, **kwargs)
+        ...     return df.to_dict(orient="records")
+        >>> test_accounts_path: Path = Path('tests/test_user_accounts.xlsx')
+        >>> user_paths: tuple[Path, ...] = tuple(make_users(
+        ...     file_path=test_accounts_path,
+        ...     user_col="User Name",
+        ...     password_col="Password",
+        ...     file_reader=excel_row_iter,
+        ...     code_path=JUPYTER_DOCKER_USER_PATH,
+        ... ))
+        >>> [(path / 'python' / 'conftest.py').is_file() for path in user_paths]
+        [True, True, True, True, True]
+        >>> [rm_user(user_path.name) for user_path in user_paths]
+        ['sally', 'george', 'jean', 'felicity', 'frank']
+
+        ```
+    """
+    for record in file_reader(file_path):
+        yield make_user(user=record[user_col], password=record[password_col], **kwargs)
