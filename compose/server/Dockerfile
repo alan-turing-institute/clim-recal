@@ -14,7 +14,7 @@ ARG DOCKER_DATA_PATH=/mnt/vmfileshare
 
 RUN /rocker_scripts/install_pandoc.sh
 RUN /rocker_scripts/install_quarto.sh
-# RUN /rocker_scripts/install_jupyter.sh
+RUN /rocker_scripts/install_jupyter.sh
 
 # Install user script
 #
