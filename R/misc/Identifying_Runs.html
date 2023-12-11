@@ -330,7 +330,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  fp <span class="ot">&lt;-</span> fp[<span class="fu">grepl</span>(i, fp)]</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  dfs <span class="ot">&lt;-</span> <span class="fu">lapply</span>(fp, read.csv)</span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> namesL[[<span class="fu">paste0</span>(<span class="st">"names_"</span>,i)]]</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(dfs) <span class="ot">&lt;-</span> n </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(dfs) <span class="ot">&lt;-</span> n</span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(dfs)</span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  })</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
@@ -342,10 +342,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 data-number="1.3" class="anchored" data-anchor-id="comparing-runs"><span class="header-section-number">1.3</span> <strong>2. Comparing Runs</strong></h2>
 <section id="a.-historical-figures" class="level3" data-number="1.3.1">
 <h3 data-number="1.3.1" class="anchored" data-anchor-id="a.-historical-figures"><span class="header-section-number">1.3.1</span> <strong>2a. Historical figures</strong></h3>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">1981</span><span class="sc">:</span><span class="dv">2000</span>), <span class="at">each=</span><span class="dv">360</span>)  </span>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">1981</span><span class="sc">:</span><span class="dv">2000</span>), <span class="at">each=</span><span class="dv">360</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>dfs_hist <span class="ot">&lt;-</span> <span class="fu">lapply</span>(names_hist, <span class="cf">function</span>(i){</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> dfs_hist[[i]]  </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> dfs_hist[[i]]</span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(df) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"day"</span>, <span class="st">"mean"</span>, <span class="st">"sd"</span>)</span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>model <span class="ot">&lt;-</span> i</span>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>dn <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(df)</span>
@@ -353,34 +353,34 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df)</span>
 <span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>})</span>
 <span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a single df in long form of Runs for the historical period </span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a single df in long form of Runs for the historical period</span></span>
 <span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>historical_means <span class="ot">&lt;-</span> dfs_hist <span class="sc">%&gt;%</span> <span class="fu">reduce</span>(rbind)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="time-series---daily" class="level3" data-number="1.3.2">
 <h3 data-number="1.3.2" class="anchored" data-anchor-id="time-series---daily"><span class="header-section-number">1.3.2</span> <strong>Time series - daily</strong></h3>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(historical_means) <span class="sc">+</span> </span>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(historical_means) <span class="sc">+</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x=</span>dn, <span class="at">y=</span>mean, <span class="at">group=</span>model, <span class="at">colour=</span>model)) <span class="sc">+</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Day (Historical 1980 - 2000)"</span>) <span class="sc">+</span> </span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Daily mean max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Day (Historical 1980 - 2000)"</span>) <span class="sc">+</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Daily mean max temp (tasmax) oC"</span>) <span class="sc">+</span></span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>(),</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> </span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span> model, <span class="at">ncol=</span><span class="dv">3</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span> model, <span class="at">ncol=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-4-1.png" class="img-fluid"><!-- --></p>
 </section>
 <section id="boxplot---mean-historical" class="level3" data-number="1.3.3">
 <h3 data-number="1.3.3" class="anchored" data-anchor-id="boxplot---mean-historical"><span class="header-section-number">1.3.3</span> <strong>boxplot - mean historical</strong></h3>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a pallete specific to the runs so when reordered maintain the same colours </span></span>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a pallete specific to the runs so when reordered maintain the same colours</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>historical_means<span class="sc">$</span>model <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(historical_means<span class="sc">$</span>model)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>c <span class="ot">&lt;-</span> <span class="fu">brewer.pal</span>(<span class="dv">12</span>, <span class="st">"Paired"</span>)</span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>my_colours <span class="ot">&lt;-</span> <span class="fu">setNames</span>(c, <span class="fu">levels</span>(historical_means<span class="sc">$</span>model))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>historical_means <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>historical_means <span class="sc">%&gt;%</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, mean, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean), <span class="at">y=</span>mean, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean), <span class="at">y=</span>mean, <span class="at">fill=</span>model)) <span class="sc">+</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
@@ -399,33 +399,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="time-series---annual-mean" class="level3" data-number="1.3.5">
 <h3 data-number="1.3.5" class="anchored" data-anchor-id="time-series---annual-mean"><span class="header-section-number">1.3.5</span> <strong>Time series - annual mean</strong></h3>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Aggregating to year for annual average </span></span>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Aggregating to year for annual average</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>historical_means<span class="sc">$</span>Yf <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(historical_means<span class="sc">$</span>Y)</span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>historical_means_y <span class="ot">&lt;-</span> historical_means <span class="sc">%&gt;%</span> </span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>historical_means_y <span class="ot">&lt;-</span> historical_means <span class="sc">%&gt;%</span></span>
 <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Yf, model) <span class="sc">%&gt;%</span></span>
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">mean.annual=</span><span class="fu">mean</span>(mean, <span class="at">na.rm=</span>T), <span class="at">sd.annual=</span><span class="fu">sd</span>(mean, <span class="at">na.rm =</span> T))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(historical_means_y) <span class="sc">+</span> </span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(historical_means_y) <span class="sc">+</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual,</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (Historical 1980 - 2000)"</span>) <span class="sc">+</span> </span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (Historical 1980 - 2000)"</span>) <span class="sc">+</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span></span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-9-1.png" class="img-fluid"><!-- --></p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plotting with SDs in geom_ribbon to see if anything wildely different</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(historical_means_y) <span class="sc">+</span> </span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(historical_means_y) <span class="sc">+</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual,</span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>                               <span class="at">ymin =</span> mean.annual <span class="sc">-</span> sd.annual,</span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>                              <span class="at">ymax=</span> mean.annual <span class="sc">+</span> sd.annual,</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">fill=</span>model),  <span class="at">alpha=</span><span class="fl">0.4</span>) <span class="sc">+</span> </span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">fill=</span>model),  <span class="at">alpha=</span><span class="fl">0.4</span>) <span class="sc">+</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual,</span>
 <span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (Historical 1980 - 2000)"</span>) <span class="sc">+</span> </span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (Historical 1980 - 2000)"</span>) <span class="sc">+</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span></span>
 <span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
@@ -434,10 +434,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="boxplot---annual-mean-historical" class="level3" data-number="1.3.6">
 <h3 data-number="1.3.6" class="anchored" data-anchor-id="boxplot---annual-mean-historical"><span class="header-section-number">1.3.6</span> <strong>boxplot - annual mean historical</strong></h3>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>historical_means_y <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>historical_means_y <span class="sc">%&gt;%</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, mean.annual, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean.annual), <span class="at">y=</span>mean.annual, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean.annual), <span class="at">y=</span>mean.annual, <span class="at">fill=</span>model)) <span class="sc">+</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
 <span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max daily max temp oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
 <span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
 <span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
@@ -456,26 +456,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="time-series---annual-max" class="level3" data-number="1.3.8">
 <h3 data-number="1.3.8" class="anchored" data-anchor-id="time-series---annual-max"><span class="header-section-number">1.3.8</span> <strong>Time series - annual max</strong></h3>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>historical_max_y <span class="ot">&lt;-</span> historical_means <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>historical_max_y <span class="ot">&lt;-</span> historical_means <span class="sc">%&gt;%</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Yf, model) <span class="sc">%&gt;%</span></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">max=</span><span class="fu">max</span>(mean, <span class="at">na.rm=</span>T))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="sourceCode" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(historical_max_y) <span class="sc">+</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>max, </span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>max,</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (Historical 1980 - 2000)"</span>) <span class="sc">+</span> </span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (Historical 1980 - 2000)"</span>) <span class="sc">+</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span></span>
 <span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-14-1.png" class="img-fluid"><!-- --></p>
 </section>
 <section id="boxplot---annual-max" class="level3" data-number="1.3.9">
 <h3 data-number="1.3.9" class="anchored" data-anchor-id="boxplot---annual-max"><span class="header-section-number">1.3.9</span> <strong>boxplot - annual max</strong></h3>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>historical_max_y <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>historical_max_y <span class="sc">%&gt;%</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, max, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, max), <span class="at">y=</span>max, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, max), <span class="at">y=</span>max, <span class="at">fill=</span>model)) <span class="sc">+</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
 <span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
 <span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
 <span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
@@ -489,35 +489,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#-1 removes the intercept to compare coefficients of all Runs</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>av1 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, historical_means)</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>av1<span class="sc">$</span>coefficients[<span class="fu">order</span>(av1<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre><code>## modelhist_Run10 modelhist_Run02 modelhist_Run05 modelhist_Run07 modelhist_Run09 
-##         9.89052        11.06863        11.21424        11.22048        11.27647 
-## modelhist_Run04 modelhist_Run03 modelhist_Run08 modelhist_Run01 modelhist_Run06 
-##        11.29057        11.35848        11.45257        11.45414        11.86451 
-## modelhist_Run11 modelhist_Run12 
+<pre><code>## modelhist_Run10 modelhist_Run02 modelhist_Run05 modelhist_Run07 modelhist_Run09
+##         9.89052        11.06863        11.21424        11.22048        11.27647
+## modelhist_Run04 modelhist_Run03 modelhist_Run08 modelhist_Run01 modelhist_Run06
+##        11.29057        11.35848        11.45257        11.45414        11.86451
+## modelhist_Run11 modelhist_Run12
 ##        11.99148        12.31870</code></pre>
 <p>Annual means:</p>
 <div class="sourceCode" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>av2 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean.annual <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, historical_means_y)</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>av2<span class="sc">$</span>coefficients[<span class="fu">order</span>(av2<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre><code>## modelhist_Run10 modelhist_Run02 modelhist_Run05 modelhist_Run07 modelhist_Run09 
-##         9.89052        11.06863        11.21424        11.22048        11.27647 
-## modelhist_Run04 modelhist_Run03 modelhist_Run08 modelhist_Run01 modelhist_Run06 
-##        11.29057        11.35848        11.45257        11.45414        11.86451 
-## modelhist_Run11 modelhist_Run12 
+<pre><code>## modelhist_Run10 modelhist_Run02 modelhist_Run05 modelhist_Run07 modelhist_Run09
+##         9.89052        11.06863        11.21424        11.22048        11.27647
+## modelhist_Run04 modelhist_Run03 modelhist_Run08 modelhist_Run01 modelhist_Run06
+##        11.29057        11.35848        11.45257        11.45414        11.86451
+## modelhist_Run11 modelhist_Run12
 ##        11.99148        12.31870</code></pre>
 <p>Max of means:</p>
 <div class="sourceCode" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>av3 <span class="ot">&lt;-</span> <span class="fu">aov</span>(max <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, historical_max_y)</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>av3<span class="sc">$</span>coefficients[<span class="fu">order</span>(av3<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre><code>## modelhist_Run10 modelhist_Run04 modelhist_Run02 modelhist_Run05 modelhist_Run03 
-##        18.12329        18.81126        18.90054        19.01801        19.10454 
-## modelhist_Run09 modelhist_Run01 modelhist_Run08 modelhist_Run07 modelhist_Run11 
-##        19.23705        19.31541        19.44439        19.54981        19.57548 
-## modelhist_Run06 modelhist_Run12 
+<pre><code>## modelhist_Run10 modelhist_Run04 modelhist_Run02 modelhist_Run05 modelhist_Run03
+##        18.12329        18.81126        18.90054        19.01801        19.10454
+## modelhist_Run09 modelhist_Run01 modelhist_Run08 modelhist_Run07 modelhist_Run11
+##        19.23705        19.31541        19.44439        19.54981        19.57548
+## modelhist_Run06 modelhist_Run12
 ##        19.88375        20.47650</code></pre>
 <p>Max vals are different but based on means then selection would be Run 02 (2nd lowest), Run 04 &amp; Run 03, and Run 11 (2nd lowest)</p>
 </section>
 <section id="b.-y2020---y2040" class="level3" data-number="1.3.11">
 <h3 data-number="1.3.11" class="anchored" data-anchor-id="b.-y2020---y2040"><span class="header-section-number">1.3.11</span> <strong>2b. Y2020 - Y2040</strong></h3>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">2021</span><span class="sc">:</span><span class="dv">2040</span>), <span class="at">each=</span><span class="dv">360</span>)  </span>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">2021</span><span class="sc">:</span><span class="dv">2040</span>), <span class="at">each=</span><span class="dv">360</span>)</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>dfs_Y21_Y40 <span class="ot">&lt;-</span> <span class="fu">lapply</span>(names_Y21_Y40, <span class="cf">function</span>(i){</span>
@@ -529,23 +529,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df)</span>
 <span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>})</span>
 <span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a single df in long form of Runs for the Y21_Y40 period </span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a single df in long form of Runs for the Y21_Y40 period</span></span>
 <span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>Y21_Y40_means <span class="ot">&lt;-</span> dfs_Y21_Y40 <span class="sc">%&gt;%</span> <span class="fu">reduce</span>(rbind)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="time-series---daily-1" class="level3" data-number="1.3.12">
 <h3 data-number="1.3.12" class="anchored" data-anchor-id="time-series---daily-1"><span class="header-section-number">1.3.12</span> <strong>Time series - daily</strong></h3>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y21_Y40_means) <span class="sc">+</span> </span>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y21_Y40_means) <span class="sc">+</span></span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x=</span>dn, <span class="at">y=</span>mean, <span class="at">group=</span>model, <span class="at">colour=</span>model)) <span class="sc">+</span></span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Removing sd ribbon for ease of viewing</span></span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_ribbon(aes(x =dn, ymin = mean - sd, ymax= mean + sd), alpha=0.4) + </span></span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Daily (1980 - 2000)"</span>) <span class="sc">+</span> </span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Daily mean max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_ribbon(aes(x =dn, ymin = mean - sd, ymax= mean + sd), alpha=0.4) +</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Daily (1980 - 2000)"</span>) <span class="sc">+</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Daily mean max temp (tasmax) oC"</span>) <span class="sc">+</span></span>
 <span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#scale_fill_brewer(palette = "Paired", name = "") +</span></span>
 <span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
 <span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>(),</span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> </span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span> model, <span class="at">ncol=</span><span class="dv">3</span>) <span class="sc">+</span> <span class="fu">guides</span>(<span class="at">fill =</span> <span class="cn">FALSE</span>)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span> model, <span class="at">ncol=</span><span class="dv">3</span>) <span class="sc">+</span> <span class="fu">guides</span>(<span class="at">fill =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <pre><code>## Warning: The `&lt;scale&gt;` argument of `guides()` cannot be `FALSE`. Use "none" instead as
 ## of ggplot2 3.3.4.
 ## This warning is displayed once every 8 hours.
@@ -555,14 +555,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="boxplot---mean-y21_y40" class="level3" data-number="1.3.13">
 <h3 data-number="1.3.13" class="anchored" data-anchor-id="boxplot---mean-y21_y40"><span class="header-section-number">1.3.13</span> <strong>boxplot - mean Y21_Y40</strong></h3>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a pallete specific to the runs so when reordered maintain the same colours </span></span>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a pallete specific to the runs so when reordered maintain the same colours</span></span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>Y21_Y40_means<span class="sc">$</span>model <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(Y21_Y40_means<span class="sc">$</span>model)</span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>c <span class="ot">&lt;-</span> <span class="fu">brewer.pal</span>(<span class="dv">12</span>, <span class="st">"Paired"</span>)</span>
 <span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>my_colours <span class="ot">&lt;-</span> <span class="fu">setNames</span>(c, <span class="fu">levels</span>(Y21_Y40_means<span class="sc">$</span>model))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>Y21_Y40_means <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>Y21_Y40_means <span class="sc">%&gt;%</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, mean, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean), <span class="at">y=</span>mean, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean), <span class="at">y=</span>mean, <span class="at">fill=</span>model)) <span class="sc">+</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
 <span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
 <span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
 <span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
@@ -581,33 +581,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="time-series---annual-mean-1" class="level3" data-number="1.3.15">
 <h3 data-number="1.3.15" class="anchored" data-anchor-id="time-series---annual-mean-1"><span class="header-section-number">1.3.15</span> <strong>Time series - annual mean</strong></h3>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Aggregating to year for annual average </span></span>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Aggregating to year for annual average</span></span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>Y21_Y40_means<span class="sc">$</span>Yf <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(Y21_Y40_means<span class="sc">$</span>Y)</span>
 <span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>Y21_Y40_means_y <span class="ot">&lt;-</span> Y21_Y40_means <span class="sc">%&gt;%</span> </span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>Y21_Y40_means_y <span class="ot">&lt;-</span> Y21_Y40_means <span class="sc">%&gt;%</span></span>
 <span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Yf, model) <span class="sc">%&gt;%</span></span>
 <span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">mean.annual=</span><span class="fu">mean</span>(mean, <span class="at">na.rm=</span>T), <span class="at">sd.annual=</span><span class="fu">sd</span>(mean, <span class="at">na.rm =</span> T))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y21_Y40_means_y) <span class="sc">+</span> </span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y21_Y40_means_y) <span class="sc">+</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual,</span>
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2021 - 2040)"</span>) <span class="sc">+</span> </span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2021 - 2040)"</span>) <span class="sc">+</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span></span>
 <span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
-<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-25-1.png" class="img-fluid"><!-- --></p>
 <div class="sourceCode" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plotting with SDs in geom_ribbon to see if anything wildely different</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y21_Y40_means_y) <span class="sc">+</span> </span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y21_Y40_means_y) <span class="sc">+</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual,</span>
 <span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>                               <span class="at">ymin =</span> mean.annual <span class="sc">-</span> sd.annual,</span>
 <span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>                              <span class="at">ymax=</span> mean.annual <span class="sc">+</span> sd.annual,</span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">fill=</span>model),  <span class="at">alpha=</span><span class="fl">0.4</span>) <span class="sc">+</span> </span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">fill=</span>model),  <span class="at">alpha=</span><span class="fl">0.4</span>) <span class="sc">+</span></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual,</span>
 <span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
-<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2021 - 2040)"</span>) <span class="sc">+</span> </span>
-<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2021 - 2040)"</span>) <span class="sc">+</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span></span>
 <span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
@@ -616,10 +616,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="boxplot---annual-mean-2021---2040" class="level3" data-number="1.3.16">
 <h3 data-number="1.3.16" class="anchored" data-anchor-id="boxplot---annual-mean-2021---2040"><span class="header-section-number">1.3.16</span> <strong>boxplot - annual mean 2021 - 2040</strong></h3>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>Y21_Y40_means_y <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>Y21_Y40_means_y <span class="sc">%&gt;%</span></span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, mean.annual, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean.annual), <span class="at">y=</span>mean.annual, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean.annual), <span class="at">y=</span>mean.annual, <span class="at">fill=</span>model)) <span class="sc">+</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
 <span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max daily max temp oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
 <span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
 <span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
@@ -638,26 +638,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="time-series---annual-max-1" class="level3" data-number="1.3.18">
 <h3 data-number="1.3.18" class="anchored" data-anchor-id="time-series---annual-max-1"><span class="header-section-number">1.3.18</span> <strong>Time series - annual max</strong></h3>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>Y21_Y40_max_y <span class="ot">&lt;-</span> Y21_Y40_means <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>Y21_Y40_max_y <span class="ot">&lt;-</span> Y21_Y40_means <span class="sc">%&gt;%</span></span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Yf, model) <span class="sc">%&gt;%</span></span>
 <span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">max=</span><span class="fu">max</span>(mean, <span class="at">na.rm=</span>T))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="sourceCode" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y21_Y40_max_y) <span class="sc">+</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>max, </span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>max,</span>
 <span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2021 - 2040)"</span>) <span class="sc">+</span> </span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2021 - 2040)"</span>) <span class="sc">+</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span></span>
 <span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
-<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-30-1.png" class="img-fluid"><!-- --></p>
 </section>
 <section id="boxplot---annual-max-1" class="level3" data-number="1.3.19">
 <h3 data-number="1.3.19" class="anchored" data-anchor-id="boxplot---annual-max-1"><span class="header-section-number">1.3.19</span> <strong>boxplot - annual max</strong></h3>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>Y21_Y40_max_y <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>Y21_Y40_max_y <span class="sc">%&gt;%</span></span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, max, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, max), <span class="at">y=</span>max, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, max), <span class="at">y=</span>max, <span class="at">fill=</span>model)) <span class="sc">+</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
 <span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
 <span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
 <span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
@@ -670,36 +670,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co">#-1 removes the intercept to compare coefficients of all Runs</span></span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>av1 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, Y21_Y40_means)</span>
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>av1<span class="sc">$</span>coefficients[<span class="fu">order</span>(av1<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre><code>## modelY21_Y40_Run10 modelY21_Y40_Run05 modelY21_Y40_Run07 modelY21_Y40_Run02 
-##           10.93136           12.36223           12.64493           12.67791 
-## modelY21_Y40_Run09 modelY21_Y40_Run03 modelY21_Y40_Run08 modelY21_Y40_Run01 
-##           12.72584           12.85999           12.92934           13.03640 
-## modelY21_Y40_Run04 modelY21_Y40_Run12 modelY21_Y40_Run06 modelY21_Y40_Run11 
+<pre><code>## modelY21_Y40_Run10 modelY21_Y40_Run05 modelY21_Y40_Run07 modelY21_Y40_Run02
+##           10.93136           12.36223           12.64493           12.67791
+## modelY21_Y40_Run09 modelY21_Y40_Run03 modelY21_Y40_Run08 modelY21_Y40_Run01
+##           12.72584           12.85999           12.92934           13.03640
+## modelY21_Y40_Run04 modelY21_Y40_Run12 modelY21_Y40_Run06 modelY21_Y40_Run11
 ##           13.07768           13.20011           13.38047           13.60076</code></pre>
 <p>Annual means:</p>
 <div class="sourceCode" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>av2 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean.annual <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, Y21_Y40_means_y)</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>av2<span class="sc">$</span>coefficients[<span class="fu">order</span>(av2<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre><code>## modelY21_Y40_Run10 modelY21_Y40_Run05 modelY21_Y40_Run07 modelY21_Y40_Run02 
-##           10.93136           12.36223           12.64493           12.67791 
-## modelY21_Y40_Run09 modelY21_Y40_Run03 modelY21_Y40_Run08 modelY21_Y40_Run01 
-##           12.72584           12.85999           12.92934           13.03640 
-## modelY21_Y40_Run04 modelY21_Y40_Run12 modelY21_Y40_Run06 modelY21_Y40_Run11 
+<pre><code>## modelY21_Y40_Run10 modelY21_Y40_Run05 modelY21_Y40_Run07 modelY21_Y40_Run02
+##           10.93136           12.36223           12.64493           12.67791
+## modelY21_Y40_Run09 modelY21_Y40_Run03 modelY21_Y40_Run08 modelY21_Y40_Run01
+##           12.72584           12.85999           12.92934           13.03640
+## modelY21_Y40_Run04 modelY21_Y40_Run12 modelY21_Y40_Run06 modelY21_Y40_Run11
 ##           13.07768           13.20011           13.38047           13.60076</code></pre>
 <p>Max of means</p>
 <div class="sourceCode" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>av3 <span class="ot">&lt;-</span> <span class="fu">aov</span>(max <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, Y21_Y40_max_y)</span>
 <span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>av3<span class="sc">$</span>coefficients[<span class="fu">order</span>(av3<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre><code>## modelY21_Y40_Run10 modelY21_Y40_Run02 modelY21_Y40_Run09 modelY21_Y40_Run03 
-##           19.29044           20.69596           20.82538           21.05558 
-## modelY21_Y40_Run05 modelY21_Y40_Run07 modelY21_Y40_Run08 modelY21_Y40_Run01 
-##           21.09128           21.22942           21.33484           21.37443 
-## modelY21_Y40_Run04 modelY21_Y40_Run06 modelY21_Y40_Run12 modelY21_Y40_Run11 
+<pre><code>## modelY21_Y40_Run10 modelY21_Y40_Run02 modelY21_Y40_Run09 modelY21_Y40_Run03
+##           19.29044           20.69596           20.82538           21.05558
+## modelY21_Y40_Run05 modelY21_Y40_Run07 modelY21_Y40_Run08 modelY21_Y40_Run01
+##           21.09128           21.22942           21.33484           21.37443
+## modelY21_Y40_Run04 modelY21_Y40_Run06 modelY21_Y40_Run12 modelY21_Y40_Run11
 ##           21.49363           21.98667           22.09476           22.65178</code></pre>
 <p>Based on means then selection would be Run 02 (2nd lowest), Run 04 &amp; Run 03, and Run 11 (2nd lowest)</p>
 <p>Based on this period, the seelction would be: Run 05, Run 03, Run 08, Run 06 (so definetly Run 3 but others to be discussed)</p>
 </section>
 <section id="c.-y2061---y2080" class="level3" data-number="1.3.21">
 <h3 data-number="1.3.21" class="anchored" data-anchor-id="c.-y2061---y2080"><span class="header-section-number">1.3.21</span> <strong>2c. Y2061 - Y2080</strong></h3>
-<div class="sourceCode" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">2061</span><span class="sc">:</span><span class="dv">2080</span>), <span class="at">each=</span><span class="dv">360</span>)  </span>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">2061</span><span class="sc">:</span><span class="dv">2080</span>), <span class="at">each=</span><span class="dv">360</span>)</span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>dfs_Y61_Y80 <span class="ot">&lt;-</span> <span class="fu">lapply</span>(names_Y61_Y80, <span class="cf">function</span>(i){</span>
@@ -711,35 +711,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df)</span>
 <span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>})</span>
 <span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a single df in long form of Runs for the Y61_Y80 period </span></span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a single df in long form of Runs for the Y61_Y80 period</span></span>
 <span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>Y61_Y80_means <span class="ot">&lt;-</span> dfs_Y61_Y80 <span class="sc">%&gt;%</span> <span class="fu">reduce</span>(rbind)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="time-series---daily-2" class="level3" data-number="1.3.22">
 <h3 data-number="1.3.22" class="anchored" data-anchor-id="time-series---daily-2"><span class="header-section-number">1.3.22</span> <strong>Time series - daily</strong></h3>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y61_Y80_means) <span class="sc">+</span> </span>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y61_Y80_means) <span class="sc">+</span></span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x=</span>dn, <span class="at">y=</span>mean, <span class="at">group=</span>model, <span class="at">colour=</span>model)) <span class="sc">+</span></span>
 <span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Removing sd ribbon for ease of viewing</span></span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_ribbon(aes(x =dn, ymin = mean - sd, ymax= mean + sd), alpha=0.4) + </span></span>
-<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Day (2060 - 2080)"</span>) <span class="sc">+</span> </span>
-<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Daily mean max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_ribbon(aes(x =dn, ymin = mean - sd, ymax= mean + sd), alpha=0.4) +</span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Day (2060 - 2080)"</span>) <span class="sc">+</span></span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Daily mean max temp (tasmax) oC"</span>) <span class="sc">+</span></span>
 <span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#scale_fill_brewer(palette = "Paired", name = "") +</span></span>
 <span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
 <span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>(),</span>
-<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> </span>
-<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span> model, <span class="at">ncol=</span><span class="dv">3</span>) <span class="sc">+</span> <span class="fu">guides</span>(<span class="at">fill =</span> <span class="cn">FALSE</span>)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(.<span class="sc">~</span> model, <span class="at">ncol=</span><span class="dv">3</span>) <span class="sc">+</span> <span class="fu">guides</span>(<span class="at">fill =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-36-1.png" class="img-fluid"><!-- --></p>
 </section>
 <section id="boxplot---mean-y61_y80" class="level3" data-number="1.3.23">
 <h3 data-number="1.3.23" class="anchored" data-anchor-id="boxplot---mean-y61_y80"><span class="header-section-number">1.3.23</span> <strong>boxplot - mean Y61_Y80</strong></h3>
-<div class="sourceCode" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a pallete specific to the runs so when reordered maintain the same colours </span></span>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a pallete specific to the runs so when reordered maintain the same colours</span></span>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>Y61_Y80_means<span class="sc">$</span>model <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(Y61_Y80_means<span class="sc">$</span>model)</span>
 <span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>c <span class="ot">&lt;-</span> <span class="fu">brewer.pal</span>(<span class="dv">12</span>, <span class="st">"Paired"</span>)</span>
 <span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>my_colours <span class="ot">&lt;-</span> <span class="fu">setNames</span>(c, <span class="fu">levels</span>(Y61_Y80_means<span class="sc">$</span>model))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>Y61_Y80_means <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>Y61_Y80_means <span class="sc">%&gt;%</span></span>
 <span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, mean, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean), <span class="at">y=</span>mean, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
-<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean), <span class="at">y=</span>mean, <span class="at">fill=</span>model)) <span class="sc">+</span></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
 <span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
 <span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
 <span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
@@ -758,33 +758,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="time-series---annual-mean-2" class="level3" data-number="1.3.25">
 <h3 data-number="1.3.25" class="anchored" data-anchor-id="time-series---annual-mean-2"><span class="header-section-number">1.3.25</span> <strong>Time series - annual mean</strong></h3>
-<div class="sourceCode" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Aggregating to year for annual average </span></span>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Aggregating to year for annual average</span></span>
 <span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>Y61_Y80_means<span class="sc">$</span>Yf <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(Y61_Y80_means<span class="sc">$</span>Y)</span>
 <span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>Y61_Y80_means_y <span class="ot">&lt;-</span> Y61_Y80_means <span class="sc">%&gt;%</span> </span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>Y61_Y80_means_y <span class="ot">&lt;-</span> Y61_Y80_means <span class="sc">%&gt;%</span></span>
 <span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Yf, model) <span class="sc">%&gt;%</span></span>
 <span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">mean.annual=</span><span class="fu">mean</span>(mean, <span class="at">na.rm=</span>T), <span class="at">sd.annual=</span><span class="fu">sd</span>(mean, <span class="at">na.rm =</span> T))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="sourceCode" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y61_Y80_means_y) <span class="sc">+</span> </span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y61_Y80_means_y) <span class="sc">+</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual,</span>
 <span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
-<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2061 - 2080)"</span>) <span class="sc">+</span> </span>
-<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2061 - 2080)"</span>) <span class="sc">+</span></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span></span>
 <span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
-<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-41-1.png" class="img-fluid"><!-- --></p>
 <div class="sourceCode" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plotting with SDs in geom_ribbon to see if anything wildely different</span></span>
-<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y61_Y80_means_y) <span class="sc">+</span> </span>
-<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y61_Y80_means_y) <span class="sc">+</span></span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual,</span>
 <span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>                               <span class="at">ymin =</span> mean.annual <span class="sc">-</span> sd.annual,</span>
 <span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>                              <span class="at">ymax=</span> mean.annual <span class="sc">+</span> sd.annual,</span>
-<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">fill=</span>model),  <span class="at">alpha=</span><span class="fl">0.4</span>) <span class="sc">+</span> </span>
-<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual, </span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">fill=</span>model),  <span class="at">alpha=</span><span class="fl">0.4</span>) <span class="sc">+</span></span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>mean.annual,</span>
 <span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
-<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2061 - 2080)"</span>) <span class="sc">+</span> </span>
-<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2061 - 2080)"</span>) <span class="sc">+</span></span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual mean of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span></span>
 <span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
@@ -793,10 +793,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="boxplot---annual-mean-y61_y80" class="level3" data-number="1.3.26">
 <h3 data-number="1.3.26" class="anchored" data-anchor-id="boxplot---annual-mean-y61_y80"><span class="header-section-number">1.3.26</span> <strong>boxplot - annual mean Y61_Y80</strong></h3>
-<div class="sourceCode" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>Y61_Y80_means_y <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>Y61_Y80_means_y <span class="sc">%&gt;%</span></span>
 <span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, mean.annual, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean.annual), <span class="at">y=</span>mean.annual, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
-<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, mean.annual), <span class="at">y=</span>mean.annual, <span class="at">fill=</span>model)) <span class="sc">+</span></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
 <span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max daily max temp oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
 <span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
 <span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
@@ -815,26 +815,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="time-series---annual-max-2" class="level3" data-number="1.3.28">
 <h3 data-number="1.3.28" class="anchored" data-anchor-id="time-series---annual-max-2"><span class="header-section-number">1.3.28</span> <strong>Time series - annual max</strong></h3>
-<div class="sourceCode" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>Y61_Y80_max_y <span class="ot">&lt;-</span> Y61_Y80_means <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>Y61_Y80_max_y <span class="ot">&lt;-</span> Y61_Y80_means <span class="sc">%&gt;%</span></span>
 <span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Yf, model) <span class="sc">%&gt;%</span></span>
 <span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">max=</span><span class="fu">max</span>(mean, <span class="at">na.rm=</span>T))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="sourceCode" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Y61_Y80_max_y) <span class="sc">+</span></span>
-<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>max, </span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(Yf), <span class="at">y=</span>max,</span>
 <span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">color=</span>model)) <span class="sc">+</span></span>
-<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2061 - 2080)"</span>) <span class="sc">+</span> </span>
-<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> </span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Year (2061 - 2080)"</span>) <span class="sc">+</span></span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span></span>
 <span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>, <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
-<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><img src="Identifying_Runs_files/figure-gfm/unnamed-chunk-46-1.png" class="img-fluid"><!-- --></p>
 </section>
 <section id="boxplot---annual-max-2" class="level3" data-number="1.3.29">
 <h3 data-number="1.3.29" class="anchored" data-anchor-id="boxplot---annual-max-2"><span class="header-section-number">1.3.29</span> <strong>boxplot - annual max</strong></h3>
-<div class="sourceCode" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>Y61_Y80_max_y <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>Y61_Y80_max_y <span class="sc">%&gt;%</span></span>
 <span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">fct_reorder</span>(model, max, <span class="at">.fun=</span><span class="st">'median'</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, max), <span class="at">y=</span>max, <span class="at">fill=</span>model)) <span class="sc">+</span> </span>
-<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">reorder</span>(model, max), <span class="at">y=</span>max, <span class="at">fill=</span>model)) <span class="sc">+</span></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
 <span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Annual max of mean daily max temp (tasmax) oC"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"model"</span>) <span class="sc">+</span></span>
 <span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> my_colours) <span class="sc">+</span></span>
 <span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),</span>
@@ -847,29 +847,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co">#-1 removes the intercept to compare coefficients of all Runs</span></span>
 <span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>av1 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, Y61_Y80_means)</span>
 <span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>av1<span class="sc">$</span>coefficients[<span class="fu">order</span>(av1<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre><code>## modelY61_Y80_Run10 modelY61_Y80_Run05 modelY61_Y80_Run01 modelY61_Y80_Run08 
-##           12.70342           13.87016           14.55815           14.65973 
-## modelY61_Y80_Run04 modelY61_Y80_Run09 modelY61_Y80_Run03 modelY61_Y80_Run12 
-##           14.69527           14.76917           14.79545           14.87939 
-## modelY61_Y80_Run07 modelY61_Y80_Run02 modelY61_Y80_Run11 modelY61_Y80_Run06 
+<pre><code>## modelY61_Y80_Run10 modelY61_Y80_Run05 modelY61_Y80_Run01 modelY61_Y80_Run08
+##           12.70342           13.87016           14.55815           14.65973
+## modelY61_Y80_Run04 modelY61_Y80_Run09 modelY61_Y80_Run03 modelY61_Y80_Run12
+##           14.69527           14.76917           14.79545           14.87939
+## modelY61_Y80_Run07 modelY61_Y80_Run02 modelY61_Y80_Run11 modelY61_Y80_Run06
 ##           14.94320           15.01577           15.11392           15.11814</code></pre>
 <p>Annual means:</p>
 <div class="sourceCode" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>av2 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean.annual <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, Y61_Y80_means_y)</span>
 <span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>av2<span class="sc">$</span>coefficients[<span class="fu">order</span>(av2<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre><code>## modelY61_Y80_Run10 modelY61_Y80_Run05 modelY61_Y80_Run01 modelY61_Y80_Run08 
-##           12.70342           13.87016           14.55815           14.65973 
-## modelY61_Y80_Run04 modelY61_Y80_Run09 modelY61_Y80_Run03 modelY61_Y80_Run12 
-##           14.69527           14.76917           14.79545           14.87939 
-## modelY61_Y80_Run07 modelY61_Y80_Run02 modelY61_Y80_Run11 modelY61_Y80_Run06 
+<pre><code>## modelY61_Y80_Run10 modelY61_Y80_Run05 modelY61_Y80_Run01 modelY61_Y80_Run08
+##           12.70342           13.87016           14.55815           14.65973
+## modelY61_Y80_Run04 modelY61_Y80_Run09 modelY61_Y80_Run03 modelY61_Y80_Run12
+##           14.69527           14.76917           14.79545           14.87939
+## modelY61_Y80_Run07 modelY61_Y80_Run02 modelY61_Y80_Run11 modelY61_Y80_Run06
 ##           14.94320           15.01577           15.11392           15.11814</code></pre>
 <p>Max of means</p>
 <div class="sourceCode" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>av3 <span class="ot">&lt;-</span> <span class="fu">aov</span>(max <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, Y61_Y80_max_y)</span>
 <span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>av3<span class="sc">$</span>coefficients[<span class="fu">order</span>(av3<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre><code>## modelY61_Y80_Run10 modelY61_Y80_Run05 modelY61_Y80_Run03 modelY61_Y80_Run04 
-##           21.83290           23.32972           23.88512           23.98220 
-## modelY61_Y80_Run02 modelY61_Y80_Run01 modelY61_Y80_Run08 modelY61_Y80_Run06 
-##           23.98610           24.03094           24.13232           24.41824 
-## modelY61_Y80_Run12 modelY61_Y80_Run09 modelY61_Y80_Run07 modelY61_Y80_Run11 
+<pre><code>## modelY61_Y80_Run10 modelY61_Y80_Run05 modelY61_Y80_Run03 modelY61_Y80_Run04
+##           21.83290           23.32972           23.88512           23.98220
+## modelY61_Y80_Run02 modelY61_Y80_Run01 modelY61_Y80_Run08 modelY61_Y80_Run06
+##           23.98610           24.03094           24.13232           24.41824
+## modelY61_Y80_Run12 modelY61_Y80_Run09 modelY61_Y80_Run07 modelY61_Y80_Run11
 ##           24.48810           24.53152           24.77651           25.09102</code></pre>
 <p>Runs suggested by this slice are Run 05, Run 09, Run 03 and Run 11</p>
 <p>Run 3 and 5 suggested above</p>
@@ -881,10 +881,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="add-in-infill-data" class="level3" data-number="1.4.1">
 <h3 data-number="1.4.1" class="anchored" data-anchor-id="add-in-infill-data"><span class="header-section-number">1.4.1</span> Add in infill data</h3>
 <p><strong>Update 13.05.23</strong> - Adding in the infill data, and taking the anova result across the whole time period</p>
-<div class="sourceCode" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">2001</span><span class="sc">:</span><span class="dv">2020</span>), <span class="at">each=</span><span class="dv">360</span>)  </span>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">2001</span><span class="sc">:</span><span class="dv">2020</span>), <span class="at">each=</span><span class="dv">360</span>)</span>
 <span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>dfs_Y00_Y20 <span class="ot">&lt;-</span> <span class="fu">lapply</span>(names_Y00_Y20, <span class="cf">function</span>(i){</span>
-<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> dfs_Y00_Y20[[i]]  </span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> dfs_Y00_Y20[[i]]</span>
 <span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(df) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"day"</span>, <span class="st">"mean"</span>, <span class="st">"sd"</span>)</span>
 <span id="cb65-6"><a href="#cb65-6" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>model <span class="ot">&lt;-</span> i</span>
 <span id="cb65-7"><a href="#cb65-7" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>dn <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(df)</span>
@@ -894,10 +894,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb65-11"><a href="#cb65-11" aria-hidden="true" tabindex="-1"></a>})</span>
 <span id="cb65-12"><a href="#cb65-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb65-13"><a href="#cb65-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-14"><a href="#cb65-14" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">2041</span><span class="sc">:</span><span class="dv">2060</span>), <span class="at">each=</span><span class="dv">360</span>)  </span>
+<span id="cb65-14"><a href="#cb65-14" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">2041</span><span class="sc">:</span><span class="dv">2060</span>), <span class="at">each=</span><span class="dv">360</span>)</span>
 <span id="cb65-15"><a href="#cb65-15" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb65-16"><a href="#cb65-16" aria-hidden="true" tabindex="-1"></a>dfs_Y41_Y60 <span class="ot">&lt;-</span> <span class="fu">lapply</span>(names_Y41_Y60, <span class="cf">function</span>(i){</span>
-<span id="cb65-17"><a href="#cb65-17" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> dfs_Y41_Y60[[i]]  </span>
+<span id="cb65-17"><a href="#cb65-17" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> dfs_Y41_Y60[[i]]</span>
 <span id="cb65-18"><a href="#cb65-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(df) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"day"</span>, <span class="st">"mean"</span>, <span class="st">"sd"</span>)</span>
 <span id="cb65-19"><a href="#cb65-19" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>model <span class="ot">&lt;-</span> i</span>
 <span id="cb65-20"><a href="#cb65-20" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>dn <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(df)</span>
@@ -908,8 +908,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb65-25"><a href="#cb65-25" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb65-26"><a href="#cb65-26" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb65-27"><a href="#cb65-27" aria-hidden="true" tabindex="-1"></a><span class="co">#Create a single df in long form as above</span></span>
-<span id="cb65-28"><a href="#cb65-28" aria-hidden="true" tabindex="-1"></a>Y00_Y20_means <span class="ot">&lt;-</span> dfs_Y00_Y20 <span class="sc">%&gt;%</span> <span class="fu">reduce</span>(rbind) </span>
-<span id="cb65-29"><a href="#cb65-29" aria-hidden="true" tabindex="-1"></a>Y41_Y60_means <span class="ot">&lt;-</span> dfs_Y41_Y60 <span class="sc">%&gt;%</span> <span class="fu">reduce</span>(rbind) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb65-28"><a href="#cb65-28" aria-hidden="true" tabindex="-1"></a>Y00_Y20_means <span class="ot">&lt;-</span> dfs_Y00_Y20 <span class="sc">%&gt;%</span> <span class="fu">reduce</span>(rbind)</span>
+<span id="cb65-29"><a href="#cb65-29" aria-hidden="true" tabindex="-1"></a>Y41_Y60_means <span class="ot">&lt;-</span> dfs_Y41_Y60 <span class="sc">%&gt;%</span> <span class="fu">reduce</span>(rbind)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Assessing what the combined times slices suggest via anova</p>
 <section id="daily-means" class="level4" data-number="1.4.1.1">
 <h4 data-number="1.4.1.1" class="anchored" data-anchor-id="daily-means"><span class="header-section-number">1.4.1.1</span> Daily means:</h4>
@@ -922,28 +922,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb66-7"><a href="#cb66-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb66-8"><a href="#cb66-8" aria-hidden="true" tabindex="-1"></a>av1 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, all.means)</span>
 <span id="cb66-9"><a href="#cb66-9" aria-hidden="true" tabindex="-1"></a>av1<span class="sc">$</span>coefficients[<span class="fu">order</span>(av1<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre><code>## modelRun10 modelRun05 modelRun09 modelRun04 modelRun03 modelRun07 modelRun08 
-##   11.12464   12.48165   12.79216   12.89910   12.91685   12.91894   12.95115 
-## modelRun02 modelRun01 modelRun12 modelRun06 modelRun11 
+<pre><code>## modelRun10 modelRun05 modelRun09 modelRun04 modelRun03 modelRun07 modelRun08
+##   11.12464   12.48165   12.79216   12.89910   12.91685   12.91894   12.95115
+## modelRun02 modelRun01 modelRun12 modelRun06 modelRun11
 ##   12.95347   12.97947   13.38267   13.40644   13.61157</code></pre>
 </section>
 <section id="annual-means" class="level4" data-number="1.4.1.2">
 <h4 data-number="1.4.1.2" class="anchored" data-anchor-id="annual-means"><span class="header-section-number">1.4.1.2</span> Annual means:</h4>
-<div class="sourceCode" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="co"># As above, creating annual means </span></span>
+<div class="sourceCode" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="co"># As above, creating annual means</span></span>
 <span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>infill.L <span class="ot">&lt;-</span> <span class="fu">list</span>(Y00_Y20_means, Y41_Y60_means)</span>
 <span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>infill.L_y <span class="ot">&lt;-</span> <span class="fu">lapply</span>(infill.L, <span class="cf">function</span>(x){</span>
-<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>  means_y <span class="ot">&lt;-</span> x <span class="sc">%&gt;%</span> </span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>  means_y <span class="ot">&lt;-</span> x <span class="sc">%&gt;%</span></span>
 <span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Yf, model) <span class="sc">%&gt;%</span></span>
 <span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">mean.annual=</span><span class="fu">mean</span>(mean, <span class="at">na.rm=</span>T), <span class="at">sd.annual=</span><span class="fu">sd</span>(mean, <span class="at">na.rm =</span> T))})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <pre><code>## `summarise()` has grouped output by 'Yf'. You can override using the `.groups`
 ## argument.
 ## `summarise()` has grouped output by 'Yf'. You can override using the `.groups`
 ## argument.</code></pre>
-<div class="sourceCode" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>all.means_y <span class="ot">&lt;-</span> <span class="fu">rbind</span>(historical_means_y, </span>
-<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>                     infill.L_y[[<span class="dv">1</span>]], </span>
-<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>                     Y21_Y40_means_y, </span>
-<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a>                     infill.L_y[[<span class="dv">2</span>]], </span>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>all.means_y <span class="ot">&lt;-</span> <span class="fu">rbind</span>(historical_means_y,</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>                     infill.L_y[[<span class="dv">1</span>]],</span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>                     Y21_Y40_means_y,</span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a>                     infill.L_y[[<span class="dv">2</span>]],</span>
 <span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a>                     Y61_Y80_means_y)</span>
 <span id="cb70-6"><a href="#cb70-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb70-7"><a href="#cb70-7" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">as.character</span>(all.means_y<span class="sc">$</span>model)</span>
@@ -951,9 +951,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb70-9"><a href="#cb70-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb70-10"><a href="#cb70-10" aria-hidden="true" tabindex="-1"></a>av2 <span class="ot">&lt;-</span> <span class="fu">aov</span>(mean.annual <span class="sc">~</span> model <span class="sc">-</span> <span class="dv">1</span>, all.means_y)</span>
 <span id="cb70-11"><a href="#cb70-11" aria-hidden="true" tabindex="-1"></a>av2<span class="sc">$</span>coefficients[<span class="fu">order</span>(av2<span class="sc">$</span>coefficients)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre><code>## modelRun10 modelRun05 modelRun09 modelRun04 modelRun03 modelRun07 modelRun08 
-##   11.12464   12.48165   12.79216   12.89910   12.91685   12.91894   12.95115 
-## modelRun02 modelRun01 modelRun12 modelRun06 modelRun11 
+<pre><code>## modelRun10 modelRun05 modelRun09 modelRun04 modelRun03 modelRun07 modelRun08
+##   11.12464   12.48165   12.79216   12.89910   12.91685   12.91894   12.95115
+## modelRun02 modelRun01 modelRun12 modelRun06 modelRun11
 ##   12.95347   12.97947   13.38267   13.40644   13.61157</code></pre>
 <p><strong>Updated June 13th 2023 result</strong></p>
 <p>Considering all together, suggests: Runs 05, Run07, Run08 and Run06</p>
