@@ -308,8 +308,59 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 data-number="1.1.1" class="anchored" data-anchor-id="utils.date_range_to_str"><span class="header-section-number">1.1.1</span> date_range_to_str</h3>
 <p><code>date_range_to_str(start_date, end_date, split_str=DATE_FORMAT_SPLIT_STR, in_format_str=DATE_FORMAT_STR, out_format_str=DATE_FORMAT_STR)</code></p>
 <p>Take <code>start_date</code> and <code>end_date</code> <code>str</code> or <code>date</code> instances and return a range <code>str</code>.</p>
-<section id="examples" class="level4" data-number="1.1.1.1">
-<h4 data-number="1.1.1.1" class="anchored" data-anchor-id="examples"><span class="header-section-number">1.1.1.1</span> Examples</h4>
+<section id="parameters" class="level4" data-number="1.1.1.1">
+<h4 data-number="1.1.1.1" class="anchored" data-anchor-id="parameters"><span class="header-section-number">1.1.1.1</span> Parameters</h4>
+<table class="table">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 13%">
+<col style="width: 49%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>start_date</code></td>
+<td>utils.DateType</td>
+<td>First date in range.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>end_date</code></td>
+<td>utils.DateType</td>
+<td>Last date in range</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td><code>split_str</code></td>
+<td>str</td>
+<td><code>char</code> to split returned date range <code>str</code>.</td>
+<td><code>DATE_FORMAT_SPLIT_STR</code></td>
+</tr>
+<tr class="even">
+<td><code>in_format_str</code></td>
+<td>str</td>
+<td>A <code>strftime</code> format <code>str</code> to convert <code>start_date</code> from.</td>
+<td><code>DATE_FORMAT_STR</code></td>
+</tr>
+<tr class="odd">
+<td><code>out_format_str</code></td>
+<td>str</td>
+<td>A <code>strftime</code> format <code>str</code> to convert <code>end_date</code> from.</td>
+<td><code>DATE_FORMAT_STR</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples" class="level4" data-number="1.1.1.2">
+<h4 data-number="1.1.1.2" class="anchored" data-anchor-id="examples"><span class="header-section-number">1.1.1.2</span> Examples</h4>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> date_range_to_str(<span class="st">'20100101'</span>, <span class="st">'20100330'</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">'20100101-20100330'</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> date_range_to_str(date(<span class="dv">2010</span>, <span class="dv">1</span>, <span class="dv">1</span>), <span class="st">'20100330'</span>)</span>
@@ -320,8 +371,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 data-number="1.1.2" class="anchored" data-anchor-id="utils.date_to_str"><span class="header-section-number">1.1.2</span> date_to_str</h3>
 <p><code>date_to_str(date_obj, in_format_str=DATE_FORMAT_STR, out_format_str=DATE_FORMAT_STR)</code></p>
 <p>Return a <code>str</code> in <code>date_format_str</code> of <code>date_obj</code>.</p>
-<section id="examples-1" class="level4" data-number="1.1.2.1">
-<h4 data-number="1.1.2.1" class="anchored" data-anchor-id="examples-1"><span class="header-section-number">1.1.2.1</span> Examples</h4>
+<section id="parameters-1" class="level4" data-number="1.1.2.1">
+<h4 data-number="1.1.2.1" class="anchored" data-anchor-id="parameters-1"><span class="header-section-number">1.1.2.1</span> Parameters</h4>
+<table class="table">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 12%">
+<col style="width: 60%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>date_obj</code></td>
+<td>utils.DateType</td>
+<td>A <code>datetime.date</code> or <code>str</code> object to convert.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>in_format_str</code></td>
+<td>str</td>
+<td>A <code>strftime</code> format <code>str</code> to convert <code>date_obj</code> from if <code>date_obj</code> is a <code>str</code>.</td>
+<td><code>DATE_FORMAT_STR</code></td>
+</tr>
+<tr class="odd">
+<td><code>out_format_str</code></td>
+<td>str</td>
+<td>A <code>strftime</code> format <code>str</code> to convert <code>date_obj</code> to.</td>
+<td><code>DATE_FORMAT_STR</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-1" class="level4" data-number="1.1.2.2">
+<h4 data-number="1.1.2.2" class="anchored" data-anchor-id="examples-1"><span class="header-section-number">1.1.2.2</span> Examples</h4>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> date_to_str(<span class="st">'20100101'</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">'20100101'</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> date_to_str(date(<span class="dv">2010</span>, <span class="dv">1</span>, <span class="dv">1</span>))</span>
@@ -332,8 +422,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 data-number="1.1.3" class="anchored" data-anchor-id="utils.iter_to_tuple_strs"><span class="header-section-number">1.1.3</span> iter_to_tuple_strs</h3>
 <p><code>iter_to_tuple_strs(iter_var)</code></p>
 <p>Return a <code>tuple</code> with all components converted to <code>strs</code>.</p>
-<section id="examples-2" class="level4" data-number="1.1.3.1">
-<h4 data-number="1.1.3.1" class="anchored" data-anchor-id="examples-2"><span class="header-section-number">1.1.3.1</span> Examples</h4>
+<section id="parameters-2" class="level4" data-number="1.1.3.1">
+<h4 data-number="1.1.3.1" class="anchored" data-anchor-id="parameters-2"><span class="header-section-number">1.1.3.1</span> Parameters</h4>
+<table class="table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 27%">
+<col style="width: 50%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>iter_var</code></td>
+<td>typing.Iterable[typing.Any]</td>
+<td>Iterable of objects that can be converted into <code>strs</code>.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-2" class="level4" data-number="1.1.3.2">
+<h4 data-number="1.1.3.2" class="anchored" data-anchor-id="examples-2"><span class="header-section-number">1.1.3.2</span> Examples</h4>
 <div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> iter_to_tuple_strs([<span class="st">'cat'</span>, <span class="dv">1</span>, Path(<span class="st">'a/path'</span>)])</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>(<span class="st">'cat'</span>, <span class="st">'1'</span>, <span class="st">'a/path'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
@@ -342,24 +459,217 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 data-number="1.1.4" class="anchored" data-anchor-id="utils.make_user"><span class="header-section-number">1.1.4</span> make_user</h3>
 <p><code>make_user(user, password, code_path=RSTUDIO_DOCKER_USER_PATH, user_home_path=DEBIAN_HOME_PATH)</code></p>
 <p>Make user account and copy code to that environment.</p>
-<p>Args: user: user and home folder name password: login password code_path: path to copy code from to user path</p>
-<p>Example: ```pycon &gt;&gt;&gt; import os &gt;&gt;&gt; if os.geteuid() != 0: … pytest.skip(‘requires root permission to run’) &gt;&gt;&gt; user_name: str = ‘very_unlinkely_test_user’ &gt;&gt;&gt; password: str = ‘test_pass’ &gt;&gt;&gt; code_path: Path = Path(‘/home/jovyan’) &gt;&gt;&gt; make_user(user_name, password, code_path=JUPYTER_DOCKER_USER_PATH) PosixPath(‘/home/very_unlinkely_test_user’) &gt;&gt;&gt; Path(f’/home/{user_name}/python/conftest.py’).is_file() True &gt;&gt;&gt; rm_user(user_name) ‘very_unlinkely_test_user’</p>
-<pre><code>```</code></pre>
+<section id="parameters-3" class="level4" data-number="1.1.4.1">
+<h4 data-number="1.1.4.1" class="anchored" data-anchor-id="parameters-3"><span class="header-section-number">1.1.4.1</span> Parameters</h4>
+<table class="table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 15%">
+<col style="width: 40%">
+<col style="width: 30%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>user</code></td>
+<td>str</td>
+<td>user and home folder name</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>password</code></td>
+<td>str</td>
+<td>login password</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td><code>code_path</code></td>
+<td>pathlib.Path</td>
+<td>path to copy code from to user path</td>
+<td><code>RSTUDIO_DOCKER_USER_PATH</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-3" class="level4" data-number="1.1.4.2">
+<h4 data-number="1.1.4.2" class="anchored" data-anchor-id="examples-3"><span class="header-section-number">1.1.4.2</span> Examples</h4>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> os</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> os.geteuid() <span class="op">!=</span> <span class="dv">0</span>:</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(<span class="st">'requires root permission to run'</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> user_name: <span class="bu">str</span> <span class="op">=</span> <span class="st">'very_unlinkely_test_user'</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> password: <span class="bu">str</span> <span class="op">=</span> <span class="st">'test_pass'</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> code_path: Path <span class="op">=</span> Path(<span class="st">'/home/jovyan'</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> make_user(user_name, password, code_path<span class="op">=</span>JUPYTER_DOCKER_USER_PATH)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>PosixPath(<span class="st">'/home/very_unlinkely_test_user'</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> Path(<span class="ss">f'/home/</span><span class="sc">{</span>user_name<span class="sc">}</span><span class="ss">/python/conftest.py'</span>).is_file()</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="va">True</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> rm_user(user_name)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">'very_unlinkely_test_user'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
 </section>
 <section id="utils.make_users" class="level3" data-number="1.1.5">
 <h3 data-number="1.1.5" class="anchored" data-anchor-id="utils.make_users"><span class="header-section-number">1.1.5</span> make_users</h3>
 <p><code>make_users(file_path, user_col, password_col, file_reader, **kwargs)</code></p>
 <p>Load a file of usernames and passwords and to pass to make_user.</p>
-<p>Args: file_path: path to collumned file including user names and passwords per row user_col: str of column name for user names password_col: name of column name for passwords file_reader: function to read <code>file_path</code> **kwargs: additional parameters for to pass to <code>file_reader</code></p>
-<p>Example: ```pycon &gt;&gt;&gt; import os &gt;&gt;&gt; if os.geteuid() != 0: … pytest.skip(‘requires root permission to run’) &gt;&gt;&gt; from pandas import read_excel &gt;&gt;&gt; code_path: Path = Path(‘/home/jovyan’) &gt;&gt;&gt; def excel_row_iter(path: Path, <strong>kwargs) -&gt; dict: … df: DataFrame = read_excel(path, </strong>kwargs) … return df.to_dict(orient=“records”) &gt;&gt;&gt; test_accounts_path: Path = Path(‘tests/test_user_accounts.xlsx’) &gt;&gt;&gt; user_paths: tuple[Path, …] = tuple(make_users( … file_path=test_accounts_path, … user_col=“User Name”, … password_col=“Password”, … file_reader=excel_row_iter, … code_path=JUPYTER_DOCKER_USER_PATH, … )) &gt;&gt;&gt; [(path / ‘python’ / ‘conftest.py’).is_file() for path in user_paths] [True, True, True, True, True] &gt;&gt;&gt; [rm_user(user_path.name) for user_path in user_paths] [‘sally’, ‘george’, ‘jean’, ‘felicity’, ‘frank’]</p>
-<pre><code>```</code></pre>
+<section id="parameters-4" class="level4" data-number="1.1.5.1">
+<h4 data-number="1.1.5.1" class="anchored" data-anchor-id="parameters-4"><span class="header-section-number">1.1.5.1</span> Parameters</h4>
+<table class="table">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 14%">
+<col style="width: 60%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>file_path</code></td>
+<td>pathlib.Path</td>
+<td><code>Path</code> to collumned file including user names and passwords per row.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>user_col</code></td>
+<td>str</td>
+<td><code>str</code> of column name for user names.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td><code>password_col</code></td>
+<td>str</td>
+<td><code>str</code> of column name for passwords.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>file_reader</code></td>
+<td>typing.Callable</td>
+<td>Callable (function) to read <code>file_path</code>.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td><code>**kwargs</code></td>
+<td></td>
+<td>Additional parameters for to pass to <code>file_reader</code> function.</td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-4" class="level4" data-number="1.1.5.2">
+<h4 data-number="1.1.5.2" class="anchored" data-anchor-id="examples-4"><span class="header-section-number">1.1.5.2</span> Examples</h4>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> os</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> os.geteuid() <span class="op">!=</span> <span class="dv">0</span>:</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(<span class="st">'requires root permission to run'</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> pandas <span class="im">import</span> read_excel</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> code_path: Path <span class="op">=</span> Path(<span class="st">'/home/jovyan'</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="kw">def</span> excel_row_iter(path: Path, <span class="op">**</span>kwargs) <span class="op">-&gt;</span> <span class="bu">dict</span>:</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>...     df: DataFrame <span class="op">=</span> read_excel(path, <span class="op">**</span>kwargs)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>...     <span class="cf">return</span> df.to_dict(orient<span class="op">=</span><span class="st">"records"</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> test_accounts_path: Path <span class="op">=</span> Path(<span class="st">'tests/test_user_accounts.xlsx'</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> user_paths: <span class="bu">tuple</span>[Path, ...] <span class="op">=</span> <span class="bu">tuple</span>(make_users(</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>...     file_path<span class="op">=</span>test_accounts_path,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>...     user_col<span class="op">=</span><span class="st">"User Name"</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>...     password_col<span class="op">=</span><span class="st">"Password"</span>,</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>...     file_reader<span class="op">=</span>excel_row_iter,</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>...     code_path<span class="op">=</span>JUPYTER_DOCKER_USER_PATH,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>... ))</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> [(path <span class="op">/</span> <span class="st">'python'</span> <span class="op">/</span> <span class="st">'conftest.py'</span>).is_file() <span class="cf">for</span> path <span class="kw">in</span> user_paths]</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>[<span class="va">True</span>, <span class="va">True</span>, <span class="va">True</span>, <span class="va">True</span>, <span class="va">True</span>]</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> [rm_user(user_path.name) <span class="cf">for</span> user_path <span class="kw">in</span> user_paths]</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>[<span class="st">'sally'</span>, <span class="st">'george'</span>, <span class="st">'jean'</span>, <span class="st">'felicity'</span>, <span class="st">'frank'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
 </section>
 <section id="utils.path_iterdir" class="level3" data-number="1.1.6">
 <h3 data-number="1.1.6" class="anchored" data-anchor-id="utils.path_iterdir"><span class="header-section-number">1.1.6</span> path_iterdir</h3>
 <p><code>path_iterdir(path, strict=False)</code></p>
 <p>Return an <code>Generator</code> after ensuring <code>path</code> exists.</p>
-<section id="examples-3" class="level4" data-number="1.1.6.1">
-<h4 data-number="1.1.6.1" class="anchored" data-anchor-id="examples-3"><span class="header-section-number">1.1.6.1</span> Examples</h4>
+<section id="parameters-5" class="level4" data-number="1.1.6.1">
+<h4 data-number="1.1.6.1" class="anchored" data-anchor-id="parameters-5"><span class="header-section-number">1.1.6.1</span> Parameters</h4>
+<table class="table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 14%">
+<col style="width: 62%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>path</code></td>
+<td>pathlib.Path</td>
+<td><code>Path</code> of folder to iterate through</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>strict</code></td>
+<td>bool</td>
+<td>Whether to raise <code>FileNotFoundError</code> if <code>path</code> not found.</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level4" data-number="1.1.6.2">
+<h4 data-number="1.1.6.2" class="anchored" data-anchor-id="returns"><span class="header-section-number">1.1.6.2</span> Returns</h4>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A <code>Generator</code> of <code>Paths</code> within folder <code>path</code>.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises" class="level4" data-number="1.1.6.3">
+<h4 data-number="1.1.6.3" class="anchored" data-anchor-id="raises"><span class="header-section-number">1.1.6.3</span> Raises</h4>
+<table class="table">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 73%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FileNotFoundError</td>
+<td>Raised if <code>strict = True</code> and <code>path</code> does not exist.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-5" class="level4" data-number="1.1.6.4">
+<h4 data-number="1.1.6.4" class="anchored" data-anchor-id="examples-5"><span class="header-section-number">1.1.6.4</span> Examples</h4>
 <div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tmp_path <span class="op">=</span> getfixture(<span class="st">'tmp_path'</span>)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> os <span class="im">import</span> chdir</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> chdir(tmp_path)</span>
@@ -385,11 +695,53 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 data-number="1.1.7" class="anchored" data-anchor-id="utils.rm_user"><span class="header-section-number">1.1.7</span> rm_user</h3>
 <p><code>rm_user(user, user_home_path=DEBIAN_HOME_PATH)</code></p>
 <p>Remove user and user home folder.</p>
-<p>Args: user: user and home folder name password: login password</p>
-<p>Example: ```pycon &gt;&gt;&gt; import os &gt;&gt;&gt; if os.geteuid() != 0: … pytest.skip(‘requires root permission to run’) &gt;&gt;&gt; user_name: str = ‘very_unlinkely_test_user’ &gt;&gt;&gt; password: str = ‘test_pass’ &gt;&gt;&gt; make_user(user_name, password, code_path=JUPYTER_DOCKER_USER_PATH) PosixPath(‘/home/very_unlinkely_test_user’) &gt;&gt;&gt; rm_user(user_name) ‘very_unlinkely_test_user’</p>
-<pre><code>```</code></pre>
+<section id="parameters-6" class="level4" data-number="1.1.7.1">
+<h4 data-number="1.1.7.1" class="anchored" data-anchor-id="parameters-6"><span class="header-section-number">1.1.7.1</span> Parameters</h4>
+<table class="table">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 11%">
+<col style="width: 55%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>user</code></td>
+<td>str</td>
+<td>User home folder name (usually the same as the user login name).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>user_home_path</code></td>
+<td>pathlib.Path</td>
+<td>Parent path of <code>user</code> folder name.</td>
+<td><code>DEBIAN_HOME_PATH</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-6" class="level4" data-number="1.1.7.2">
+<h4 data-number="1.1.7.2" class="anchored" data-anchor-id="examples-6"><span class="header-section-number">1.1.7.2</span> Examples</h4>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> os</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> os.geteuid() <span class="op">!=</span> <span class="dv">0</span>:</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(<span class="st">'requires root permission to run'</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> user_name: <span class="bu">str</span> <span class="op">=</span> <span class="st">'very_unlinkely_test_user'</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> password: <span class="bu">str</span> <span class="op">=</span> <span class="st">'test_pass'</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> make_user(user_name, password, code_path<span class="op">=</span>JUPYTER_DOCKER_USER_PATH)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>PosixPath(<span class="st">'/home/very_unlinkely_test_user'</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> rm_user(user_name)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">'very_unlinkely_test_user'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
+</section>
 </section>
 </section>
 </section>

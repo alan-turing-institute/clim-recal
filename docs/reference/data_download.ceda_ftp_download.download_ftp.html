@@ -207,7 +207,8 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#data_download.ceda_ftp_download.download_ftp" id="toc-data_download.ceda_ftp_download.download_ftp" class="nav-link active" data-scroll-target="#data_download.ceda_ftp_download.download_ftp"><span class="header-section-number">1</span> data_download.ceda_ftp_download.download_ftp</a>
   <ul class="collapse">
-  <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters"><span class="header-section-number">1.1</span> Parameters</a></li>
+  <li><a href="#note" id="toc-note" class="nav-link" data-scroll-target="#note"><span class="header-section-number">1.1</span> Note</a></li>
+  <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters"><span class="header-section-number">1.2</span> Parameters</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -220,9 +221,13 @@ ul.task-list li input[type="checkbox"] {
 <section id="data_download.ceda_ftp_download.download_ftp" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> data_download.ceda_ftp_download.download_ftp</h1>
 <p><code>ceda_ftp_download.download_ftp(input, output, username, password, order)</code></p>
-<p>Function to connect to the CEDA archive and download data. Note you need to have a user account and provide your username and FTP password.</p>
-<section id="parameters" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="parameters"><span class="header-section-number">1.1</span> Parameters</h2>
+<p>Function to connect to the CEDA archive and download data.</p>
+<section id="note" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="note"><span class="header-section-number">1.1</span> Note</h2>
+<p>You need to have a user account and provide your username and <code>FTP</code> password.</p>
+</section>
+<section id="parameters" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="parameters"><span class="header-section-number">1.2</span> Parameters</h2>
 <table class="table">
 <colgroup>
 <col style="width: 3%">
@@ -241,32 +246,32 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>input</code></td>
-<td></td>
-<td>Path where the CEDA data to download is located (e.g ‘/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km/tasmin/day/v20220310’ or top level folder like ‘/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85’ if you want to download all files in all sub-directories).</td>
+<td>str</td>
+<td>Path where the CEDA data to download is located (e.g <code>/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km/tasmin/day/v20220310</code> or top level folder like <code>/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85</code> if you want to download all files in all sub-directories).</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td><code>output</code></td>
-<td></td>
+<td>str</td>
 <td>Path to save the downloaded data - sub-directories will be created automatically under the output directory.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="odd">
 <td><code>username</code></td>
-<td></td>
+<td>str</td>
 <td>CEDA registered username</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td><code>password</code></td>
-<td></td>
-<td>CEDA FPT password (obtained as explained in https://help.ceda.ac.uk/article/280-ftp)</td>
+<td>str</td>
+<td>CEDA FPT password (obtained as explained in <code>https://help.ceda.ac.uk/article/280-ftp</code>)</td>
 <td><em>required</em></td>
 </tr>
 <tr class="odd">
 <td><code>order</code></td>
-<td></td>
-<td>Order in which to run download 0: default order of file from ftp server 1: reverse order 2: shuffle. This functionality allows to run several downloads in parallel without rewriting files that are being downloaded.</td>
+<td>int</td>
+<td>Order in which to run download <code>0</code>: default order of file from <code>FTP</code> server <code>1</code>: reverse order <code>2</code>: shuffle. This functionality allows to run several downloads in parallel without rewriting files that are being downloaded.</td>
 <td><em>required</em></td>
 </tr>
 </tbody>
