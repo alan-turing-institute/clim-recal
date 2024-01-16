@@ -14,6 +14,7 @@ project:
     - "docs/reference"
     - "docs/pipeline.qmd"
     - "docs/contributing.md"
+    - "docs/pipeline_guidance.md"
     - "python/README.md"
       # - "notebooks/Assessing_bc_data/MethodsAssessment_DecWorkshop.Rmd"
       # Requires dataset mounted to run notebook
@@ -36,6 +37,8 @@ website:
       - text: "Summary"
         href: "README.md"
       - text: "Pipeline"
+        href: "docs/pipeline_guidance.md"
+      - text: "Pipeline Diagram"
         href: "docs/pipeline.qmd"
       - text: "Contributing"
         href: "docs/contributing.md"

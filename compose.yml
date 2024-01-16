@@ -9,8 +9,8 @@ services:
       target: clim-recal-base
     ports:
       - "8888:8888"
-    # volumes:
-    #   - .:/home/jovyan:rw
+    volumes:
+      - .:/home/jovyan:rw
 
   docs:
     build:
@@ -19,7 +19,7 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - .:/home/jovyan
+      - .:/home/jovyan:rw
 
   rstudio:
     build:
@@ -28,4 +28,4 @@ services:
     ports:
       - "8787:8787"
     volumes:
-      - .:/home/rstudio
+      - .:/home/rstudio:rw
