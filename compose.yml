@@ -24,7 +24,7 @@ services:
   rstudio:
     build:
       context: .
-      dockerfile: ./compose/server/Dockerfile
+      dockerfile: ./compose/rstudio/Dockerfile
     ports:
       - "8787:8787"
     volumes:
