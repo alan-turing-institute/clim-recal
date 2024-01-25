@@ -5,6 +5,7 @@ env:
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
   CONDA_ENV_NAME: clim-recal
+  CONDA_ENV_PATH: environment.yml
   MIN_PYTHON_VERSION: 3.9
   PYTHON_MODULE_FOLDER: /home/jovyan/python/
   COVERAGE_SVG_FOLDER: docs/assets/
@@ -55,21 +56,40 @@ jobs:
       - name: Checkout Code Repository
         uses: actions/checkout@main
 
-      - name: Build, Test and Save Test Coverage
+      - name: Build Conda Environment
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: ${{ env.CONDA_ENV_NAME }}
+          environment-file: ${{ env.CONDA_ENV_PATH }}
+          auto-activate-base: false
+          miniforge-version: latest
+
+      - name: Test and Save Test Coverage
+        shell: bash -el {0}
         run: |
-          docker compose build jupyter
-          docker compose up jupyter --detach
-          docker compose exec -u 0 jupyter bash -c "conda run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest"
+          mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest
           export JUPYTER_ID=$(docker compose ps -q jupyter)
           echo "jupyter_id=$JUPYTER_ID" >> $GITHUB_ENV
+
+      # - name: Build, Test and Save Test Coverage
+      #   run: |
+      #     docker compose build jupyter
+      #     docker compose up jupyter --detach
+      #     docker compose exec -u 0 jupyter bash -c "conda run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest"
+          # export JUPYTER_ID=$(docker compose ps -q jupyter)
+          # echo "jupyter_id=$JUPYTER_ID" >> $GITHUB_ENV
 
       - name: Check accessing saved jupyter_id
         run: |
           echo ${{ env.jupyter_id }}
 
+      # - name: Copy test coverage results
+      #   run: |
+      #     docker cp ${{ env.jupyter_id }}:${{ env.PYTHON_MODULE_FOLDER }}${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
+
       - name: Copy test coverage results
         run: |
-          docker cp ${{ env.jupyter_id }}:${{ env.PYTHON_MODULE_FOLDER }}${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
+          cp ${{ env.PYTHON_MODULE_FOLDER }}${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
 
       - name: Archive coverage svg
         uses: actions/upload-artifact@v3
@@ -77,8 +97,8 @@ jobs:
           name: coverage-badge
           path: ${{ env.COVERAGE_SVG_PATH }}
 
-      - name: Tear down the Stack
-        run: docker compose down
+      # - name: Tear down the Stack
+      #   run: docker compose down
 
   docs:
     needs: [linter, pytest]
