@@ -111,6 +111,7 @@ def test_run(run_config, city, variable, run, method) -> None:
     assert cmethods_run.returncode == 0
     for log_txt in (
         "Loading modelled calibration data (CPM)",
+        # Todo: uncomment in future to check new paths
         # (
         #     f"Debiased/three.cities.cropped/{city}/{run}/{variable}/"
         #     f"debiased_{method}_result_var"
@@ -121,6 +122,7 @@ def test_run(run_config, city, variable, run, method) -> None:
             f"debiased_{method}_result_var"
         ),
         "Saving to",
+        # Todo: uncomment in future to check new paths
         # (
         #     f"Saving to {DATA_PATH_DEFAULT}/{city}/{run}/{variable}/"
         #     f"debiased_{method}_result_var-{variable}_kind-+None_20100101_20101229.nc"
