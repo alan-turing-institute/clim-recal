@@ -106,11 +106,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Download coverage svg
-        uses: actions/download-artifact@v3
-        with:
-          name: coverage-badge
-          path: ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
+      # - name: Download coverage svg
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: coverage-badge
+      #     path: ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
 
       # Other options for documentation build for future testing outside docker
       # - name: Set up conda environment
