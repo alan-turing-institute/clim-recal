@@ -1,5 +1,6 @@
 """Utility functions."""
 import subprocess
+from csv import DictReader
 from datetime import date, datetime
 from pathlib import Path
 from shutil import rmtree
@@ -219,10 +220,46 @@ def rm_user(user: str, user_home_path: Path = DEBIAN_HOME_PATH) -> str:
     return user
 
 
+def csv_reader(path: Path, **kwargs) -> Generator[dict[str, str], None, None]:
+    """Yield a `dict` per for from file `path`.
+
+    Parameters
+    ----------
+    path
+        `CSV` file `Path`.
+    **kwargs
+        Additional parameters for `csv.DictReader`.
+
+    Yields
+    ------
+    A `dict` per row from `path`.
+
+    Examples
+    --------
+    >>> import csv
+    >>> csv_path: Path = 'test_auth.csv'
+    >>> auth_dict: dict[str, str] = {
+    ...    'sally': 'fig*new£kid',
+    ...    'george': 'tee&iguana*sky',
+    ...    'susan': 'history!bill-walk',}
+    >>> field_names: tuple[str, str] = ('user_name', 'password')
+    >>> with open(csv_path, 'w') as csv_file:
+    ...     writer = csv.writer(csv_file)
+    ...     line_num: int = writer.writerow(('user_name', 'password'))
+    ...     for user_name, password in auth_dict.items():
+    ...         line_num = writer.writerow((user_name, password))
+    >>> tuple(csv_reader(csv_path))
+    ({'user_name': 'sally', 'password': 'fig*new£kid'}, {'user_name': 'george', 'password': 'tee&iguana*sky'}, {'user_name': 'susan', 'password': 'history!bill-walk'})
+    """
+    with open(path) as csv_file:
+        for row in DictReader(csv_file, **kwargs):
+            yield row
+
+
 def make_users(
     file_path: Path, user_col: str, password_col: str, file_reader: Callable, **kwargs
 ) -> Generator[Path, None, None]:
-    """Load a file of usernames and passwords and to pass to make_user.
+    """Load a file of usernames and passwords to pass to `make_user`.
 
     Parameters
     ----------

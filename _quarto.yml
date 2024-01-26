@@ -15,6 +15,7 @@ project:
     - "docs/pipeline.qmd"
     - "docs/contributing.md"
     - "docs/pipeline_guidance.md"
+    - "docs/docker-configurations.qmd"
     - "python/README.md"
       # - "notebooks/Assessing_bc_data/MethodsAssessment_DecWorkshop.Rmd"
       # Requires dataset mounted to run notebook
@@ -62,6 +63,8 @@ website:
                 text: "download_ftp"
               - href: "docs/reference/utils.qmd"
                 text: "Utilities"
+      - text: "Docker"
+        href: "docs/docker-configurations.qmd"
 
 
 quartodoc:
