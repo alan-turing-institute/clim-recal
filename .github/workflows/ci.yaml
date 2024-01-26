@@ -87,15 +87,15 @@ jobs:
       #   run: |
       #     docker cp ${{ env.jupyter_id }}:${{ env.PYTHON_MODULE_FOLDER }}${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
 
-      - name: Copy test coverage results
-        run: |
-          cp ${{ env.PYTHON_MODULE_FOLDER }}${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
-
-      - name: Archive coverage svg
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-badge
-          path: ${{ env.COVERAGE_SVG_PATH }}
+      # - name: Copy test coverage results
+      #   run: |
+      #     cp ${{ env.PYTHON_MODULE_FOLDER }}${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
+      #
+      # - name: Archive coverage svg
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: coverage-badge
+      #     path: ${{ env.COVERAGE_SVG_PATH }}
 
       # - name: Tear down the Stack
       #   run: docker compose down
