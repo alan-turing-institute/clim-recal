@@ -68,8 +68,8 @@ jobs:
         shell: bash -el {0}
         run: |
           mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest
-          export JUPYTER_ID=$(docker compose ps -q jupyter)
-          echo "jupyter_id=$JUPYTER_ID" >> $GITHUB_ENV
+          # export JUPYTER_ID=$(docker compose ps -q jupyter)
+          # echo "jupyter_id=$JUPYTER_ID" >> $GITHUB_ENV
 
       # - name: Build, Test and Save Test Coverage
       #   run: |
@@ -79,23 +79,23 @@ jobs:
           # export JUPYTER_ID=$(docker compose ps -q jupyter)
           # echo "jupyter_id=$JUPYTER_ID" >> $GITHUB_ENV
 
-      - name: Check accessing saved jupyter_id
-        run: |
-          echo ${{ env.jupyter_id }}
+      # - name: Check accessing saved jupyter_id
+      #   run: |
+      #     echo ${{ env.jupyter_id }}
 
       # - name: Copy test coverage results
       #   run: |
       #     docker cp ${{ env.jupyter_id }}:${{ env.PYTHON_MODULE_FOLDER }}${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
 
-      # - name: Copy test coverage results
-      #   run: |
-      #     cp ${{ env.PYTHON_MODULE_FOLDER }}${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
-      #
-      # - name: Archive coverage svg
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: coverage-badge
-      #     path: ${{ env.COVERAGE_SVG_PATH }}
+      - name: Copy test coverage results
+        run: |
+          cp ${{ env.PYTHON_MODULE_FOLDER }}${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
+
+      - name: Archive coverage svg
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-badge
+          path: ${{ env.COVERAGE_SVG_PATH }}
 
       # - name: Tear down the Stack
       #   run: docker compose down
