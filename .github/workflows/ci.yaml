@@ -104,13 +104,13 @@ jobs:
     needs: [linter, pytest]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      # - name: Download coverage svg
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: coverage-badge
-      #     path: ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
+      - name: Download coverage svg
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-badge
+          path: ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
 
       # Other options for documentation build for future testing outside docker
       # - name: Set up conda environment
@@ -136,18 +136,50 @@ jobs:
       #     npm ci
       #     npm run build --if-present
       #     mv dist ../docs/_book/app
+      #     jobs:
+      - name: Checkout Code Repository
+        uses: actions/checkout@main
 
-      - name: Build docker quarto
-        run: |
-          # A potentially quicker build option to try in future, requires running in detatched mode
-          # DOCKER_BUILDKIT=1 docker build --no-cache -f compose/docs/Dockerfile --target builder --tag 'clim-recal-docs' .
-          docker compose build docs
-          docker compose up --detach
-          docker cp $(docker compose ps -q docs):/usr/local/apache2/htdocs/ ${{ env.GH_PAGE_PATH }}
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
 
-      - name: Publish
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Build Conda Environment
+        uses: conda-incubator/setup-miniconda@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{ env.GH_PAGE_PATH }}
-          keep_files: false
+          activate-environment: ${{ env.CONDA_ENV_NAME }}
+          environment-file: ${{ env.CONDA_ENV_PATH }}
+          auto-activate-base: false
+          miniforge-version: latest
+
+      - name: Build Python Docstrings
+        run: quartodoc build
+
+      # - name: Install Python and Dependencies
+      #   uses: actions/setup-python@v4
+      #   with:
+      #     python-version: ${{ env.MIN_PYTHON_VERSION }}
+      #     cache: 'pip'
+      # - run: pip install jupyter
+      # - run: pip install -r requirements.txt
+
+      - name: Render and Publish
+        uses: quarto-dev/quarto-actions/publish@v2
+        with:
+          target: gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Build docker quarto
+      #   run: |
+      #     # A potentially quicker build option to try in future, requires running in detatched mode
+      #     # DOCKER_BUILDKIT=1 docker build --no-cache -f compose/docs/Dockerfile --target builder --tag 'clim-recal-docs' .
+      #     docker compose build docs
+      #     docker compose up --detach
+      #     docker cp $(docker compose ps -q docs):/usr/local/apache2/htdocs/ ${{ env.GH_PAGE_PATH }}
+      #
+      # - name: Publish
+      #   uses: peaceiris/actions-gh-pages@v3
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ${{ env.GH_PAGE_PATH }}
+      #     keep_files: false
