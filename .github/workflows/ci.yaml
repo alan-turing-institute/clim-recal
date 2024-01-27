@@ -16,11 +16,11 @@ env:
 
 on:
   pull_request:
-    branches: ['main', 'doc-deploy', 'ruth-notebook-for-workshop', 'r-docker-refactor']
+    branches: ['main', 'r-docker-refactor']
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['main', 'doc-deploy', 'ruth-notebook-for-workshop', 'r-docker-refactor']
+    branches: ['main', 'r-docker-refactor']
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
