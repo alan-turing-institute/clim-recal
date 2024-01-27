@@ -7,7 +7,7 @@ env:
   CONDA_ENV_NAME: clim-recal
   CONDA_ENV_PATH: environment.yml
   MIN_PYTHON_VERSION: 3.9
-  PYTHON_MODULE_FOLDER: /home/jovyan/python/
+  PYTHON_MODULE_FOLDER: python/
   COVERAGE_SVG_FOLDER: docs/assets/
   COVERAGE_SVG_FILE_NAME: coverage.svg
   # replace below with references to previous config lines
