@@ -230,9 +230,10 @@ def csv_reader(path: Path, **kwargs) -> Generator[dict[str, str], None, None]:
     **kwargs
         Additional parameters for `csv.DictReader`.
 
-    Yields
-    ------
-    A `dict` per row from `path`.
+    Returns
+    -------
+    :
+        A `Generator` of `dicts` per row from `path`.
 
     Examples
     --------

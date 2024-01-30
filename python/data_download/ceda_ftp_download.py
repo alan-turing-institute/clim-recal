@@ -8,12 +8,10 @@ from pathlib import Path
 
 
 def download_ftp(input: str, output: str, username: str, password: str, order: int) -> None:
-    """
-    Function to connect to the CEDA archive and download data.
+    """Function to connect to the CEDA archive and download data.
 
-    Note
-    ----
-    You need to have a user account and provide your username and `FTP` password.
+    You need to have a user account and provide your username and
+    `FTP` password.
 
     Parameters
     ----------
@@ -90,8 +88,10 @@ def download_ftp(input: str, output: str, username: str, password: str, order: i
 
 if __name__ == "__main__":
     """
-    Script to download CEDA data from the command line. Note you need to have a user account and
-    provide your username and FTP password.
+    Script to download CEDA data from the command line.
+
+    Note you need to have a user account and provide your username
+    and FTP password.
 
     """
     # Initialize parser

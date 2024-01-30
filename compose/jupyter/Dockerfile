@@ -3,8 +3,11 @@ FROM quay.io/jupyter/r-notebook as clim-recal-base
 # This is derived from documentation available at
 # https://jupyter-docker-stacks.readthedocs.io/en/latest/
 
-# Example run command:
+# The local_data_path is an absolute local path to ClimateData on the machine hosting running `docker`
+ARG HOST_DATA_PATH=/Volumes/vmfileshare
 
+# The local_data_path is an absolute path to mount ClimateData within `docker`
+ARG DOCKER_DATA_PATH=/mnt/vmfileshare
 
 # This will require a mount of `vmfileshare` from `dymestorage1`
 # On macOS this can be solved via:
@@ -32,7 +35,7 @@ ARG env_name=clim-recal
 
 # `py_ver` is not currently used below and is specified in `environment.yaml`
 # included here as reminder and clarity if future change needed.
-ARG py_ver=3.9
+ARG py_ver=3.10
 
 USER root
 
@@ -62,19 +65,16 @@ RUN "${CONDA_DIR}/envs/${env_name}/bin/python" -m ipykernel install --user --nam
     fix-permissions "${CONDA_DIR}" && \
     fix-permissions "/home/${NB_USER}"
 
-# Copy the rest of the  clim-recal code to volume
-# COPY --chown=${NB_UID}:${NB_GID} . .
-# Keep below while permission ambiguity persists on compose volume mounting
 COPY . .
 
-# Switch to default jupyter user
-# USER ${NB_UID}
-# Add custom activate script to reflect environment
-# USER root
+RUN git config --global --add safe.directory /home/jovyan
+RUN cd python/debiasing && git submodule update --init --recursive
+
 RUN activate_custom_env_script=/usr/local/bin/before-notebook.d/activate_custom_env.sh && \
     echo "#!/bin/bash" > ${activate_custom_env_script} && \
     echo "eval \"$(conda shell.bash activate "${env_name}")\"" >> ${activate_custom_env_script} && \
     chmod +x ${activate_custom_env_script}
+
 
 RUN chown -R ${NB_UID}:${NB_GID} .
 
@@ -94,7 +94,3 @@ RUN echo "conda activate ${env_name}" >> "${HOME}/.bashrc"
 # RUN --mount=type=bind,source=$HOST_DATA_PATH,target=$DOCKER_DATA_PATH \
 #  find /build/jars -type f -name '*.jar' -maxdepth 1  -print0 \
 #  | xargs -0 --no-run-if-empty --replace=source cp --force source >"${INSTALL_PATH}/modules/"
-
-
-
-RUN cd python/debiasing && git submodule update --init --recursive

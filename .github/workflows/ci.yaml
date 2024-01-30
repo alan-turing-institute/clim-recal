@@ -48,7 +48,6 @@ jobs:
         uses: pre-commit-ci/lite-action@main
         if: always()
 
-  # With no caching at all the entire ci process takes 4m 30s to complete!
   pytest:
     runs-on: ubuntu-latest
 
@@ -68,24 +67,6 @@ jobs:
         shell: bash -el {0}
         run: |
           mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest
-          # export JUPYTER_ID=$(docker compose ps -q jupyter)
-          # echo "jupyter_id=$JUPYTER_ID" >> $GITHUB_ENV
-
-      # - name: Build, Test and Save Test Coverage
-      #   run: |
-      #     docker compose build jupyter
-      #     docker compose up jupyter --detach
-      #     docker compose exec -u 0 jupyter bash -c "conda run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest"
-          # export JUPYTER_ID=$(docker compose ps -q jupyter)
-          # echo "jupyter_id=$JUPYTER_ID" >> $GITHUB_ENV
-
-      # - name: Check accessing saved jupyter_id
-      #   run: |
-      #     echo ${{ env.jupyter_id }}
-
-      # - name: Copy test coverage results
-      #   run: |
-      #     docker cp ${{ env.jupyter_id }}:${{ env.PYTHON_MODULE_FOLDER }}${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
 
       - name: Copy test coverage results
         run: |
@@ -96,9 +77,6 @@ jobs:
         with:
           name: coverage-badge
           path: ${{ env.COVERAGE_SVG_PATH }}
-
-      # - name: Tear down the Stack
-      #   run: docker compose down
 
   docs:
     needs: [linter, pytest]
@@ -111,75 +89,3 @@ jobs:
         with:
           name: coverage-badge
           path: ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
-
-      # Other options for documentation build for future testing outside docker
-      # - name: Set up conda environment
-      #   uses: conda-incubator/setup-miniconda@v2
-      #   with:
-      #     activate-environment: environment.yml
-      #
-      # From https://github.com/r-lib/actions/tree/v2-branch/setup-r
-      # - name: Setup R
-      #   uses: r-lib/actions/setup-r@v2
-
-      # Potentially necessary for future interactive documentation builds following uatk-spc
-      # - name: Install node
-      #   uses: actions/setup-node@v2
-      #   with:
-      #     node-version: 18.x
-      #     cache: 'npm'
-      #     cache-dependency-path: web/package-lock.json
-      #
-      # - name: Build web app
-      #   run: |
-      #     cd web
-      #     npm ci
-      #     npm run build --if-present
-      #     mv dist ../docs/_book/app
-      #     jobs:
-      - name: Checkout Code Repository
-        uses: actions/checkout@main
-
-      - name: Set up Quarto
-        uses: quarto-dev/quarto-actions/setup@v2
-
-      - name: Build Conda Environment
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          activate-environment: ${{ env.CONDA_ENV_NAME }}
-          environment-file: ${{ env.CONDA_ENV_PATH }}
-          auto-activate-base: false
-          miniforge-version: latest
-
-      - name: Build Python Docstrings
-        run: quartodoc build
-
-      # - name: Install Python and Dependencies
-      #   uses: actions/setup-python@v4
-      #   with:
-      #     python-version: ${{ env.MIN_PYTHON_VERSION }}
-      #     cache: 'pip'
-      # - run: pip install jupyter
-      # - run: pip install -r requirements.txt
-
-      - name: Render and Publish
-        uses: quarto-dev/quarto-actions/publish@v2
-        with:
-          target: gh-pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Build docker quarto
-      #   run: |
-      #     # A potentially quicker build option to try in future, requires running in detatched mode
-      #     # DOCKER_BUILDKIT=1 docker build --no-cache -f compose/docs/Dockerfile --target builder --tag 'clim-recal-docs' .
-      #     docker compose build docs
-      #     docker compose up --detach
-      #     docker cp $(docker compose ps -q docs):/usr/local/apache2/htdocs/ ${{ env.GH_PAGE_PATH }}
-      #
-      # - name: Publish
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     publish_dir: ${{ env.GH_PAGE_PATH }}
-      #     keep_files: false

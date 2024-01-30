@@ -5,52 +5,60 @@ from datetime import datetime
 import geopandas as gp
 import xarray as xr
 
+DateRange = tuple[datetime, datetime]
+
 
 def load_data(
-    input_path,
-    date_range,
-    variable,
-    filter_filenames_on_variable=False,
-    run_number=None,
-    filter_filenames_on_run_number=False,
-    use_pr=False,
-    shapefile_path=None,
-    extension="nc",
-):
+    input_path: str,
+    date_range: DateRange,
+    variable: str,
+    filter_filenames_on_variable: bool = False,
+    run_number: str | None = None,
+    filter_filenames_on_run_number: bool = False,
+    use_pr: bool = False,
+    shapefile_path: str | None = None,
+    extension: str = "nc",
+) -> xr.DataArray:
     """
-    This function takes a date range and a variable and loads and merges xarrays based on those parameters.
+    This function takes a date range and a variable and loads and merges
+    xarrays based on those parameters.
+
     If shapefile is provided it crops the data to that region.
 
     Parameters
     ----------
-    input_path: str
+    input_path 
         Path to where .nc or .tif files are found
-    date_range : tuple
+    date_range 
         A tuple of datetime objects representing the start and end date
-    variable : string
+    variable 
         A string representing the variable to be loaded
-    filter_filenames_on_variable : bool, default = False
-        When True, files in the input_path will be filtered based on whether their file name
-        contains "variable" as a substring. When False, filtering does not happen.
-    run_number : sting, default None
-        A string representing the CPM run number to use (out of 13 CPM runs available in the database). Only files
-        whose file name contains the substring run_number will be used. If None, all files in input_path are parsed,
-        regardless of run number in filename.
-    filter_filenames_on_run_number : bool, default = False
-        When True, files in the input_path will be filtered based on whether their file name
-        contains "2.2km_" followed by "run_number". When False, filtering does not happen.
-        This should only be used for CPM files. For HADs files this should always be set to False.
-    use_pr : bool, default = False
+    filter_filenames_on_variable 
+        When True, files in the input_path will be filtered based on
+        whether their file name contains "variable" as a substring. When
+        False, filtering does not happen.
+    run_number 
+        A string representing the CPM run number to use
+        (out of 13 CPM runs available in the database). Only files
+        whose file name contains the substring run_number will be used.
+        If `None`, all files in input_path are parsed, regardless of run
+        number in filename.
+    filter_filenames_on_run_number 
+        When True, files in the input_path will be filtered based on
+        whether their file name contains "2.2km_" followed by "run_number".
+        When False, filtering does not happen. This should only be used for
+        CPM files. For HADs files this should always be set to False.
+    use_pr 
         If True, replace variable with "pr" string when filtering the file names.
-    shapefile_path: str
+    shapefile_path 
         Path to a shape file used to clip resulting dataset.
-    extension: str
+    extension 
         Extension of the files to be loaded, it can be .nc or .tif files.
 
     Returns
     -------
-    merged_xarray : xarray
-        An xarray containing all loaded and merged and clipped data
+    xr.DataArray 
+        A DataArray containing all loaded and merged and clipped data
     """
 
     if extension not in ("nc", "tif"):
@@ -101,20 +109,22 @@ def load_data(
     return xa
 
 
-def clip_dataset(xa, variable, shapefile):
-    """
+def clip_dataset(xa: xr.DataArray, variable: str, shapefile: str) -> xr.DataArray:
+    """Spatially clip `xa` `DataArray` variable via `shapefile.
+
     Parameters
     ----------
-    xa: xArray Dataset
+    xa 
         xArray containing a giving variable
-    variable : string
-        A strings representing the variable to be loaded
-    shapefile: str
-        Path to a shape file used to clip resulting dataset, must be in the same CRS of the input xArray.
+    variable 
+        A string representing the variable to be loaded
+    shapefile 
+        Path to a shape file used to clip resulting dataset,
+        must be in the same CRS of the input xArray.
 
-     Returns
+    Returns
     -------
-    xa : xarray
+    xr.DataArray 
         A clipped xarray dataset
 
     """
@@ -148,9 +158,21 @@ def clip_dataset(xa, variable, shapefile):
     return xa
 
 
-def reformat_file(file, variable):
-    """
-    Load tif file and reformat xarray into expected format.
+def reformat_file(file: str, variable: str) -> xr.DataArray:
+    """Load tif file and reformat xarray into expected format.
+
+    Parameters
+    ----------
+
+    file
+        Path as a `str` to `tiff` file.
+    variable
+        A string representing the variable to be loaded
+
+    Returns
+    -------
+    xr.DataArray 
+        A formatted xarray
     """
     print(f"File: {file} needs rasterio library, trying...")
     filename = os.path.basename(file).split("_")
@@ -191,23 +213,27 @@ def reformat_file(file, variable):
     return xa
 
 
-def load_and_merge(date_range, files, variable):
+def load_and_merge(
+    date_range: DateRange,
+    files: list[str],
+    variable: str
+) -> xr.DataArray:
     """
     Load files into xarrays, select a time range and a variable and merge into a sigle xarray.
 
     Parameters
     ----------
 
-    date_range : tuple
+    date_range 
         A tuple of datetime objects representing the start and end date
-    files: list (str)
+    files 
         List of strings with path to files to be loaded.
-    variable : string
+    variable 
         A string representing the variable to be loaded
 
     Returns
     -------
-    merged_xarray : xarray
+    xr.DataArray
         An xarray containing all loaded and merged data
     """
 

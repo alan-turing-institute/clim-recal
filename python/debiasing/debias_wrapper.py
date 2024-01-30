@@ -320,8 +320,6 @@ class RunConfig:
     ) -> tuple[Union[str, PathLike], ...]:
         """Generate a `tuple` of `str` for a command line command.
 
-        Note
-        ----
         This will leave `Path` objects uncoverted. See
         `self.to_cli_preprocess_tuple_strs` for passing to a terminal.
 
@@ -501,8 +499,6 @@ class RunConfig:
     ) -> tuple[Union[str, PathLike], ...]:
         """Generate a `tuple` of `str` for a command line command.
 
-        Note
-        ----
         This will leave `Path` objects uncoverted. See
         `self.to_cli_run_cmethods_tuple_strs` for passing to a terminal.
 

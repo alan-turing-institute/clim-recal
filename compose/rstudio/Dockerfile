@@ -14,12 +14,14 @@ ARG DOCKER_DATA_PATH=/mnt/vmfileshare
 # ENV QUARTO_VERSION=default
 
 RUN /rocker_scripts/install_pandoc.sh
-RUN /rocker_scripts/install_quarto.sh
-RUN /rocker_scripts/install_jupyter.sh
+# RUN /rocker_scripts/install_quarto.sh
+# RUN /rocker_scripts/install_jupyter.sh
 
 # Maybe install necessary geo packages for terra following https://github.com/rspatial/terra/issues/248
-RUN apt-get update && apt-get -y install libudunits2-dev libgdal-dev libgeos-dev libproj-dev \
-gdal-bin python3-gdal libgdal-dev build-essential  # Python specific deps
+# RUN apt-get update && apt-get -y install libudunits2-dev \
+#     libgeos-dev libproj-dev python3-gdal libgdal-dev \
+#     build-essential
+# Python specific deps
 
 # For future: add dependencies to include to speed up notebook deploy, including
 # library(ggplot2)
