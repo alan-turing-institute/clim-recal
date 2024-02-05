@@ -62,7 +62,13 @@ website:
           - section: "Reference"
             contents:
               - href: "docs/reference/data_download.ceda_ftp_download.download_ftp.qmd"
-                text: "Data Download"
+                text: "Download CEDA FTP"
+              # There are errors rendering the pages below
+              # see: https://github.com/alan-turing-institute/clim-recal/issues/128
+              # - href: "docs/reference/resampling.qmd"
+              #   text: "HADs Resampling"
+              # - href: "docs/reference/debiasing.qmd"
+              #   text: "Debiasing"
               - href: "docs/reference/utils.qmd"
                 text: "Utilities"
       - text: "Docker"
@@ -77,15 +83,16 @@ quartodoc:
   # write sidebar data to this file
   sidebar: _sidebar.yml
   source_dir: ./python/
-
-  sections:
-    - title: Data Source Management
-      desc: How data is downloaded for use
-      contents:
-        # the functions being documented in the package.
-        # you can refer to anything: class methods, modules, etc..
-        - data_download
-        - load_data
-        - resampling
-        - debiasing
-        - utils
+  #
+  # see: https://github.com/alan-turing-institute/clim-recal/issues/128
+  # sections:
+  #   - title: Data Source Management
+  #     desc: How data is downloaded for use
+  #     contents:
+  #       # the functions being documented in the package.
+  #       # you can refer to anything: class methods, modules, etc..
+  #       - data_download
+  #       # - load_data
+  #       # - resampling
+  #       # - debiasing
+  #       - utils
