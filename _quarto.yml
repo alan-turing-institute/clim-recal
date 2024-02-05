@@ -14,7 +14,11 @@ project:
     - "docs/reference"
     - "docs/pipeline.qmd"
     - "docs/contributing.md"
+    - "docs/pipeline_guidance.qmd"
+    - "docs/docker-configurations.qmd"
     - "python/README.md"
+      # - "notebooks/Assessing_bc_data/MethodsAssessment_DecWorkshop.Rmd"
+      # Requires dataset mounted to run notebook
 
 toc: True
 number-sections: True
@@ -33,8 +37,12 @@ website:
     contents:
       - text: "Summary"
         href: "README.md"
-      - text: "Pipeline"
-        href: "docs/pipeline.qmd"
+      - section: "Pipeline"
+        contents:
+          - text: "Guidance"
+            href: "docs/pipeline_guidance.qmd"
+          - text: "Diagram"
+            href: "docs/pipeline.qmd"
       - text: "Contributing"
         href: "docs/contributing.md"
       - section: "R"
@@ -54,9 +62,17 @@ website:
           - section: "Reference"
             contents:
               - href: "docs/reference/data_download.ceda_ftp_download.download_ftp.qmd"
-                text: "download_ftp"
+                text: "Download CEDA FTP"
+              # There are errors rendering the pages below
+              # see: https://github.com/alan-turing-institute/clim-recal/issues/128
+              # - href: "docs/reference/resampling.qmd"
+              #   text: "HADs Resampling"
+              # - href: "docs/reference/debiasing.qmd"
+              #   text: "Debiasing"
               - href: "docs/reference/utils.qmd"
                 text: "Utilities"
+      - text: "Docker"
+        href: "docs/docker-configurations.qmd"
 
 
 quartodoc:
@@ -67,12 +83,16 @@ quartodoc:
   # write sidebar data to this file
   sidebar: _sidebar.yml
   source_dir: ./python/
-
-  sections:
-    - title: Data Source Management
-      desc: How data is downloaded for use
-      contents:
-        # the functions being documented in the package.
-        # you can refer to anything: class methods, modules, etc..
-        - data_download.ceda_ftp_download.download_ftp
-        - utils
+  #
+  # see: https://github.com/alan-turing-institute/clim-recal/issues/128
+  # sections:
+  #   - title: Data Source Management
+  #     desc: How data is downloaded for use
+  #     contents:
+  #       # the functions being documented in the package.
+  #       # you can refer to anything: class methods, modules, etc..
+  #       - data_download
+  #       # - load_data
+  #       # - resampling
+  #       # - debiasing
+  #       - utils

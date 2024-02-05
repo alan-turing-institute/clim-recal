@@ -1,0 +1,616 @@
+---
+title: "Bias correction assessment"
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    theme: cosmo
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 4
+    code_folding: hide
+    df_print: paged
+params:
+  ask: false
+---
+
+
+```{r libs and setup, message=FALSE, warning=F}
+
+rm(list=ls())
+
+# install packages
+list.of.packages <- c("ggplot2", "terra", "tmap", "RColorBrewer", "tidyverse", "kableExtra", "ncdf4", "knitr")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+if (!require(devtools)) install.packages("devtools")
+install_github("hzambran/hydroTSM")
+install_github("hzambran/hydroGOF")
+
+knitr::opts_knit$set(root.dir="/mnt/vmfileshare/ClimateData/")
+
+# import packages
+library(ggplot2)
+library(terra)
+library(tmap) #pretty maps
+library(RColorBrewer)
+library(tidyverse)
+library(kableExtra)
+library(ncdf4)
+library(devtools)
+
+
+```
+
+
+## **0. About**
+
+This is an example notebook for the assessment of bias corrected data, comparing it with our differing outputs from different methods across R and python. 
+
+
+**Calibration vs Validation dates**
+
+We have used split sample testing of 30 years : 10 years for calibration and validation.
+
+The calibration period runs between 01-12-1980 to the day prior to 01-12-2010
+The validation period runs between 01-12-2010 to the day prior to 01-12-2020 
+
+
+**Data used in this script:**
+
+Here we load data from **validation** period. 
+
+Unfortunetly, we have a bug in some of code that we are working to fix, meaning data bias corrected using python is missing 45 days over the 10 year validation period (0)
+The dates have been aligned manually and represent 3555 days over the 10 year period whilst we fix the bug
+
+
+```{r data loading, include=FALSE}
+
+dd <- "/mnt/vmfileshare/ClimateData/" #Data directory of all data used in this script
+
+city <- "Glasgow" 
+var <- "tasmax" 
+runs <- c("05", "06", "07", "08")
+
+
+## Load a source raster to extract the crs as this sometimes fails between python and R
+r <- list.files(paste0(dd, "Reprojected_infill/UKCP2.2/tasmax/05/latest/"), full.names = T)[1]
+rast <- rast(r)
+crs <- crs(rast)
+
+####### PYTHON INPUTS ######
+# This script uses both raster data and the raw data
+# This script uses Lists to group everything by runs
+# Therefore what is require from this here is to create a list object for each of the sets of the data as listed above, where the list items are the rasters or dataframes by run (ie each level of the list is a run)
+# .nc and .tif files can be read with rast("path/to/file.nc")
+# Conversion to df is just  as.data.frame(raster, xy=T) - easiest thing is just to loop using lapply the files 
+#dfs are assumed to be cells x time 
+#/vmfileshare/ClimateData/Debiased/three.cities.cropped/workshop/
+
+rd.python <- "Debiased/three.cities.cropped/workshop/" 
+dd.python <- "/mnt/vmfileshare/ClimateData/" #Data directory of all data used in this script
+
+r.python <- lapply(runs, function(i){
+        fp = paste0(dd.python, rd.python, city,"/", i, "/", var)
+        list.files(fp, pattern="debiased*", full.names = T)})
+
+
+val_py <- lapply(1:4, function(x){
+      xx <- r.python[[x]]
+     L <-  lapply(1:4, function(i){
+        rp <- xx[[i]]
+        r <- rast(rp)
+        df <- as.data.frame(r, xy=T)
+        r <- rast(df, type="xyz")
+        df <- df[,3:ncol(df)]
+        crs(r) <- crs
+        dfr <- list(df,r)
+        names(dfr) <- c("df", "rast")
+        return(dfr)
+       })
+  names(L) <- c("py.delta_method", "py.quantile_delta", "py.quantile", "py.var_scaling")
+  return(L)
+})
+
+names(val_py) <- paste0("python_runs", runs)
+
+```
+
+```{r}
+
+## We've found a bug which we're working to fix in the python code, that means some days are dropped and some are duplicated. The below creates an index to drop those days in the R outputs and the observational data 
+
+xx <- r.python[[1]]
+rp <- xx[[1]]
+
+ncin <- nc_open(rp)
+time <- ncvar_get(ncin, "time")
+
+missing <- c(0:3600)
+tmissing <- missing %in% time
+
+removethisindex <- missing[tmissing==F] + 1 
+
+removethisindex2 <- removethisindex[-c(1, 4, 8, 12, 52, 20, 24, 29, 34, 38, 44, 48, 56)]
+
+
+## The output created from the R bias correction framework is a list of dataframes containing all the data we need for this doc (although some are transposed).
+rd <- "Debiased/R/QuantileMapping/three.cities/" 
+
+files <- list.files(paste0(dd,rd,city),full.names=T)
+files.v <- files[grepl(var, files)]
+
+allruns <- lapply(files.v, readRDS)
+
+names <- gsub(paste0(dd,rd,city,"|/|.RDS"),"",files.v)
+names(allruns) <- names
+
+#This was returned for ease where multiple runs have been looped to apply this paritcular function, but actually we don't need a cope for each nor this data in a list. Therefore: 
+
+obs.val.df <- allruns[[1]]$val.df #To run between 1st Dec 2010 and 30th Nov 2020
+obs.val.df <- obs.val.df[c(1:3600)]
+obs.val.df <- obs.val.df[,-removethisindex2]
+
+#In the R scirpt, the validation is corrected with the projected data as well - so needs to be seperated out (and transposed)
+cpm.val.raw.df.L <- lapply(allruns, function(L){
+  proj <- as.data.frame(t(L[["t.proj"]]))
+ val.end.date <- min(grep("20201201-", names(proj)))-1
+  cpm.val.raw.df <- proj[,1:(val.end.date-1)] 
+  cpm.val.raw.df <- cpm.val.raw.df[,-removethisindex2]
+})
+
+
+
+cpm.val.adj.df.L <- lapply(allruns, function(L){
+  proj <- as.data.frame(t(L[["qm1.val.proj"]]))
+  val.end.date <- min(grep("20201201-", names(proj)))-1
+  proj[,1:val.end.date] 
+   cpm.val.adj.df <- proj[,1:(val.end.date-1)] 
+  cpm.val.adj.df <- cpm.val.adj.df[,-removethisindex2]
+})
+
+      
+i <- obs.val.df
+  rn <- row.names(i) #The rownames were saves as x_y coordinates
+      xi <- gsub("_.*", "", rn)
+      yi <- gsub(".*_", "", rn)
+      xy <- data.frame(x = xi, y = yi)
+      df <- cbind(xy, i)
+      r <- rast(df, type="xyz")
+      crs(r) <- crs
+obs.val.rasts <- r
+
+
+      
+list2rast <- list(cpm.val.raw.df.L, cpm.val.adj.df.L)
+  
+rastsL <- lapply(list2rast, function(x){
+  allruns <- x
+  df.rL <- lapply(runs, function(i){
+      df <- allruns[[grep(i, names(allruns))]] #extract df based on run id
+      rn <- row.names(df) #The rownames were saves as x_y coordinates
+      xi <- gsub("_.*", "", rn)
+      yi <- gsub(".*_", "", rn)
+      xy <- data.frame(x = xi, y = yi)
+      df <- cbind(xy, df)
+      r <- rast(df, type="xyz")
+      crs(r) <- crs
+      return(r)
+      })
+  names(df.rL) <- runs
+  return(df.rL)
+    })
+
+names(rastsL) <- c("cpm.val.raw.rasts.L", "cpm.val.adj.rasts.L")
+  
+list2env(rastsL, .GlobalEnv)
+
+remove(rastsL) 
+remove(list2rast)
+remove(allruns)
+
+obsL <- list(obs.val.df, obs.val.rasts)
+names(obsL) <- c("observation.df", "observation.rasts")
+
+cpm.raw <- lapply(1:4, function(i){
+  rast1 <- cpm.val.raw.rasts.L[[i]]
+  df1 <- cpm.val.raw.df.L[[i]]
+  l <- list(rast1, df1)
+  names(l) <- c("rast", "df")
+  return(l)
+  })
+
+names(cpm.raw) <- paste0("cpm_raw_Run", names(cpm.val.raw.rasts.L))
+
+cpm.adj <- lapply(1:4, function(i){
+  rast1 <- cpm.val.adj.rasts.L[[i]]
+  df1 <- cpm.val.adj.df.L[[i]]
+  l <- list(rast1, df1)
+  names(l) <- c("rast", "df")
+  return(l)
+  })
+
+names(cpm.adj) <- paste0("cpm_R_quantilemapping_Run", names(cpm.val.adj.rasts.L))
+```
+
+```{r}
+
+names(cpm.adj) <- paste0("r.quantile_Run", names(cpm.val.adj.rasts.L))
+
+dataL <- c(obsL, cpm.raw, val_py, cpm.adj)
+```
+
+## **1. Bias Correction Assessment: trends**
+
+A visual comparison of trends across observation, raw and adjusted data for the same time period
+
+### **1a. Raster comparison**
+
+A visualisation across different runs and methods 
+
+Adding in the city shapeoutline for prettier maps
+
+```{r}
+
+shape <-sf::st_as_sf(vect(paste0(dd, "shapefiles/three.cities/", city, "/", city, ".shp")))
+
+
+```
+
+
+
+#### **Compare across the same day**
+
+Here we take a day and visualise the differences between the methods and runs
+
+The example below is set up to compare Run 05, but Run 06, 07 or 08 can all be compared
+
+Choose a day between 1 - 3555 
+You can change the Run in the code below 
+
+```{r fig.height= 10}
+day <- 1777
+
+t1 <- tm_shape(dataL$observation.rasts[[day]]) + 
+  tm_raster(title="Observation") + 
+  tm_layout(legend.outside = T) + 
+  tm_shape(shape) + 
+  tm_borders(col="black")
+
+
+t2 <- tm_shape(dataL$cpm_raw_Run05$rast[[day]]) + 
+  tm_raster(title="Raw (unadjusted), Run 05") + 
+  tm_layout(legend.outside = T) + 
+  tm_shape(shape) + 
+  tm_borders(col="black")
+
+t3 <- tm_shape(dataL$python_runs05$py.delta_method$rast[[day]]) + 
+  tm_raster(title="Delta method, cmethods, Run05") + 
+  tm_layout(legend.outside = T) + 
+  tm_shape(shape) + 
+  tm_borders(col="black")
+
+t4 <- tm_shape(dataL$python_runs05$py.quantile_delta$rast[[day]]) + 
+  tm_raster(title="QDM, cmethods, Run05") + 
+  tm_layout(legend.outside = T) + 
+  tm_shape(shape) + 
+  tm_borders(col="black")
+
+t5 <- tm_shape(dataL$python_runs05$py.var_scaling$rast[[day]]) + 
+  tm_raster(title="Variance scaling, cmethods, Run05") + 
+  tm_layout(legend.outside = T) + 
+  tm_shape(shape) + 
+  tm_borders(col="black")
+
+t6 <- tm_shape(dataL$python_runs05$py.quantile$rast[[day]]) + 
+  tm_raster(title="Quantile mapping, cmethods, Run05") + 
+  tm_layout(legend.outside = T) + 
+  tm_shape(shape) + 
+  tm_borders(col="black")
+
+
+t7 <- tm_shape(dataL$r.quantile_Run05$rast[[day]]) + 
+  tm_raster(title="NP quantile mapping, qmap, Run05") + 
+  tm_layout(legend.outside = T) + 
+  tm_shape(shape) + 
+  tm_borders(col="black")
+
+
+tmap_arrange(t1, t2, t3, t4, t5, t6, t7,  nrow = 4)
+
+```
+
+
+
+## **2. Bias Correction Assessment: Metrics**
+
+We use Run 05 again here, but you could change the run in the code below to see how it effects the outcome 
+
+
+```{r}
+
+val.dfs <- list(dataL$observation.df, 
+                dataL$cpm_raw_Run05$df,
+                dataL$python_runs05$py.delta_method$df,
+                dataL$python_runs05$py.quantile_delta$df,
+                dataL$python_runs05$py.quantile$df,
+                dataL$python_runs05$py.var_scaling$df,
+                dataL$r.quantile_Run05$df)
+
+#Convert dfs to a vector
+val.dfs.v <- lapply(val.dfs, function(d){
+  #Convert to single vector
+  unlist(as.vector(d))})
+
+val.dfs.v.df <- as.data.frame(val.dfs.v)
+
+names <-  c("Obs","Raw_Run05", "Delta_mapping_cmethods_Run05", "QDM_cmethods_Run05",
+                         "QM_cmethods_Run05","Var_scaling_cmethods_Run05", "QM_qmap_Run05")
+names(val.dfs.v.df) <- names
+```
+
+
+### **2a. Descriptive statistics**
+
+```{r descriptives validation}
+
+descriptives <- apply(val.dfs.v.df, 2, function(x){ 
+  per <- data.frame(as.list(quantile(x, probs=c(0.1, 0.9))))
+  data.frame(mean=mean(x), sd=sd(x), min = min(x), per10th=per$X10.,per90th=per$X90., max = max(x))
+})
+
+descriptives <- descriptives %>% reduce(rbind)
+row.names(descriptives) <- names(val.dfs.v.df)
+d <- t(descriptives)
+
+d %>% 
+  kable(booktabs = T) %>%
+  kable_styling()
+
+```
+
+
+#### **Fig.Density plot of validation period**
+
+**Note** - need to add back in some facetting to this fig 
+
+```{r warning=F, message=F, fig.height=8}
+m <- reshape2::melt(val.dfs.v.df)
+
+ggplot(m, aes(value, fill=variable, colour=variable)) + 
+  geom_density(alpha = 0.3, position="identity") + 
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1") +
+  scale_color_brewer(palette = "Set1") +
+  facet_wrap(.~variable)
+
+```
+
+#### **Seasonal**
+
+```{r}
+
+# Using the 360 year structure, derive row indexes for each of the seasons, assuming the first calendar date represents Dec 1st
+
+winter <- c(1:90)
+for(i in 1:8){
+  x <-1 + i*360
+  y <-1 + i*360 + 90 #60 days is 3 months
+  winter <- c(winter, x:y)
+}
+
+winter <- winter[!winter%in%removethisindex2]
+
+spring <- c(91:180)
+for(i in 1:8){
+  x <-91 + (i*360)
+  y <-91 + (i*360) + 90 #90 days is 3 months
+  sping <- c(spring, x:y)
+}
+spring <- spring[!spring%in%removethisindex2]
+
+summer <- c(181:270)
+for(i in 1:8){
+  x <- 181 + (i*360)
+  y <- 181 + i*360 + 60 #60 days is 3 months
+  summer <- c(summer, x:y)
+}
+
+summer <- summer[!summer%in%removethisindex2]
+
+autumn <- c(271:360)
+for(i in 1:8){
+  x <- 181 + (i*360)
+  y <- 181 + i*360 + 60 #60 days is 3 months
+  autumn <- c(autumn, x:y)
+}
+
+autumn <- autumn[!autumn%in%removethisindex2]
+
+seasons <- list(winter, spring, summer, autumn)
+
+  
+```
+
+
+```{r seasonal descriptives}
+
+seasonal.descriptives <- lapply(seasons, function(s){
+  
+#Convert dfs to a vector
+df<- lapply(val.dfs, function(d){
+    #Convert to single vector with just the seasonally defined columns
+  d <- d[,s]
+  unlist(as.vector(d))})
+
+df <- as.data.frame(df)
+
+  names(df) <- names
+  
+  descriptives <- apply(df, 2, function(x){ 
+    per <- data.frame(as.list(quantile(x, probs=c(0.1, 0.9))))
+    data.frame(mean=mean(x), sd=sd(x), min = min(x), per10th=per$X10.,per90th=per$X90., max = max(x))
+  })
+
+  descriptives <- descriptives %>% reduce(rbind)
+  row.names(descriptives) <- names(df)
+  d <- t(descriptives)
+})
+
+
+```
+
+##### **Winter** 
+
+```{r}
+seasonal.descriptives[[1]] %>% 
+    kable(booktabs = T) %>%
+    kable_styling() 
+```
+
+##### **Spring** 
+
+```{r}
+seasonal.descriptives[[2]] %>% 
+    kable(booktabs = T) %>%
+    kable_styling() 
+
+```
+##### **Summer**
+
+```{r}
+seasonal.descriptives[[3]] %>% 
+    kable(booktabs = T) %>%
+    kable_styling()
+```
+
+##### **Autumn**
+
+```{r}
+seasonal.descriptives[[4]] %>% 
+    kable(booktabs = T) %>%
+    kable_styling() 
+```
+
+
+
+### **2b. Model fit statistics**
+
+Using the following to assess overall fit: 
+
+- **R-squared (rsq)**
+- **Root Square Mean Error (RMSE)**
+- **Nash-Sutcliffe Efficiency (NSE):** Magnitude of residual variance compared to measured data variance, ranges -∞ to 1, 1 = perfect match to observations
+- **Percent bias (PBIAS):** The optimal value of PBIAS is 0.0, with low-magnitude values indicating accurate model simulation. Positive values indicate overestimation bias, whereas negative values indicate model underestimation bias.
+
+```{r}
+actual <- val.dfs.v.df$Obs
+
+rsq <- sapply(val.dfs.v.df[c(2:ncol(val.dfs.v.df))], function(x){
+  cor(actual, x)^2
+})
+
+rmse <- sapply(val.dfs.v.df[c(2:ncol(val.dfs.v.df))], function(x){
+  sqrt(mean((actual - x)^2))
+})
+
+
+pbias <- sapply(val.dfs.v.df[c(2:ncol(val.dfs.v.df))], function(x){
+  hydroGOF::pbias(x, actual)
+})
+
+
+nse <- sapply(val.dfs.v.df[c(2:ncol(val.dfs.v.df))], function(x){
+  hydroGOF::NSE(x, actual)
+})
+
+
+k <- cbind(rsq, rmse, pbias, nse)
+k %>% 
+  kable(booktabs = T) %>%
+  kable_styling() 
+
+```
+#### **Seasonal**
+
+```{r}
+
+
+seasonal.model.stats <- lapply(seasons, function(s){
+  
+  #Convert dfs to a vector
+  df<- lapply(val.dfs, function(d){
+  
+  #Convert to single vector with just the seasonally defined columns
+  d <- d[,s]
+  unlist(as.vector(d))})
+
+  df <- as.data.frame(df)
+  names(df) <- names
+
+  actual <- df$Obs
+
+  rsq <- sapply(df[c(2:ncol(df))], function(x){
+    cor(actual, x)^2
+  })
+
+
+  rmse <- sapply(df[c(2:ncol(df))], function(x){
+    sqrt(mean((actual - x)^2))
+  })
+
+
+  pbias <- sapply(df[c(2:ncol(df))], function(x){
+    hydroGOF::pbias(x, actual)
+  })
+
+
+  nse <- sapply(df[c(2:ncol(df))], function(x){
+    hydroGOF::NSE(x, actual)
+  })
+
+  k <- cbind(rsq, rmse, pbias, nse)})
+
+```
+
+Highlighting the bias corrected statistics 
+
+##### **Winter**
+
+```{r}
+
+seasonal.model.stats[[1]]  %>% 
+  kable(booktabs = T) %>%
+  kable_styling() 
+```
+
+
+##### **Spring**
+
+```{r}
+
+seasonal.model.stats[[2]]  %>% 
+  kable(booktabs = T) %>%
+  kable_styling() 
+```
+
+
+##### **Summer**
+
+```{r}
+
+seasonal.model.stats[[3]]  %>% 
+  kable(booktabs = T) %>%
+  kable_styling() 
+```
+
+
+
+##### **Autumn**
+
+```{r}
+
+seasonal.model.stats[[4]]  %>% 
+  kable(booktabs = T) %>%
+  kable_styling() 
+```
+

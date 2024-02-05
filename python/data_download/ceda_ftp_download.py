@@ -7,31 +7,33 @@ from datetime import datetime
 from pathlib import Path
 
 
-def download_ftp(input, output, username, password, order):
-    """
-    Function to connect to the CEDA archive and download data. Note you need to have a user account and
-    provide your username and FTP password.
+def download_ftp(input: str, output: str, username: str, password: str, order: int) -> None:
+    """Function to connect to the CEDA archive and download data.
+
+    You need to have a user account and provide your username and
+    `FTP` password.
 
     Parameters
     ----------
-    input: str
+    input
         Path where the CEDA data to download is located
-        (e.g '/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km/tasmin/day/v20220310'
-        or top level folder like '/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85' if you want to
+        (e.g `/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km/tasmin/day/v20220310`
+        or top level folder like `/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85` if you want to
         download all files in all sub-directories).
-    output: str
+    output
         Path to save the downloaded data - sub-directories will be created automatically under the output directory.
-    username: str
+    username
         CEDA registered username
-    password: str
-        CEDA FPT password (obtained as explained in https://help.ceda.ac.uk/article/280-ftp)
-    order: int
-        Order in which to run download 0: default order of file from ftp server 1: reverse order 2: shuffle.
+    password
+        CEDA FPT password (obtained as explained in `https://help.ceda.ac.uk/article/280-ftp`)
+    order
+        Order in which to run download
+
+        `0`: default order of file from `FTP` server
+        `1`: reverse order
+        `2`: shuffle.
+
         This functionality allows to run several downloads in parallel without rewriting files that are being downloaded.
-
-    Returns
-    -------
-
     """
 
     # If directory doesn't exist make it
@@ -86,8 +88,10 @@ def download_ftp(input, output, username, password, order):
 
 if __name__ == "__main__":
     """
-    Script to download CEDA data from the command line. Note you need to have a user account and
-    provide your username and FTP password.
+    Script to download CEDA data from the command line.
+
+    Note you need to have a user account and provide your username
+    and FTP password.
 
     """
     # Initialize parser

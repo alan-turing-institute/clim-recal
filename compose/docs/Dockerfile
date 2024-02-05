@@ -1,29 +1,32 @@
 ARG QUARTO_VERSION="1.3.450"
 
-FROM ghcr.io/quarto-dev/quarto:${QUARTO_VERSION} AS builder
+FROM registry.gitlab.com/quarto-forge/docker/polyglot as builder
 
-ARG PORT=8080
-ARG py_ver=3.9
+ARG LOCAL_PORT=8080
+ARG EXTERNAL_PORT=$LOCAL_PORT
 
-# ARG RIG_VERSION="latest"
-# ARG R_VERSION="release"
-# COPY install-rig.sh /tmp/install-rig.sh
-# RUN bash /tmp/install-rig.sh "${RIG_VERSION}"
-# RUN rig add ${R_VERSION} # && Rscript -e 'pak::pkg_install("renv")'
+# Setting as an ENV allows LOCAL_PORT to be used in
+# runtime commandas like CMD and still be passed as
+# an ARG
+ENV HOST_IP=0.0.0.0
+ENV LOCAL_PORT=${LOCAL_PORT}
+ARG py_ver=3.10
+ENV DEBIAN_FRONTEND=noninteractive
 
-# COPY mywebsite /app
-# WORKDIR /app
-# RUN Rscript -e "renv::restore()"
-# RUN quarto render .
-ADD . /app
+COPY . /app
 WORKDIR /app
-# RUN Rscript -e "renv::restore()"
-EXPOSE ${PORT}:${PORT}
 
-# RUN quarto preview --port ${PORT}:${PORT}
-RUN apt-get update && apt-get install -y python${py_ver} python3-pip
-RUN pip3 install quartodoc && quartodoc build
-RUN quarto render
+# The local_data_path is an absolute local path to ClimateData on the machine hosting running `docker`
+ARG HOST_DATA_PATH=/Volumes/vmfileshare
 
-FROM httpd:alpine
-COPY --from=builder /app/_site/ /usr/local/apache2/htdocs/
+# The local_data_path is an absolute path to mount ClimateData within `docker`
+ARG DOCKER_DATA_PATH=/mnt/vmfileshare
+
+USER root
+
+# Install the local python environemtn named 'clim-recal'
+RUN micromamba create -f environment.yml
+
+
+CMD micromamba run -n clim-recal quartodoc build && \
+    micromamba run -n clim-recal quarto preview --port $LOCAL_PORT --host $HOST_IP

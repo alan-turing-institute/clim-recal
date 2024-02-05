@@ -1,0 +1,725 @@
+---
+title: "Bias correction assessment of LCAT data"
+author: "Ruth Bowyer"
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    theme: cosmo
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 4
+    code_folding: hide
+    df_print: paged
+---
+
+
+```{r libs and setup, message=FALSE, warning=F}
+rm(list=ls())
+
+knitr::opts_knit$set(root.dir="/mnt/vmfileshare/ClimateData/")
+
+library(ggplot2)
+library(terra)
+library(tmap) #pretty maps
+library(RColorBrewer)
+library(tidyverse)
+library(kableExtra)
+library(plotrix) #For taylor diagrams 
+
+dd <- "/mnt/vmfileshare/ClimateData/"
+
+```
+
+
+## **0. About**
+
+LCAT require 'bias corrected' data for the whole of the UK. 
+We have applied a widely used approach, quantile mapping, to the data. Specifically, we have used *non-parametric quantile mapping using empirical quantiles* as available in the `Qmap` package. 
+Because the data is so large, we have applied this bias correction to the UK broked down into regions, with Scotland brokedn down into further regions (see `R/LCAT/Region.Refs.csv`)
+
+We will now:
+
+- Assess the bias correction using some of the segments
+- Process the data back to geotiff 
+- Either process as monthly data or as UK wide rasters (maybe just write them seperately) and av across runs
+
+The data is within `ClimateData/Debiased/R/QuantileMapping` and is in RDS format, with each object containing a list.
+
+The objects within this R list are as follows:
+- 't.obs': transposed observation df
+- 't.cal': transposed calibration df
+- 't.proj': transposed projection df (included the validation period)
+- 'qm1.hist.a' - bias corrected values for the historical period, values fitted with linear interpolation
+- 'qm1.hist.b' - bias corrected values for the historical period, values fitted with tricubic interpolation
+- 'qm1.proj.a' - bias corrected values for the validation/projection period, values fitted with linear interpolation
+- 'qm1.proj.b' - bias corrected values for the validation/projection period, values fitted with tricubic interpolation
+
+## **1. Bias Correction Assessment: trends**
+
+### **London - tasmax = Run 08**
+
+Using the London region (UKI) as this is the smallest -- not this is the same regional area as the 'three.cities' crops but cut to shapefile edges rather than the square grid 
+
+```{r}
+
+runs <- c("Run05", "Run06", "Run07", "Run08")
+
+London.allruns <- lapply(runs, function(i){
+  rds <- paste0(dd,"/Debiased/R/QuantileMapping/resultsL",i,"_UKI_tasmax.RDS")
+  readRDS(rds)})
+
+names(London.allruns) <- runs
+```
+
+Load in Hads validation data 
+(So this can be run for all of the LCAT data, I'm going to read in the whole HADs files for the calibration years)
+
+**The calibration period is 2009-12-01 to 2019-11-30 to relate to the CPM month grouping**
+
+Hads data were also cropped to the regional files for the calibration years - some of the dates might need to be added from the observation (or just be ignored for ease)
+
+```{r}
+fp <- paste0(dd, "Interim/HadsUK/Data_as_df/")
+f <- list.files(fp)
+v <- "tasmax"
+reg <- "UKI"
+f <- f[grepl("2010_2020", f)&grepl(v,f)&grepl(reg, f)]
+
+obs.val.df <- read.csv(paste0(fp,f)) # Starts here from 2010 - 01 -01 -- because for the BC I removed these vals to align with the cpm years we're missing the month of Dec - so need to update the cpm data to reflect this in the assessment -- wont be a problem for other BC data 
+
+```
+
+
+### **1b. Check trends**
+
+The next set of chunks visualise the data 
+
+This next chunk converts the dfs back to raster with the correct CRS
+```{r convert to df and raster}
+
+## Load a source raster to extract the crs
+r <- list.files(paste0(dd, "Reprojected/UKCP2.2/tasmax/05/latest/"))
+r <- r[1]
+rp <- paste0(dd, "Reprojected/UKCP2.2/tasmax/05/latest/", r)
+rast <- rast(rp)
+
+crs <- crs(rast)
+
+## Convert from matrix to df, transpose, create x and y cols - when run in chunk this works fine but for some reason can throw an error when run otherwise
+London.df.rL <- lapply(runs, function(i){
+  L <- London.allruns[[i]]
+    lapply(L, function(x){
+    df <- t(x)
+    df <- as.data.frame(df)                      
+    rn <- row.names(df) #The rownames were saves as x_y coordinates
+    xi <- gsub("_.*", "", rn)
+    yi <- gsub(".*_", "", rn)
+    xy <- data.frame(x = xi, y = yi)
+    df <- cbind(xy, df)})
+  })
+
+names(London.df.rL) <- runs
+
+## Convert to rasters
+London.rasts <- lapply(runs, function(i){
+  L <- London.df.rL[[i]]
+  lapply(L, function(x){
+    r <- rast(x, type="xyz")
+    crs(r) <- crs
+    return(r)}) 
+})
+
+names(London.rasts) <- runs
+
+
+```
+
+#### **Raster vis comparison**
+
+Random selection of 3 days of the observation, calibration and two adjusted cals, for three historic days
+(Note: I'm just plotting the bias corrected with linear interpolation so as to overwhelm with plots)
+
+##### Fig. *Day 1 - 1980-12-01*
+
+```{r, fig.show="hold", out.width="33%"}
+tm_shape(London.rasts$Run05$t.obs[[1]]) + tm_raster(title="Observation, 1980-12-01") #Obviously just one call of the observation 
+tm_shape(London.rasts$Run05$t.cal[[1]]) + tm_raster(title="Calibration, Run 05, Raw 1980-12-01")
+tm_shape(London.rasts$Run06$t.cal[[1]]) + tm_raster(title="Calibration, Run 06, Raw 1980-12-01")
+tm_shape(London.rasts$Run07$t.cal[[1]]) + tm_raster(title="Calibration, Run 07, Raw 1980-12-01")
+tm_shape(London.rasts$Run08$t.cal[[1]]) + tm_raster(title="Calibration, Run 08, Raw 1980-12-01")
+tm_shape(London.rasts$Run05$qm1.hist.a[[1]]) + tm_raster(title="Calibration, Run 05, BC 1980-12-01")
+tm_shape(London.rasts$Run06$qm1.hist.a[[1]]) + tm_raster(title="Calibration, Run 06, BC 1980-12-01")
+tm_shape(London.rasts$Run07$qm1.hist.a[[1]]) + tm_raster(title="Calibration, Run 07, BC 1980-12-01")
+tm_shape(London.rasts$Run08$qm1.hist.a[[1]]) + tm_raster(title="Calibration, Run 08, BC 1980-12-01")
+
+
+```
+
+##### Fig. *Day 2 - 1991-06-01*
+
+Just to note I was so suprised by how much lower the observation data was for this raster I loaded the raw HADs to check (in resampled_2.2km/tasmax and the original 1km grid it does reflect it - it just seems very low)
+
+```{r, fig.show="hold", out.width="33%"}
+tm_shape(London.rasts$Run05$t.obs[[3781]]) + tm_raster(title="Observation, 1991-06-01") #Obviously just one call of the observation 
+tm_shape(London.rasts$Run05$t.cal[[3781]]) + tm_raster(title="Calibration, Run 05, Raw 1991-06-01")
+tm_shape(London.rasts$Run06$t.cal[[3781]]) + tm_raster(title="Calibration, Run 06, Raw 1991-06-01")
+tm_shape(London.rasts$Run07$t.cal[[3781]]) + tm_raster(title="Calibration, Run 07, Raw 1991-06-01")
+tm_shape(London.rasts$Run08$t.cal[[3781]]) + tm_raster(title="Calibration, Run 08, Raw 1991-06-01")
+tm_shape(London.rasts$Run05$qm1.hist.a[[3781]]) + tm_raster(title="Calibration, Run 05, BC 1991-06-01")
+tm_shape(London.rasts$Run06$qm1.hist.a[[3781]]) + tm_raster(title="Calibration, Run 06, BC 1991-06-01")
+tm_shape(London.rasts$Run07$qm1.hist.a[[3781]]) + tm_raster(title="Calibration, Run 07, BC 1991-06-01")
+tm_shape(London.rasts$Run08$qm1.hist.a[[3781]]) + tm_raster(title="Calibration, Run 08, BC 1991-06-01")
+
+```
+
+
+
+##### Fig. *Day 3 - 2000-08-01*
+
+
+```{r, fig.show="hold", out.width="33%"}
+tm_shape(London.rasts$Run05$t.obs[[7081]]) + tm_raster(title="Observation, 2000-08-01") #Obviously just one call of the observation 
+tm_shape(London.rasts$Run05$t.cal[[7081]]) + tm_raster(title="Calibration, Run 05, Raw 2000-08-01")
+tm_shape(London.rasts$Run06$t.cal[[7081]]) + tm_raster(title="Calibration, Run 06, Raw 2000-08-01")
+tm_shape(London.rasts$Run07$t.cal[[7081]]) + tm_raster(title="Calibration, Run 07, Raw 2000-08-01")
+tm_shape(London.rasts$Run08$t.cal[[7081]]) + tm_raster(title="Calibration, Run 08, Raw 2000-08-01")
+tm_shape(London.rasts$Run05$qm1.hist.a[[7081]]) + tm_raster(title="Calibration, Run 05, BC 2000-08-01")
+tm_shape(London.rasts$Run06$qm1.hist.a[[7081]]) + tm_raster(title="Calibration, Run 06, BC 2000-08-01")
+tm_shape(London.rasts$Run07$qm1.hist.a[[7081]]) + tm_raster(title="Calibration, Run 07, BC 2000-08-01")
+tm_shape(London.rasts$Run08$qm1.hist.a[[7081]]) + tm_raster(title="Calibration, Run 08, BC 2000-08-01")
+
+```
+
+#### **Calibration period - annual trends**
+
+
+```{r}
+#Returns a list of dfs in handy format for graphing
+London.dfg.rL <- lapply(runs, function(i){
+  L <- London.df.rL[[i]]
+  names(L)[1:3] <- c("obs", "cal", "proj") 
+    dfg <- lapply(names(L), function(ii){
+      dfi <- L[[ii]]
+      x <- 3:ncol(dfi) #ignore cols 1 & 2 with x y
+      #Calc mean and sd
+      dfx <- lapply(x, function(x){
+        y <- dfi[,x]
+        mean <- mean(y, na.rm=T)
+        sd <- sd(y, na.rm=T)
+        dfr <- data.frame(mean=mean, 
+             sd.high=mean+sd,
+             sd.low=mean-sd)
+        names(dfr) <- paste0(ii, ".", names(dfr))
+        dfr$day <- names(dfi)[x]
+        return(dfr)
+      })
+
+      dfx_g <- dfx %>% purrr::reduce(rbind)
+    })
+
+    names(dfg) <- c("obs.daymeans", "raw.cal.daymeans",
+                       "raw.proj.daymeans", "bc.a.cal.daymeans",
+                       "bc.b.cal.daymeans", "bc.a.proj.daymeans",
+                       "bc.b.proj.daymeans")
+    
+    return(dfg)
+})
+
+names(London.dfg.rL) <- runs
+```
+
+
+```{r}
+#Create a df for all of the runs to plot
+##Add a day index to align the cal and obs 
+
+London.dfg.calp.L <- lapply(runs, function(i){
+   dfg <- London.dfg.rL[[i]]
+  dfg.calp <- dfg[c("obs.daymeans", "raw.cal.daymeans",
+                       "bc.b.cal.daymeans", "bc.a.cal.daymeans")]
+
+    dfg.calp <- lapply(dfg.calp, function(x){
+    x$dayi <- 1:nrow(x)
+    x$day<- NULL
+    return(x)
+    })
+    
+    
+  dfg.calp <- dfg.calp %>% reduce(merge, "dayi")
+  dfg.calp$Run <- i
+  return(dfg.calp)})
+
+names(London.dfg.calp.L) <- runs
+
+London.dfg.calp <- London.dfg.calp.L %>% reduce(rbind)
+
+```
+
+```{r}
+
+London.dfg.calp_m <- reshape2::melt(London.dfg.calp, id=c("dayi", "Run")) #create long df for plotting multiple lines
+
+London.dfg.calp_mm <- London.dfg.calp_m[grepl("mean", London.dfg.calp_m$variable),] #For easy vis, only keep mean vals
+```
+
+#### Fig. Calibration period - annual mean
+
+```{r Historic trend 1}
+
+ggplot(London.dfg.calp_mm, aes(dayi, value, group=variable, colour=variable)) + 
+  geom_line(alpha=0.7) +
+  facet_wrap(.~Run) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Tasmax Hisotric trends") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Day, 1980.12.01 - 2009.12.01") +
+  scale_color_brewer(palette="Set1", name="Model", labels=c("Obs (Hads)", "Raw CPM", "BC CPM 1", "BC CPM 2"))
+
+```
+
+#### **Seasonal trends - Calibration period **
+
+Annotate season based on month index - the dates have different formats depending on the input data (ie hads vs cpm) so am pulling out the necessary to adjust sep 
+
+```{r}
+
+seasonal.means <- lapply(runs, function(r){
+  dfg <- London.dfg.rL[[r]]
+    #Hads/obs df
+    obs.daymeans.df <- dfg$obs.daymeans
+
+      x <- obs.daymeans.df$day
+      obs.daymeans.df$season <- ifelse(grepl("1231_|0131_|0228_|0229_", x),
+                                       "Winter",
+                      ifelse(grepl("0331_|0430_|0531_", x), "Spring",
+                          ifelse(grepl("0630_|0731_|0831_", x), "Summer", "Autumn")))
+
+#Note: the seasons should each have 90 days but seemingly Winter and Autumn have 89 and Spring and Summer have 91 - this is due to how the manual aligning worked out and should be updated when the hads data is re-run 
+
+    #Create season_year - All Winter months apart from Dec to be added to the previous year (ie     Winter 2000) would be the Dec of 2000 to the Feb of 2001
+    year <- gsub("^[^_]*_", "", x)
+    year <- as.numeric(substr(year, 1,4))
+    obs.daymeans.df$season_year <- ifelse(grepl("0131_|0228_|0229_", x), 
+                                      paste0(year-1, obs.daymeans.df$season), 
+                                      paste0(year, obs.daymeans.df$season))
+    # Mutate to a seasonal mean df 
+    obs.seasonal.mean.df <- aggregate(obs.daymeans.df[[1]], list(obs.daymeans.df[["season_year"]]), function(x) c(seasonal.mean = mean(x), sd.high.seasonal = mean(x) + sd(x), sd.low.seasonal = mean(x) - sd(x)))
+    obs.seasonal.mean.df<- data.frame(season_year=obs.seasonal.mean.df$Group.1,
+                                        seasonal.mean=obs.seasonal.mean.df$x[,"seasonal.mean"],
+                                        sd.high.seasonal = obs.seasonal.mean.df$x[,"sd.high.seasonal"],
+                                        sd.low.seasonal = obs.seasonal.mean.df$x[,"sd.low.seasonal"])
+    
+
+  #Grouping variable for later vars 
+  obs.seasonal.mean.df$model <- "obs"
+   
+   
+    dfg.seasonal.mean <- lapply(c("raw.cal.daymeans", "bc.b.cal.daymeans",
+                                         "bc.a.cal.daymeans"), function(i){
+        df <- dfg[[i]]
+        x <- df$day
+        x <- gsub(".*_", "", x)
+        x <- as.numeric(x)
+      #The CPM days are consecutive 1 - 360 by year
+        df$season <- ifelse(x<91, "Winter",
+                      ifelse(x<181, "Spring",
+                          ifelse(x<271, "Summer", "Autumn")))
+  
+  #Create season_year - All Winter months apart from Dec to be added to the previous year (ie     Winter 2000) would be the Dec of 2000 to the Feb of 2001  
+        year <- gsub(".*day_", "", df$day)
+        year <- as.numeric(substr(year, 1,4))
+        df$season_year <- ifelse(x>29&x<91, 
+                         paste0(year-1, df$season), 
+                         paste0(year, df$season))
+  
+    # Mutate to a seasonal mean -- cant get this to run in tidyverse within loop as cant seem to get col indexing working so:
+       df2 <- aggregate(df[[1]], list(df[["season_year"]]), function(x) c(seasonal.mean = mean(x), sd.high.seasonal = mean(x) + sd(x), sd.low.seasonal = mean(x) - sd(x)))
+       
+       df2 <-    data.frame(season_year=df2$Group.1,
+                                        seasonal.mean=df2$x[,"seasonal.mean"],
+                                        sd.high.seasonal = df2$x[,"sd.high.seasonal"],
+                                        sd.low.seasonal = df2$x[,"sd.low.seasonal"])
+
+        df2$model <- gsub(".daymeans","",i)
+
+       return(df2)})
+
+  dff <- c(list(obs.seasonal.mean.df), dfg.seasonal.mean) %>% reduce(rbind)  
+  dff$Run <- r
+  return(dff)
+})
+
+names(seasonal.means) <- runs
+
+seasonal.means.df <- seasonal.means %>% reduce(rbind)
+
+```
+
+#### Fig. Calibration period - seasonal mean
+
+```{r}
+
+ggplot(seasonal.means.df, aes(season_year, seasonal.mean, group=model, colour=model)) + 
+  geom_line() +
+  facet_wrap(.~Run) +
+  theme_bw() + ylab("Av daily max temp oC") + 
+  ggtitle("Tasmax Hisotric trends") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Seasonal averages, 1980.12.01 - 2009.12.01") +
+  scale_color_brewer(palette="Set1", name="Model")
+
+```
+
+
+##### *Summer only*
+
+```{r Raw seasonal winter}
+
+dfg_sm<- subset(seasonal.means.df, grepl("Summer", season_year))
+
+ggplot(dfg_sm, aes(season_year, seasonal.mean, group=model, colour=model)) + 
+  geom_line(alpha=0.7) +
+  facet_wrap(.~Run) +
+  theme_bw() + ylab("Av daily max temp oC -Summer average") + 
+  ggtitle("Tasmax Hisotric trends") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Summer averages, 1980.12.01 - 2009.12.01") +
+  scale_color_brewer(palette="Set1", name="Model")
+
+```
+It looks purple because the two bc methods aren't revealing much difference so subsetting to just one instead
+
+
+```{r}
+
+dfg_sm<- subset(seasonal.means.df, !grepl("bc.b.cal", model)&grepl("Summer", season_year))
+
+ggplot(dfg_sm, aes(season_year, seasonal.mean, group=model, colour=model)) + 
+  geom_line(alpha=0.7) +
+  facet_wrap(.~Run) +
+  theme_bw() + ylab("Av daily max temp oC -Summer average") + 
+  ggtitle("Tasmax Hisotric trends") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Seasonal averages, 1980.12.01 - 2009.12.01") +
+  scale_color_brewer(palette="Set1", name="Model")
+
+```
+
+#### *Annual trends - seasonal max*
+
+For tasmax - grouping to season and calculating the seasonal maxima vals (i.e. rather than means above) 
+
+```{r}
+
+#Convert to max, out put a df in easy fig format 
+London.dfg.max <- lapply(runs, function(r){
+  L <- London.df.rL[[r]]
+  names(L)[1:3] <- c("obs", "cal", "proj") 
+    dfg <- lapply(names(L), function(ii){
+      dfi <- L[[ii]]
+      x <- 3:ncol(dfi) #ignore cols 1 & 2 with x y
+      #Calc maxima of the 
+      dfx <- lapply(x, function(x){
+        xx <- dfi[,x]
+        data.frame(max=max(xx, na.rm=T), day= names(dfi)[x])
+      })
+
+      dfx_g <- dfx %>% purrr::reduce(rbind)
+    })
+
+    names(dfg) <- paste0(names(L), ".max")
+    return(dfg)
+})
+
+names(London.dfg.max) <- runs
+
+seasonal.max.cal <- lapply(runs, function(r){
+  dfg <- London.dfg.max[[r]]
+    #Hads/obs df
+    df1 <- dfg$obs.max
+      x <- df1$day
+      df1$season <- ifelse(grepl("1231_|0131_|0228_|0229_", x),
+                                       "Winter",
+                      ifelse(grepl("0331_|0430_|0531_", x), "Spring",
+                          ifelse(grepl("0630_|0731_|0831_", x), "Summer", "Autumn")))
+
+#Note: the seasons should each have 90 days but seemingly Winter and Autumn have 89 and Spring and Summer have 91 - this is due to how the manual aligning worked out and should be updated when the hads data is re-run 
+
+    #Create season_year - All Winter months apart from Dec to be added to the previous year (ie     Winter 2000) would be the Dec of 2000 to the Feb of 2001
+    year <- gsub("^[^_]*_", "", x)
+    year <- as.numeric(substr(year, 1,4))
+    df1$season_year <- ifelse(grepl("0131_|0228_|0229_", x), 
+                                      paste0(year-1, df1$season), 
+                                      paste0(year, df1$season))
+    # Mutate to a seasonal mean df 
+    obs.seasonal.max.df <- aggregate(df1[[1]], list(df1[["season_year"]]), max)
+  #Grouping variable for later vars 
+  obs.seasonal.max.df$model <- "obs"
+   
+    dfg.seasonal.max <- lapply(c("cal.max", "qm1.hist.a.max",
+                                         "qm1.hist.b.max"), function(i){
+        df <- dfg[[i]]
+        x <- df$day
+        x <- gsub(".*_", "", x)
+        x <- as.numeric(x)
+      #The CPM days are consecutive 1 - 360 by year
+        df$season <- ifelse(x<91, "Winter",
+                      ifelse(x<181, "Spring",
+                          ifelse(x<271, "Summer", "Autumn")))
+  
+  #Create season_year - All Winter months apart from Dec to be added to the previous year (ie     Winter 2000) would be the Dec of 2000 to the Feb of 2001  
+        year <- gsub(".*day_", "", df$day)
+        year <- as.numeric(substr(year, 1,4))
+        df$season_year <- ifelse(x>29&x<91, 
+                         paste0(year-1, df$season), 
+                         paste0(year, df$season))
+  
+    # Mutate to a seasonal mean -- cant get this to run in tidyverse within loop as cant seem to get col indexing working so:
+       df2 <- aggregate(df[[1]], list(df[["season_year"]]), max)
+
+        df2$model <- gsub(".max","",i)
+
+       return(df2)})
+
+  dff <- c(list(obs.seasonal.max.df), dfg.seasonal.max) %>% reduce(rbind)  
+  dff$Run <- r
+  return(dff)
+})
+
+names(seasonal.max.cal) <- runs
+
+seasonal.maxima.df <- seasonal.max.cal %>% reduce(rbind)
+names(seasonal.maxima.df) <- c("season_year", "max", "model", "Run")
+```
+
+#### Fig. Calibration period - seasonal max
+
+```{r}
+
+ggplot(seasonal.maxima.df, aes(season_year, max, group=model, colour=model)) + 
+  geom_line() +
+  facet_wrap(.~Run) +
+  theme_bw() + ylab("Max daily max temp oC") + 
+  ggtitle("Tasmax Hisotric trends") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Seasonal averages, 1980.12.01 - 2009.12.01") +
+  scale_color_brewer(palette="Set1", name="Model")
+
+```
+
+#### Fig. Calibration period -  *Summer only*
+
+```{r}
+
+dfg_sm<- subset(seasonal.maxima.df, !grepl("qm1.hist.b", model)&grepl("Summer", season_year))
+
+ggplot(dfg_sm, aes(season_year, max, group=model, colour=model)) + 
+  geom_line(alpha=0.7) +
+  facet_wrap(.~Run) +
+  theme_bw() + ylab("Av daily max temp oC -Summer average") + 
+  ggtitle("Tasmax Historic trends") +
+ scale_x_discrete(labels = NULL, breaks = NULL) + xlab("Seasonal Summer averages, 1980.12.01 - 2009.12.01") +
+  scale_color_brewer(palette="Set1", name="Model")
+
+```
+
+#### Create validaton df list
+
+Adding in the observational HADs data and aligning based on dates
+
+*Note* So as not to re-run the UK wide LCAT data processing, a workaround was added to the bias correction function used to group the obs data - this means that to align the validation cpm data we have to remove a month in the beginning 
+
+```{r}
+
+#Extract validation period of raw and bias corrected CPM data
+val.dfs <- lapply(runs, function(r){
+    London.df <- London.df.rL[[r]]
+    cpm.val.dfs <- lapply(London.df[c("t.proj", "qm1.proj.a", "qm1.proj.b")], function(x){
+    i <- grep("20191201-20201130_30", names(x))[1]
+    df <- x[,1:i]
+  })
+
+    #Using the old cpm data for the hads obs - so need to remove the dates to ensure theres 30 days per year
+    remove <- c("0229_29", "0430_30", "0731_31", "0930_30", "1130_30")
+    remove <- paste0(remove, collapse = "|")
+      
+    obs.val.df <- obs.val.df[,!grepl(remove, names(obs.val.df))]
+    row.names(obs.val.df) <- paste0(obs.val.df$x, "_", obs.val.df$y)
+
+    val.dfs <- c(list(obs.val.df), cpm.val.dfs)
+    names(val.dfs) <- c("obs.val.df", "raw.cpm.val", "bc1.cpm.val", "bc2.cpm.val")
+    return(val.dfs)
+    })
+
+names(val.dfs) <- runs
+```
+
+
+#### *Validation period - annual trends - seasonal mean*
+
+(To be added)
+
+#### *Validation period - annual trends - seasonal max*
+
+(To be added)
+
+## **2. Bias Correction Assessment: Metrics**
+
+Using the validation data set for this
+
+
+```{r}
+#Convert dfs to a vector
+val.dfs.v <- lapply(runs, function(r){
+  dfs <- val.dfs[[r]]
+  dfs2 <- lapply(dfs, function(d){
+  #Remove x and y 
+  d$x <- NULL
+  d$y <- NULL
+  #Convert to single vector
+  unlist(as.vector(d))})
+  names(dfs2) <- names(dfs)
+
+val.dfs.v.df <- dfs2 %>% reduce(cbind)
+val.dfs.v.df <- as.data.frame(val.dfs.v.df)})
+
+names(val.dfs.v) <- runs
+```
+
+```{r}
+val.dfs.v <- lapply(runs, function(r){
+  df <- val.dfs.v[[r]]
+  names(df) <-paste0(r, ".", c("obs.val.df", "raw.cpm.val", "bc1.cpm.val", "bc2.cpm.val"))
+  return(df)
+})
+
+#Convert to a single df 
+val.dfs.v.allruns <- val.dfs.v %>% reduce(cbind)
+
+#Remove duplicate obs (pulled through across each run)
+val.dfs.v.allruns[c("Run06.obs.val.df", "Run07.obs.val.df", "Run08.obs.val.df")] <- NULL
+names(val.dfs.v.allruns)[1] <- "obs.val"
+```
+
+### **2a. Descriptive statistics**
+
+```{r descriptives validation}
+
+descriptives <- apply(val.dfs.v.allruns,2, function(x){ 
+  per <- data.frame(as.list(quantile(x, probs=c(0.1, 0.9))))
+  data.frame(mean=mean(x), sd=sd(x), min = min(x), per10th=per$X10.,per90th=per$X90., max = max(x))
+})
+
+descriptives <- descriptives %>% reduce(rbind)
+row.names(descriptives) <- names(val.dfs.v.allruns)
+t(descriptives)
+```
+
+
+
+#### **Distribution**
+
+```{r}
+
+names(val.dfs.v) <- runs
+val.dfs.v_fordist <- lapply(runs, function(r){
+  df <- val.dfs.v[[r]]
+  names(df) <- c("obs", "raw.cpm", "bc1.cpm", "bc2.cpm")
+  df$run <- paste0(r)
+  return(df)
+})
+
+#Convert to a single df 
+val.dfs.v.allruns_fordist <- val.dfs.v_fordist %>% reduce(rbind)
+val.dfg <- reshape2::melt(val.dfs.v.allruns_fordist, id="run")
+```
+
+#### Fig.Density plot of validation period 
+
+```{r}
+ggplot(subset(val.dfg, variable!="bc2.cpm"), aes(value, fill=variable, colour=variable)) + 
+  geom_density(alpha = 0.3, position="identity") + 
+ facet_wrap(.~ run) +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1") +
+  scale_color_brewer(palette = "Set1")
+
+```
+### **2b. Model fit statistics**
+
+Using the following to assess overall fit: 
+
+- **R-squared (rsq)**
+- **Root Square Mean Error (RMSE)**
+- **Nash-Sutcliffe Efficiency (NSE):** Magnitude of residual variance compared to measured data variance, ranges -∞ to 1, 1 = perfect match to observations
+- **Percent bias (PBIAS):** The optimal value of PBIAS is 0.0, with low-magnitude values indicating accurate model simulation. Positive values indicate overestimation bias, whereas negative values indicate model underestimation bias.
+
+```{r rsq}
+actual <- val.dfs.v.allruns$obs.val
+
+rsq <- sapply(val.dfs.v.allruns[c(2:ncol(val.dfs.v.allruns))], function(x){
+  cor(actual, x)^2
+})
+
+ t(data.frame(as.list(rsq), row.names = "RSQ"))
+```
+
+```{r rmse}
+
+rmse <- sapply(val.dfs.v.allruns[c(2:ncol(val.dfs.v.allruns))], function(x){
+  sqrt(mean((actual - x)^2))
+})
+
+```
+
+```{r pbias}
+
+pbias <- sapply(val.dfs.v.allruns[c(2:ncol(val.dfs.v.allruns))], function(x){
+  hydroGOF::pbias(x, actual)
+})
+
+```
+
+```{r nse}
+nse <- sapply(val.dfs.v.allruns[c(2:ncol(val.dfs.v.allruns))], function(x){
+  hydroGOF::NSE(x, actual)
+})
+
+```
+
+Highlighting the bias corrected statistics 
+
+```{r pretty kable}
+
+k <- cbind(rsq, rmse, pbias, nse)
+k %>% 
+  kable(booktabs = T) %>%
+  kable_styling() %>%
+  row_spec(grep(".bc.",row.names(k)), background = "lightgrey")
+
+```
+
+
+
+## **3. Bias Correction Assessment: Metric specific - tasmax**
+
+### **3b Days above 30 degrees**
+
+(Not considered consecutively here)
+
+```{r}
+val.dfs.v.allruns$year <- substr(row.names(val.dfs.v.allruns), 8,11)
+
+over30 <- lapply(names(val.dfs.v.allruns), function(i){
+  x <- val.dfs.v.allruns[,i]
+  df <- aggregate(x, list(val.dfs.v.allruns$year), function(x){sum(x>=30)})
+  names(df) <- c("year", paste0("Days.over.30.", i))
+                 return(df)
+})
+
+over30 %>% reduce(left_join, "year")
+```
+
+
+### **Number of heatwaves per annum**
+
+(to be added)
+
+#### **For future work**
+
+The number of quantiles selected will effect the efficacy of the bias correction: lots of options therefore with this specific method

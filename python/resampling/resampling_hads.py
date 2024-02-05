@@ -1,5 +1,5 @@
-"""
-This script resamples the UKHADS data to match UKCP18 data.
+"""This script resamples the UKHADS data to match UKCP18 data.
+
 It resamples spatially, from 1km to 2.2km
 It resamples temporally to a 360 day calendar.
 """
@@ -10,9 +10,7 @@ import multiprocessing
 import os
 from os import cpu_count
 
-import netCDF4
 import pandas as pd
-import scipy
 import xarray as xr  # requires rioxarray extension
 from tqdm import tqdm
 
@@ -20,18 +18,25 @@ from tqdm import tqdm
 def enforce_date_dropping(
     raw_data: xr.Dataset, converted_data: xr.Dataset
 ) -> xr.Dataset:
-    """
-    Workaround to avoid convert_calendar misbehavior with monthly data files.
+    """Workaround convert_calendar misbehavior with monthly data files.
 
-    For leap years, the conversion assigns dropped data to the previous date instead of deleting it.
-    Here we manually delete those dates to avoid duplicates later in the pipeline.
+    For leap years, the conversion assigns dropped data to the previous
+    date instead of deleting it. Here we manually delete those dates to
+    avoid duplicates later in the pipeline. See
+    https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html#xarray.Dataset.convert_calendar
+    for more information, and for updates on issues see
+    https://github.com/pydata/xarray/issues/8086
 
-    Args:
-        raw_data (xr.Dataset): The original data.
-        converted_data (xr.Dataset): The data after conversion.
+    Parameters
+    ----------
+    raw_data
+        The original data.
+    converted_data
+        The data after conversion.
 
-    Returns:
-        xr.Dataset: The converted data with specific dates dropped.
+    Returns
+    -------
+    The converted data with specific dates dropped.
     """
     month_day_drop = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
     time_values = pd.DatetimeIndex(raw_data.coords["time"].values)
@@ -56,16 +61,27 @@ def enforce_date_dropping(
     return converted_data
 
 
-def resample_hadukgrid(x):
-    """
-    Resamples the UKHADs data to match UKCP18 data both spatially and temporally
-    and saves the resampled data to the output directory.
-    inputs:
-        x: list of inputs
-            x[0]: file to be resampled
-            x[1]: x_grid
-            x[2]: y_grid
-            x[3]: output_dir
+def resample_hadukgrid(x: list) -> int:
+    """Resample UKHADs data to match UKCP18 spatially and temporally.
+
+    Results are saved to the output directory.
+
+    Parameters
+    ----------
+    x
+        x[0]: file to be resampled
+        x[1]: x_grid
+        x[2]: y_grid
+        x[3]: output_dir
+
+    Returns
+    -------
+    Whether function was a success `0` or not `1`.
+
+    Raises
+    ------
+    Exception
+        Generic execption for any errors raised.
     """
     try:
         # due to the multiprocessing implementations inputs come as list

@@ -1,4 +1,4 @@
-#### Cropping 'Raw' (reprojected CPM) data to Scotland 
+#### Cropping 'Raw' (reprojected CPM) data to Scotland
 rm(list=ls())
 
 #libs
@@ -16,7 +16,7 @@ files <- list.files(p)
 
 raw.files <- files[!grepl("aux.xml", files)]
 raw.files.p <- paste0(p, raw.files)
-raw.dat <- lapply(raw.files.p, rast) 
+raw.dat <- lapply(raw.files.p, rast)
 
 raw.dat.r <- rast(raw.dat)
 nlyr(raw.dat.r)
@@ -36,4 +36,3 @@ lapply(n, function(i){
   fn <- paste0(rd,  i, ".tif")
   writeRaster(rast, filename=fn)
 })
-

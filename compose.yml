@@ -5,29 +5,26 @@ services:
   jupyter:
     build:
       context: .
-      dockerfile: ./compose/Dockerfile
-      target: clim-recal-base
+      dockerfile: ./compose/jupyter/Dockerfile
     ports:
       - "8888:8888"
-    # volumes:
-      # - climate_data:/mnt/vmfileshare
-      # - type: bind
-      #   source: /Volumes/vmfileshare
-      #   target: /mnt/vmfileshare
+    volumes:
+      - .:/home/jovyan:rw
 
   docs:
     build:
       context: .
       dockerfile: ./compose/docs/Dockerfile
-      # target: clim-recal-docs
     ports:
-      - "8080:80"
-      # command: quarto preview --port 8080
+      - "8080:8080"
+    volumes:
+      - .:/home/jovyan:rw
 
-# volumes:
-#   climate_data:
-#     driver: local
-#     driver_opts:
-#       type: none
-#       device: /Volumes/vmfileshare
-#       o: bind
+  rstudio:
+    build:
+      context: .
+      dockerfile: ./compose/rstudio/Dockerfile
+    ports:
+      - "8787:8787"
+    volumes:
+      - .:/home/rstudio:rw

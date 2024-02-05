@@ -5,5 +5,3 @@ first.rast <- function(x){
   rp <- paste0(fp,r)
   rast(rp)
 }
-
-

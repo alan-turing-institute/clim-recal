@@ -1,6 +1,6 @@
 ---
 title: "Comparing-Reprojections-HADs"
-output: 
+output:
   github_document:
     keep_html: true
   html_document:
@@ -28,25 +28,25 @@ dd <- "/Volumes/vmfileshare/ClimateData/"
 
 ## **0. About**
 
-Bias correction techniques in general require observational data to compare with climate projections in order to appropriately correct the bias. 
+Bias correction techniques in general require observational data to compare with climate projections in order to appropriately correct the bias.
 
-The [HadUK grid](https://catalogue.ceda.ac.uk/uuid/bbca3267dc7d4219af484976734c9527) is a 1km x 1km gridded dataset derived from meterological station observations. 
+The [HadUK grid](https://catalogue.ceda.ac.uk/uuid/bbca3267dc7d4219af484976734c9527) is a 1km x 1km gridded dataset derived from meterological station observations.
 
-The first UKCP product for review is the UCKP convection-permitting dataset, on a 2.2km grid. Therefore, we are resmapling the 1km grid using bilenear interpolation to 2.2km grid extent. 
+The first UKCP product for review is the UCKP convection-permitting dataset, on a 2.2km grid. Therefore, we are resmapling the 1km grid using bilenear interpolation to 2.2km grid extent.
 
 We have ran this seperately in both ```r``` and ```python```. The aim of this doc is to:
 
  - Ensure both methods produce the same result
- - Ensure the grid has been resampled to the correct extent and CRS 
+ - Ensure the grid has been resampled to the correct extent and CRS
 
-## **1. Data** 
+## **1. Data**
 
 ### **1a. HadUK grid resampled in R**
     Resampling script [here](https://github.com/alan-turing-institute/clim-recal/blob/main/R/Resampling.HADs.inR.R)
     The 2.2km grid was derived from a reprojected (to BNG) UKCP 2.2km .nc file
 
 
-In resampling it resampled the Sea as xx so replacing those vals as NA 
+In resampling it resampled the Sea as xx so replacing those vals as NA
 
 ```{r load data 1}
 
@@ -66,7 +66,7 @@ plot(r1$tasmax_1)
 
 ### **1b. HadUK grid resampled in python**
   Resampling script [here](https://github.com/alan-turing-institute/clim-recal/blob/main/python/resampling/resampling_hads.py)
-  
+
 **THIS UPDATED 17/02/23**
 
 ```{r load data 2}
@@ -75,8 +75,8 @@ py.pros.tasmax <- list.files(paste0(dd,"Processed/HadsUKgrid/resampled_2.2km_new
 r2 <- py.pros.tasmax[grepl("200001", py.pros.tasmax)] #Same file as resampled above
 r2 <- paste0(paste0(dd, "Processed/HadsUKgrid/resampled_2.2km_newgrid/tasmax/day"),"/",r2)
 r2 <- rast(r2)
-crs(r2, proj=T) #check crs 
-## Ok so interesting is missing a crs slot on read - I wonder why this is? This could cause future problem potentially? 
+crs(r2, proj=T) #check crs
+## Ok so interesting is missing a crs slot on read - I wonder why this is? This could cause future problem potentially?
 
 plot(r2$tasmax_1)
 
@@ -121,13 +121,13 @@ scotland <- vect("~/Library/CloudStorage/OneDrive-TheAlanTuringInstitute/CLIM-RE
 
 ## **2. Comparisons **
 
-Crop extents to be the same 
+Crop extents to be the same
 
 ```{r}
 #Noticed the crop takes longer on r2_c - for investigation!
 
 b <- Sys.time()
-r1_c <- terra::crop(r1, scotland, snap="in") 
+r1_c <- terra::crop(r1, scotland, snap="in")
 e <- Sys.time()
 e-b
 
@@ -137,7 +137,7 @@ plot(r1_c$tasmax_1)
 ```{r}
 
 b <- Sys.time()
-r2_c <- terra::crop(r2, scotland, snap="in") 
+r2_c <- terra::crop(r2, scotland, snap="in")
 e <- Sys.time()
 e-b
 
@@ -145,13 +145,13 @@ plot(r2_c$tasmax_1)
 ```
 
 ```{r}
-og_c <- terra::crop(og, scotland, snap="in") 
+og_c <- terra::crop(og, scotland, snap="in")
 plot(og_c$tasmax_1)
 ```
-Ok there are some differences that I can see from the plot between the two resampled files! 
+Ok there are some differences that I can see from the plot between the two resampled files!
 
 ```{r}
-## Cropping to a small area to compare with the same orginal HADS file 
+## Cropping to a small area to compare with the same orginal HADS file
 i <- rast()
 ext(i) <- c(200000, 210000, 700000, 710000)
 ```
@@ -189,7 +189,7 @@ plot(og_ci$tasmax_1)
 ```
 
 ```{r}
-ukcp_c <- terra::crop(ukcp.r, i) 
+ukcp_c <- terra::crop(ukcp.r, i)
 plot(ukcp_c$`tasmax_rcp85_land-cpm_uk_2.2km_01_day_19991201-20001130_31`)
 
 ext(ukcp_c)
@@ -209,4 +209,3 @@ ukcp_c_xy
 all(ukcp_c_xy, r.reproj_c_xy)
 
 ```
-

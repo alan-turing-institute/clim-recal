@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+
+  jupyter:
+    volumes:
+      - /mnt/vmfileshare:/mnt/vmfileshare
+
+  rstudio:
+    volumes:
+      - /mnt/vmfileshare:/mnt/vmfileshare
