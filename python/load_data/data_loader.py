@@ -115,7 +115,7 @@ def clip_dataset(xa: xr.DataArray, variable: str, shapefile: str) -> xr.DataArra
     Parameters
     ----------
     xa 
-        xArray containing a giving variable
+        xArray containing a given variable (e.g. rainfall)
     variable 
         A string representing the variable to be loaded
     shapefile 

@@ -30,6 +30,10 @@ def date_to_str(
     out_format_str
         A `strftime` format `str` to convert `date_obj` to.
 
+    Return
+    ------
+    A `str` version of `date_obj` in `out_format_str` format.
+
     Examples
     --------
     >>> date_to_str('20100101')
@@ -65,6 +69,11 @@ def date_range_to_str(
     out_format_str
         A `strftime` format `str` to convert `end_date` from.
 
+    Return
+    ------
+    A `str` of date range from `start_date` to `end_date` in the
+        `out_format_str` format.
+
     Examples
     --------
     >>> date_range_to_str('20100101', '20100330')
@@ -90,6 +99,10 @@ def iter_to_tuple_strs(iter_var: Iterable[Any]) -> tuple[str, ...]:
     iter_var
         Iterable of objects that can be converted into `strs`.
 
+    Return
+    ------
+    A `tuple` of all `iter_var` elements in `str` format.
+
     Examples
     --------
     >>> iter_to_tuple_strs(['cat', 1, Path('a/path')])
@@ -107,18 +120,22 @@ def path_iterdir(
     Parameters
     ----------
     path
-        `Path` of folder to iterate through
+        `Path` to folder to iterate through.
     strict
         Whether to raise `FileNotFoundError` if `path` not found.
 
-    Returns
-    -------
-    A `Generator` of `Paths` within folder `path`.
+    Yield
+    -----
+    A `Path` for each folder  in `path`.
 
     Raises
     ------
     FileNotFoundError
         Raised if `strict = True` and `path` does not exist.
+
+    Return
+    ------
+    `None` if `FileNotFoundError` error and `strict` is `False`.
 
 
     Examples
@@ -163,11 +180,17 @@ def make_user(
     Parameters
     ----------
     user
-        user and home folder name
+        Name for user and home folder name to append to `user_home_path`.
     password
-        login password
+        Login password.
     code_path
-        path to copy code from to user path
+        `Path` to copy code from to `user` home directory.
+    user_home_path
+        Path that `user` folder will be in, often `Path('/home')` in `linux`.
+
+    Return
+    ------
+    Full path to generated `user` home folder.
 
     Examples
     --------
@@ -203,6 +226,10 @@ def rm_user(user: str, user_home_path: Path = DEBIAN_HOME_PATH) -> str:
     user_home_path
         Parent path of `user` folder name.
 
+    Return
+    ------
+    `user` name of account and home folder deleted.
+
     Examples
     --------
     >>> import os
@@ -221,7 +248,7 @@ def rm_user(user: str, user_home_path: Path = DEBIAN_HOME_PATH) -> str:
 
 
 def csv_reader(path: Path, **kwargs) -> Generator[dict[str, str], None, None]:
-    """Yield a `dict` per for from file `path`.
+    """Yield a `dict` per row from a `CSV` file at `path`.
 
     Parameters
     ----------
@@ -230,10 +257,9 @@ def csv_reader(path: Path, **kwargs) -> Generator[dict[str, str], None, None]:
     **kwargs
         Additional parameters for `csv.DictReader`.
 
-    Returns
-    -------
-    :
-        A `Generator` of `dicts` per row from `path`.
+    Yield
+    -----
+    A `dict` per row from `CSV` file at `path`.
 
     Examples
     --------
@@ -249,8 +275,10 @@ def csv_reader(path: Path, **kwargs) -> Generator[dict[str, str], None, None]:
     ...     line_num: int = writer.writerow(('user_name', 'password'))
     ...     for user_name, password in auth_dict.items():
     ...         line_num = writer.writerow((user_name, password))
-    >>> tuple(csv_reader(csv_path))
-    ({'user_name': 'sally', 'password': 'fig*new£kid'}, {'user_name': 'george', 'password': 'tee&iguana*sky'}, {'user_name': 'susan', 'password': 'history!bill-walk'})
+    >>> tuple(csv_reader(csv_path))  # doctest: +NORMALIZE_WHITESPACE
+    ({'user_name': 'sally', 'password': 'fig*new£kid'},
+     {'user_name': 'george', 'password': 'tee&iguana*sky'},
+     {'user_name': 'susan', 'password': 'history!bill-walk'})
     """
     with open(path) as csv_file:
         for row in DictReader(csv_file, **kwargs):
@@ -260,7 +288,7 @@ def csv_reader(path: Path, **kwargs) -> Generator[dict[str, str], None, None]:
 def make_users(
     file_path: Path, user_col: str, password_col: str, file_reader: Callable, **kwargs
 ) -> Generator[Path, None, None]:
-    """Load a file of usernames and passwords to pass to `make_user`.
+    """Load a file of usernames and passwords and pass each line to `make_user`.
 
     Parameters
     ----------
@@ -274,6 +302,10 @@ def make_users(
         Callable (function) to read `file_path`.
     **kwargs
         Additional parameters for to pass to `file_reader` function.
+
+    Yield
+    -----
+    The home `Path` for each generated user.
 
     Examples
     --------
