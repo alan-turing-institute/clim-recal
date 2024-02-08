@@ -37,6 +37,7 @@ def test_command_line_default() -> None:
     )
 
 
+@pytest.mark.mount
 @pytest.mark.server
 @pytest.mark.slow
 @pytest.mark.parametrize(

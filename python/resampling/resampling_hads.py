@@ -76,7 +76,7 @@ def resample_hadukgrid(x: list) -> int:
 
     Returns
     -------
-    Whether function was a success `0` or not `1`.
+    `0` if resampling is a success `1` if not.
 
     Raises
     ------

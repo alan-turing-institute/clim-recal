@@ -25,7 +25,8 @@ from debiasing.debias_wrapper import (
 from utils import iter_to_tuple_strs
 
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
-CLIMATE_DATA_MOUNT_PATH = Path("/mnt/vmfileshare/ClimateData")
+CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData")
+CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateData")
 TEST_PATH = Path().absolute()
 PYTHON_DIR_NAME: Final[Path] = Path("python")
 MODULE_NAMES: Final[tuple[PathLike, ...]] = (
@@ -102,16 +103,35 @@ OBS_FOLDER_FILES_COUNT_CORRECT: Final[int] = MOD_FOLDER_FILES_COUNT_CORRECT
 PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT: Final[int] = 4
 
 
-@pytest.fixture()
+@pytest.fixture
 def is_platform_darwin() -> bool:
     """Check if `sys.platform` is `Darwin` (macOS)."""
     return sys.platform.startswith("darwin")
 
 
-@pytest.fixture()
-def is_climate_data_mounted() -> bool:
-    """Check if `sys.platform` is `Darwin` (macOS)."""
-    return CLIMATE_DATA_MOUNT_PATH.exists()
+@pytest.fixture
+def climate_data_mount_path(is_platform_darwin: bool) -> Path:
+    """Return likely climate data mount path based on operating system.
+
+    Parameters
+    ----------
+    is_platform_darwin
+        Calls fixture `is_platform_darwin`.
+
+    Returns
+    -------
+    The `Path` climate data would likely be mounted to.
+    """
+    if is_platform_darwin:
+        return CLIMATE_DATA_MOUNT_PATH_MACOS
+    else:
+        return CLIMATE_DATA_MOUNT_PATH_LINUX
+
+
+@pytest.fixture
+def is_climate_data_mounted(climate_data_mount_path) -> bool:
+    """Check if CLIMATE_DATA_MOUNT_PATH is mounted."""
+    return climate_data_mount_path.exists()
 
 
 @pytest.fixture(autouse=True)

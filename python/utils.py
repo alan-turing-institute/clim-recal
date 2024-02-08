@@ -2,6 +2,7 @@
 import subprocess
 from csv import DictReader
 from datetime import date, datetime
+from os import PathLike
 from pathlib import Path
 from shutil import rmtree
 from typing import Any, Callable, Final, Generator, Iterable, Optional, Union
@@ -12,6 +13,28 @@ DATE_FORMAT_SPLIT_STR: Final[str] = "-"
 RSTUDIO_DOCKER_USER_PATH: Path = Path("/home/rstudio")
 JUPYTER_DOCKER_USER_PATH: Path = Path("/home/jovyan")
 DEBIAN_HOME_PATH: Path = Path("/home/")
+# NC_GLOB_STR: Final[str] = "**/*.nc"
+
+
+# def globs_to_paths(path: PathLike, glob_str: str, recursive: bool = True) -> tuple[Path, ...]:
+#     """Return a tuple of `Paths` matching `glob_str`.
+#
+#     Parameters
+#     ----------
+#     path
+#         `str` or `Path` to search via `glob_str`.
+#
+#     glob_str
+#         Glob `str` to search for file names within `path`.
+#
+#     recursive
+#         Whether to recursively search within `path`.
+#
+#     Returns
+#     -------
+#     A `tuple` of matched `paths`.
+#
+#     """
 
 
 def date_to_str(
@@ -113,7 +136,7 @@ def iter_to_tuple_strs(iter_var: Iterable[Any]) -> tuple[str, ...]:
 
 
 def path_iterdir(
-    path: Path, strict: bool = False
+    path: PathLike, strict: bool = False
 ) -> Generator[Optional[Path], None, None]:
     """Return an `Generator` after ensuring `path` exists.
 
@@ -161,7 +184,7 @@ def path_iterdir(
     ()
     """
     try:
-        yield from path.iterdir()
+        yield from Path(path).iterdir()
     except FileNotFoundError as error:
         if strict:
             raise error
@@ -172,8 +195,8 @@ def path_iterdir(
 def make_user(
     user: str,
     password: str,
-    code_path: Path = RSTUDIO_DOCKER_USER_PATH,
-    user_home_path: Path = DEBIAN_HOME_PATH,
+    code_path: PathLike = RSTUDIO_DOCKER_USER_PATH,
+    user_home_path: PathLike = DEBIAN_HOME_PATH,
 ) -> Path:
     """Make user account and copy code to that environment.
 
@@ -207,7 +230,7 @@ def make_user(
     >>> rm_user(user_name)
     'very_unlinkely_test_user'
     """
-    home_path: Path = user_home_path / user
+    home_path: Path = Path(user_home_path) / Path(user)
     subprocess.run(f"useradd {user}", shell=True)
     subprocess.run(f"echo {user}:{password} | chpasswd", shell=True)
     subprocess.run(f"mkdir {home_path}", shell=True)
@@ -216,7 +239,7 @@ def make_user(
     return home_path
 
 
-def rm_user(user: str, user_home_path: Path = DEBIAN_HOME_PATH) -> str:
+def rm_user(user: str, user_home_path: PathLike = DEBIAN_HOME_PATH) -> str:
     """Remove user and user home folder.
 
     Parameters
@@ -243,11 +266,11 @@ def rm_user(user: str, user_home_path: Path = DEBIAN_HOME_PATH) -> str:
     'very_unlinkely_test_user'
     """
     subprocess.run(f"userdel {user}", shell=True)
-    rmtree(user_home_path / user)
+    rmtree(Path(user_home_path) / user)
     return user
 
 
-def csv_reader(path: Path, **kwargs) -> Generator[dict[str, str], None, None]:
+def csv_reader(path: PathLike, **kwargs) -> Generator[dict[str, str], None, None]:
     """Yield a `dict` per row from a `CSV` file at `path`.
 
     Parameters
@@ -286,7 +309,11 @@ def csv_reader(path: Path, **kwargs) -> Generator[dict[str, str], None, None]:
 
 
 def make_users(
-    file_path: Path, user_col: str, password_col: str, file_reader: Callable, **kwargs
+    file_path: PathLike,
+    user_col: str,
+    password_col: str,
+    file_reader: Callable,
+    **kwargs,
 ) -> Generator[Path, None, None]:
     """Load a file of usernames and passwords and pass each line to `make_user`.
 
