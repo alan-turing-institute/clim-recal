@@ -6,7 +6,7 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   CONDA_ENV_NAME: clim-recal
   CONDA_ENV_PATH: environment.yml
-  MIN_PYTHON_VERSION: 3.10
+  MIN_PYTHON_VERSION: "3.10"
   PYTHON_MODULE_FOLDER: python/
   COVERAGE_SVG_FOLDER: docs/assets/
   COVERAGE_SVG_FILE_NAME: coverage.svg
