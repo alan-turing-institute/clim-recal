@@ -6,7 +6,7 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   CONDA_ENV_NAME: clim-recal
   CONDA_ENV_PATH: environment.yml
-  MIN_PYTHON_VERSION: 3.9
+  MIN_PYTHON_VERSION: 3.10
   PYTHON_MODULE_FOLDER: python/
   COVERAGE_SVG_FOLDER: docs/assets/
   COVERAGE_SVG_FILE_NAME: coverage.svg
@@ -16,11 +16,11 @@ env:
 
 on:
   pull_request:
-    branches: ['main', 'r-docker-refactor']
+    branches: ['main', 'fix-quartodoc']
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['main', 'r-docker-refactor']
+    branches: ['main', 'fix-quartodoc']
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -79,16 +79,16 @@ jobs:
           path: ${{ env.COVERAGE_SVG_PATH }}
 
   docs:
-    # needs: [linter, pytest]
+    needs: [linter, pytest]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      # - name: Download coverage svg
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: coverage-badge
-      #     path: ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
+      - name: Download coverage svg
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-badge
+          path: ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
 
       - name: Build Conda Environment
         uses: conda-incubator/setup-miniconda@v3
