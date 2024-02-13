@@ -79,13 +79,26 @@ jobs:
           path: ${{ env.COVERAGE_SVG_PATH }}
 
   docs:
-    needs: [linter, pytest]
+    # needs: [linter, pytest]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download coverage svg
-        uses: actions/download-artifact@v3
+      # - name: Download coverage svg
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: coverage-badge
+      #     path: ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
+
+      - name: Build Conda Environment
+        uses: conda-incubator/setup-miniconda@v3
         with:
-          name: coverage-badge
-          path: ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
+          activate-environment: ${{ env.CONDA_ENV_NAME }}
+          environment-file: ${{ env.CONDA_ENV_PATH }}
+          auto-activate-base: false
+          miniforge-version: latest
+
+      - name: Run `quartodoc`
+        shell: bash -el {0}
+        run: |
+          mamba run -n ${{ env.CONDA_ENV_NAME }} quartodoc build
