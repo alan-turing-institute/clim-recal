@@ -63,8 +63,8 @@ website:
             contents:
               - href: "docs/reference/ceda_ftp_download.download_ftp.qmd"
                 text: "Download CEDA FTP"
-              - href: "docs/reference/utils.qmd"
-                text: "Utilities"
+              # - href: "docs/reference/utils.qmd"
+              #   text: "Utilities"
               # There are errors rendering the pages below
               # see: https://github.com/alan-turing-institute/clim-recal/issues/128
               # - href: "docs/reference/resampling.qmd"
@@ -94,7 +94,7 @@ quartodoc:
         # - load_data
         # - resampling
         # - debiasing
-    - title: Utilities
-      desc: Manage data and workshops
-      contents:
-        - utils
+    # - title: Utilities
+    #   desc: Manage data and workshops
+    #   contents:
+    #     - utils
