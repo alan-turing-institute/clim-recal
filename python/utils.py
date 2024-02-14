@@ -1,7 +1,7 @@
 """Utility functions."""
 import subprocess
 from csv import DictReader
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from os import PathLike
 from pathlib import Path
 from shutil import rmtree
@@ -9,6 +9,7 @@ from typing import Any, Callable, Final, Generator, Iterable, Optional, Union
 
 DateType = Union[date, str]
 DATE_FORMAT_STR: Final[str] = "%Y%m%d"
+ISO_DATE_FORMAT_STR: Final[str] = "%Y-%m-%d"
 DATE_FORMAT_SPLIT_STR: Final[str] = "-"
 RSTUDIO_DOCKER_USER_PATH: Path = Path("/home/rstudio")
 JUPYTER_DOCKER_USER_PATH: Path = Path("/home/jovyan")
@@ -35,6 +36,73 @@ DEBIAN_HOME_PATH: Path = Path("/home/")
 #     A `tuple` of matched `paths`.
 #
 #     """
+
+
+def date_range_generator(
+    start_date: DateType,
+    end_date: DateType,
+    inclusive: bool = False,
+    start_format_str: str = DATE_FORMAT_STR,
+    end_format_str: str = DATE_FORMAT_STR,
+    output_format_str: str = DATE_FORMAT_STR,
+    yield_type: type[date] | type[str] = date,
+) -> Generator[DateType, None, None]:
+    """Return a tuple of `DateType` objects.
+
+    Parameters
+    ----------
+    start_date
+        `DateType` at start of time series.
+    end_date
+        `DateType` at end of time series.
+    inclusive
+        Whether to include the `end_date` in the returned time series.
+    start_format_str
+        A `strftime` format to apply if `start_date` `type` is `str`.
+    end_format_str
+        A `strftime` format to apply if `end_date` `type` is `str`.
+    output_format_str
+        A `strftime` format to apply if `yield_type` is `str`.
+    yield_type
+        Whether which date type to return in `tuple` (`date` or `str`).
+
+    Returns
+    -------
+    A `tuple` of `date` or `str` objects (only one type throughout).
+
+    Examples
+    --------
+    >>> four_years: tuple[date] = tuple(date_range_generator('19801130', '19841130'))
+    >>> len(four_years)
+    1461
+    >>> four_years_inclusive: tuple[date] = tuple(
+    ...     date_range_generator('1980-11-30', '19841130',
+    ...                          inclusive=True,
+    ...                          start_format_str=ISO_DATE_FORMAT_STR))
+    >>> len(four_years_inclusive)
+    1462
+    """
+    start_date = (
+        start_date
+        if isinstance(start_date, date)
+        else datetime.strptime(start_date, start_format_str).date()
+    )
+    end_date = (
+        end_date
+        if isinstance(end_date, date)
+        else datetime.strptime(end_date, end_format_str).date()
+    )
+    if inclusive:
+        end_date += timedelta(days=1)
+    try:
+        assert start_date < end_date
+    except AssertionError:
+        raise ValueError(
+            f"start_date: {start_date} must be before end_date: {end_date}"
+        )
+    for day_number in range(int((end_date - start_date).days)):
+        date_obj: date = start_date + timedelta(day_number)
+        yield (date_obj if yield_type == date else date_obj.strftime(output_format_str))
 
 
 def date_to_str(

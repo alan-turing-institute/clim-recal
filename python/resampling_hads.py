@@ -37,6 +37,32 @@ def enforce_date_dropping(
     Returns
     -------
     The converted data with specific dates dropped.
+
+    Examples
+    --------
+    >>> test_4_days_xarray: xr.DataArray = getfixture(
+    ...     'xarray_spatial_4_days')
+    >>> enforce_date_dropping(test_4_days_xarray, test_4_days_xarray)['time'].coords
+    Coordinates:
+      * time     (time) object 1980-11-30 1980-12-02 1980-12-03 1980-12-04
+    >>> test_4_years_xarray: xr.DataArray = getfixture(
+    ...     'xarray_spatial_4_years')
+    >>> ts_4_years: xr.DataArray = enforce_date_dropping(
+    ...     test_4_years_xarray, test_4_years_xarray)
+    >>> ts_4_years
+    <xarray.DataArray (time: 1437, space: 3)>
+    array([[0.5488135 , 0.71518937, 0.60276338],
+           [0.43758721, 0.891773  , 0.96366276],
+           [0.38344152, 0.79172504, 0.52889492],
+           ...,
+           [0.0916689 , 0.62816966, 0.52649637],
+           [0.50034874, 0.93687921, 0.88042738],
+           [0.71393397, 0.57754071, 0.25236931]])
+    Coordinates:
+      * time     (time) object 1980-11-30 1980-12-02 ... 1984-11-28 1984-11-29
+      * space    (space) <U10 'Glasgow' 'Manchester' 'London'
+    >>> len(ts_4_years) == 360*4
+    False
     """
     month_day_drop = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
     time_values = pd.DatetimeIndex(raw_data.coords["time"].values)
