@@ -22,14 +22,14 @@ from debiasing.debias_wrapper import (
     RunOptions,
     VariableOptions,
 )
-from numpy import array, nan, random
+from numpy import array, random
 from utils import (
     ISO_DATE_FORMAT_STR,
     DateType,
     date_range_generator,
     iter_to_tuple_strs,
 )
-from xarray import DataArray, Dataset, merge
+from xarray import DataArray
 
 # Date Range covering leap year
 XARRAY_START_DATE_STR: Final[str] = "1980-11-30"
@@ -236,18 +236,6 @@ def xarray_spatial_4_years(
 ) -> DataArray:
     """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30."""
     return xarray_spatial_temporal(end_date_str=end_date_str)
-
-
-@pytest.fixture
-def xarray_spatial_2024_2025(
-    xarray_spatial_temporal: Callable,
-    start_date_str: str = "2024-03-01",
-    end_date_str: str = "2025-03-01",
-) -> DataArray:
-    """Generate a `xarray` spatial time series 2024-03-01 to 2025-03-01."""
-    return xarray_spatial_temporal(
-        start_date_str=start_date_str, end_date_str=end_date_str
-    )
 
 
 @pytest.fixture(autouse=True)
