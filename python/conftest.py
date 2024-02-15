@@ -286,8 +286,6 @@ def doctest_auto_fixtures(
     doctest_namespace["is_climate_data_mounted"] = is_climate_data_mounted
     doctest_namespace["pprint"] = pprint
     doctest_namespace["pytest"] = pytest
-    # Uncomment below to add fixture to generate with arbitrary temporal length
-    # doctest_namespace["xarray_spatial_temporal"] = xarray_spatial_temporal
     doctest_namespace["xarray_spatial_4_days"] = xarray_spatial_4_days
     doctest_namespace["xarray_spatial_4_years"] = xarray_spatial_4_years
 

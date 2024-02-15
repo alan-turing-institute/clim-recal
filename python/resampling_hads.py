@@ -8,15 +8,21 @@ import argparse
 import glob
 import multiprocessing
 import os
-from os import cpu_count
 
 import pandas as pd
 import xarray as xr  # requires rioxarray extension
 from tqdm import tqdm
 
+DropDayType = set[tuple[int, int]]
+
+MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
+"""A `set` of tuples of month and day numbers for `enforce_date_dropping`."""
+
 
 def enforce_date_dropping(
-    raw_data: xr.Dataset, converted_data: xr.Dataset
+    raw_data: xr.Dataset,
+    converted_data: xr.Dataset,
+    month_day_drop: DropDayType = MONTH_DAY_DROP,
 ) -> xr.Dataset:
     """Workaround convert_calendar misbehavior with monthly data files.
 
@@ -33,6 +39,8 @@ def enforce_date_dropping(
         The original data.
     converted_data
         The data after conversion.
+    month_day_drop
+        Set of `tuples` of numbers: month number and day number.
 
     Returns
     -------
@@ -42,7 +50,9 @@ def enforce_date_dropping(
     --------
     >>> test_4_days_xarray: xr.DataArray = getfixture(
     ...     'xarray_spatial_4_days')
-    >>> enforce_date_dropping(test_4_days_xarray, test_4_days_xarray)['time'].coords
+    >>> enforce_date_dropping(
+    ...     test_4_days_xarray,
+    ...     test_4_days_xarray)['time'].coords
     Coordinates:
       * time     (time) object 1980-11-30 1980-12-02 1980-12-03 1980-12-04
     >>> test_4_years_xarray: xr.DataArray = getfixture(
@@ -62,12 +72,12 @@ def enforce_date_dropping(
       * time     (time) object 1980-11-30 1980-12-02 ... 1984-11-28 1984-11-29
       * space    (space) <U10 'Glasgow' 'Manchester' 'London'
     >>> len(ts_4_years) == 365*4 + 1  # Would keep all days
+    False
     >>> len(ts_4_years) == 360*4      # Would enforce all years at 360 days
     False
     >>> len(ts_4_years)               # 3 days fewer than 360 per year
     1437
     """
-    month_day_drop = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
     time_values = pd.DatetimeIndex(raw_data.coords["time"].values)
 
     # Get the indices of the dates to be dropped
@@ -209,5 +219,5 @@ if __name__ == "__main__":
 
     args = [[f, x, y, parser_args.output] for f in files]
 
-    with multiprocessing.Pool(processes=cpu_count() - 1) as pool:
+    with multiprocessing.Pool(processes=os.cpu_count() - 1) as pool:
         res = list(tqdm(pool.imap_unordered(resample_hadukgrid, args), total=N))
