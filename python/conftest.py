@@ -53,7 +53,6 @@ TEST_PATH = Path().absolute()
 PYTHON_DIR_NAME: Final[Path] = Path("python")
 MODULE_NAMES: Final[tuple[PathLike, ...]] = (
     "debiasing",
-    "resampling",
     "data_download",
     "load_data",
 )
