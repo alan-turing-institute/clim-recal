@@ -2,7 +2,7 @@ import pprint
 import sys
 from os import PathLike
 from pathlib import Path
-from typing import Final
+from typing import Callable, Final
 
 import pytest
 from coverage_badge.__main__ import main as gen_cov_badge
@@ -45,35 +45,6 @@ CITY_COORDS: Final[dict[str, tuple[float, float]]] = {
     "London": LONDON_COORDS,
 }
 
-
-# Example 4x4 array states to generate time series following
-# https://xarray-spatial.org/user_guide/local.html?highlight=time
-# XARRAY_MOD_0 = array(
-#     [[2, 2, 2, 2], [2, 2, 2, 2], [2, 2, 2, 2], [2, 2, 2, 2]],
-#     # name="mod-0"
-#     # coords={"space": "Glasgow"}
-# )
-# XARRAY_MOD_1 = array(
-#     [[nan, 4, 2, 0], [2, 3, nan, 1], [5, 1, 2, 0], [1, 3, 2, nan]],
-#     # coords={"space": "Glasgow"}
-#     # name="mod-1"
-# )
-# XARRAY_MOD_2 = array(
-#     [[3, 1, 1, 2], [4, 1, 2, 5], [0, 0, 0, 0], [nan, 1, 1, 1]],
-#     # coords={"space": "Glasgow"}
-#     # name="mod-2"
-# )
-# XARRAY_MOD_3 = array(
-#     [[3, 3, 2, 0], [4, 1, 3, 1], [6, 1, 2, 2], [0, 0, 1, 1]],
-#     # coords={"space": "Glasgow"}
-#     # name="mod-3"
-# )
-# XARRAY_MOD_INDEX_TUPLE: tuple[array, ...] = (
-#     XARRAY_MOD_0,
-#     XARRAY_MOD_1,
-#     XARRAY_MOD_2,
-#     XARRAY_MOD_3
-# )
 
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
 CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData")
@@ -203,52 +174,80 @@ def preprocess_out_folder_files_count_correct() -> int:
 
 
 @pytest.fixture
-def xarray_spatial_4_days(
-    start_date_str: str = XARRAY_START_DATE_STR,
-    end_date_str: str = XARRAY_END_DATE_4_DAYS,
-    coordinates: dict[str, tuple[float, float]] = CITY_COORDS,
-) -> DataArray:
-    """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-05.
-
-    See https://xarray-spatial.org/user_guide/local.html?highlight=time
-    """
-    dates: list[str] = list(
-        date_range_generator(
-            start_date=start_date_str,
-            end_date=end_date_str,
-            start_format_str=ISO_DATE_FORMAT_STR,
-            end_format_str=ISO_DATE_FORMAT_STR,
-        )
-    )
-    random.seed(0)  # ensure results are predictable
-    data: array = random.rand(len(dates), len(coordinates))
-    return DataArray(
-        data, coords=[dates, list(coordinates.keys())], dims=["time", "space"]
-    )
-
-
-@pytest.fixture
-def xarray_spatial_4_years(
-    start_date_str: str = XARRAY_START_DATE_STR,
-    end_date_str: str = XARRAY_END_DATE_4_YEARS,
-    coordinates: dict[str, tuple[float, float]] = CITY_COORDS,
-) -> DataArray:
+def xarray_spatial_temporal() -> (
+    Callable[[str, str, dict[str, tuple[float, float]]], DataArray]
+):
     """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30.
 
     See https://xarray-spatial.org/user_guide/local.html?highlight=time
     """
-    dates: list[str] = list(
-        date_range_generator(
-            start_date=start_date_str,
-            end_date=end_date_str,
-            start_format_str=ISO_DATE_FORMAT_STR,
-            end_format_str=ISO_DATE_FORMAT_STR,
+
+    def _xarray_spatial_temporal(
+        start_date_str: str = XARRAY_START_DATE_STR,
+        end_date_str: str = XARRAY_END_DATE_4_YEARS,
+        coordinates: dict[str, tuple[float, float]] = CITY_COORDS,
+        **kwargs,
+    ) -> DataArray:
+        dates: list[DateType] = list(
+            date_range_generator(
+                start_date=start_date_str,
+                end_date=end_date_str,
+                start_format_str=ISO_DATE_FORMAT_STR,
+                end_format_str=ISO_DATE_FORMAT_STR,
+                **kwargs,
+            )
         )
-    )
-    random.seed(0)  # ensure results are predictable
-    data: array = random.rand(len(dates), len(coordinates))
-    return DataArray(
-        data, coords=[dates, list(coordinates.keys())], dims=["time", "space"]
+        random.seed(0)  # ensure results are predictable
+        data: array = random.rand(len(dates), len(coordinates))
+        spaces: list[str] = list(coordinates.keys())
+        # If useful, add lat/lon (currently not working)
+        # lat: list[float] = [coord[0] for coord in coordinates.values()]
+        # lon: list[float] = [coord[1] for coord in coordinates.values()]
+        return DataArray(
+            data,
+            coords=[
+                dates,
+                spaces,
+            ],
+            dims=[
+                "time",
+                "space",
+            ],
+            # If useful, add lat/lon (currently not working)
+            # coords=[dates, spaces, lon, lat],
+            # dims=["time", "space", "lon", "lat"]
+        )
+
+    return _xarray_spatial_temporal
+
+
+@pytest.fixture
+def xarray_spatial_4_days(
+    xarray_spatial_temporal: Callable,
+    end_date_str: str = XARRAY_END_DATE_4_DAYS,
+) -> DataArray:
+    """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-05."""
+    return xarray_spatial_temporal(end_date_str=end_date_str)
+
+
+@pytest.fixture
+def xarray_spatial_4_years(
+    xarray_spatial_temporal: Callable,
+    end_date_str: str = XARRAY_END_DATE_4_YEARS,
+) -> DataArray:
+    """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30."""
+    return xarray_spatial_temporal(end_date_str=end_date_str)
+
+
+@pytest.fixture
+def xarray_spatial_2024_2025(
+    xarray_spatial_temporal: Callable,
+    start_date_str: str = "2024-03-01",
+    end_date_str: str = "2025-03-01",
+) -> DataArray:
+    """Generate a `xarray` spatial time series 2024-03-01 to 2025-03-01."""
+    return xarray_spatial_temporal(
+        start_date_str=start_date_str, end_date_str=end_date_str
     )
 
 
@@ -287,6 +286,8 @@ def doctest_auto_fixtures(
     doctest_namespace["is_climate_data_mounted"] = is_climate_data_mounted
     doctest_namespace["pprint"] = pprint
     doctest_namespace["pytest"] = pytest
+    # Uncomment below to add fixture to generate with arbitrary temporal length
+    # doctest_namespace["xarray_spatial_temporal"] = xarray_spatial_temporal
     doctest_namespace["xarray_spatial_4_days"] = xarray_spatial_4_days
     doctest_namespace["xarray_spatial_4_years"] = xarray_spatial_4_years
 

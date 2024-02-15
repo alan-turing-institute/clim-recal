@@ -61,8 +61,11 @@ def enforce_date_dropping(
     Coordinates:
       * time     (time) object 1980-11-30 1980-12-02 ... 1984-11-28 1984-11-29
       * space    (space) <U10 'Glasgow' 'Manchester' 'London'
-    >>> len(ts_4_years) == 360*4
+    >>> len(ts_4_years) == 365*4 + 1  # Would keep all days
+    >>> len(ts_4_years) == 360*4      # Would enforce all years at 360 days
     False
+    >>> len(ts_4_years)               # 3 days fewer than 360 per year
+    1437
     """
     month_day_drop = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
     time_values = pd.DatetimeIndex(raw_data.coords["time"].values)
