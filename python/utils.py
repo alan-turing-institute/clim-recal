@@ -328,8 +328,7 @@ def run_conda_lock(
     >>> run_conda_lock()
     'conda-lock --lockfile conda-lock.yml -f ../environment.yml -f pyproject.toml'
     >>> run_conda_lock(default_kwargs=True)
-    'conda-lock --lockfile conda-lock.yml -f ../environment.yml '
-    '-f pyproject.toml --check-input-hash --update'
+    'conda-lock --lockfile conda-lock.yml -f ../environment.yml -f pyproject.toml --check-input-hash --update'
     """
     if default_kwargs:
         kwargs.update(DEFAULT_CONDA_LOCK_KWARGS)
