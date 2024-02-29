@@ -51,11 +51,7 @@ CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData"
 CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateData")
 TEST_PATH = Path().absolute()
 PYTHON_DIR_NAME: Final[Path] = Path("python")
-MODULE_NAMES: Final[tuple[PathLike, ...]] = (
-    "debiasing",
-    "data_download",
-    "load_data",
-)
+MODULE_NAMES: Final[tuple[PathLike, ...]] = ("debiasing",)
 
 CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str, ...]] = (
     "python",

@@ -1,8 +1,7 @@
 """Wrapper for running `preprocess_data.py` and `run_cmethods.py`"""
-import sys
 from dataclasses import dataclass
 from datetime import date
-from enum import auto
+from enum import StrEnum, auto
 from os import PathLike
 from pathlib import Path
 from typing import Final, Generator, Optional, Union
@@ -15,11 +14,6 @@ from utils import (
     iter_to_tuple_strs,
     path_iterdir,
 )
-
-if sys.version_info >= (3, 11):
-    from enum import StrEnum
-else:
-    from backports.strenum import StrEnum
 
 DATA_PATH_DEFAULT: Final[Path] = Path(
     "/mnt/vmfileshare/ClimateData/Cropped/three.cities/"
@@ -46,10 +40,21 @@ class VariableOptions(StrEnum):
 class RunOptions(StrEnum):
     """Supported options for variables"""
 
+    ONE = "01"
+    TWO = "02"
+    THREE = "03"
+    FOUR = "04"
     FIVE = "05"
+    SIX = "06"
     SEVEN = "07"
     EIGHT = "08"
-    SIX = "06"
+    NINE = "09"
+    TEN = "10"
+    ELEVEN = "11"
+    TWELVE = "12"
+    THIRTEEN = "13"
+    FOURTEEN = "14"
+    FIFTEEN = "15"
 
     @classmethod
     def default(cls) -> str:
@@ -147,8 +152,8 @@ class RunConfig:
     ) -> str:
         """Return date range as `str` from `calib_date_start` to `calib_date_end`.
 
-        Example
-        -------
+        Examples
+        --------
         >>> config: RunConfig = RunConfig()
         >>> config.calib_dates_to_str('20100101', '20100330')
         '20100101-20100330'
@@ -173,8 +178,8 @@ class RunConfig:
     ) -> str:
         """Return date range as `str` from `valid_date_start` to `valid_date_end`.
 
-        Example
-        -------
+        Examples
+        --------
         >>> config: RunConfig = RunConfig()
         >>> config.valid_dates_to_str('20100101', '20100330')
         '20100101-20100330'
@@ -199,8 +204,8 @@ class RunConfig:
     ) -> str:
         """Return date range as `str` from `calib_date_start` to `calib_date_end`.
 
-        Example
-        -------
+        Examples
+        --------
         >>> config: RunConfig = RunConfig()
         >>> config._date_range_to_str('20100101', '20100330')
         '20100101-20100330'
@@ -223,8 +228,8 @@ class RunConfig:
     def mod_path(self, city: Optional[str] = None) -> Path:
         """Return city estimates path.
 
-        Example
-        -------
+        Examples
+        --------
         >>> if not is_climate_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
@@ -239,8 +244,8 @@ class RunConfig:
     def obs_path(self, city: Optional[str] = None) -> Path:
         """Return city observations path.
 
-        Example
-        -------
+        Examples
+        --------
         >>> if not is_climate_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
@@ -260,8 +265,8 @@ class RunConfig:
     ) -> Path:
         """Return path to save results.
 
-        Example
-        -------
+        Examples
+        --------
         >>> if not is_climate_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
@@ -284,8 +289,8 @@ class RunConfig:
     ) -> Path:
         """Return path to save cmethods results.
 
-        Example
-        -------
+        Examples
+        --------
         >>> config: RunConfig = RunConfig()
         >>> config.cmethods_out_path()
         PosixPath('/mnt/vmfileshare/ClimateData/Debiased/three.cities.cropped/Manchester/05')
@@ -300,8 +305,8 @@ class RunConfig:
     def run_prefix_tuple(self) -> tuple[str, ...]:
         """Split `self.run_prefix` by ' ' to a `tuple`.
 
-        Example
-        -------
+        Examples
+        --------
         >>> config: RunConfig = RunConfig(run_prefix='python -m')
         >>> config.run_prefix_tuple
         ('python', '-m')
@@ -323,8 +328,8 @@ class RunConfig:
         This will leave `Path` objects uncoverted. See
         `self.to_cli_preprocess_tuple_strs` for passing to a terminal.
 
-        Example
-        -------
+        Examples
+        --------
         >>> config: RunConfig = RunConfig()
         >>> command_str_tuple: tuple[str, ...] = config.to_cli_preprocess_tuple()
         >>> assert command_str_tuple == CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT
@@ -376,8 +381,8 @@ class RunConfig:
     ) -> tuple[str, ...]:
         """Generate a command line interface `str` `tuple` a test example.
 
-        Example
-        -------
+        Examples
+        --------
         >>> config: RunConfig = RunConfig()
         >>> command_str_tuple: tuple[str, ...] = config.to_cli_preprocess_tuple_strs()
         >>> assert command_str_tuple == CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
@@ -406,8 +411,8 @@ class RunConfig:
     ) -> str:
         """Generate a command line interface str as a test example.
 
-        Example
-        -------
+        Examples
+        --------
         >>> config: RunConfig = RunConfig()
         >>> config.to_cli_preprocess_str() == CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
         True
@@ -431,8 +436,8 @@ class RunConfig:
     ) -> Generator[Path, None, None]:
         """`Iterable` of all `Path`s in `self.mod_folder`.
 
-        Example
-        -------
+        Examples
+        --------
         >>> if not is_climate_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
@@ -447,8 +452,8 @@ class RunConfig:
     ) -> Generator[Path, None, None]:
         """`Iterable` of all `Path`s in `self.obs_folder`.
 
-        Example
-        -------
+        Examples
+        --------
         >>> if not is_climate_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
@@ -466,8 +471,8 @@ class RunConfig:
     ) -> Generator[Path, None, None]:
         """`Iterable` of all `Path`s in `self.preprocess_out_folder`.
 
-        Example
-        -------
+        Examples
+        --------
         >>> if not is_climate_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
@@ -502,8 +507,8 @@ class RunConfig:
         This will leave `Path` objects uncoverted. See
         `self.to_cli_run_cmethods_tuple_strs` for passing to a terminal.
 
-        Example
-        -------
+        Examples
+        --------
         >>> config: RunConfig = RunConfig()
         >>> command_str_tuple: tuple[str, ...] = config.to_cli_run_cmethods_tuple()
         >>> assert command_str_tuple == CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT
@@ -553,8 +558,8 @@ class RunConfig:
     ) -> tuple[str, ...]:
         """Generate a command line interface `str` `tuple` a test example.
 
-        Example
-        -------
+        Examples
+        --------
         >>> config: RunConfig = RunConfig()
         >>> command_str_tuple: tuple[str, ...] = config.to_cli_run_cmethods_tuple_strs()
         >>> assert command_str_tuple == CLI_CMEHTODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
@@ -583,8 +588,8 @@ class RunConfig:
     ) -> str:
         """Generate a command line interface str as a test example.
 
-        Example
-        -------
+        Examples
+        --------
         >>> config: RunConfig = RunConfig()
         >>> config.to_cli_run_cmethods_str() == CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
         True

@@ -43,8 +43,6 @@ website:
             href: "docs/pipeline_guidance.qmd"
           - text: "Diagram"
             href: "docs/pipeline.qmd"
-      - text: "Contributing"
-        href: "docs/contributing.md"
       - section: "R"
         contents:
           - href: "R/README.md"
@@ -61,38 +59,44 @@ website:
           - "python/README.md"
           - section: "Reference"
             contents:
-              - href: "docs/reference/data_download.ceda_ftp_download.download_ftp.qmd"
-                text: "Download CEDA FTP"
-              # There are errors rendering the pages below
-              # see: https://github.com/alan-turing-institute/clim-recal/issues/128
-              # - href: "docs/reference/resampling.qmd"
-              #   text: "HADs Resampling"
-              # - href: "docs/reference/debiasing.qmd"
-              #   text: "Debiasing"
+              - href: "docs/reference/ceda_ftp_download.qmd"
+                text: "CEDA Data Access"
+              - href: "docs/reference/data_loader.qmd"
+                text: "Data Loading"
+              - section: "Debiasing"
+                contents:
+                  - href: "docs/reference/debiasing.debias_wrapper.qmd"
+                    text: "Wrapper"
               - href: "docs/reference/utils.qmd"
-                text: "Utilities"
+                text: "Utils"
       - text: "Docker"
         href: "docs/docker-configurations.qmd"
+      - text: "Contributing"
+        href: "docs/contributing.md"
 
 
 quartodoc:
   # the name used to import the package you want to create reference docs for
-  package: null
+  package: python
   dir: docs/reference
+  # The below probably requires a non `python` package name
+  # dynamic: true
+  # render_interlinks: true
 
   # write sidebar data to this file
   sidebar: _sidebar.yml
   source_dir: ./python/
   #
   # see: https://github.com/alan-turing-institute/clim-recal/issues/128
-  # sections:
-  #   - title: Data Source Management
-  #     desc: How data is downloaded for use
-  #     contents:
-  #       # the functions being documented in the package.
-  #       # you can refer to anything: class methods, modules, etc..
-  #       - data_download
-  #       # - load_data
-  #       # - resampling
-  #       # - debiasing
-  #       - utils
+  sections:
+    - title: Data Source Management
+      desc: How data is downloaded for use
+      contents:
+        # the functions being documented in the package.
+        # you can refer to anything: class methods, modules, etc..
+        - ceda_ftp_download
+        # - load_data
+        # - resampling
+        - debiasing.debias_wrapper
+        - data_loader
+        - utils

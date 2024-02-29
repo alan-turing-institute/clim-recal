@@ -14,9 +14,13 @@ import xarray as xr  # requires rioxarray extension
 from tqdm import tqdm
 
 DropDayType = set[tuple[int, int]]
+ChangeDayType = set[tuple[int, int]]
 
 MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
 """A `set` of tuples of month and day numbers for `enforce_date_dropping`."""
+
+MONTH_DAY_ADD: ChangeDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1)}
+"""CONSIDER ADDING DAYS to 360."""
 
 
 def enforce_date_dropping(

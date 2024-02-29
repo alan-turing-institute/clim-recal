@@ -5,7 +5,7 @@ from datetime import date, datetime, timedelta
 from os import PathLike
 from pathlib import Path
 from shutil import rmtree
-from typing import Any, Callable, Final, Generator, Iterable, Optional, Union
+from typing import Any, Callable, Final, Generator, Iterable, Iterator, Optional, Union
 
 DateType = Union[date, str]
 DATE_FORMAT_STR: Final[str] = "%Y%m%d"
@@ -14,6 +14,18 @@ DATE_FORMAT_SPLIT_STR: Final[str] = "-"
 RSTUDIO_DOCKER_USER_PATH: Path = Path("/home/rstudio")
 JUPYTER_DOCKER_USER_PATH: Path = Path("/home/jovyan")
 DEBIAN_HOME_PATH: Path = Path("/home/")
+
+DEFAULT_CONDA_LOCK_PATH: Final[PathLike] = Path("conda-lock.yml")
+DEFAULT_ENV_PATHS: Final[tuple[PathLike, ...]] = (
+    Path("../environment.yml"),
+    Path("pyproject.toml"),
+)
+DEFAULT_CONDA_LOCK_KWARGS: Final[dict[str, str | float | bool]] = {
+    "--check-input-hash": True,
+    "--update": True,
+}
+
+GITHUB_ACTIONS_ARCHITECTURE: Final[str] = "linux-64"
 # NC_GLOB_STR: Final[str] = "**/*.nc"
 
 
@@ -46,7 +58,7 @@ def date_range_generator(
     end_format_str: str = DATE_FORMAT_STR,
     output_format_str: str = DATE_FORMAT_STR,
     yield_type: type[date] | type[str] = date,
-) -> Generator[DateType, None, None]:
+) -> Iterator[DateType]:
     """Return a tuple of `DateType` objects.
 
     Parameters
@@ -68,7 +80,8 @@ def date_range_generator(
 
     Returns
     -------
-    A `tuple` of `date` or `str` objects (only one type throughout).
+    :
+        A `tuple` of `date` or `str` objects (only one type throughout).
 
     Examples
     --------
@@ -121,9 +134,10 @@ def date_to_str(
     out_format_str
         A `strftime` format `str` to convert `date_obj` to.
 
-    Return
-    ------
-    A `str` version of `date_obj` in `out_format_str` format.
+    Returns
+    -------
+    :
+        A `str` version of `date_obj` in `out_format_str` format.
 
     Examples
     --------
@@ -160,9 +174,10 @@ def date_range_to_str(
     out_format_str
         A `strftime` format `str` to convert `end_date` from.
 
-    Return
-    ------
-    A `str` of date range from `start_date` to `end_date` in the
+    Returns
+    -------
+    :
+        A `str` of date range from `start_date` to `end_date` in the
         `out_format_str` format.
 
     Examples
@@ -182,25 +197,34 @@ def date_range_to_str(
     return f"{start_date}{split_str}{end_date}"
 
 
-def iter_to_tuple_strs(iter_var: Iterable[Any]) -> tuple[str, ...]:
+def iter_to_tuple_strs(
+    iter_var: Iterable[Any], func: Callable[[Any], str] = str
+) -> tuple[str, ...]:
     """Return a `tuple` with all components converted to `strs`.
 
     Parameters
     ----------
     iter_var
         Iterable of objects that can be converted into `strs`.
+    func
+        Callable to convert each `obj` in `iter_val` to a `str`.
 
-    Return
-    ------
-    A `tuple` of all `iter_var` elements in `str` format.
+    Returns
+    -------
+    :
+        A `tuple` of all `iter_var` elements in `str` format.
 
     Examples
     --------
     >>> iter_to_tuple_strs(['cat', 1, Path('a/path')])
     ('cat', '1', 'a/path')
+    >>> iter_to_tuple_strs(
+    ...     ['cat', 1, Path('a/path')],
+    ...     lambda x: f'{x:02}' if type(x) == int else str(x))
+    ('cat', '01', 'a/path')
 
     """
-    return tuple(str(obj) for obj in iter_var)
+    return tuple(func(obj) for obj in iter_var)
 
 
 def path_iterdir(
@@ -215,19 +239,19 @@ def path_iterdir(
     strict
         Whether to raise `FileNotFoundError` if `path` not found.
 
-    Yield
-    -----
-    A `Path` for each folder  in `path`.
+    #Yields
+    #------
+    #A `Path` for each folder  in `path`.
 
     Raises
     ------
     FileNotFoundError
         Raised if `strict = True` and `path` does not exist.
 
-    Return
-    ------
-    `None` if `FileNotFoundError` error and `strict` is `False`.
-
+    Returns
+    -------
+    :
+        `None` if `FileNotFoundError` error and `strict` is `False`.
 
     Examples
     --------
@@ -260,6 +284,83 @@ def path_iterdir(
             return
 
 
+def run_conda_lock(
+    file_path: PathLike = DEFAULT_CONDA_LOCK_PATH,
+    env_paths: Iterable[PathLike] = DEFAULT_ENV_PATHS,
+    run: bool = False,
+    replace_file_path: bool = False,
+    legacy_explicit: str | None = GITHUB_ACTIONS_ARCHITECTURE,
+    legacy_explicit_file_prefix: str = ".",
+    default_kwargs: bool = False,
+    **kwargs: dict[str, str | float | bool],
+) -> str:
+    """Run `conda_lock` `install` to generate `conda` `yml`.
+
+    Parameters
+    ----------
+    file_path
+        Path to write `conda-lock` file to.
+    env_paths
+        `Iterable` of paths of configs to combine. See
+        [docs](https://conda.github.io/conda-lock/) for supported formats.
+    run
+        Whether to execute the command as a `subprocess`.
+    replace_file_path
+        Whether to replace `file_path` if it already exists.
+    default_kwargs
+        Whether to use `DEFAULT_CONDA_LOCK_KWARGS`.
+
+    Returns
+    -------
+    :
+        Generated command `str`.
+
+    Notes
+    -----
+    This is derived from automating, with the `-p osx-64` etc. components now
+    specified in `pyproject.toml` and `environment.yml`, the following command:
+    ```bash
+    conda-lock -f environment.yml -f python/pyproject.toml -p osx-64 -p linux-64 -p linux-aarch64
+    ```
+
+    Examples
+    --------
+    >>> run_conda_lock()
+    'conda-lock --lockfile conda-lock.yml -f ../environment.yml -f pyproject.toml'
+    >>> run_conda_lock(default_kwargs=True)
+    'conda-lock --lockfile conda-lock.yml -f ../environment.yml '
+    '-f pyproject.toml --check-input-hash --update'
+    """
+    if default_kwargs:
+        kwargs.update(DEFAULT_CONDA_LOCK_KWARGS)
+    command_str: str = f"conda-lock --lockfile {file_path} "
+    command_str += " ".join(f"-f {name}" for name in env_paths)
+    if kwargs:
+        command_str += " " + " ".join(
+            f"{key} {val}" if type(val) != bool else f"{key}"
+            for key, val in kwargs.items()
+        )
+    if run:
+        if Path(file_path).exists():
+            print(f"{file_path} exists.")
+            if not replace_file_path:
+                print(f"Set 'replace_file_path' to True to overwrite.")
+                return command_str
+            else:
+                print(f"Replacing... ('replace_file_path' set to True).")
+        subprocess.run(command_str)
+        if legacy_explicit:
+            subprocess.run(
+                f"conda-lock render --kind explict " f"--platform {legacy_explicit}"
+            )
+            subprocess.run(
+                f"mv conda-{legacy_explicit}.lock "
+                f"{legacy_explicit_file_prefix}conda-{legacy_explicit}.lock"
+            )
+
+    return command_str
+
+
 def make_user(
     user: str,
     password: str,
@@ -279,9 +380,10 @@ def make_user(
     user_home_path
         Path that `user` folder will be in, often `Path('/home')` in `linux`.
 
-    Return
-    ------
-    Full path to generated `user` home folder.
+    Returns
+    -------
+    :
+        Full path to generated `user` home folder.
 
     Examples
     --------
@@ -317,9 +419,10 @@ def rm_user(user: str, user_home_path: PathLike = DEBIAN_HOME_PATH) -> str:
     user_home_path
         Parent path of `user` folder name.
 
-    Return
-    ------
-    `user` name of account and home folder deleted.
+    Returns
+    -------
+    :
+        `user` name of account and home folder deleted.
 
     Examples
     --------
@@ -338,7 +441,7 @@ def rm_user(user: str, user_home_path: PathLike = DEBIAN_HOME_PATH) -> str:
     return user
 
 
-def csv_reader(path: PathLike, **kwargs) -> Generator[dict[str, str], None, None]:
+def csv_reader(path: PathLike, **kwargs) -> Iterator[dict[str, str]]:
     """Yield a `dict` per row from a `CSV` file at `path`.
 
     Parameters
@@ -348,9 +451,9 @@ def csv_reader(path: PathLike, **kwargs) -> Generator[dict[str, str], None, None
     **kwargs
         Additional parameters for `csv.DictReader`.
 
-    Yield
-    -----
-    A `dict` per row from `CSV` file at `path`.
+    #Yields
+    #------
+    #A `dict` per row from `CSV` file at `path`.
 
     Examples
     --------
@@ -382,7 +485,7 @@ def make_users(
     password_col: str,
     file_reader: Callable,
     **kwargs,
-) -> Generator[Path, None, None]:
+) -> Iterator[Path]:
     """Load a file of usernames and passwords and pass each line to `make_user`.
 
     Parameters
@@ -398,9 +501,10 @@ def make_users(
     **kwargs
         Additional parameters for to pass to `file_reader` function.
 
-    Yield
-    -----
-    The home `Path` for each generated user.
+    #Yields
+    #------
+    #:
+    #    The home `Path` for each generated user.
 
     Examples
     --------

@@ -39,6 +39,28 @@ repos:
         name: isort (python)
         args: ["--profile", "black"]
 
+  - repo: https://github.com/pdm-project/pdm
+    rev: 2.12.4 # a PDM release exposing the hook
+    hooks:
+      - id: pdm-lock-check
+
+  - repo: local
+    hooks:
+      - id: sync-conda-lock
+        name: sync-conda-lock
+        language: system
+        types: [python]
+        pass_filenames: false
+        entry: >
+          cd python &&
+          python3 -c
+            "import utils;
+             utils.run_conda_lock(
+              replace_file_path=True,
+              default_kwargs=True,
+            )"
+
+
   # Currently fails to build.
   # See: https://github.com/lorenzwalthert/precommit/issues/476
   # - repo: https://github.com/lorenzwalthert/precommit
