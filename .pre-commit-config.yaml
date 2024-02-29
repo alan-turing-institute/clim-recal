@@ -52,13 +52,13 @@ repos:
         types: [python]
         pass_filenames: false
         entry: >
-          cd python &&
-          python3 -c
+          bash -c 'cd python &&
+          python -c
             "import utils;
              utils.run_conda_lock(
               replace_file_path=True,
               default_kwargs=True,
-            )"
+            )"'
 
 
   # Currently fails to build.
