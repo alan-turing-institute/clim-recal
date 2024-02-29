@@ -63,6 +63,8 @@ website:
                 text: "CEDA Data Access"
               - href: "docs/reference/data_loader.qmd"
                 text: "Data Loading"
+              - href: "docs/reference/resampling.qmd"
+                text: "Data Resampling"
               - section: "Debiasing"
                 contents:
                   - href: "docs/reference/debiasing.debias_wrapper.qmd"
@@ -95,7 +97,8 @@ quartodoc:
         # you can refer to anything: class methods, modules, etc..
         - ceda_ftp_download
         # - load_data
-        # - resampling
-        - debiasing.debias_wrapper
+        - resampling
         - data_loader
+        - debiasing.debias_wrapper
+        # - pipeline
         - utils
