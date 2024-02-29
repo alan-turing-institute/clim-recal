@@ -53,8 +53,8 @@ repos:
         pass_filenames: false
         entry: >
           bash -c 'cd python &&
-          python -c
-            "import utils;
+          python -c "
+            import utils;
              utils.run_conda_lock(
               replace_file_path=True,
               default_kwargs=True,
