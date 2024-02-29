@@ -22,6 +22,7 @@ on:
 
   push:
     branches: ['main', 'day-sampling', 'conda-pdm-refactor' ]
+    paths-ignore: ['docs/**']
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -65,7 +66,6 @@ jobs:
           auto-update-conda: false
           activate-environment: ${{ env.CONDA_ENV_NAME }}
           environment-file: ${{ env.CONDA_ENV_PATH }}
-          # auto-activate-base: false
           miniforge-version: latest
           use-mamba: true
 
@@ -94,3 +94,16 @@ jobs:
         with:
           name: coverage-badge
           path: ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
+
+      - name: Build Conda Environment
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: ${{ env.CONDA_ENV_NAME }}
+          environment-file: ${{ env.CONDA_ENV_PATH }}
+          auto-activate-base: false
+          miniforge-version: latest
+
+      - name: Run `quartodoc`
+        shell: bash -el {0}
+        run: |
+          mamba run -n ${{ env.CONDA_ENV_NAME }} quartodoc build
