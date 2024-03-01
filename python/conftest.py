@@ -1,8 +1,9 @@
 import pprint
 import sys
+from datetime import date
 from os import PathLike
 from pathlib import Path
-from typing import Callable, Final
+from typing import Callable, Final, Iterable
 
 import pytest
 from coverage_badge.__main__ import main as gen_cov_badge
@@ -34,6 +35,11 @@ from xarray import DataArray
 # Date Range covering leap year
 XARRAY_START_DATE_STR: Final[str] = "1980-11-30"
 XARRAY_END_DATE_4_DAYS: Final[str] = "1980-12-5"
+XARRAY_END_DATE_8_DAYS: Final[str] = "1980-12-10"
+XARRAY_SKIP_2_FROM_8_DAYS: Final[tuple[str, str]] = (
+    "1980-12-7",
+    "1980-12-8",
+)
 XARRAY_END_DATE_4_YEARS: Final[str] = "1984-11-30"
 
 GLASGOW_COORDS: Final[tuple[float, float]] = (55.86279, -4.25424)
@@ -181,6 +187,7 @@ def xarray_spatial_temporal() -> (
         start_date_str: str = XARRAY_START_DATE_STR,
         end_date_str: str = XARRAY_END_DATE_4_YEARS,
         coordinates: dict[str, tuple[float, float]] = CITY_COORDS,
+        skip_dates: Iterable[date] | None = None,
         **kwargs,
     ) -> DataArray:
         dates: list[DateType] = list(
@@ -189,6 +196,7 @@ def xarray_spatial_temporal() -> (
                 end_date=end_date_str,
                 start_format_str=ISO_DATE_FORMAT_STR,
                 end_format_str=ISO_DATE_FORMAT_STR,
+                skip_dates=skip_dates,
                 **kwargs,
             )
         )
@@ -223,6 +231,25 @@ def xarray_spatial_4_days(
 ) -> DataArray:
     """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-05."""
     return xarray_spatial_temporal(end_date_str=end_date_str)
+
+
+@pytest.fixture
+def xarray_spatial_8_days(
+    xarray_spatial_temporal: Callable,
+    end_date_str: str = XARRAY_END_DATE_8_DAYS,
+) -> DataArray:
+    """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-10."""
+    return xarray_spatial_temporal(end_date_str=end_date_str)
+
+
+@pytest.fixture
+def xarray_spatial_6_days_2_skipped(
+    xarray_spatial_temporal: Callable,
+    end_date_str: str = XARRAY_END_DATE_8_DAYS,
+    skip_dates: tuple[str] = XARRAY_SKIP_2_FROM_8_DAYS,
+) -> DataArray:
+    """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-05."""
+    return xarray_spatial_temporal(end_date_str=end_date_str, skip_dates=skip_dates)
 
 
 @pytest.fixture
@@ -270,6 +297,7 @@ def doctest_auto_fixtures(
     doctest_namespace["pprint"] = pprint
     doctest_namespace["pytest"] = pytest
     doctest_namespace["xarray_spatial_4_days"] = xarray_spatial_4_days
+    doctest_namespace["xarray_spatial_8_days_skip_2"] = xarray_spatial_4_years
     doctest_namespace["xarray_spatial_4_years"] = xarray_spatial_4_years
 
 

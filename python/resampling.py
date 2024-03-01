@@ -1,7 +1,7 @@
 """This script resamples the UKHADS data to match UKCP18 data.
 
-It resamples spatially, from 1km to 2.2km
-It resamples temporally to a 360 day calendar.
+It resamples spatially, from 1km to 2.2km.
+It resamples temporally to a 365 day calendar.
 """
 
 import argparse
@@ -10,11 +10,12 @@ import os
 from dataclasses import dataclass
 from glob import glob
 from pathlib import Path
-from typing import Callable, Iterable
+from typing import Callable, Final, Iterable
 
 import numpy as np
 import pandas as pd
 import xarray as xr  # requires rioxarray extension
+from osgeo.gdal import GRA_NearestNeighbour, Warp, WarpOptions
 from tqdm import tqdm
 
 DropDayType = set[tuple[int, int]]
@@ -26,6 +27,11 @@ MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)
 MONTH_DAY_ADD: ChangeDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1)}
 """CONSIDER ADDING DAYS to 360."""
 
+
+RESAMPLING_PATH: Final[os.PathLike] = Path("Raw/python_refactor/Reprojected_infill")
+UK_SPATIAL_PROJECTION: Final[str] = "EPSG:27700"
+CPRUK_RESOLUTION: Final[int] = 2200
+CPRUK_RESAMPLING_METHOD: Final[str] = GRA_NearestNeighbour
 ResamplingArgs = tuple[os.PathLike, np.ndarray, np.ndarray, os.PathLike]
 ResamplingCallable = Callable[[list | tuple], int]
 
@@ -40,9 +46,9 @@ def enforce_date_changes(
     For leap years, the conversion assigns dropped data to the previous
     date instead of deleting it. Here we manually delete those dates to
     avoid duplicates later in the pipeline. See
-    https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html#xarray.Dataset.convert_calendar
+    `https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html#xarray.Dataset.convert_calendar`
     for more information, and for updates on issues see
-    https://github.com/pydata/xarray/issues/8086
+    `https://github.com/pydata/xarray/issues/8086`
 
     Parameters
     ----------
@@ -109,6 +115,132 @@ def enforce_date_changes(
         )
 
     return converted_data
+
+
+def warp_cruk(
+    input_path: os.PathLike = RESAMPLING_PATH,
+    output_path: os.PathLike = RESAMPLING_PATH,
+    output_coord_system: str = UK_SPATIAL_PROJECTION,
+    output_x_resolution: int = CPRUK_RESOLUTION,
+    output_y_resolution: int = CPRUK_RESOLUTION,
+    resampling_method: str = CPRUK_RESAMPLING_METHOD,
+    **kwargs,
+) -> int:
+    """Execute the `gdalwrap` function within `python`.
+
+    This is following a script in the `bash/` folder that uses
+    this programme:
+
+    ```bash
+    f=$1 # The first argument is the file to reproject
+    fn=${f/Raw/Reprojected_infill} # Replace Raw with Reprojected_infill in the filename
+    folder=`dirname $fn` # Get the folder name
+    mkdir -p $folder # Create the folder if it doesn't exist
+    gdalwarp -t_srs 'EPSG:27700' -tr 2200 2200 -r near -overwrite $f "${fn%.nc}.tif" # Reproject the file
+    ```
+
+    Parameters
+    ----------
+    input_path
+        Path with `CPRUK` files to resample. `srcDSOrSrcDSTab` in
+        `Warp`.
+    output_path
+        Path to save resampled `input_path` file(s) to. If equal to
+        `input_path` then the `overwrite` parameter is called.
+        `destNameOrDestDS` in `Warp`.
+    output_coord_system
+        Coordinate system to convert `input_path` file(s) to.
+        `dstSRS` in `WarpOptions`.
+    output_x_resolution
+        Resolution of `x` cordinates to convert `input_path` file(s) to.
+        `xRes` in `WarpOptions`.
+    output_y_resolution
+        Resolution of `y` cordinates to convert `input_path` file(s) to.
+        `yRes` in `WarpOptions`.
+    resampling_method
+        Sampling method. `resampleAlg` in `WarpOption`. See other options
+        in: `https://gdal.org/programs/gdalwarp.html#cmdoption-gdalwarp-r`.
+    """
+    Path(output_path).mkdir(parents=True, exist_ok=True)
+    if input_path == output_path:
+        kwargs["overwrite"] = True
+    warp_options: WarpOptions = WarpOptions(
+        dstSRS=output_coord_system,
+        xRes=output_x_resolution,
+        yRes=output_y_resolution,
+        resampleAlg=resampling_method,
+        **kwargs,
+    )
+    conversion_result = Warp(
+        destNameOrDestDS=output_path,
+        srcDSOrSrcDSTab=input_path,
+        options=warp_options,
+    )
+    # Todo: future refactors will return something more useful
+    # Below is simply meant to match `resample_hadukgrid`
+    return 0 if conversion_result else 1
+
+
+def convert_xr_time_series(
+    xr_time_series: xr.Dataset,
+    check_ts_data: xr.Dataset | None,
+    # month_day_drop: DropDayType = MONTH_DAY_DROP,
+    conversion_method: Callable[[xr.Dataset], xr.Dataset] | None = None,
+) -> xr.Dataset:
+    """Workaround convert_calendar misbehavior with monthly data files.
+
+    For leap years, the conversion assigns dropped data to the previous
+    date instead of deleting it. Here we manually delete those dates to
+    avoid duplicates later in the pipeline. See
+    `https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html#xarray.Dataset.convert_calendar`
+    for more information, and for updates on issues see
+    `https://github.com/pydata/xarray/issues/8086`
+
+    Parameters
+    ----------
+    xr_time_series
+        Temporal data set to be converted.
+    check_ts_data
+        Temporal data to check the converted `raw_data` time series.
+    conversion_method
+        Function to call to convert the `raw_data` time series.
+
+    Returns
+    -------
+    The converted data with specific dates dropped.
+
+    Examples
+    --------
+    >>> assert False
+    >>> convert_xr_time_series(
+    ...     test_4_days_xarray,
+    ...     test_8_days_xarray)['time'].coords
+    Coordinates:
+      * time     (time) object 1980-11-30 1980-12-02 1980-12-03 1980-12-04
+    >>> test_4_years_xarray: xr.DataArray = getfixture(
+    ...     'xarray_spatial_4_years')
+    >>> ts_4_years: xr.DataArray = enforce_date_changes(
+    ...     test_4_years_xarray, test_4_years_xarray)
+    >>> ts_4_years
+    <xarray.DataArray (time: 1437, space: 3)>
+    array([[0.5488135 , 0.71518937, 0.60276338],
+           [0.43758721, 0.891773  , 0.96366276],
+           [0.38344152, 0.79172504, 0.52889492],
+           ...,
+           [0.0916689 , 0.62816966, 0.52649637],
+           [0.50034874, 0.93687921, 0.88042738],
+           [0.71393397, 0.57754071, 0.25236931]])
+    Coordinates:
+      * time     (time) object 1980-11-30 1980-12-02 ... 1984-11-28 1984-11-29
+      * space    (space) <U10 'Glasgow' 'Manchester' 'London'
+    >>> len(ts_4_years) == 365*4 + 1  # Would keep all days
+    False
+    >>> len(ts_4_years) == 360*4      # Would enforce all years at 360 days
+    False
+    >>> len(ts_4_years)               # 3 days fewer than 360 per year
+    1437
+    """
+    return xr_time_series
 
 
 # def resample_hadukgrid(x: list) -> int:
@@ -216,8 +348,8 @@ class HADsUKResampleManager:
             self.grid = xr.open_dataset(self.grid_data)
         try:
             # must have dimensions named projection_x_coordinate and projection_y_coordinate
-            self.x: np.ndarray = grid["projection_x_coordinate"][:].values
-            self.y: np.ndarray = grid["projection_y_coordinate"][:].values
+            self.x: np.ndarray = self.grid["projection_x_coordinate"][:].values
+            self.y: np.ndarray = self.grid["projection_y_coordinate"][:].values
         except Exception as e:
             print(f"Grid file: {parser_args.grid_data} produced errors: {e}")
 
@@ -231,13 +363,15 @@ class HADsUKResampleManager:
             self.cpus = 1 if not self.total_cpus else self.total_cpus
 
     @property
-    def resample_args(self) -> list[ResamplingArgs]:
+    def resample_args(self) -> Iterable[ResamplingArgs]:
         """Return args to pass to `self.resample`."""
         if not self.input_nc_files:
             self.set_input_nc_files()
         if not self.x or not self.y:
             self.set_grid_x_y()
-        return [[f, self.x, self.x, parser_args.output] for f in self.input_nc_files]
+        assert self.input_nc_files
+        for f in self.input_nc_files:
+            yield f, self.x, self.x, self.output
 
     def resample_multiprocessing(self) -> list[int]:
         """Run `self.resampling_func` via `multiprocessing`."""
@@ -316,6 +450,7 @@ if __name__ == "__main__":
         grid_data=parser_args.grid_data,
         output=parser_args.output,
     )
+    res = hads_run_manager.resample_multiprocessing()
 
     # parser_args = parser.parse_args()
     #

@@ -26,37 +26,44 @@ DEFAULT_CONDA_LOCK_KWARGS: Final[dict[str, str | float | bool]] = {
 }
 
 GITHUB_ACTIONS_ARCHITECTURE: Final[str] = "linux-64"
-# NC_GLOB_STR: Final[str] = "**/*.nc"
 
 
-# def globs_to_paths(path: PathLike, glob_str: str, recursive: bool = True) -> tuple[Path, ...]:
-#     """Return a tuple of `Paths` matching `glob_str`.
-#
-#     Parameters
-#     ----------
-#     path
-#         `str` or `Path` to search via `glob_str`.
-#
-#     glob_str
-#         Glob `str` to search for file names within `path`.
-#
-#     recursive
-#         Whether to recursively search within `path`.
-#
-#     Returns
-#     -------
-#     A `tuple` of matched `paths`.
-#
-#     """
+def ensure_date(date_to_check: DateType, format_str: str = DATE_FORMAT_STR) -> date:
+    """Ensure passed `date_to_check` is a `date`.
+
+    Parameters
+    ----------
+    date_to_check
+        Date or `str` to ensure is a `date`.
+    format_str
+        `strptime` `str` to convert `date_to_check` if necessary.
+
+    Returns
+    -------
+    `date` instance from `date_to_check`.
+
+    Examples
+    --------
+    >>> ensure_date('19801130')
+    datetime.date(1980, 11, 30)
+    >>> ensure_date(date(1980, 11, 30))
+    datetime.date(1980, 11, 30)
+    """
+    if isinstance(date_to_check, date):
+        return date_to_check
+    else:
+        return datetime.strptime(date_to_check, format_str).date()
 
 
 def date_range_generator(
     start_date: DateType,
     end_date: DateType,
     inclusive: bool = False,
+    skip_dates: Iterable[DateType] | DateType | None = None,
     start_format_str: str = DATE_FORMAT_STR,
     end_format_str: str = DATE_FORMAT_STR,
     output_format_str: str = DATE_FORMAT_STR,
+    skip_dates_format_str: str = DATE_FORMAT_STR,
     yield_type: type[date] | type[str] = date,
 ) -> Iterator[DateType]:
     """Return a tuple of `DateType` objects.
@@ -69,12 +76,16 @@ def date_range_generator(
         `DateType` at end of time series.
     inclusive
         Whether to include the `end_date` in the returned time series.
+    skip_dates
+        Dates to skip between `start_date` and `end_date`.
     start_format_str
         A `strftime` format to apply if `start_date` `type` is `str`.
     end_format_str
         A `strftime` format to apply if `end_date` `type` is `str`.
     output_format_str
         A `strftime` format to apply if `yield_type` is `str`.
+    skip_dates_format_str
+        A `strftime` format to apply if any `skip_dates` are `str`.
     yield_type
         Whether which date type to return in `tuple` (`date` or `str`).
 
@@ -94,17 +105,24 @@ def date_range_generator(
     ...                          start_format_str=ISO_DATE_FORMAT_STR))
     >>> len(four_years_inclusive)
     1462
+    >>> four_years_inclusive_skip: tuple[date] = tuple(
+    ...     date_range_generator('19801130', '19841130',
+    ...                          inclusive=True,
+    ...                          skip_dates='19840229'))
+    >>> len(four_years_inclusive_skip)
+    1461
+    >>> skip_dates: tuple[date] = (date(1981, 12, 1), date(1982, 12, 1))
+    >>> four_years_inclusive_skip: tuple[date] = list(
+    ...     date_range_generator('19801130', '19841130',
+    ...                          inclusive=True,
+    ...                          skip_dates=skip_dates))
+    >>> len(four_years_inclusive_skip)
+    1460
+    >>> skip_dates in four_years_inclusive_skip
+    False
     """
-    start_date = (
-        start_date
-        if isinstance(start_date, date)
-        else datetime.strptime(start_date, start_format_str).date()
-    )
-    end_date = (
-        end_date
-        if isinstance(end_date, date)
-        else datetime.strptime(end_date, end_format_str).date()
-    )
+    start_date = ensure_date(start_date, start_format_str)
+    end_date = ensure_date(end_date, end_format_str)
     if inclusive:
         end_date += timedelta(days=1)
     try:
@@ -113,8 +131,17 @@ def date_range_generator(
         raise ValueError(
             f"start_date: {start_date} must be before end_date: {end_date}"
         )
+    if skip_dates:
+        if isinstance(skip_dates, str | date):
+            skip_dates = [skip_dates]
+        skip_dates = set(
+            ensure_date(skip_date, skip_dates_format_str) for skip_date in skip_dates
+        )
     for day_number in range(int((end_date - start_date).days)):
         date_obj: date = start_date + timedelta(day_number)
+        if skip_dates:
+            if date_obj in skip_dates:
+                continue
         yield (date_obj if yield_type == date else date_obj.strftime(output_format_str))
 
 
