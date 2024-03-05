@@ -24,6 +24,8 @@ from debiasing.debias_wrapper import (
     VariableOptions,
 )
 from numpy import array, random
+from osgeo.gdal import DataTypeUnion
+from pandas import to_datetime
 from utils import (
     ISO_DATE_FORMAT_STR,
     DateType,
@@ -209,7 +211,7 @@ def xarray_spatial_temporal() -> (
         return DataArray(
             data,
             coords=[
-                dates,
+                to_datetime(dates),
                 spaces,
             ],
             dims=[
@@ -246,10 +248,14 @@ def xarray_spatial_8_days(
 def xarray_spatial_6_days_2_skipped(
     xarray_spatial_temporal: Callable,
     end_date_str: str = XARRAY_END_DATE_8_DAYS,
-    skip_dates: tuple[str] = XARRAY_SKIP_2_FROM_8_DAYS,
+    skip_dates: tuple[str, ...] = XARRAY_SKIP_2_FROM_8_DAYS,
 ) -> DataArray:
     """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-05."""
-    return xarray_spatial_temporal(end_date_str=end_date_str, skip_dates=skip_dates)
+    return xarray_spatial_temporal(
+        end_date_str=end_date_str,
+        skip_dates=skip_dates,
+        skip_dates_format_str=ISO_DATE_FORMAT_STR,
+    )
 
 
 @pytest.fixture
@@ -267,6 +273,10 @@ def doctest_auto_fixtures(
     is_platform_darwin: bool,
     is_climate_data_mounted: bool,
     preprocess_out_folder_files_count_correct: int,
+    xarray_spatial_4_days: DataArray,
+    xarray_spatial_6_days_2_skipped: DataArray,
+    xarray_spatial_8_days: DataArray,
+    xarray_spatial_4_years: DataArray,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
     doctest_namespace[
@@ -297,7 +307,10 @@ def doctest_auto_fixtures(
     doctest_namespace["pprint"] = pprint
     doctest_namespace["pytest"] = pytest
     doctest_namespace["xarray_spatial_4_days"] = xarray_spatial_4_days
-    doctest_namespace["xarray_spatial_8_days_skip_2"] = xarray_spatial_4_years
+    doctest_namespace[
+        "xarray_spatial_6_days_2_skipped"
+    ] = xarray_spatial_6_days_2_skipped
+    doctest_namespace["xarray_spatial_8_days"] = xarray_spatial_8_days
     doctest_namespace["xarray_spatial_4_years"] = xarray_spatial_4_years
 
 

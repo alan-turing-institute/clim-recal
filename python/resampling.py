@@ -9,6 +9,7 @@ import multiprocessing
 import os
 from dataclasses import dataclass
 from glob import glob
+from logging import getLogger
 from pathlib import Path
 from typing import Callable, Final, Iterable
 
@@ -17,6 +18,9 @@ import pandas as pd
 import xarray as xr  # requires rioxarray extension
 from osgeo.gdal import GRA_NearestNeighbour, Warp, WarpOptions
 from tqdm import tqdm
+from utils import DateType, date_range_generator
+
+logger = getLogger(__name__)
 
 DropDayType = set[tuple[int, int]]
 ChangeDayType = set[tuple[int, int]]
@@ -26,6 +30,9 @@ MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)
 
 MONTH_DAY_ADD: ChangeDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1)}
 """CONSIDER ADDING DAYS to 360."""
+
+DEFAULT_INTERPOLATION_METHOD: str = "linear"
+"""Default method to infer missing estimates in a time series."""
 
 
 RESAMPLING_PATH: Final[os.PathLike] = Path("Raw/python_refactor/Reprojected_infill")
@@ -181,12 +188,17 @@ def warp_cruk(
     return 0 if conversion_result else 1
 
 
-def convert_xr_time_series(
-    xr_time_series: xr.Dataset,
-    check_ts_data: xr.Dataset | None,
+def interp_xr_time_series(
+    xr_time_series: xr.Dataset | xr.Dataset,
+    check_ts_data: xr.Dataset | xr.Dataset | None = None,
     # month_day_drop: DropDayType = MONTH_DAY_DROP,
-    conversion_method: Callable[[xr.Dataset], xr.Dataset] | None = None,
-) -> xr.Dataset:
+    conversion_method: str = DEFAULT_INTERPOLATION_METHOD,
+    conversion_func: Callable[[xr.Dataset], xr.Dataset] | None = None,
+    keep_attrs: bool = True,
+    limit: int = 5,
+    fill_na_dates: bool = False,
+    **kwargs,
+) -> xr.Dataset | xr.DataArray:
     """Workaround convert_calendar misbehavior with monthly data files.
 
     For leap years, the conversion assigns dropped data to the previous
@@ -211,36 +223,48 @@ def convert_xr_time_series(
 
     Examples
     --------
-    >>> assert False
-    >>> convert_xr_time_series(
-    ...     test_4_days_xarray,
-    ...     test_8_days_xarray)['time'].coords
-    Coordinates:
-      * time     (time) object 1980-11-30 1980-12-02 1980-12-03 1980-12-04
-    >>> test_4_years_xarray: xr.DataArray = getfixture(
-    ...     'xarray_spatial_4_years')
-    >>> ts_4_years: xr.DataArray = enforce_date_changes(
-    ...     test_4_years_xarray, test_4_years_xarray)
-    >>> ts_4_years
-    <xarray.DataArray (time: 1437, space: 3)>
+    >>> filled_2_days: xr.DataArray = interp_xr_time_series(
+    ...     xarray_spatial_6_days_2_skipped,
+    ...     xarray_spatial_8_days)
+    >>> filled_2_days
+    <xarray.DataArray (time: 10, space: 3)> Size: 240B
     array([[0.5488135 , 0.71518937, 0.60276338],
+           [0.54488318, 0.4236548 , 0.64589411],
            [0.43758721, 0.891773  , 0.96366276],
            [0.38344152, 0.79172504, 0.52889492],
-           ...,
-           [0.0916689 , 0.62816966, 0.52649637],
-           [0.50034874, 0.93687921, 0.88042738],
-           [0.71393397, 0.57754071, 0.25236931]])
+           [0.56804456, 0.92559664, 0.07103606],
+           [0.0871293 , 0.0202184 , 0.83261985],
+           [0.77815675, 0.87001215, 0.97861834],
+           [0.78515736, 0.73383455, 0.91258862],
+           [0.79215796, 0.59765696, 0.8465589 ],
+           [0.79915856, 0.46147936, 0.78052918]])
     Coordinates:
-      * time     (time) object 1980-11-30 1980-12-02 ... 1984-11-28 1984-11-29
-      * space    (space) <U10 'Glasgow' 'Manchester' 'London'
-    >>> len(ts_4_years) == 365*4 + 1  # Would keep all days
-    False
-    >>> len(ts_4_years) == 360*4      # Would enforce all years at 360 days
-    False
-    >>> len(ts_4_years)               # 3 days fewer than 360 per year
-    1437
+      * space    (space) <U10 120B 'Glasgow' 'Manchester' 'London'
+      * time     (time) datetime64[ns] 80B 1980-11-30 1980-12-01 ... 1980-12-09
     """
-    return xr_time_series
+    if check_ts_data is not None:
+        intermediate_ts: xr.DataArray | xr.Dataset = xr_time_series.interp_like(
+            check_ts_data
+        )
+        interpolated_ts: xr.DataArray | xr.Dataset = intermediate_ts.interpolate_na(
+            dim="time",
+            method=conversion_method,
+            keep_attrs=keep_attrs,
+            limit=limit,
+            **kwargs,
+        )
+        return interpolated_ts
+    elif fill_na_dates:
+        logger.debug(
+            f"'check_ts_data' is None " f"and 'fill_na' is True, inferring 'NaN'"
+        )
+        all_dates: Iterable[DateType] = date_range_generator(
+            xr_time_series.coords["time"].min().to_dict()["data"],
+            xr_time_series.coords["time"].max().to_dict()["data"],
+        )
+        check_ts_data = xr_time_series.interp(time=all_dates)
+    else:
+        raise ValueError(f"'check_ts_data' must be set or 'fill_na_dates = True'.")
 
 
 # def resample_hadukgrid(x: list) -> int:
