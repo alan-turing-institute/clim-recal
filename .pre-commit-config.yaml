@@ -51,12 +51,14 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
+        always_run: true
         entry: >
           bash -c 'cd python &&
           python -c "import utils; utils.run_conda_lock(
               replace_file_path=True,
               default_kwargs=True,
             )"'
+
 
 
   # Currently fails to build.

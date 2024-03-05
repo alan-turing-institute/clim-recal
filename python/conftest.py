@@ -28,7 +28,8 @@ from .debiasing.debias_wrapper import (
     RunOptions,
     VariableOptions,
 )
-from .utils import CITY_COORDS, ISO_DATE_FORMAT_STR, iter_to_tuple_strs, xarray_example
+from .resampling import CITY_COORDS, xarray_example
+from .utils import ISO_DATE_FORMAT_STR, iter_to_tuple_strs
 
 # Date Range covering leap year
 XARRAY_START_DATE_STR: Final[str] = "1980-11-30"
