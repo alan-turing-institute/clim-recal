@@ -7,7 +7,12 @@ from typing import Callable, Final, Iterable
 
 import pytest
 from coverage_badge.__main__ import main as gen_cov_badge
-from debiasing.debias_wrapper import (
+from numpy import array, random
+from osgeo.gdal import DataTypeUnion
+from pandas import to_datetime
+from xarray import DataArray
+
+from .debiasing.debias_wrapper import (
     CALIB_DATES_STR_DEFAULT,
     CMETHODS_FILE_NAME,
     CMETHODS_OUT_FOLDER_DEFAULT,
@@ -23,16 +28,7 @@ from debiasing.debias_wrapper import (
     RunOptions,
     VariableOptions,
 )
-from numpy import array, random
-from osgeo.gdal import DataTypeUnion
-from pandas import to_datetime
-from utils import (
-    ISO_DATE_FORMAT_STR,
-    DateType,
-    date_range_generator,
-    iter_to_tuple_strs,
-)
-from xarray import DataArray
+from .utils import CITY_COORDS, ISO_DATE_FORMAT_STR, iter_to_tuple_strs, xarray_example
 
 # Date Range covering leap year
 XARRAY_START_DATE_STR: Final[str] = "1980-11-30"
@@ -43,15 +39,6 @@ XARRAY_SKIP_2_FROM_8_DAYS: Final[tuple[str, str]] = (
     "1980-12-8",
 )
 XARRAY_END_DATE_4_YEARS: Final[str] = "1984-11-30"
-
-GLASGOW_COORDS: Final[tuple[float, float]] = (55.86279, -4.25424)
-MANCHESTER_COORDS: Final[tuple[float, float]] = (53.48095, -2.23743)
-LONDON_COORDS: Final[tuple[float, float]] = (51.509865, -0.118092)
-CITY_COORDS: Final[dict[str, tuple[float, float]]] = {
-    "Glasgow": GLASGOW_COORDS,
-    "Manchester": MANCHESTER_COORDS,
-    "London": LONDON_COORDS,
-}
 
 
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
@@ -129,6 +116,27 @@ PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT: Final[int] = 4
 
 
 @pytest.fixture
+def mod_folder_files_count_correct() -> int:
+    return MOD_FOLDER_FILES_COUNT_CORRECT
+
+
+@pytest.fixture
+def obs_folder_files_count_correct() -> int:
+    return OBS_FOLDER_FILES_COUNT_CORRECT
+
+
+@pytest.fixture
+def preprocess_out_folder_files_count_correct() -> int:
+    """Return `PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT`."""
+    return PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT
+
+
+@pytest.fixture
+def cli_preprocess_default_command_str_correct() -> str:
+    return CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
+
+
+@pytest.fixture
 def is_platform_darwin() -> bool:
     """Check if `sys.platform` is `Darwin` (macOS)."""
     return sys.platform.startswith("darwin")
@@ -171,12 +179,6 @@ def ensure_python_path() -> None:
 
 
 @pytest.fixture
-def preprocess_out_folder_files_count_correct() -> int:
-    """Return `PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT`."""
-    return PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT
-
-
-@pytest.fixture
 def xarray_spatial_temporal() -> (
     Callable[[str, str, dict[str, tuple[float, float]]], DataArray]
 ):
@@ -192,35 +194,13 @@ def xarray_spatial_temporal() -> (
         skip_dates: Iterable[date] | None = None,
         **kwargs,
     ) -> DataArray:
-        dates: list[DateType] = list(
-            date_range_generator(
-                start_date=start_date_str,
-                end_date=end_date_str,
-                start_format_str=ISO_DATE_FORMAT_STR,
-                end_format_str=ISO_DATE_FORMAT_STR,
-                skip_dates=skip_dates,
-                **kwargs,
-            )
-        )
-        random.seed(0)  # ensure results are predictable
-        data: array = random.rand(len(dates), len(coordinates))
-        spaces: list[str] = list(coordinates.keys())
-        # If useful, add lat/lon (currently not working)
-        # lat: list[float] = [coord[0] for coord in coordinates.values()]
-        # lon: list[float] = [coord[1] for coord in coordinates.values()]
-        return DataArray(
-            data,
-            coords=[
-                to_datetime(dates),
-                spaces,
-            ],
-            dims=[
-                "time",
-                "space",
-            ],
-            # If useful, add lat/lon (currently not working)
-            # coords=[dates, spaces, lon, lat],
-            # dims=["time", "space", "lon", "lat"]
+        return xarray_example(
+            start_date=start_date_str,
+            end_date=end_date_str,
+            coordinates=coordinates,
+            skip_dates=skip_dates,
+            random_seed_int=0,
+            **kwargs,
         )
 
     return _xarray_spatial_temporal

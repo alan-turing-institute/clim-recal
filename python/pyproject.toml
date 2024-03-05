@@ -32,6 +32,7 @@ dependencies = [
     "openpyxl>=3.1.2",
     "GDAL>=3.8.4",
     "python-cmethods>=2.0.2",
+    "conda-lock>=2.5.5",
 ]
 
 [build-system]
@@ -78,7 +79,6 @@ dev = [
     "quartodoc<1.0.0,>=0.7.2",
     "pre-commit<4.0.0,>=3.6.2",
     "coverage-badge<2.0.0,>=1.1.0",
-    "conda-lock>=2.5.5",
 ]
 
 [tool.pdm.build]

@@ -7,12 +7,6 @@ from os import chdir
 from pathlib import Path
 
 import pytest
-from conftest import (
-    CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT,
-    MOD_FOLDER_FILES_COUNT_CORRECT,
-    OBS_FOLDER_FILES_COUNT_CORRECT,
-    PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT,
-)
 from debiasing.debias_wrapper import (
     PREPROCESS_FILE_NAME,
     CityOptions,
@@ -29,11 +23,11 @@ def run_config(tmp_path: Path) -> RunConfig:
     return RunConfig(preprocess_out_folder=tmp_path)
 
 
-def test_command_line_default() -> None:
+def test_command_line_default(cli_preprocess_default_command_str_correct) -> None:
     """Test default generated cli `str`."""
     run_config: RunConfig = RunConfig()
     assert (
-        run_config.to_cli_preprocess_str() == CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
+        run_config.to_cli_preprocess_str() == cli_preprocess_default_command_str_correct
     )
 
 
@@ -71,7 +65,16 @@ def test_command_line_default() -> None:
         ),
     ),
 )
-def test_run(run_config, city, variable, run, method) -> None:
+def test_run(
+    run_config,
+    city,
+    variable,
+    run,
+    method,
+    mod_folder_files_count_correct,
+    obs_folder_files_count_correct,
+    preprocess_out_folder_files_count_correct,
+) -> None:
     """Test running generated command script via a subprocess."""
     initial_folder: Path = Path().resolve()
     chdir(run_config.command_path)
@@ -85,17 +88,17 @@ def test_run(run_config, city, variable, run, method) -> None:
     assert preprocess_run.returncode == 0
     assert (
         len(tuple(run_config.yield_mod_folder(city=city)))
-        == MOD_FOLDER_FILES_COUNT_CORRECT
+        == mod_folder_files_count_correct
     )
     assert (
         len(tuple(run_config.yield_obs_folder(city=city)))
-        == OBS_FOLDER_FILES_COUNT_CORRECT
+        == obs_folder_files_count_correct
     )
 
     if method == MethodOptions.default():
         assert (
             len(tuple(run_config.yield_preprocess_out_folder(city=city)))
-            == PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT
+            == preprocess_out_folder_files_count_correct
         )
     for log_txt in (
         "Saved observed (HADs) data for validation, period ('2010-01-01', '2010-12-30')",
