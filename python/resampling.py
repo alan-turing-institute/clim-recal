@@ -72,19 +72,15 @@ def enforce_date_changes(
 
     Examples
     --------
-    >>> test_4_days_xarray: xr.DataArray = getfixture(
-    ...     'xarray_spatial_4_days')
     >>> enforce_date_changes(
-    ...     test_4_days_xarray,
-    ...     test_4_days_xarray)['time'].coords
+    ...     xarray_spatial_4_days,
+    ...     xarray_spatial_4_days)['time'].coords
     Coordinates:
-      * time     (time) object 1980-11-30 1980-12-02 1980-12-03 1980-12-04
-    >>> test_4_years_xarray: xr.DataArray = getfixture(
-    ...     'xarray_spatial_4_years')
+      * time     (time) datetime64[ns] 32B 1980-11-30 1980-12-02 ... 1980-12-04
     >>> ts_4_years: xr.DataArray = enforce_date_changes(
-    ...     test_4_years_xarray, test_4_years_xarray)
+    ...     xarray_spatial_4_years, xarray_spatial_4_years)
     >>> ts_4_years
-    <xarray.DataArray (time: 1437, space: 3)>
+    <xarray.DataArray (time: 1437, space: 3)> Size: 34kB
     array([[0.5488135 , 0.71518937, 0.60276338],
            [0.43758721, 0.891773  , 0.96366276],
            [0.38344152, 0.79172504, 0.52889492],
@@ -93,8 +89,8 @@ def enforce_date_changes(
            [0.50034874, 0.93687921, 0.88042738],
            [0.71393397, 0.57754071, 0.25236931]])
     Coordinates:
-      * time     (time) object 1980-11-30 1980-12-02 ... 1984-11-28 1984-11-29
-      * space    (space) <U10 'Glasgow' 'Manchester' 'London'
+      * time     (time) datetime64[ns] 11kB 1980-11-30 1980-12-02 ... 1984-11-29
+      * space    (space) <U10 120B 'Glasgow' 'Manchester' 'London'
     >>> len(ts_4_years) == 365*4 + 1  # Would keep all days
     False
     >>> len(ts_4_years) == 360*4      # Would enforce all years at 360 days
