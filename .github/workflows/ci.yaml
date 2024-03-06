@@ -71,8 +71,6 @@ jobs:
 
       - name: Run Python Tests
         run: |
-          # mamba install -n ${{ env.CONDA_ENV_NAME }} pdm
-          # mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pdm install
           mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest
 
       - name: Copy test coverage results

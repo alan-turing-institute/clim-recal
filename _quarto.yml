@@ -87,7 +87,7 @@ quartodoc:
 
   # write sidebar data to this file
   sidebar: _sidebar.yml
-  source_dir: ./python/
+  source_dir: ./python/clim_recal
   # see: https://github.com/alan-turing-institute/clim-recal/issues/128
   sections:
     - title: Data Source Management
@@ -95,10 +95,11 @@ quartodoc:
       contents:
         # the functions being documented in the package.
         # you can refer to anything: class methods, modules, etc..
-        - ceda_ftp_download
-        # - load_data
-        - resampling
-        - data_loader
-        - debiasing.debias_wrapper
-        # - pipeline
-        - utils
+        - clim_recal
+        # - ceda_ftp_download
+        # # - load_data
+        # - resampling
+        # - data_loader
+        # - debiasing.debias_wrapper
+        # # - pipeline
+        # - utils
