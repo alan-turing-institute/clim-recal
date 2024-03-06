@@ -785,8 +785,8 @@ def make_user(
     ...     pytest.skip('requires root permission to run')
     >>> user_name: str = 'very_unlinkely_test_user'
     >>> password: str = 'test_pass'
-    >>> code_path: Path = Path('/home/jovyan')
-    >>> make_user(user_name, password, code_path=JUPYTER_DOCKER_USER_PATH)
+    >>> code_path: Path = Path('../python')
+    >>> make_user(user_name, password, code_path=code_path)
     PosixPath('/home/very_unlinkely_test_user')
     >>> Path(f'/home/{user_name}/python/conftest.py').is_file()
     True
