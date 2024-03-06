@@ -21,8 +21,9 @@ from numpy import array, random
 from osgeo.gdal import GRA_NearestNeighbour, Warp, WarpOptions
 from pandas import to_datetime
 from tqdm import tqdm
-from utils import ISO_DATE_FORMAT_STR, DateType, date_range_generator
 from xarray import DataArray
+
+from .utils import ISO_DATE_FORMAT_STR, DateType, date_range_generator
 
 logger = getLogger(__name__)
 
@@ -90,11 +91,11 @@ def enforce_date_changes(
     ...     xarray_spatial_4_days,
     ...     xarray_spatial_4_days)['time'].coords
     Coordinates:
-      * time     (time) datetime64[ns] 32B 1980-11-30 1980-12-02 ... 1980-12-04
+      * time     (time) datetime64[ns] ...1980-11-30 ... 1980-12-04
     >>> ts_4_years: xr.DataArray = enforce_date_changes(
     ...     xarray_spatial_4_years, xarray_spatial_4_years)
     >>> ts_4_years
-    <xarray.DataArray (time: 1437, space: 3)> Size: 34kB
+    <xarray.DataArray (time: 1437, space: 3)>...
     array([[0.5488135 , 0.71518937, 0.60276338],
            [0.43758721, 0.891773  , 0.96366276],
            [0.38344152, 0.79172504, 0.52889492],
@@ -103,8 +104,8 @@ def enforce_date_changes(
            [0.50034874, 0.93687921, 0.88042738],
            [0.71393397, 0.57754071, 0.25236931]])
     Coordinates:
-      * time     (time) datetime64[ns] 11kB 1980-11-30 1980-12-02 ... 1984-11-29
-      * space    (space) <U10 120B 'Glasgow' 'Manchester' 'London'
+      * time     (time) datetime64[ns] ...1980-11-30 ... 1984-11-29
+      * space    (space) <U10 ...'Glasgow' 'Manchester' 'London'
     >>> len(ts_4_years) == 365*4 + 1  # Would keep all days
     False
     >>> len(ts_4_years) == 360*4      # Would enforce all years at 360 days
@@ -232,15 +233,15 @@ def xarray_example(
     Examples
     --------
     >>> xarray_example('1980-11-30', '1980-12-5')
-    <xarray.DataArray (time: 5, space: 3)> Size: 120B
+    <xarray.DataArray (time: 5, space: 3)>...
     array([[..., ..., ...],
            [..., ..., ...],
            [..., ..., ...],
            [..., ..., ...],
            [..., ..., ...]])
     Coordinates:
-      * time     (time) datetime64[ns] 40B 1980-11-30 1980-12-01 ... 1980-12-04
-      * space    (space) <U10 120B 'Glasgow' 'Manchester' 'London'
+      * time     (time) datetime64[ns] ...1980-11-30 ... 1980-12-04
+      * space    (space) <U10 ...'Glasgow' 'Manchester' 'London'
     """
     dates: list[DateType] = list(
         date_range_generator(
@@ -314,7 +315,7 @@ def interp_xr_time_series(
     ...     xarray_spatial_6_days_2_skipped,
     ...     xarray_spatial_8_days)
     >>> filled_2_days
-    <xarray.DataArray (time: 10, space: 3)> Size: 240B
+    <xarray.DataArray (time: 10, space: 3)>...
     array([[0.5488135 , 0.71518937, 0.60276338],
            [0.54488318, 0.4236548 , 0.64589411],
            [0.43758721, 0.891773  , 0.96366276],
@@ -326,8 +327,8 @@ def interp_xr_time_series(
            [0.79215796, 0.59765696, 0.8465589 ],
            [0.79915856, 0.46147936, 0.78052918]])
     Coordinates:
-      * space    (space) <U10 120B 'Glasgow' 'Manchester' 'London'
-      * time     (time) datetime64[ns] 80B 1980-11-30 1980-12-01 ... 1980-12-09
+      * space    (space) <U10 ...'Glasgow' 'Manchester' 'London'
+      * time     (time) datetime64[ns] ...1980-11-30 ... 1980-12-09
     """
     if check_ts_data is not None:
         intermediate_ts: xr.DataArray | xr.Dataset = xr_time_series.interp_like(

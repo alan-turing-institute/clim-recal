@@ -86,10 +86,9 @@ Debiasing
 from pathlib import Path
 from typing import Final
 
-import ceda_ftp_download
-import data_loader
-import resampling
 from osgeo.gdal import Warp
+
+from . import ceda_ftp_download, data_loader, resample
 
 REPROJECTION_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_one.sh")
 REPROJECTION_WRAPPER_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_all.sh")

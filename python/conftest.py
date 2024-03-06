@@ -1,18 +1,12 @@
-import pprint
 import sys
 from datetime import date
 from os import PathLike
 from pathlib import Path
+from pprint import pprint
 from typing import Callable, Final, Iterable
 
 import pytest
-from coverage_badge.__main__ import main as gen_cov_badge
-from numpy import array, random
-from osgeo.gdal import DataTypeUnion
-from pandas import to_datetime
-from xarray import DataArray
-
-from .debiasing.debias_wrapper import (
+from clim_recal.debiasing.debias_wrapper import (
     CALIB_DATES_STR_DEFAULT,
     CMETHODS_FILE_NAME,
     CMETHODS_OUT_FOLDER_DEFAULT,
@@ -28,8 +22,17 @@ from .debiasing.debias_wrapper import (
     RunOptions,
     VariableOptions,
 )
-from .resampling import CITY_COORDS, xarray_example
-from .utils import ISO_DATE_FORMAT_STR, iter_to_tuple_strs
+from clim_recal.resample import CITY_COORDS, xarray_example
+from clim_recal.utils import (
+    ISO_DATE_FORMAT_STR,
+    CondaLockFileManager,
+    iter_to_tuple_strs,
+)
+from coverage_badge.__main__ import main as gen_cov_badge
+from numpy import array, random
+from osgeo.gdal import DataTypeUnion
+from pandas import to_datetime
+from xarray import DataArray
 
 # Date Range covering leap year
 XARRAY_START_DATE_STR: Final[str] = "1980-11-30"
@@ -168,15 +171,15 @@ def is_climate_data_mounted(climate_data_mount_path) -> bool:
     return climate_data_mount_path.exists()
 
 
-@pytest.fixture(autouse=True)
-def ensure_python_path() -> None:
-    """Return path for test running."""
-    if not set(MODULE_NAMES) <= set(path.name for path in TEST_PATH.iterdir()):
-        raise ValueError(
-            f"'clim-recal' python tests must be "
-            f"run in 'clim-recal/{PYTHON_DIR_NAME}', "
-            f"not '{TEST_PATH.absolute()}'"
-        )
+# @pytest.fixture(autouse=True)
+# def ensure_python_path() -> None:
+#     """Return path for test running."""
+#     if not set(MODULE_NAMES) <= set(path.name for path in TEST_PATH.iterdir()):
+#         raise ValueError(
+#             f"'clim-recal' python tests must be "
+#             f"run in 'clim-recal/{PYTHON_DIR_NAME}', "
+#             f"not '{TEST_PATH.absolute()}'"
+#         )
 
 
 @pytest.fixture
@@ -248,6 +251,11 @@ def xarray_spatial_4_years(
     return xarray_spatial_temporal(end_date_str=end_date_str)
 
 
+@pytest.fixture
+def conda_lock_file_manager() -> CondaLockFileManager:
+    return CondaLockFileManager()
+
+
 @pytest.fixture(autouse=True)
 def doctest_auto_fixtures(
     doctest_namespace: dict,
@@ -258,6 +266,7 @@ def doctest_auto_fixtures(
     xarray_spatial_6_days_2_skipped: DataArray,
     xarray_spatial_8_days: DataArray,
     xarray_spatial_4_years: DataArray,
+    conda_lock_file_manager: CondaLockFileManager,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
     doctest_namespace[
@@ -293,6 +302,7 @@ def doctest_auto_fixtures(
     ] = xarray_spatial_6_days_2_skipped
     doctest_namespace["xarray_spatial_8_days"] = xarray_spatial_8_days
     doctest_namespace["xarray_spatial_4_years"] = xarray_spatial_4_years
+    doctest_namespace["conda_lock_file_manager"] = conda_lock_file_manager
 
 
 def pytest_sessionfinish(session, exitstatus):

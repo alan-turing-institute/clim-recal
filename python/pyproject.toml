@@ -31,8 +31,9 @@ dependencies = [
     "geopandas>=0.14.3",
     "openpyxl>=3.1.2",
     "GDAL>=3.8.4",
-    "python-cmethods>=2.0.2",
     "conda-lock>=2.5.5",
+    "rich>=13.7.1",
+    "netcdf4>=1.6.5",
 ]
 
 [build-system]
@@ -49,7 +50,9 @@ minversion = "6.0"
 addopts = """
     -ra -q
     --doctest-modules
-    --ignore=debiasing/python-cmethods
+    --ignore=clim_recal/debiasing/python-cmethods
+    --ignore=clim_recal/debiasing/preprocess_data.py
+    --ignore=clim_recal/debiasing/run_cmethods.py
     -m "not server"
     -m "not mount"
     --pdbcls=IPython.terminal.debugger:TerminalPdb
@@ -59,8 +62,9 @@ addopts = """
 doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS",]
 testpaths = [
     "tests",
-    "utils.py",
-    "resampling.py"
+    "clim_recal",
+    # "utils.py",
+    # "resampling.py"
 ]
 markers = [
     "slow: slow tests (deselect with '-m \"not slow\"')",
