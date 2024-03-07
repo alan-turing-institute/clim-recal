@@ -12,7 +12,7 @@ For users who already have `conda` (or `mamba`) installed:
 git clone https://github.com/alan-turing-institute/clim-recal
 cd clim-recal
 pip install conda-lock
-conda-lock install conda
+conda-lock install conda-lock.yml
 ```
 
 For `docker`:
