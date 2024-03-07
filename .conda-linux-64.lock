@@ -22,7 +22,6 @@ https://conda.anaconda.org/conda-forge/linux-64/libgcc-ng-13.2.0-h807b86a_5.cond
 https://conda.anaconda.org/conda-forge/linux-64/aws-c-common-0.9.13-hd590300_0.conda#0ba89522712d993987e6d0fae108c721
 https://repo.anaconda.com/pkgs/main/linux-64/bzip2-1.0.8-h5eee18b_5.conda#9c8dec113089c4aca7392c6a3864f505
 https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.27.0-hd590300_0.conda#f6afff0e9ee08d2f1b897881a4f38cdb
-https://repo.anaconda.com/pkgs/main/linux-64/expat-2.5.0-h6a678d5_0.conda#9a21d99d49a0a556cf9590430dec8ec0
 https://conda.anaconda.org/conda-forge/linux-64/geos-3.12.1-h59595ed_0.conda#8c0f4f71f5a59ceb0c6fa9f51501066d
 https://repo.anaconda.com/pkgs/main/linux-64/giflib-5.2.1-h5eee18b_3.conda#aa7d64adb3cd8a75d398167f8c29afc3
 https://conda.anaconda.org/conda-forge/linux-64/icu-73.2-h59595ed_0.conda#cc47e1facc155f91abd89b11e48e72ff
@@ -35,7 +34,7 @@ https://repo.anaconda.com/pkgs/main/linux-64/libbrotlicommon-1.0.9-h5eee18b_7.co
 https://repo.anaconda.com/pkgs/main/linux-64/libcrc32c-1.1.2-h6a678d5_0.conda#daf778296b4ada0649ecad5e5e320cd0
 https://conda.anaconda.org/conda-forge/linux-64/libdeflate-1.19-hd590300_0.conda#1635570038840ee3f9c71d22aa5b8b6d
 https://repo.anaconda.com/pkgs/main/linux-64/libev-4.33-h7f8727e_1.conda#5065620db4393fb549f30114a33897d1
-https://conda.anaconda.org/conda-forge/linux-64/libexpat-2.5.0-hcb278e6_1.conda#6305a3dd2752c76335295da4e581f2fd
+https://conda.anaconda.org/conda-forge/linux-64/libexpat-2.6.1-h59595ed_0.conda#476fb82aba5358a08d52ec44e286ce33
 https://repo.anaconda.com/pkgs/main/linux-64/libffi-3.4.4-h6a678d5_0.conda#06e288f9250abef59b9a367d151fc339
 https://conda.anaconda.org/conda-forge/linux-64/libgfortran5-13.2.0-ha4646dd_5.conda#7a6bd7a12a4bd359e2afe6c0fa1acace
 https://conda.anaconda.org/conda-forge/linux-64/libiconv-1.17-hd590300_2.conda#d66573916ffcf376178462f1b61c941e
@@ -68,6 +67,7 @@ https://conda.anaconda.org/conda-forge/linux-64/aws-c-cal-0.6.10-hb29e0c7_1.cond
 https://conda.anaconda.org/conda-forge/linux-64/aws-c-compression-0.2.18-hecc5fa9_1.conda#1d838050e7d65d2f38dc3b84b928aa2b
 https://conda.anaconda.org/conda-forge/linux-64/aws-c-sdkutils-0.1.15-hecc5fa9_1.conda#1f3169bc679a1ead5b44a6c79408add7
 https://conda.anaconda.org/conda-forge/linux-64/aws-checksums-0.1.18-hecc5fa9_1.conda#d49175b3e097182a65ba9e3fb2c38603
+https://conda.anaconda.org/conda-forge/linux-64/expat-2.6.1-h59595ed_0.conda#ee90e7ac57321f8782f8438bf647b75b
 https://conda.anaconda.org/conda-forge/linux-64/hdf4-4.2.15-h2a13503_7.conda#bd77f8da987968ec3927990495dc22e4
 https://repo.anaconda.com/pkgs/main/linux-64/libbrotlidec-1.0.9-h5eee18b_7.conda#5c31f3bd570dc4d7d799117c98aad6e3
 https://repo.anaconda.com/pkgs/main/linux-64/libbrotlienc-1.0.9-h5eee18b_7.conda#289179174f1216582a949b528d8224af
