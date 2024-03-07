@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:3f6aa9b2cfc0a79ee10fd996b8be9c1df2c77ed4e209337e6c2ac420bc9320d8"
+content_hash = "sha256:6b276d07f20f04c7729bb1e81680ebc96cdf963f09f56ff0db9440b448de8a82"
 
 [[package]]
 name = "affine"
@@ -833,12 +833,12 @@ files = [
 
 [[package]]
 name = "gdal"
-version = "3.8.4"
+version = "3.8.3"
 requires_python = ">=3.6.0"
 summary = "GDAL: Geospatial Data Abstraction Library"
 groups = ["default"]
 files = [
-    {file = "GDAL-3.8.4.tar.gz", hash = "sha256:7c51e0ae7a7ccf43ad9e4bf435176baa9276653dfa16fd167c3632f6e7275207"},
+    {file = "GDAL-3.8.3.tar.gz", hash = "sha256:eae2587c581d6609289e44f30afe30edcc25fbc640b5d6aba2f3c3e81def55be"},
 ]
 
 [[package]]

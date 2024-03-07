@@ -339,12 +339,12 @@ https://conda.anaconda.org/conda-forge/linux-64/tiledb-2.20.1-h6997b71_2.conda#0
 https://conda.anaconda.org/conda-forge/noarch/cachecontrol-0.14.0-pyhd8ed1ab_0.conda#a661c39e223bf3038b38126b0bbf43d9
 https://repo.anaconda.com/pkgs/main/linux-64/ensureconda-1.4.3-py311h06a4308_0.conda#2857f498b7ed0188cca694d05fc95a5e
 https://repo.anaconda.com/pkgs/main/linux-64/folium-0.14.0-py311h06a4308_0.conda#ccb8ca695c6450a757a7c0221f02ff10
-https://conda.anaconda.org/conda-forge/linux-64/libgdal-3.8.4-h9323651_0.conda#f0444ecc68c3f7d0855c9dd6bc3424a7
+https://conda.anaconda.org/conda-forge/linux-64/libgdal-3.8.3-h9323651_3.conda#ade2a401e8a96a184e659545b97970cf
 https://repo.anaconda.com/pkgs/main/linux-64/nbconvert-7.10.0-py311h06a4308_0.conda#45765508cfa84c24b7faba9ce063ea83
 https://repo.anaconda.com/pkgs/main/linux-64/requests-toolbelt-1.0.0-py311h06a4308_0.conda#53b9b999d06502302fcabedc60184654
 https://conda.anaconda.org/conda-forge/noarch/unearth-0.14.0-pyhd8ed1ab_0.conda#6ee75538d26bba9f6b5c7e4043d6562a
 https://conda.anaconda.org/conda-forge/noarch/cachecontrol-with-filecache-0.14.0-pyhd8ed1ab_0.conda#4c08fa6e7d1d3f124ad815e21b2210e9
-https://conda.anaconda.org/conda-forge/linux-64/gdal-3.8.4-py311h8be719e_0.conda#de4d128805c8e1cbe408a93be1f715f3
+https://conda.anaconda.org/conda-forge/linux-64/gdal-3.8.3-py311h8be719e_3.conda#ac53bbaf5bc833d00af7b837e5cdc315
 https://repo.anaconda.com/pkgs/main/linux-64/jupyter_server-2.10.0-py311h06a4308_0.conda#1620428989195ff372cd59667c1c00d9
 https://conda.anaconda.org/conda-forge/linux-64/pdm-2.12.4-py311h38be061_1.conda#35586b91557cea74c7fba7f763ffb553
 https://conda.anaconda.org/conda-forge/linux-64/rasterio-1.3.9-py311ha38370a_2.conda#af5a87ac084f23d095ed9efff8bdfe16

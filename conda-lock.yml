@@ -3850,62 +3850,62 @@ package:
   category: main
   optional: false
 - name: gdal
-  version: 3.8.4
+  version: 3.8.3
   manager: conda
   platform: linux-64
   dependencies:
     hdf5: '>=1.14.3,<1.14.4.0a0'
     libgcc-ng: '>=12'
-    libgdal: 3.8.4
+    libgdal: 3.8.3
     libstdcxx-ng: '>=12'
     libxml2: '>=2.12.5,<3.0a0'
     numpy: '>=1.23.5,<2.0a0'
     openssl: '>=3.2.1,<4.0a0'
     python: '>=3.11,<3.12.0a0'
     python_abi: 3.11.*
-  url: https://conda.anaconda.org/conda-forge/linux-64/gdal-3.8.4-py311h8be719e_0.conda
+  url: https://conda.anaconda.org/conda-forge/linux-64/gdal-3.8.3-py311h8be719e_3.conda
   hash:
-    md5: de4d128805c8e1cbe408a93be1f715f3
-    sha256: 8c54dabcc6152c22da82e69bdf7923ea58370986056aa0a0757bc24a4824be0d
+    md5: ac53bbaf5bc833d00af7b837e5cdc315
+    sha256: a074c034e56fe98f65c7a158306a2601cd1e0bec943f7eb15b6beb1fbf8cc8b4
   category: main
   optional: false
 - name: gdal
-  version: 3.8.4
+  version: 3.8.3
   manager: conda
   platform: linux-aarch64
   dependencies:
     hdf5: '>=1.14.3,<1.14.4.0a0'
     libgcc-ng: '>=12'
-    libgdal: 3.8.4
+    libgdal: 3.8.3
     libstdcxx-ng: '>=12'
     libxml2: '>=2.12.5,<3.0a0'
     numpy: '>=1.23.5,<2.0a0'
     openssl: '>=3.2.1,<4.0a0'
     python: '>=3.11,<3.12.0a0'
     python_abi: 3.11.*
-  url: https://conda.anaconda.org/conda-forge/linux-aarch64/gdal-3.8.4-py311h3b5b607_0.conda
+  url: https://conda.anaconda.org/conda-forge/linux-aarch64/gdal-3.8.3-py311h3b5b607_3.conda
   hash:
-    md5: 8cfa2b4d9c9e63241ebb5806476fc4c7
-    sha256: d4be2b65f70f1da2ed3f03d887b190215a22fa04017969c16a901a7faef6a2e8
+    md5: 8b3f8d0046be11b68c9a7f5c1ab007e8
+    sha256: 487c2a7fc637ea8adfc8a359b58c3a2fef06dc6b5e3d7a743af535a87078ccd2
   category: main
   optional: false
 - name: gdal
-  version: 3.8.4
+  version: 3.8.3
   manager: conda
   platform: osx-arm64
   dependencies:
     hdf5: '>=1.14.3,<1.14.4.0a0'
     libcxx: '>=16'
-    libgdal: 3.8.4
+    libgdal: 3.8.3
     libxml2: '>=2.12.5,<3.0a0'
     numpy: '>=1.23.5,<2.0a0'
     openssl: '>=3.2.1,<4.0a0'
     python: '>=3.11,<3.12.0a0'
     python_abi: 3.11.*
-  url: https://conda.anaconda.org/conda-forge/osx-arm64/gdal-3.8.4-py311h43f0207_0.conda
+  url: https://conda.anaconda.org/conda-forge/osx-arm64/gdal-3.8.3-py311h43f0207_3.conda
   hash:
-    md5: 4ddc8810dd43a3406dca1d5fffb6201d
-    sha256: 452b2486f50802dd8c8754320c832aa5bae8f3a5e6967ef5c72ef01932449507
+    md5: fb4b1a0ee846bc0a6010881b98703876
+    sha256: 531eb65e6cdb7255965956dbf0048e03268126db407a8993ea25adbf0a4ecbd4
   category: main
   optional: false
 - name: geopandas
@@ -6792,7 +6792,7 @@ package:
   category: main
   optional: false
 - name: libgdal
-  version: 3.8.4
+  version: 3.8.3
   manager: conda
   platform: linux-64
   dependencies:
@@ -6839,14 +6839,14 @@ package:
     xerces-c: '>=3.2.5,<3.3.0a0'
     xz: '>=5.2.6,<6.0a0'
     zstd: '>=1.5.5,<1.6.0a0'
-  url: https://conda.anaconda.org/conda-forge/linux-64/libgdal-3.8.4-h9323651_0.conda
+  url: https://conda.anaconda.org/conda-forge/linux-64/libgdal-3.8.3-h9323651_3.conda
   hash:
-    md5: f0444ecc68c3f7d0855c9dd6bc3424a7
-    sha256: af88738b2eda7d388daad5bd7dd8fe66efbaba300921ecb6fb03d9c5823a950d
+    md5: ade2a401e8a96a184e659545b97970cf
+    sha256: a3293d2f4090ec62b0fa5f978d89c44e8077655a3487496b2d169701636f19fb
   category: main
   optional: false
 - name: libgdal
-  version: 3.8.4
+  version: 3.8.3
   manager: conda
   platform: linux-aarch64
   dependencies:
@@ -6892,14 +6892,14 @@ package:
     xerces-c: '>=3.2.5,<3.3.0a0'
     xz: '>=5.2.6,<6.0a0'
     zstd: '>=1.5.5,<1.6.0a0'
-  url: https://conda.anaconda.org/conda-forge/linux-aarch64/libgdal-3.8.4-h79c3f81_0.conda
+  url: https://conda.anaconda.org/conda-forge/linux-aarch64/libgdal-3.8.3-h79c3f81_3.conda
   hash:
-    md5: 6d022f8c170b1760712d49f6ec9e8315
-    sha256: 84645235ef09f83417934935e8f73a749534351c7cc06e9e083682806753082e
+    md5: 1a2bbc86bd93258b11aa2b2a2e2cee9a
+    sha256: f194c81ad3dd68c8a1860557b62577b95443ec44c10a7a378598a24865d90216
   category: main
   optional: false
 - name: libgdal
-  version: 3.8.4
+  version: 3.8.3
   manager: conda
   platform: osx-arm64
   dependencies:
@@ -6943,10 +6943,10 @@ package:
     xerces-c: '>=3.2.5,<3.3.0a0'
     xz: '>=5.2.6,<6.0a0'
     zstd: '>=1.5.5,<1.6.0a0'
-  url: https://conda.anaconda.org/conda-forge/osx-arm64/libgdal-3.8.4-ha86f356_0.conda
+  url: https://conda.anaconda.org/conda-forge/osx-arm64/libgdal-3.8.3-ha86f356_3.conda
   hash:
-    md5: a5d5f05fd2c03b0f1ba4863c8a1a0632
-    sha256: bff62d710f8a3ae6a0c4671c0584a7680e9e3a468003367ddf5bee8c90ff0079
+    md5: 1694d40061ce39544a60a87557d498b5
+    sha256: dee71a9ad9d79aa7984fbecac7a6b36c8cdd4164f0513362daf02c79834672da
   category: main
   optional: false
 - name: libgfortran
