@@ -21,7 +21,7 @@ from numpy import array, random
 from osgeo.gdal import GRA_NearestNeighbour, Warp, WarpOptions
 from pandas import to_datetime
 from tqdm import tqdm
-from xarray import DataArray
+from xarray import DataArray, Dataset
 
 from .utils import ISO_DATE_FORMAT_STR, DateType, date_range_generator
 
@@ -95,7 +95,7 @@ def enforce_date_changes(
     >>> ts_4_years: xr.DataArray = enforce_date_changes(
     ...     xarray_spatial_4_years, xarray_spatial_4_years)
     >>> ts_4_years
-    <xarray.DataArray (time: 1437, space: 3)>...
+    <xarray.DataArray 'xa_template' (time: 1437, space: 3)>...
     array([[0.5488135 , 0.71518937, 0.60276338],
            [0.43758721, 0.891773  , 0.96366276],
            [0.38344152, 0.79172504, 0.52889492],
@@ -205,8 +205,10 @@ def xarray_example(
     coordinates: dict[str, tuple[float, float]] = CITY_COORDS,
     skip_dates: Iterable[datetime.date] | None = None,
     random_seed_int: int | None = None,
+    name: str | None = None,
+    as_dataset: bool = False,
     **kwargs,
-) -> DataArray:
+) -> DataArray | Dataset:
     """Generate spatial and temporal `xarray` objects.
 
     Parameters
@@ -221,6 +223,10 @@ def xarray_example(
     skip_dates
         A list of `date` objects to drop/skip between
         `start_date` and `end_date`.
+    as_dataset
+        Convert output to `Dataset`.
+    name
+        Name of returned `DataArray` and `Dataset`.
     kwargs
         Additional parameters to pass to `date_range_generator`.
 
@@ -233,7 +239,7 @@ def xarray_example(
     Examples
     --------
     >>> xarray_example('1980-11-30', '1980-12-5')
-    <xarray.DataArray (time: 5, space: 3)>...
+    <xarray.DataArray 'xa_template' (time: 5, space: 3)>...
     array([[..., ..., ...],
            [..., ..., ...],
            [..., ..., ...],
@@ -253,6 +259,8 @@ def xarray_example(
             **kwargs,
         )
     )
+    if not name:
+        name = f"xa_template"
     if isinstance(random_seed_int, int):
         random.seed(random_seed_int)  # ensure results are predictable
     data: array = random.rand(len(dates), len(coordinates))
@@ -260,8 +268,9 @@ def xarray_example(
     # If useful, add lat/lon (currently not working)
     # lat: list[float] = [coord[0] for coord in coordinates.values()]
     # lon: list[float] = [coord[1] for coord in coordinates.values()]
-    return DataArray(
+    da: DataArray = DataArray(
         data,
+        name=name,
         coords=[
             to_datetime(dates),
             spaces,
@@ -274,6 +283,10 @@ def xarray_example(
         # coords=[dates, spaces, lon, lat],
         # dims=["time", "space", "lon", "lat"]
     )
+    if as_dataset:
+        return da.to_dataset()
+    else:
+        return da
 
 
 def interp_xr_time_series(
@@ -286,7 +299,7 @@ def interp_xr_time_series(
     limit: int = 5,
     fill_na_dates: bool = False,
     **kwargs,
-) -> xr.Dataset | xr.DataArray:
+) -> xr.DataArray:
     """Workaround convert_calendar misbehavior with monthly data files.
 
     For leap years, the conversion assigns dropped data to the previous
@@ -315,22 +328,24 @@ def interp_xr_time_series(
     ...     xarray_spatial_6_days_2_skipped,
     ...     xarray_spatial_8_days)
     >>> filled_2_days
-    <xarray.DataArray (time: 10, space: 3)>...
-    array([[0.5488135 , 0.71518937, 0.60276338],
-           [0.54488318, 0.4236548 , 0.64589411],
-           [0.43758721, 0.891773  , 0.96366276],
-           [0.38344152, 0.79172504, 0.52889492],
-           [0.56804456, 0.92559664, 0.07103606],
-           [0.0871293 , 0.0202184 , 0.83261985],
-           [0.77815675, 0.87001215, 0.97861834],
-           [0.78515736, 0.73383455, 0.91258862],
-           [0.79215796, 0.59765696, 0.8465589 ],
-           [0.79915856, 0.46147936, 0.78052918]])
+    <xarray.Dataset> Size: 440B
+    Dimensions:      (space: 3, time: 10)
     Coordinates:
-      * space    (space) <U10 ...'Glasgow' 'Manchester' 'London'
-      * time     (time) datetime64[ns] ...1980-11-30 ... 1980-12-09
+      * space        (space) <U10 120B 'Glasgow' 'Manchester' 'London'
+      * time         (time) datetime64[ns] 80B 1980-11-30 1980-12-01 ... 1980-12-09
+    Data variables:
+        xa_template  (time, space) float64 240B 0.5488 0.7152 ... 0.4615 0.7805
+    >>> # assert False
+    >>> # interp_xr_time_series(xarray_spatial_4_years_360_day, xarray_spatial_4_years)
     """
+    array_name: str
+    if isinstance(xr_time_series, DataArray):
+        array_name = xr_time_series.name or "to_convert"
+        xr_time_series = xr_time_series.to_dataset(name=array_name)
     if check_ts_data is not None:
+        if isinstance(check_ts_data, DataArray):
+            array_name = check_ts_data.name or "to_check"
+            check_ts_data = check_ts_data.to_dataset(name=array_name)
         intermediate_ts: xr.DataArray | xr.Dataset = xr_time_series.interp_like(
             check_ts_data
         )

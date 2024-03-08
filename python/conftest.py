@@ -29,10 +29,9 @@ from clim_recal.utils import (
     iter_to_tuple_strs,
 )
 from coverage_badge.__main__ import main as gen_cov_badge
-from numpy import array, random
 from osgeo.gdal import DataTypeUnion
 from pandas import to_datetime
-from xarray import DataArray
+from xarray import DataArray, Dataset
 
 # Date Range covering leap year
 XARRAY_START_DATE_STR: Final[str] = "1980-11-30"
@@ -252,6 +251,18 @@ def xarray_spatial_4_years(
 
 
 @pytest.fixture
+def xarray_spatial_4_years_360_day(
+    xarray_spatial_temporal: Callable,
+    end_date_str: str = XARRAY_END_DATE_4_YEARS,
+) -> Dataset:
+    """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30."""
+    four_normal_years: Dataset = xarray_spatial_temporal(
+        end_date_str=end_date_str
+    ).to_dataset(name="360-day")
+    return four_normal_years.convert_calendar("360_day", align_on="year")
+
+
+@pytest.fixture
 def conda_lock_file_manager() -> CondaLockFileManager:
     return CondaLockFileManager()
 
@@ -266,6 +277,7 @@ def doctest_auto_fixtures(
     xarray_spatial_6_days_2_skipped: DataArray,
     xarray_spatial_8_days: DataArray,
     xarray_spatial_4_years: DataArray,
+    xarray_spatial_4_years_360_day: Dataset,
     conda_lock_file_manager: CondaLockFileManager,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
@@ -302,6 +314,7 @@ def doctest_auto_fixtures(
     ] = xarray_spatial_6_days_2_skipped
     doctest_namespace["xarray_spatial_8_days"] = xarray_spatial_8_days
     doctest_namespace["xarray_spatial_4_years"] = xarray_spatial_4_years
+    doctest_namespace["xarray_spatial_4_years_360_day"] = xarray_spatial_4_years_360_day
     doctest_namespace["conda_lock_file_manager"] = conda_lock_file_manager
 
 
