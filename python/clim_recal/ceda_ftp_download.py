@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import argparse
 import ftplib
 import os
@@ -7,7 +7,9 @@ from datetime import datetime
 from pathlib import Path
 
 
-def download_ftp(input: str, output: str, username: str, password: str, order: int) -> None:
+def download_ftp(
+    input: str, output: str, username: str, password: str, order: int
+) -> None:
     """Function to connect to the CEDA archive and download data.
 
     You need to have a user account and provide your username and
@@ -21,7 +23,8 @@ def download_ftp(input: str, output: str, username: str, password: str, order: i
         or top level folder like `/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85` if you want to
         download all files in all sub-directories).
     output
-        Path to save the downloaded data - sub-directories will be created automatically under the output directory.
+        Path to save the downloaded data - sub-directories will be created automatically under the
+        output directory.
     username
         CEDA registered username
     password
@@ -33,7 +36,8 @@ def download_ftp(input: str, output: str, username: str, password: str, order: i
         `1`: reverse order
         `2`: shuffle.
 
-        This functionality allows to run several downloads in parallel without rewriting files that are being downloaded.
+        This functionality allows to run several downloads in parallel without rewriting files
+        that are being downloaded.
     """
 
     # If directory doesn't exist make it
@@ -100,7 +104,7 @@ if __name__ == "__main__":
     # Adding optional argument
     parser.add_argument(
         "--input",
-        help="Path where the CEDA data to download is located. This can be a path with"
+        help="Path where the CEDA data to download is located. This can be a path with "
         "or without subdirectories. Set to `/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/`"
         " to download all the raw UKCP2.2 climate projection data used in clim-recal.",
         required=True,

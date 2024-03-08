@@ -1,0 +1,114 @@
+---
+title: "Docker configurations"
+---
+
+The `compose.yml` file and `compose/` folder provider `Docker` configurations for deploying and testing this code and documentation reproducibly. These require an internet connection and `Docker` installation.
+
+# Install `Docker`
+
+The safest way to install `Docker` is following the instructions they provide: <https://docs.docker.com/get-docker/> which covers `linux`, `macOS` and `windows`. For local installs `Docker Desktop` is often the simplest option.
+
+# Default `jupyter`, `rstudio` and `docs`
+
+Assuming you have an internet connection, the `compose.yml` file provides a configuration to build and run the view configurations via `RStudio`, `jupyter` and `docs` (via `quarto`).
+
+```bash
+cd clim-recal
+docker compose build
+```
+
+This can take some time, including dowloading the dependencies and building components, especially the `docs`. Once built, it is fairly quick to run, and components are cached.
+
+```bash
+docker compose up
+```
+
+This will print `logs` of build and any events on the terminal, and it can be stopped by running `CTL-C`.
+
+Running
+```bash
+docker compose --detach
+```
+will run all components in the background and allow that terminal to be used. To shut that down
+```bash
+docker compose down
+```
+should suffice.
+
+# Server for multiple users
+
+To provide a server for users to explore and run `clim-recal` code and environment, we provide some utilities to ease that process within `python/utils.py`. These scripts can help automate creating a series of users within `JupyterHub` or `RStuido` environements.
+
+## Adding multiple users
+
+Some utility functions are provided to ease adding many users for a workshop. We *do not recommend* using this for any long term deployment, and certainly not for any data or environments with security concerns.
+
+::: {.callout-warning}
+These examples are *not tested for security*. Rather: this is intended for a *short* workshop that can scale a series of environements generated via `docker` for many users to have remote access to play with the code and data provided.
+:::
+
+Our usecase is primarily for within a `docker` deploy with `root` permission.
+
+A list of user names and passwords are needed, and by default we assume those are in a table format in the following structure:
+
+| user_name | password          |
+|-----------|-------------------|
+| sally	    | fig*new£kid       |
+| george	  | tree&iguana*sky   |
+| susan	    | history!bill-walk |
+
+which in `csv` would look like:
+
+```csv
+user_name,password
+sally,fig*new£kid
+george,tee&iguana*sky
+susan,history!bill-walk
+```
+
+To generate basic user accounts one could run the following with `root` permission in an `rstudio` or `jupyter` environment (assuming `rstudio` has been built):
+
+```bash
+docker compose up -d jupyter
+[+] Running 1/1
+ ✔ Container clim-recal-jupyter-1  Started
+docker compose -u 0 exec jupyter bash
+(base) root@aha22hnum:~#
+
+```
+
+which should instantiate a `bash` terminal in the `Docker` environment for the default `jupyter` `Docker` `root` user. The following demonstrates creating a `csv` file config in `test_auth.csv`:
+
+```python
+>>> from pathlib import Path
+>>> import csv
+>>> csv_path: Path = 'test_auth.csv'
+>>> auth_dict: dict[str, str] = {
+...    'sally': 'fig*new£kid',
+...    'george': 'tee&iguana*sky',
+...    'susan': 'history!bill-walk',}
+>>> field_names: tuple[str, str] = ('user_name', 'password')
+>>> with open(csv_path, 'w') as csv_file:
+...     writer = csv.writer(csv_file)
+...     line_num: int = writer.writerow(('user_name', 'password'))
+...     for user_name, password in auth_dict.items():
+...         line_num = writer.writerow((user_name, password))
+```
+
+and then with that file generate users and their home folders from `test_auth.csv`:
+
+```python
+>>> from utils import make_users, csv_reader
+>>> from pathlib import Path
+>>>
+>>> user_paths: tuple[Path, ...] = tuple(make_users(
+...     file_path=csv_path,
+...     user_col="user_name",
+...     password_col="password",
+...     file_reader=csv_reader,
+...     code_path=JUPYTER_DOCKER_USER_PATH,
+... ))
+>>> tuple(user_paths)
+('/home/sally', '/home/george', '/home/susan')
+>>> csv_path.unlink()
+```

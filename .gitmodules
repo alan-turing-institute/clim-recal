@@ -2,5 +2,5 @@
 	path = python/debiasing/cmethods
 	url = https://github.com/alan-turing-institute/python-cmethods
 [submodule "python/debiasing/python-cmethods"]
-	path = python/debiasing/python-cmethods
+	path = python/clim_recal/debiasing/python-cmethods
 	url = https://github.com/alan-turing-institute/python-cmethods

@@ -4,43 +4,14 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - llvm-openmp=17.0.6
-  - python=3.10
+  # - r-quarto=1.4
+  - python=3.11
   - gdal=3.8.3
-    # - r-quarto=1.3
-  - tk=8.6.12
-  - tzdata=2023c
-  - wheel=0.41.2
-  - xz=5.4.2
-  - pip:
-    - affine==2.3.1
-    - backports.strenum==1.2.8
-    - certifi==2024.2.2
-    - coverage-badge==1.1.0
-    - cftime==1.6.2
-    - cligj==0.7.2
-    - geopandas==0.12.2
-    - ipython==8.15.0
-    - jupyterlab==4.0.12
-    - matplotlib==3.6.1
-    - netcdf4==1.6.1
-    - numpy==1.23.4
-    - openpyxl==3.1.2
-    - packaging==21.3
-    - pandas==1.5.1
-    - pillow==9.4.0
-    - pre-commit==3.5.0
-    - pyparsing==3.0.9
-    - pyproj==3.4.0
-    - python-dateutil==2.8.2
-    - pytest-cov==4.1.0
-    - pytest-sugar==0.9.7
-    - pytz==2022.5
-    - quartodoc==0.7.2
-    - rasterio==1.3.3
-    - rioxarray==0.12.3
-    - scipy==1.10.0
-    - six==1.16.0
-    - snuggs==1.4.7
-    - tqdm==4.64.1
-    - xarray==2023.2.0
+  # - tk=8.6.12
+  # - tzdata=2023c
+  # - wheel=0.41.2
+  # - xz=5.4.2
+platforms:
+  - osx-arm64
+  - linux-64
+  - linux-aarch64

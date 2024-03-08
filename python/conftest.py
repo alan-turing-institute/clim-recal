@@ -1,12 +1,12 @@
-import pprint
 import sys
+from datetime import date
 from os import PathLike
 from pathlib import Path
-from typing import Callable, Final
+from pprint import pprint
+from typing import Callable, Final, Iterable
 
 import pytest
-from coverage_badge.__main__ import main as gen_cov_badge
-from debiasing.debias_wrapper import (
+from clim_recal.debiasing.debias_wrapper import (
     CALIB_DATES_STR_DEFAULT,
     CMETHODS_FILE_NAME,
     CMETHODS_OUT_FOLDER_DEFAULT,
@@ -22,28 +22,27 @@ from debiasing.debias_wrapper import (
     RunOptions,
     VariableOptions,
 )
-from numpy import array, random
-from utils import (
+from clim_recal.resample import CITY_COORDS, xarray_example
+from clim_recal.utils import (
     ISO_DATE_FORMAT_STR,
-    DateType,
-    date_range_generator,
+    CondaLockFileManager,
     iter_to_tuple_strs,
 )
+from coverage_badge.__main__ import main as gen_cov_badge
+from numpy import array, random
+from osgeo.gdal import DataTypeUnion
+from pandas import to_datetime
 from xarray import DataArray
 
 # Date Range covering leap year
 XARRAY_START_DATE_STR: Final[str] = "1980-11-30"
 XARRAY_END_DATE_4_DAYS: Final[str] = "1980-12-5"
+XARRAY_END_DATE_8_DAYS: Final[str] = "1980-12-10"
+XARRAY_SKIP_2_FROM_8_DAYS: Final[tuple[str, str]] = (
+    "1980-12-7",
+    "1980-12-8",
+)
 XARRAY_END_DATE_4_YEARS: Final[str] = "1984-11-30"
-
-GLASGOW_COORDS: Final[tuple[float, float]] = (55.86279, -4.25424)
-MANCHESTER_COORDS: Final[tuple[float, float]] = (53.48095, -2.23743)
-LONDON_COORDS: Final[tuple[float, float]] = (51.509865, -0.118092)
-CITY_COORDS: Final[dict[str, tuple[float, float]]] = {
-    "Glasgow": GLASGOW_COORDS,
-    "Manchester": MANCHESTER_COORDS,
-    "London": LONDON_COORDS,
-}
 
 
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
@@ -51,11 +50,7 @@ CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData"
 CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateData")
 TEST_PATH = Path().absolute()
 PYTHON_DIR_NAME: Final[Path] = Path("python")
-MODULE_NAMES: Final[tuple[PathLike, ...]] = (
-    "debiasing",
-    "data_download",
-    "load_data",
-)
+MODULE_NAMES: Final[tuple[PathLike, ...]] = ("debiasing",)
 
 CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str, ...]] = (
     "python",
@@ -125,6 +120,27 @@ PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT: Final[int] = 4
 
 
 @pytest.fixture
+def mod_folder_files_count_correct() -> int:
+    return MOD_FOLDER_FILES_COUNT_CORRECT
+
+
+@pytest.fixture
+def obs_folder_files_count_correct() -> int:
+    return OBS_FOLDER_FILES_COUNT_CORRECT
+
+
+@pytest.fixture
+def preprocess_out_folder_files_count_correct() -> int:
+    """Return `PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT`."""
+    return PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT
+
+
+@pytest.fixture
+def cli_preprocess_default_command_str_correct() -> str:
+    return CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
+
+
+@pytest.fixture
 def is_platform_darwin() -> bool:
     """Check if `sys.platform` is `Darwin` (macOS)."""
     return sys.platform.startswith("darwin")
@@ -155,21 +171,15 @@ def is_climate_data_mounted(climate_data_mount_path) -> bool:
     return climate_data_mount_path.exists()
 
 
-@pytest.fixture(autouse=True)
-def ensure_python_path() -> None:
-    """Return path for test running."""
-    if not set(MODULE_NAMES) <= set(path.name for path in TEST_PATH.iterdir()):
-        raise ValueError(
-            f"'clim-recal' python tests must be "
-            f"run in 'clim-recal/{PYTHON_DIR_NAME}', "
-            f"not '{TEST_PATH.absolute()}'"
-        )
-
-
-@pytest.fixture
-def preprocess_out_folder_files_count_correct() -> int:
-    """Return `PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT`."""
-    return PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT
+# @pytest.fixture(autouse=True)
+# def ensure_python_path() -> None:
+#     """Return path for test running."""
+#     if not set(MODULE_NAMES) <= set(path.name for path in TEST_PATH.iterdir()):
+#         raise ValueError(
+#             f"'clim-recal' python tests must be "
+#             f"run in 'clim-recal/{PYTHON_DIR_NAME}', "
+#             f"not '{TEST_PATH.absolute()}'"
+#         )
 
 
 @pytest.fixture
@@ -185,36 +195,16 @@ def xarray_spatial_temporal() -> (
         start_date_str: str = XARRAY_START_DATE_STR,
         end_date_str: str = XARRAY_END_DATE_4_YEARS,
         coordinates: dict[str, tuple[float, float]] = CITY_COORDS,
+        skip_dates: Iterable[date] | None = None,
         **kwargs,
     ) -> DataArray:
-        dates: list[DateType] = list(
-            date_range_generator(
-                start_date=start_date_str,
-                end_date=end_date_str,
-                start_format_str=ISO_DATE_FORMAT_STR,
-                end_format_str=ISO_DATE_FORMAT_STR,
-                **kwargs,
-            )
-        )
-        random.seed(0)  # ensure results are predictable
-        data: array = random.rand(len(dates), len(coordinates))
-        spaces: list[str] = list(coordinates.keys())
-        # If useful, add lat/lon (currently not working)
-        # lat: list[float] = [coord[0] for coord in coordinates.values()]
-        # lon: list[float] = [coord[1] for coord in coordinates.values()]
-        return DataArray(
-            data,
-            coords=[
-                dates,
-                spaces,
-            ],
-            dims=[
-                "time",
-                "space",
-            ],
-            # If useful, add lat/lon (currently not working)
-            # coords=[dates, spaces, lon, lat],
-            # dims=["time", "space", "lon", "lat"]
+        return xarray_example(
+            start_date=start_date_str,
+            end_date=end_date_str,
+            coordinates=coordinates,
+            skip_dates=skip_dates,
+            random_seed_int=0,
+            **kwargs,
         )
 
     return _xarray_spatial_temporal
@@ -230,6 +220,29 @@ def xarray_spatial_4_days(
 
 
 @pytest.fixture
+def xarray_spatial_8_days(
+    xarray_spatial_temporal: Callable,
+    end_date_str: str = XARRAY_END_DATE_8_DAYS,
+) -> DataArray:
+    """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-10."""
+    return xarray_spatial_temporal(end_date_str=end_date_str)
+
+
+@pytest.fixture
+def xarray_spatial_6_days_2_skipped(
+    xarray_spatial_temporal: Callable,
+    end_date_str: str = XARRAY_END_DATE_8_DAYS,
+    skip_dates: tuple[str, ...] = XARRAY_SKIP_2_FROM_8_DAYS,
+) -> DataArray:
+    """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-05."""
+    return xarray_spatial_temporal(
+        end_date_str=end_date_str,
+        skip_dates=skip_dates,
+        skip_dates_format_str=ISO_DATE_FORMAT_STR,
+    )
+
+
+@pytest.fixture
 def xarray_spatial_4_years(
     xarray_spatial_temporal: Callable,
     end_date_str: str = XARRAY_END_DATE_4_YEARS,
@@ -238,12 +251,22 @@ def xarray_spatial_4_years(
     return xarray_spatial_temporal(end_date_str=end_date_str)
 
 
+@pytest.fixture
+def conda_lock_file_manager() -> CondaLockFileManager:
+    return CondaLockFileManager()
+
+
 @pytest.fixture(autouse=True)
 def doctest_auto_fixtures(
     doctest_namespace: dict,
     is_platform_darwin: bool,
     is_climate_data_mounted: bool,
     preprocess_out_folder_files_count_correct: int,
+    xarray_spatial_4_days: DataArray,
+    xarray_spatial_6_days_2_skipped: DataArray,
+    xarray_spatial_8_days: DataArray,
+    xarray_spatial_4_years: DataArray,
+    conda_lock_file_manager: CondaLockFileManager,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
     doctest_namespace[
@@ -274,7 +297,12 @@ def doctest_auto_fixtures(
     doctest_namespace["pprint"] = pprint
     doctest_namespace["pytest"] = pytest
     doctest_namespace["xarray_spatial_4_days"] = xarray_spatial_4_days
+    doctest_namespace[
+        "xarray_spatial_6_days_2_skipped"
+    ] = xarray_spatial_6_days_2_skipped
+    doctest_namespace["xarray_spatial_8_days"] = xarray_spatial_8_days
     doctest_namespace["xarray_spatial_4_years"] = xarray_spatial_4_years
+    doctest_namespace["conda_lock_file_manager"] = conda_lock_file_manager
 
 
 def pytest_sessionfinish(session, exitstatus):
