@@ -10,7 +10,7 @@ ARG EXTERNAL_PORT=$LOCAL_PORT
 # an ARG
 ENV HOST_IP=0.0.0.0
 ENV LOCAL_PORT=${LOCAL_PORT}
-ARG py_ver=3.10
+ARG py_ver=3.11
 ENV DEBIAN_FRONTEND=noninteractive
 
 COPY . /app
@@ -24,8 +24,9 @@ ARG DOCKER_DATA_PATH=/mnt/vmfileshare
 
 USER root
 
-# Install the local python environemtn named 'clim-recal'
-RUN micromamba create -f environment.yml
+# Install the local python environment set via
+# `pre-commit` in .conda-linux-64
+RUN micromamba create -f .conda-linux-64.lock -n clim-recal
 
 
 CMD micromamba run -n clim-recal quartodoc build && \

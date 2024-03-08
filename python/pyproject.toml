@@ -1,0 +1,91 @@
+[project]
+name = "clim-recal"
+version = "0.1.0"
+description = "Resources to tackle systematic errors or biases in Regional Climate Models (RCMs)."
+readme = "README.md"
+authors = [
+    {name="Dr Ruth Bowyer"},
+    {name="Dr Griffith Rees"},
+    {name="Dr Camila Rangel Smith"},
+    {name="Dr Greg Mingas"},
+    {name="Dr Sophie Arana"},
+    {name="Dr Aoife Hughes"},
+    {name="Bowan Zhang"},
+    {name="Jennifer Ding"},
+    {name="Dr Andy Smith"},
+    {name="Dr Stuart Lynn"},
+]
+maintainers = [
+  {name="Dr Griffith Rees", email="grees@turing.ac.uk"},
+]
+license = {text = "MIT"}
+requires-python = "==3.11.*"
+dependencies = [
+    "tqdm<5.0.0,>=4.66.2",
+    "scipy<2.0.0,>=1.12.0",
+    "rioxarray<1.0.0,>=0.15.1",
+    "rasterio<2.0.0,>=1.3.9",
+    "python-dateutil<3.0.0,>=2.8.2",
+    "jupyterlab<5.0.0,>=4.1.2",
+    "matplotlib>=3.8.3",
+    "geopandas>=0.14.3",
+    "openpyxl>=3.1.2",
+    "gdal==3.8.3",
+    "conda-lock>=2.5.5",
+    "rich>=13.7.1",
+    "netcdf4>=1.6.5",
+    "pdm>=2.12.4",
+]
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.conda-lock]
+platforms = [
+    'osx-arm64', 'linux-64', 'linux-aarch64'
+]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = """
+    -ra -q
+    --doctest-modules
+    --ignore=clim_recal/debiasing/python-cmethods
+    --ignore=clim_recal/debiasing/preprocess_data.py
+    --ignore=clim_recal/debiasing/run_cmethods.py
+    -m "not server"
+    -m "not mount"
+    --pdbcls=IPython.terminal.debugger:TerminalPdb
+    --cov=.
+    --cov-report=term:skip-covered
+"""
+doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS",]
+testpaths = [
+    "tests",
+    "clim_recal",
+    # "utils.py",
+    # "resampling.py"
+]
+markers = [
+    "slow: slow tests (deselect with '-m \"not slow\"')",
+    "server: designed to only run on a server",
+    "mount: requires specifc data mounted",
+    "docker: requires running via docker jupyterlab",
+]
+
+[tool.pdm]
+plugins = [
+  "pdm-conda"
+]
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest-cov<5.0.0,>=4.1.0",
+    "pytest-sugar<2.0.0,>=1.0.0",
+    "quartodoc<1.0.0,>=0.7.2",
+    "pre-commit<4.0.0,>=3.6.2",
+    "coverage-badge<2.0.0,>=1.1.0",
+]
+
+[tool.pdm.build]
+includes = []

@@ -26,7 +26,15 @@ if (!require(devtools)) install.packages("devtools")
 install_github("hzambran/hydroTSM")
 install_github("hzambran/hydroGOF")
 
-knitr::opts_knit$set(root.dir="/mnt/vmfileshare/ClimateData/")
+# Assuming mounts based on Operating System
+
+# macOS
+if(Sys.info()[['sysname']] == 'Darwin') {
+  knitr::opts_knit$set(root.dir="/Volumes/vmfileshare/ClimateData/")
+} else {
+  # Assume os is ubuntu (linux) and drive is mounted as below
+  knitr::opts_knit$set(root.dir="/mnt/vmfileshare/ClimateData/")
+}
 
 # import packages
 library(ggplot2)
