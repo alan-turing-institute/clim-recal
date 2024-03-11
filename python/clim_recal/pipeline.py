@@ -3,8 +3,7 @@
 Following Andy's very helpful `excel` file, this manages
 a reproduction of all steps of the debiasing pipeline.
 
-Download Data
--------------
+# Download Data
 
 The `download_ftp` function from `ceda_ftp_download.py` can
 be used (with registered account user name and password),
@@ -20,8 +19,7 @@ Data Analysis (CEDA)
     - a 2.2km projection grid
     - Saved to `Raw/UKCP2.2/`
 
-Reproject UKCP
---------------
+# Reproject UKCP
 
 The `bash/reproject_one.sh` copies and reprojects `UKCP2.2`via `gdalwrap` to a `Raw/Reprojected_infill`:
 ```bash
@@ -35,8 +33,7 @@ Relevant `xarray` utilities:
 - [`convert_calendar`](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html)
 - [`interp_calendar`](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.interp_calendar.html)
 
-Resample HadUK-Grid
--------------------
+# Resample HadUK-Grid
 
 Previous approach:
 
@@ -59,12 +56,10 @@ resampled = data_360[[variable]].interp(
 - [ ] Ensure HADs still works
 - [ ] Add function for UKCP
 
-Cropping
---------
+# Cropping
 
 
-Pre-processing
---------------
+# Pre-processing
 
 - Originally used `debiasing.pre_processing.py`
 
@@ -72,8 +67,7 @@ New approach:
 
 - Refactor `debiasing.debias-wrapper`
 
-Debiasing
----------
+# Debiasing
 
 - `python`
     - Originally used `debiasing.pre_processing.py`
@@ -84,7 +78,7 @@ Debiasing
 
 """
 from pathlib import Path
-from typing import Final
+from typing import Any, Final
 
 from osgeo.gdal import Warp
 
@@ -92,3 +86,8 @@ from . import ceda_ftp_download, data_loader, resample
 
 REPROJECTION_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_one.sh")
 REPROJECTION_WRAPPER_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_all.sh")
+
+
+def main(**kwargs) -> dict[str, Any]:
+    """Run all elements of the pipeline."""
+    pass

@@ -47,9 +47,8 @@ website:
           - text: "Diagram"
             href: "docs/pipeline.qmd"
       - section: "R"
+        href: "R/README.md"
         contents:
-          - href: "R/README.md"
-            text: Overview
           - href: "R/misc/Identifying_Runs.md"
             text: Identifying Runs
           - section: "Comparing R and Python"
@@ -58,22 +57,27 @@ website:
                 text: "WIP Comparing HADs grids"
 
       - section: "python"
+        href: "python/README.md"
         contents:
-          - "python/README.md"
           - section: "Reference"
+            href: "docs/reference/index.qmd"
             contents:
-              - href: "docs/reference/ceda_ftp_download.qmd"
+              - href: "docs/reference/clim_recal.pipeline.qmd"
+                text: "Pipeline"
+              - href: "docs/reference/clim_recal.ceda_ftp_download.qmd"
                 text: "CEDA Data Access"
-              - href: "docs/reference/data_loader.qmd"
+              - href: "docs/reference/clim_recal.data_loader.qmd"
                 text: "Data Loading"
-              - href: "docs/reference/resampling.qmd"
+              - href: "docs/reference/clim_recal.resample.qmd"
                 text: "Data Resampling"
+              - href: "docs/reference/clim_recal.pipeline.qmd"
+                text: "Pipeline"
               - section: "Debiasing"
                 contents:
-                  - href: "docs/reference/debiasing.debias_wrapper.qmd"
+                  - href: "docs/reference/clim_recal.debiasing.debias_wrapper.qmd"
                     text: "Wrapper"
-              - href: "docs/reference/utils.qmd"
-                text: "Utils"
+              - href: "docs/reference/clim_recal.utils.qmd"
+                text: "Utilities"
       - text: "Docker"
         href: "docs/docker-configurations.qmd"
       - text: "Contributing"
@@ -98,11 +102,9 @@ quartodoc:
       contents:
         # the functions being documented in the package.
         # you can refer to anything: class methods, modules, etc..
-        - clim_recal
-        # - ceda_ftp_download
-        # # - load_data
-        # - resampling
-        # - data_loader
-        # - debiasing.debias_wrapper
-        # # - pipeline
-        # - utils
+        - clim_recal.pipeline
+        - clim_recal.ceda_ftp_download
+        - clim_recal.data_loader
+        - clim_recal.resample
+        - clim_recal.debiasing.debias_wrapper
+        - clim_recal.utils
