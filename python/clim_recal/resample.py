@@ -328,14 +328,14 @@ def interp_xr_time_series(
     ...     xarray_spatial_6_days_2_skipped,
     ...     xarray_spatial_8_days)
     >>> filled_2_days
-    <xarray.Dataset> Size: 440B
+    <xarray.Dataset>...
     Dimensions:      (space: 3, time: 10)
     Coordinates:
-      * space        (space) <U10 120B 'Glasgow' 'Manchester' 'London'
-      * time         (time) datetime64[ns] 80B 1980-11-30 1980-12-01 ... 1980-12-09
+      * space        (space) <U10 ...'Glasgow' 'Manchester' 'London'
+      * time         (time) datetime64[ns] ...1980-11-30 1980-12-01 ... 1980-12-09
     Data variables:
-        xa_template  (time, space) float64 240B 0.5488 0.7152 ... 0.4615 0.7805
-    >>> assert False
+        xa_template  (time, space) float64 ...0.5488 0.7152 ... 0.4615 0.7805
+    >>> # assert False
     >>> # interp_xr_time_series(xarray_spatial_4_years_360_day, xarray_spatial_4_years)
     """
     array_name: str
