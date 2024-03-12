@@ -4,7 +4,7 @@ from typing import Callable, Final
 import numpy as np
 import pytest
 import xarray as xr
-from clim_recal.resample import MONTH_DAY_XARRAY_LEAP_YEAR_DROP
+from clim_recal.resample import MONTH_DAY_XARRAY_LEAP_YEAR_DROP, xarray_example
 
 HADS_UK_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
 HADS_UK_RESAMPLED_DAY_LOCAL_PATH: Final[Path] = Path(
@@ -41,6 +41,54 @@ def test_leap_year_days(xarray_spatial_temporal: Callable) -> None:
         inclusive=True,
     )
     assert len(xarray_2024_2025) == LEAP_YAER_DAYS
+
+
+
+# This is roughly what I had in mind for https://github.com/alan-turing-institute/clim-recal/issues/132
+# This tests converting from a standard calendar to a 360_day calendar.
+# If would be good to have an equivalent test would be to convert from a 360_day calendar to a standard calendar. 
+# These should be two separate tests. Trying to generalise the test to cover both cases would overcomplicate
+# the code and make it harder to understand.
+@pytest.mark.parametrize(
+    # Only one of start_date and end_date are included the day counts
+    "start_date, end_date, real_days, model_days",
+    [
+        pytest.param(
+            # A whole year, most of which is in a leap year, but avoids the leap day
+            "2024-03-02", "2025-03-02", 365, 360, id="leap_year_but_no_leap_day"
+        ),
+        pytest.param(
+            # A whole year, the same date range as the previous test, 
+            # but includes the leap day and the majority of the days are in a non-leap year
+            "2023-03-02", "2024-03-02", 366, 360, id="leap_year_with_leap_day"
+        ),
+        pytest.param(
+            # An exact calendar year which *IS NOT* a leap year
+            "2023-01-01", "2024-01-01", 365, 360, id="non_leap_year"
+        ),
+        pytest.param(
+            # A leap day (just the days either side, in a leap year)
+            "2024-02-28", "2024-03-01", 2, 2, id="leap_day"
+        ),
+        pytest.param(
+            # A non-leap day (just the days either side, in a non-leap year)
+            "2023-02-28", "2023-03-01", 1, 1, id="non_leap_day"
+        ),
+        # Add more test cases to cover the different scenarios and edge cases
+    ],
+)
+def test_time_gaps_real_to_model_calendar(start_date, end_date, real_days, model_days):
+    # Create the "real world" dates, and then converted dates
+    base_dates = xarray_example(start_date, end_date)
+    model_dates = base_dates.convert_calendar("360_day", align_on="year")
+
+    # Check the total number of days are as expected
+    assert len(base_dates) == real_days
+    assert len(model_dates) == model_days
+
+    # Optionally now check which dates have been dropped and added
+    # Add more assertions here...
+
 
 
 # The test below was originally a rework of python/resampling/check_calendar.py
