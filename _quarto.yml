@@ -94,7 +94,7 @@ quartodoc:
 
   # write sidebar data to this file
   sidebar: _sidebar.yml
-  source_dir: ./python/clim_recal
+  source_dir: python/clim_recal
   # see: https://github.com/alan-turing-institute/clim-recal/issues/128
   sections:
     - title: Data Source Management

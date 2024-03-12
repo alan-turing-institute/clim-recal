@@ -22,6 +22,7 @@ https://conda.anaconda.org/conda-forge/linux-64/libgcc-ng-13.2.0-h807b86a_5.cond
 https://conda.anaconda.org/conda-forge/linux-64/aws-c-common-0.9.13-hd590300_0.conda#0ba89522712d993987e6d0fae108c721
 https://repo.anaconda.com/pkgs/main/linux-64/bzip2-1.0.8-h5eee18b_5.conda#9c8dec113089c4aca7392c6a3864f505
 https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.27.0-hd590300_0.conda#f6afff0e9ee08d2f1b897881a4f38cdb
+https://conda.anaconda.org/conda-forge/linux-64/fmt-10.2.1-h00ab1b0_0.conda#35ef8bc24bd34074ebae3c943d551728
 https://conda.anaconda.org/conda-forge/linux-64/geos-3.12.1-h59595ed_0.conda#8c0f4f71f5a59ceb0c6fa9f51501066d
 https://repo.anaconda.com/pkgs/main/linux-64/giflib-5.2.1-h5eee18b_3.conda#aa7d64adb3cd8a75d398167f8c29afc3
 https://conda.anaconda.org/conda-forge/linux-64/icu-73.2-h59595ed_0.conda#cc47e1facc155f91abd89b11e48e72ff
@@ -75,7 +76,7 @@ https://repo.anaconda.com/pkgs/main/linux-64/libedit-3.1.20230828-h5eee18b_0.con
 https://conda.anaconda.org/conda-forge/linux-64/libgfortran-ng-13.2.0-h69a702a_5.conda#e73e9cfd1191783392131e6238bdb3e9
 https://conda.anaconda.org/conda-forge/linux-64/libnghttp2-1.58.0-h47da74e_1.conda#700ac6ea6d53d5510591c4344d5c989a
 https://conda.anaconda.org/conda-forge/linux-64/libpng-1.6.43-h2797004_0.conda#009981dd9cfcaa4dbfa25ffaed86bcae
-https://conda.anaconda.org/conda-forge/linux-64/libprotobuf-4.25.2-h08a7969_1.conda#babbc506d2626698412c2e4ade78a20a
+https://conda.anaconda.org/conda-forge/linux-64/libprotobuf-4.25.3-h08a7969_0.conda#6945825cebd2aeb16af4c69d97c32c13
 https://conda.anaconda.org/conda-forge/linux-64/libre2-11-2023.09.01-h5a48ba9_2.conda#41c69fba59d495e8cf5ffda48a607e35
 https://conda.anaconda.org/conda-forge/linux-64/librttopo-1.1.0-h8917695_15.conda#20c3c14bc491f30daecaa6f73e2223ae
 https://conda.anaconda.org/conda-forge/linux-64/libsqlite-3.45.1-h2797004_0.conda#fc4ccadfbf6d4784de88c41704792562
@@ -84,6 +85,7 @@ https://conda.anaconda.org/conda-forge/linux-64/libxml2-2.12.5-h232c23b_0.conda#
 https://conda.anaconda.org/conda-forge/linux-64/libzip-1.10.1-h2629f0a_3.conda#ac79812548e7e8cf61f7b0abdef01d3b
 https://repo.anaconda.com/pkgs/main/linux-64/readline-8.2-h5eee18b_0.conda#be42180685cce6e6b0329201d9f48efb
 https://conda.anaconda.org/conda-forge/linux-64/s2n-1.4.5-h06160fa_0.conda#0d3d9c621239b674ac1b738df00a0793
+https://conda.anaconda.org/conda-forge/linux-64/spdlog-1.12.0-hd2e6256_2.conda#f37afc6ce10d45b9fae2f55ddc635b9f
 https://conda.anaconda.org/conda-forge/linux-64/tk-8.6.13-noxft_h4845f30_101.conda#d453b98d9c83e71da0741bb0ff4d76bc
 https://conda.anaconda.org/conda-forge/linux-64/xorg-libsm-1.2.4-h7391055_0.conda#93ee23f12bc2e684548181256edd2cf6
 https://conda.anaconda.org/conda-forge/linux-64/xorg-libx11-1.8.7-h8ee46fc_0.conda#49e482d882669206653b095f5206c05b
@@ -145,7 +147,7 @@ https://conda.anaconda.org/conda-forge/linux-64/libarchive-3.7.2-h2aa1ff5_1.cond
 https://conda.anaconda.org/conda-forge/linux-64/libblas-3.9.0-21_linux64_openblas.conda#0ac9f44fc096772b0aa092119b00c3ca
 https://conda.anaconda.org/conda-forge/linux-64/libcurl-8.5.0-hca28451_0.conda#7144d5a828e2cae218e0e3c98d8a0aeb
 https://repo.anaconda.com/pkgs/main/linux-64/libglib-2.78.4-hdc74915_0.conda#2f6d27741e931d5b6ba56e1a1312aaf0
-https://conda.anaconda.org/conda-forge/linux-64/libgrpc-1.61.1-h42401df_1.conda#224692c7a317ca23f9e1d5d4b3c8fa93
+https://conda.anaconda.org/conda-forge/linux-64/libgrpc-1.62.1-h15f2491_0.conda#564517a8cbd095cff75eb996d33d2b7e
 https://conda.anaconda.org/conda-forge/linux-64/libpq-16.2-h33b98f1_0.conda#fe0e297faf462ee579c95071a5211665
 https://conda.anaconda.org/conda-forge/linux-64/libtiff-4.6.0-ha9c0a0a_2.conda#55ed21669b2015f77c180feb1dd41930
 https://repo.anaconda.com/pkgs/main/linux-64/markupsafe-2.1.3-py311h5eee18b_0.conda#fcf7a9a851fc6ed09331e8fe517b7a12
@@ -246,7 +248,7 @@ https://repo.anaconda.com/pkgs/main/linux-64/jupyter_core-5.5.0-py311h06a4308_0.
 https://repo.anaconda.com/pkgs/main/noarch/jupyterlab_pygments-0.1.2-py_0.conda#af46aff4922ca45df6ba19b313df6070
 https://conda.anaconda.org/conda-forge/linux-64/lcms2-2.16-hb7c19ff_0.conda#51bb7010fc86f70eee639b4bb7a894f5
 https://conda.anaconda.org/conda-forge/linux-64/libcblas-3.9.0-21_linux64_openblas.conda#4a3816d06451c4946e2db26b86472cb6
-https://conda.anaconda.org/conda-forge/linux-64/libgoogle-cloud-2.21.0-h72bcb37_2.conda#14b15b923b9e45038f4193d06ecf5ae1
+https://conda.anaconda.org/conda-forge/linux-64/libgoogle-cloud-2.22.0-h9be4e54_1.conda#4b4e36a91e7dabf7345b82d85767a7c3
 https://conda.anaconda.org/conda-forge/linux-64/liblapack-3.9.0-21_linux64_openblas.conda#1a42f305615c3867684e049e85927531
 https://repo.anaconda.com/pkgs/main/linux-64/markdown-it-py-2.2.0-py311h06a4308_1.conda#4e7d5587597afa716a9fc03fcd20111b
 https://repo.anaconda.com/pkgs/main/linux-64/matplotlib-inline-0.1.6-py311h06a4308_0.conda#fc4ea14c818d6b5e61d6021ffcbd4ac8
@@ -282,14 +284,14 @@ https://repo.anaconda.com/pkgs/main/linux-64/cryptography-42.0.2-py311hdda0065_0
 https://conda.anaconda.org/conda-forge/linux-64/geotiff-1.7.1-h6b2125f_15.conda#218a726155bd9ae1787b26054eed8566
 https://repo.anaconda.com/pkgs/main/linux-64/gitpython-3.1.37-py311h06a4308_0.conda#67b9c34dbfdd2970e3b150bf8070c98e
 https://repo.anaconda.com/pkgs/main/linux-64/glib-2.78.4-h6a678d5_0.conda#045ff487547f7b2b7ff01648681b8ebe
-https://conda.anaconda.org/conda-forge/noarch/griffe-0.41.3-pyhd8ed1ab_0.conda#7c290d056cf05dad5e347af4e5cbc859
+https://conda.anaconda.org/conda-forge/noarch/griffe-0.42.0-pyhd8ed1ab_0.conda#9f464ae2cc26282ca79c7562377cd917
 https://repo.anaconda.com/pkgs/main/linux-64/httpx-0.26.0-py311h06a4308_0.conda#2a510beba27b1d3dbf441f431acec523
 https://repo.anaconda.com/pkgs/main/noarch/importlib_metadata-7.0.1-hd3eb1b0_0.conda#f764ec5ca8c8f808464764c83be0ead4
 https://repo.anaconda.com/pkgs/main/linux-64/jsonschema-specifications-2023.7.1-py311h06a4308_0.conda#a2fd0483162c590fd327328ba562c567
 https://repo.anaconda.com/pkgs/main/linux-64/jupyter_client-8.6.0-py311h06a4308_0.conda#281a8d56533f8219dba95524e905c126
 https://repo.anaconda.com/pkgs/main/linux-64/jupyter_server_terminals-0.4.4-py311h06a4308_1.conda#14c5869e65e8cdfb6cb37ce09e7a7e06
 https://conda.anaconda.org/conda-forge/linux-64/kealib-1.5.3-h2f55d51_0.conda#f7e7077802927590efc8bf7328208f12
-https://conda.anaconda.org/conda-forge/linux-64/libgoogle-cloud-storage-2.21.0-hc7a4891_2.conda#cc54c794dac0d76eb1adaf6172e9c59e
+https://conda.anaconda.org/conda-forge/linux-64/libgoogle-cloud-storage-2.22.0-hc7a4891_1.conda#7811f043944e010e54640918ea82cecd
 https://conda.anaconda.org/conda-forge/linux-64/libnetcdf-4.9.2-nompi_h9612171_113.conda#b2414908e43c442ddc68e6148774a304
 https://conda.anaconda.org/conda-forge/linux-64/libspatialite-5.1.0-h7bd4643_4.conda#127d36f9ee392fa81b45e81867ce30ab
 https://repo.anaconda.com/pkgs/main/linux-64/numexpr-2.8.7-py311h812550d_0.conda#39c63e3595295e19f648d0aa85147d0d
@@ -335,7 +337,7 @@ https://repo.anaconda.com/pkgs/main/linux-64/keyring-24.3.1-py311h06a4308_0.cond
 https://repo.anaconda.com/pkgs/main/linux-64/nbclient-0.8.0-py311h06a4308_0.conda#f5d6ffacb1b25ab49fc8c7a662920e4b
 https://conda.anaconda.org/conda-forge/noarch/quartodoc-0.7.2-pyhd8ed1ab_0.conda#9bf1905bef4492b77781e058cc27db35
 https://repo.anaconda.com/pkgs/main/linux-64/requests-2.31.0-py311h06a4308_1.conda#42310e390ca8f0919a03740656c707b8
-https://conda.anaconda.org/conda-forge/linux-64/tiledb-2.20.1-h6997b71_2.conda#0699e6cbb8521c6cab63b6d1f8de7f74
+https://conda.anaconda.org/conda-forge/linux-64/tiledb-2.20.1-hdfbda7f_3.conda#e18afbbc039251380298af4a92e2fa16
 https://conda.anaconda.org/conda-forge/noarch/cachecontrol-0.14.0-pyhd8ed1ab_0.conda#a661c39e223bf3038b38126b0bbf43d9
 https://repo.anaconda.com/pkgs/main/linux-64/ensureconda-1.4.3-py311h06a4308_0.conda#2857f498b7ed0188cca694d05fc95a5e
 https://repo.anaconda.com/pkgs/main/linux-64/folium-0.14.0-py311h06a4308_0.conda#ccb8ca695c6450a757a7c0221f02ff10
@@ -355,4 +357,4 @@ https://repo.anaconda.com/pkgs/main/linux-64/jupyterlab_server-2.25.1-py311h06a4
 https://repo.anaconda.com/pkgs/main/linux-64/notebook-shim-0.2.3-py311h06a4308_0.conda#859e22f6a2a2e57dfac41b4add5b5ded
 https://conda.anaconda.org/conda-forge/noarch/rioxarray-0.15.1-pyhd8ed1ab_0.conda#1ee15f68451f316e24e76b48f2b98aeb
 https://conda.anaconda.org/conda-forge/noarch/geopandas-0.14.3-pyhd8ed1ab_0.conda#d8e208e375441bf1404e9693f13f3c25
-https://conda.anaconda.org/conda-forge/noarch/jupyterlab-4.1.3-pyhd8ed1ab_0.conda#a046d8a6542392db403b35f692bc5423
+https://conda.anaconda.org/conda-forge/noarch/jupyterlab-4.1.4-pyhd8ed1ab_0.conda#5af1ffec7c245d1ab2bf0cec0148a4c3

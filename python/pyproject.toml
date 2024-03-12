@@ -64,8 +64,6 @@ doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS",]
 testpaths = [
     "tests",
     "clim_recal",
-    # "utils.py",
-    # "resampling.py"
 ]
 markers = [
     "slow: slow tests (deselect with '-m \"not slow\"')",

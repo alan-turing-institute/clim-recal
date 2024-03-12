@@ -258,7 +258,7 @@ def xarray_spatial_4_years_360_day(
     """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30."""
     four_normal_years: Dataset = xarray_spatial_temporal(
         end_date_str=end_date_str
-    ).to_dataset(name="360-day")
+    ).to_dataset(name="day_360")
     return four_normal_years.convert_calendar("360_day", align_on="year")
 
 

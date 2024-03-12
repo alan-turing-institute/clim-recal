@@ -6,6 +6,7 @@ from typing import Callable, Final
 import numpy as np
 import pytest
 import xarray as xr
+from clim_recal.resample import MONTH_DAY_XARRAY_LEAP_YEAR_DROP
 
 HADS_UK_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
 HADS_UK_RESAMPLED_DAY_LOCAL_PATH: Final[Path] = Path(
@@ -13,7 +14,7 @@ HADS_UK_RESAMPLED_DAY_LOCAL_PATH: Final[Path] = Path(
 )
 NORMAL_YEAR_DAYS: int = 365
 LEAP_YAER_DAYS: int = NORMAL_YEAR_DAYS + 1
-HADS_YEAR_DAYs: int = 360
+# HADS_YEAR_DAYs: int = 360
 
 
 @pytest.fixture
@@ -32,15 +33,17 @@ def hads_tasmax_resampled_day_path(climate_data_mount_path: Path) -> Path:
 # )
 
 
-@pytest.mark.xfail
-def test_leap_year_360_days(xarray_spatial_temporal: Callable) -> None:
+def test_leap_year_days(xarray_spatial_temporal: Callable) -> None:
     """Test covering a leap year, but should retain 360 days."""
     start_date_str: str = "2024-03-01"
     end_date_str: str = "2025-03-01"
     xarray_2024_2025: xr.DataArray = xarray_spatial_temporal(
-        start_date_str=start_date_str, end_date_str=end_date_str
+        start_date_str=start_date_str,
+        end_date_str=end_date_str,
+        inclusive=True,
     )
-    assert len(xarray_2024_2025) == HADS_YEAR_DAYs
+    assert len(xarray_2024_2025) == LEAP_YAER_DAYS
+    # assert len(xarray_2024_2025) == HADS_YEAR_DAYs
 
 
 @pytest.mark.mount

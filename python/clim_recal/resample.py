@@ -12,16 +12,17 @@ from dataclasses import dataclass
 from glob import glob
 from logging import getLogger
 from pathlib import Path
-from typing import Callable, Final, Iterable
+from typing import Any, Callable, Final, Iterable, Literal
 
 import numpy as np
-import pandas as pd
-import xarray as xr  # requires rioxarray extension
+
+# import xarray as xr  # requires rioxarray extension
 from numpy import array, random
 from osgeo.gdal import GRA_NearestNeighbour, Warp, WarpOptions
-from pandas import to_datetime
+from pandas import DatetimeIndex, to_datetime
 from tqdm import tqdm
-from xarray import DataArray, Dataset
+from xarray import DataArray, Dataset  # requires rioxarray extension
+from xarray.core.types import CFCalendar, InterpOptions
 
 from .utils import ISO_DATE_FORMAT_STR, DateType, date_range_generator
 
@@ -33,12 +34,34 @@ ChangeDayType = set[tuple[int, int]]
 MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
 """A `set` of tuples of month and day numbers for `enforce_date_changes`."""
 
-MONTH_DAY_ADD: ChangeDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1)}
-"""CONSIDER ADDING DAYS to 360."""
+MONTH_DAY_XARRAY_LEAP_YEAR_DROP: DropDayType = {
+    (1, 31),
+    (4, 1),
+    (6, 1),
+    (8, 1),
+    (9, 31),
+    (12, 1),
+}
+"""A `set` of month and day tuples dropped for `xarray.day_360` leap years."""
+
+MONTH_DAY_XARRAY_NO_LEAP_YEAR_DROP: DropDayType = {
+    (2, 6),
+    (4, 20),
+    (7, 2),
+    (9, 13),
+    (11, 25),
+}
+"""A `set` of month and day tuples dropped for `xarray.day_360` non leap years."""
+
+# MONTH_DAY_ADD: ChangeDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1)}
+# """CONSIDER ADDING DAYS to 360."""
 
 DEFAULT_INTERPOLATION_METHOD: str = "linear"
 """Default method to infer missing estimates in a time series."""
 
+CFCalendarSTANDARD: Final[str] = "standard"
+ConvertCalendarAlignOptions = Literal["date", "year", None]
+CPM_XR_TO_HADS_ALIGN_DEFAULT: Final[ConvertCalendarAlignOptions] = "date"
 
 RESAMPLING_PATH: Final[os.PathLike] = Path("Raw/python_refactor/Reprojected_infill")
 UK_SPATIAL_PROJECTION: Final[str] = "EPSG:27700"
@@ -58,81 +81,81 @@ CITY_COORDS: Final[dict[str, tuple[float, float]]] = {
 """Coordinates of Glasgow, Manchester and London as `(lon, lat)` `tuples`."""
 
 
-def enforce_date_changes(
-    raw_data: xr.Dataset,
-    converted_data: xr.Dataset,
-    month_day_drop: DropDayType = MONTH_DAY_DROP,
-) -> xr.Dataset:
-    """Workaround convert_calendar misbehavior with monthly data files.
-
-    For leap years, the conversion assigns dropped data to the previous
-    date instead of deleting it. Here we manually delete those dates to
-    avoid duplicates later in the pipeline. See
-    `https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html#xarray.Dataset.convert_calendar`
-    for more information, and for updates on issues see
-    `https://github.com/pydata/xarray/issues/8086`
-
-    Parameters
-    ----------
-    raw_data
-        The original data.
-    converted_data
-        The data after conversion.
-    month_day_drop
-        Set of `tuples` of numbers: month number and day number.
-
-    Returns
-    -------
-    The converted data with specific dates dropped.
-
-    Examples
-    --------
-    >>> enforce_date_changes(
-    ...     xarray_spatial_4_days,
-    ...     xarray_spatial_4_days)['time'].coords
-    Coordinates:
-      * time     (time) datetime64[ns] ...1980-11-30 ... 1980-12-04
-    >>> ts_4_years: xr.DataArray = enforce_date_changes(
-    ...     xarray_spatial_4_years, xarray_spatial_4_years)
-    >>> ts_4_years
-    <xarray.DataArray 'xa_template' (time: 1437, space: 3)>...
-    array([[0.5488135 , 0.71518937, 0.60276338],
-           [0.43758721, 0.891773  , 0.96366276],
-           [0.38344152, 0.79172504, 0.52889492],
-           ...,
-           [0.0916689 , 0.62816966, 0.52649637],
-           [0.50034874, 0.93687921, 0.88042738],
-           [0.71393397, 0.57754071, 0.25236931]])
-    Coordinates:
-      * time     (time) datetime64[ns] ...1980-11-30 ... 1984-11-29
-      * space    (space) <U10 ...'Glasgow' 'Manchester' 'London'
-    >>> len(ts_4_years) == 365*4 + 1  # Would keep all days
-    False
-    >>> len(ts_4_years) == 360*4      # Would enforce all years at 360 days
-    False
-    >>> len(ts_4_years)               # 3 days fewer than 360 per year
-    1437
-    """
-    time_values = pd.DatetimeIndex(raw_data.coords["time"].values)
-
-    # Get the indices of the dates to be dropped
-    index_to_drop = [
-        i
-        for i, (m, d) in enumerate(zip(time_values.month, time_values.day))
-        if (m, d) in month_day_drop
-    ]
-
-    # Filter indices that are within the bounds of the converted_data
-    index_to_drop = [
-        i for i in index_to_drop if i < len(converted_data.coords["time"].values)
-    ]
-
-    if index_to_drop:
-        converted_data = converted_data.drop_sel(
-            time=converted_data.coords["time"].values[index_to_drop]
-        )
-
-    return converted_data
+# def enforce_date_changes(
+#     raw_data: Dataset,
+#     converted_data: Dataset,
+#     month_day_drop: DropDayType = MONTH_DAY_DROP,
+# ) -> Dataset:
+#     """Workaround convert_calendar misbehavior with monthly data files.
+#
+#     For leap years, the conversion assigns dropped data to the previous
+#     date instead of deleting it. Here we manually delete those dates to
+#     avoid duplicates later in the pipeline. See
+#     `https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html#xarray.Dataset.convert_calendar`
+#     for more information, and for updates on issues see
+#     `https://github.com/pydata/xarray/issues/8086`
+#
+#     Parameters
+#     ----------
+#     raw_data
+#         The original data.
+#     converted_data
+#         The data after conversion.
+#     month_day_drop
+#         Set of `tuples` of numbers: month number and day number.
+#
+#     Returns
+#     -------
+#     The converted data with specific dates dropped.
+#
+#     Examples
+#     --------
+#     >>> enforce_date_changes(
+#     ...     xarray_spatial_4_days,
+#     ...     xarray_spatial_4_days)['time'].coords
+#     Coordinates:
+#       * time     (time) datetime64[ns] ...1980-11-30 ... 1980-12-04
+#     >>> ts_4_years: DataArray = enforce_date_changes(
+#     ...     xarray_spatial_4_years, xarray_spatial_4_years)
+#     >>> ts_4_years
+#     <xarray.DataArray 'xa_template' (time: 1437, space: 3)>...
+#     array([[0.5488135 , 0.71518937, 0.60276338],
+#            [0.43758721, 0.891773  , 0.96366276],
+#            [0.38344152, 0.79172504, 0.52889492],
+#            ...,
+#            [0.0916689 , 0.62816966, 0.52649637],
+#            [0.50034874, 0.93687921, 0.88042738],
+#            [0.71393397, 0.57754071, 0.25236931]])
+#     Coordinates:
+#       * time     (time) datetime64[ns] ...1980-11-30 ... 1984-11-29
+#       * space    (space) <U10 ...'Glasgow' 'Manchester' 'London'
+#     >>> len(ts_4_years) == 365*4 + 1  # Would keep all days
+#     False
+#     >>> len(ts_4_years) == 360*4      # Would enforce all years at 360 days
+#     False
+#     >>> len(ts_4_years)               # 3 days fewer than 360 per year
+#     1437
+#     """
+#     time_values = DatetimeIndex(raw_data.coords["time"].values)
+#
+#     # Get the indices of the dates to be dropped
+#     index_to_drop = [
+#         i
+#         for i, (m, d) in enumerate(zip(time_values.month, time_values.day))
+#         if (m, d) in month_day_drop
+#     ]
+#
+#     # Filter indices that are within the bounds of the converted_data
+#     index_to_drop = [
+#         i for i in index_to_drop if i < len(converted_data.coords["time"].values)
+#     ]
+#
+#     if index_to_drop:
+#         converted_data = converted_data.drop_sel(
+#             time=converted_data.coords["time"].values[index_to_drop]
+#         )
+#
+#     return converted_data
 
 
 def warp_cruk(
@@ -289,85 +312,247 @@ def xarray_example(
         return da
 
 
-def interp_xr_time_series(
-    xr_time_series: xr.Dataset | xr.Dataset,
-    check_ts_data: xr.Dataset | xr.Dataset | None = None,
-    # month_day_drop: DropDayType = MONTH_DAY_DROP,
-    conversion_method: str = DEFAULT_INTERPOLATION_METHOD,
-    conversion_func: Callable[[xr.Dataset], xr.Dataset] | None = None,
-    keep_attrs: bool = True,
-    limit: int = 5,
-    fill_na_dates: bool = False,
-    **kwargs,
-) -> xr.DataArray:
-    """Workaround convert_calendar misbehavior with monthly data files.
-
-    For leap years, the conversion assigns dropped data to the previous
-    date instead of deleting it. Here we manually delete those dates to
-    avoid duplicates later in the pipeline. See
-    `https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html#xarray.Dataset.convert_calendar`
-    for more information, and for updates on issues see
-    `https://github.com/pydata/xarray/issues/8086`
+def ensure_xr_dataset(
+    xr_time_series: Dataset | DataArray, default_name="to_convert"
+) -> Dataset:
+    """Return `xr_time_series` as a `xarray.Dataset` instance.
 
     Parameters
     ----------
     xr_time_series
-        Temporal data set to be converted.
-    check_ts_data
-        Temporal data to check the converted `raw_data` time series.
-    conversion_method
-        Function to call to convert the `raw_data` time series.
+        Instance to check and if necessary to convert to `Dataset`.
+    default_name
+        Name to give returned `Dataset` if `xr_time_series.name` is empty.
 
     Returns
     -------
-    The converted data with specific dates dropped.
+    Converted (or original) `Dataset`.
 
     Examples
     --------
-    >>> filled_2_days: xr.DataArray = interp_xr_time_series(
-    ...     xarray_spatial_6_days_2_skipped,
-    ...     xarray_spatial_8_days)
-    >>> filled_2_days
+    >>> ensure_xr_dataset(xarray_spatial_4_days)
     <xarray.Dataset>...
-    Dimensions:      (space: 3, time: 10)
+    Dimensions:      (time: 5, space: 3)
     Coordinates:
+      * time         (time) datetime64[ns] ...1980-11-30 1980-12-01 ... 1980-12-04
       * space        (space) <U10 ...'Glasgow' 'Manchester' 'London'
-      * time         (time) datetime64[ns] ...1980-11-30 1980-12-01 ... 1980-12-09
     Data variables:
-        xa_template  (time, space) float64 ...0.5488 0.7152 ... 0.4615 0.7805
-    >>> # assert False
-    >>> # interp_xr_time_series(xarray_spatial_4_years_360_day, xarray_spatial_4_years)
+        xa_template  (time, space) float64 ...0.5488 0.7152 ... 0.9256 0.07104
     """
-    array_name: str
     if isinstance(xr_time_series, DataArray):
-        array_name = xr_time_series.name or "to_convert"
-        xr_time_series = xr_time_series.to_dataset(name=array_name)
-    if check_ts_data is not None:
-        if isinstance(check_ts_data, DataArray):
-            array_name = check_ts_data.name or "to_check"
-            check_ts_data = check_ts_data.to_dataset(name=array_name)
-        intermediate_ts: xr.DataArray | xr.Dataset = xr_time_series.interp_like(
-            check_ts_data
-        )
-        interpolated_ts: xr.DataArray | xr.Dataset = intermediate_ts.interpolate_na(
+        array_name = xr_time_series.name or default_name
+        return xr_time_series.to_dataset(name=array_name)
+    else:
+        return xr_time_series
+
+
+def convert_xr_calendar(
+    xr_time_series: DataArray | Dataset,
+    align_on: ConvertCalendarAlignOptions = CPM_XR_TO_HADS_ALIGN_DEFAULT,
+    calendar: CFCalendar = CFCalendarSTANDARD,
+    use_cftime: bool = False,
+    missing_value: Any | None = np.nan,
+    interpolate_na: bool = False,
+    interpolate_method: InterpOptions = DEFAULT_INTERPOLATION_METHOD,
+    keep_attrs: bool = True,
+    limit: int = 5,
+    **kwargs,
+) -> Dataset:
+    """Convert cpm 360 day time series to HADs 365 day time series.
+
+    Notes
+    -----
+    Short time examples (like 2 skipped out of 8 days) raises:
+    `ValueError("`date_range_like` was unable to generate a range as the source frequency was not inferable."`)
+
+    Parameters
+    ----------
+    xr_time_series
+        A `DataArray` or `Dataset` to convert to `calendar` time.
+    align_on
+        Whether and how to align `calendar` types.
+    calendar
+        Type of calendar to convert `xr_time_series` to.
+    use_cftime
+        Whether to enforce `cftime` vs `datetime64` `time` format.
+    missing_value
+        Missing value to populate missing date interpolations with.
+    interpolate_na
+        Whether to apply temporal interpolation for missing values.
+    interpolate_method
+        Which `InterpOptions` method to apply if `interpolate_na` is `True`.
+    keep_attrs
+        Whether to keep all attributes on after `interpolate_na`
+    limit
+        Limit of number of continuous missing day values allowed in `interpolate_na`.
+    **kwargs
+        Any additional parameters to pass to `interpolate_na`.
+
+    Raises
+    ------
+    ValueError
+        Likely from `xarray` calling `date_range_like`.
+
+    Returns
+    -------
+    Converted `xr_time_series` to specified `calendar` with optional
+    interpolation.
+
+    Examples
+    --------
+    >>> xr_360_to_365_datetime64: Dataset = convert_xr_calendar(
+    ...     xarray_spatial_4_years_360_day)
+    >>> xr_360_to_365_datetime64.sel(
+    ...     time=slice("1981-01-30", "1981-02-01"),
+    ...     space="Glasgow").day_360
+    <xarray.DataArray 'day_360' (time: 3)>...
+    array([0.23789282,        nan, 0.5356328 ])
+    Coordinates:
+      * time     (time) datetime64[ns] ...1981-01-30 1981-01-31 1981-02-01
+        space    <U10 ...'Glasgow'
+    >>> xr_360_to_365_datetime64_interp: Dataset = convert_xr_calendar(
+    ...     xarray_spatial_4_years_360_day, interpolate_na=True)
+    >>> xr_360_to_365_datetime64_interp.sel(
+    ...     time=slice("1981-01-30", "1981-02-01"),
+    ...     space="Glasgow").day_360
+    <xarray.DataArray 'day_360' (time: 3)>...
+    array([0.23789282, 0.38676281, 0.5356328 ])
+    Coordinates:
+      * time     (time) datetime64[ns] ...1981-01-30 1981-01-31 1981-02-01
+        space    <U10 ...'Glasgow'
+    >>> convert_xr_calendar(xarray_spatial_6_days_2_skipped)
+    Traceback (most recent call last):
+       ...
+    ValueError: `date_range_like` was unable to generate a range as the source frequency was not inferable.
+    """
+    xr_time_series = ensure_xr_dataset(xr_time_series)
+    calendar_converted_ts: Dataset = xr_time_series.convert_calendar(
+        calendar, align_on=align_on, missing=missing_value, use_cftime=use_cftime
+    )
+    if not interpolate_na:
+        return calendar_converted_ts
+    else:
+        return calendar_converted_ts.interpolate_na(
             dim="time",
-            method=conversion_method,
+            method=interpolate_method,
             keep_attrs=keep_attrs,
             limit=limit,
             **kwargs,
         )
-        return interpolated_ts
-    elif fill_na_dates:
-        logger.debug(
-            f"'check_ts_data' is None " f"and 'fill_na' is True, inferring 'NaN'"
-        )
-        all_dates: Iterable[DateType] = date_range_generator(
-            xr_time_series.coords["time"].min().to_dict()["data"],
-            xr_time_series.coords["time"].max().to_dict()["data"],
-        )
-        check_ts_data = xr_time_series.interp(time=all_dates)
-    else:
-        raise ValueError(f"'check_ts_data' must be set or 'fill_na_dates = True'.")
+    # return intermediate_ts.convert_calendar(
+    #     calendar=calendar, align_on=align_on,
+    #     missing=Any, use_cftime=use_cftime
+    # )
+    # return xr_time_series.interpolate_na(
+    #     dim="time",
+    #     method=interpolate_method,
+    #     keep_attrs=keep_attrs,
+    #     limit=limit,
+
+
+#     #     **kwargs,
+#     # )
+#
+#
+# def iterpolate_converted_xarray(
+#     xr_time_series: DataArray | Dataset,
+#     interpolate_method: str = DEFAULT_INTERPOLATION_METHOD,
+#     keep_attrs: bool = True,
+#     limit: int = 5,
+#     **kwargs
+#         ) -> DataArray | Dataset:
+#     xr_time_series = ensure_dataset(xr_time_series)
+#     return xr_time_series.interpolate_na(
+#         dim="time",
+#         method=interpolate_method,
+#         keep_attrs=keep_attrs,
+#         limit=limit,
+#         **kwargs,
+#     )
+#
+#
+# def interp_xr_time_series(
+#     xr_time_series: Dataset | Dataset,
+#     check_ts_data: Dataset | Dataset | None = None,
+#     # month_day_drop: DropDayType = MONTH_DAY_DROP,
+#     conversion_method: str = DEFAULT_INTERPOLATION_METHOD,
+#     # conversion_func: Callable[[Dataset], Dataset] | None = None,
+#     keep_attrs: bool = True,
+#     limit: int = 5,
+#     # fill_na_dates: bool = False,
+#     **kwargs,
+# ) -> DataArray:
+#     """Workaround convert_calendar misbehavior with monthly data files.
+#
+#     For leap years, the conversion assigns dropped data to the previous
+#     date instead of deleting it. Here we manually delete those dates to
+#     avoid duplicates later in the pipeline. See
+#     `https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html#xarray.Dataset.convert_calendar`
+#     for more information, and for updates on issues see
+#     `https://github.com/pydata/xarray/issues/8086`
+#
+#     Parameters
+#     ----------
+#     xr_time_series
+#         Temporal data set to be converted.
+#     check_ts_data
+#         Temporal data to check the converted `raw_data` time series.
+#     conversion_method
+#         Function to call to convert the `raw_data` time series.
+#
+#     Returns
+#     -------
+#     The converted data with specific dates dropped.
+#
+#     Examples
+#     --------
+#     >>> filled_2_days: DataArray = interp_xr_time_series(
+#     ...     xarray_spatial_6_days_2_skipped,
+#     ...     xarray_spatial_8_days)
+#     >>> filled_2_days
+#     <xarray.Dataset>...
+#     Dimensions:      (space: 3, time: 10)
+#     Coordinates:
+#       * space        (space) <U10 ...'Glasgow' 'Manchester' 'London'
+#       * time         (time) datetime64[ns] ...1980-11-30 1980-12-01 ... 1980-12-09
+#     Data variables:
+#         xa_template  (time, space) float64 ...0.5488 0.7152 ... 0.4615 0.7805
+#     >>> # assert False
+#     >>> # interp_xr_time_series(xarray_spatial_4_years_360_day, xarray_spatial_4_years)
+#     """
+#     array_name: str
+#     if isinstance(xr_time_series, DataArray):
+#         array_name = xr_time_series.name or "to_convert"
+#         xr_time_series = xr_time_series.to_dataset(name=array_name)
+#     if check_ts_data is not None:
+#         if isinstance(check_ts_data, DataArray):
+#             array_name = check_ts_data.name or "to_check"
+#             check_ts_data = check_ts_data.to_dataset(name=array_name)
+#         intermediate_ts: Dataset = xr_time_series.convert_calendar(
+#             check_ts_data
+#         )
+#         # intermediate_ts: DataArray | Dataset = xr_time_series.interp_like(
+#         #     check_ts_data
+#         # )
+#         interpolated_ts: DataArray | Dataset = intermediate_ts.interpolate_na(
+#             dim="time",
+#             method=conversion_method,
+#             keep_attrs=keep_attrs,
+#             limit=limit,
+#             **kwargs,
+#         )
+#         return interpolated_ts
+#     elif fill_na_dates:
+#         logger.debug(
+#             f"'check_ts_data' is None " f"and 'fill_na' is True, inferring 'NaN'"
+#         )
+#         all_dates: Iterable[DateType] = date_range_generator(
+#             xr_time_series.coords["time"].min().to_dict()["data"],
+#             xr_time_series.coords["time"].max().to_dict()["data"],
+#         )
+#         check_ts_data = xr_time_series.interp(time=all_dates)
+#     else:
+#         raise ValueError(f"'check_ts_data' must be set or 'fill_na_dates = True'.")
 
 
 # def resample_hadukgrid(x: list) -> int:
@@ -450,7 +635,7 @@ class HADsUKResampleManager:
     input: os.PathLike | None
     output: os.PathLike
     grid_data: os.PathLike | None
-    grid: xr.Dataset | None = None
+    grid: Dataset | None = None
     input_nc_files: Iterable[os.PathLike] | None = None
     cpus: int | None = None
     resampling_func: ResamplingCallable = resample_hadukgrid
@@ -511,6 +696,11 @@ class HADsUKResampleManager:
                 )
             )
         return self.results
+
+
+@dataclass
+class CPMResampleManager(HADsUKResampleManager):
+    resampling_func: ResamplingCallable = resample_hadukgrid
 
     # if not os.path.exists(parser_args.output):
     #     os.makedirs(parser_args.output)
