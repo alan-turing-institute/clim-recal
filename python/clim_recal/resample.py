@@ -22,6 +22,7 @@ from osgeo.gdal import GRA_NearestNeighbour, Warp, WarpOptions
 from pandas import DatetimeIndex, to_datetime
 from tqdm import tqdm
 from xarray import DataArray, Dataset, open_dataset  # requires rioxarray extension
+from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import CFCalendar, InterpOptions
 
 from .utils import ISO_DATE_FORMAT_STR, DateType, date_range_generator
@@ -273,11 +274,12 @@ def convert_xr_calendar(
     use_cftime: bool = False,
     missing_value: Any | None = np.nan,
     interpolate_na: bool = False,
+    ensure_output_type_is_dataset: bool = False,
     interpolate_method: InterpOptions = DEFAULT_INTERPOLATION_METHOD,
     keep_attrs: bool = True,
     limit: int = 5,
     **kwargs,
-) -> Dataset:
+) -> Dataset | DataArray:
     """Convert cpm 360 day time series to HADs 365 day time series.
 
     Notes
@@ -345,9 +347,14 @@ def convert_xr_calendar(
        ...
     ValueError: `date_range_like` was unable to generate a range as the source frequency was not inferable.
     """
-    xr_time_series = ensure_xr_dataset(xr_time_series)
-    calendar_converted_ts: Dataset = xr_time_series.convert_calendar(
-        calendar, align_on=align_on, missing=missing_value, use_cftime=use_cftime
+    if ensure_output_type_is_dataset:
+        xr_time_series = ensure_xr_dataset(xr_time_series)
+    calendar_converted_ts: Dataset | DataArray = convert_calendar(
+        xr_time_series,
+        calendar,
+        align_on=align_on,
+        missing=missing_value,
+        use_cftime=use_cftime,
     )
     if not interpolate_na:
         return calendar_converted_ts

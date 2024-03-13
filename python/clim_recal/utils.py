@@ -1,5 +1,6 @@
 """Utility functions."""
 import subprocess
+import sys
 from copy import deepcopy
 from csv import DictReader
 from dataclasses import dataclass, field
@@ -41,6 +42,14 @@ DEFAULT_CONDA_LOCK_KWARGS: Final[dict[str, str | float | bool]] = {
 CONDA_LEGACY_PREFIX: Final[PathLike] = "."
 
 GITHUB_ACTIONS_ARCHITECTURE: Final[str] = "linux-64"
+
+NORMAL_YEAR_DAYS: Final[int] = 365
+LEAP_YEAR_DAYS: Final[int] = NORMAL_YEAR_DAYS + 1
+CPM_YEAR_DAYS: Final[int] = 360
+
+MODULE_NAMES: Final[tuple[PathLike, ...]] = ("clim_recal",)
+CURRENT_PATH = Path().absolute()
+PYTHON_PACKAGE_DIR_NAME: Final[Path] = Path("python")
 
 
 def ensure_date(date_to_check: DateType, format_str: str = DATE_FORMAT_STR) -> date:
@@ -158,6 +167,89 @@ def date_range_generator(
             if date_obj in skip_dates:
                 continue
         yield (date_obj if yield_type == date else date_obj.strftime(output_format_str))
+
+
+def check_package_path(strict: bool = True, try_chdir: bool = False) -> bool:
+    """Return path for test running.
+
+    Parameters
+    ----------
+    strict
+        Whether to raise a `ValueError` if check fails.
+    try_chdir
+        Whether to attempt changing directory if initial check fails
+
+    Raises
+    ------
+    ValueError
+        If `strict` and checks fail.
+
+    Returns
+    -------
+    Whether to check if call was successful.
+
+    Examples
+    --------
+    >>> check_package_path()
+    True
+    >>> chdir('..')
+    >>> check_package_path(strict=False)
+    False
+    >>> check_package_path()
+    Traceback (most recent call last):
+        ...
+    ValueError: 'clim-recal' pipeline must be run in...
+    >>> check_package_path(try_chdir=True)
+    True
+    """
+    current_path: Path = Path()
+    if not set(MODULE_NAMES) <= set(path.name for path in current_path.iterdir()):
+        if try_chdir:
+            chdir(PYTHON_PACKAGE_DIR_NAME)
+            return check_package_path(strict=strict, try_chdir=False)
+        elif strict:
+            raise ValueError(
+                f"'clim-recal' pipeline must be "
+                f"run in 'clim-recal/{PYTHON_PACKAGE_DIR_NAME}', "
+                f"not '{current_path.absolute()}'"
+            )
+        else:
+            return False
+    else:
+        return True
+
+
+def is_platform_darwin() -> bool:
+    """Check if `sys.platform` is `Darwin` (macOS)."""
+    return sys.platform.startswith("darwin")
+
+
+def year_days(stds: int = 0, leaps: int = 0, cpms: int = 0) -> int:
+    """Return the number of days for the combination of learn lengths.
+
+    Parameters
+    ----------
+    stds
+        Count of 365 day years.
+    leaps
+        Count of 366 day years.
+    cpms
+        Count of 360 day years following Convection Permitted Model (CPM) standard.
+
+    Returns
+    -------
+    Sum of all year type counts
+
+    Examples
+    --------
+    >>> year_days(stds=4) == NORMAL_YEAR_DAYS*4 == 365*4
+    True
+    >>> year_days(cpms=4) == CPM_YEAR_DAYS*4 == 360*4
+    True
+    >>> year_days(stds=3, leaps=1) == NORMAL_YEAR_DAYS*3 + LEAP_YEAR_DAYS == 365*3 + 366
+    True
+    """
+    return stds * NORMAL_YEAR_DAYS + leaps * LEAP_YEAR_DAYS + cpms * CPM_YEAR_DAYS
 
 
 def date_to_str(
@@ -869,7 +961,7 @@ def csv_reader(path: PathLike, **kwargs) -> Iterator[dict[str, str]]:
     ...     line_num: int = writer.writerow(('user_name', 'password'))
     ...     for user_name, password in auth_dict.items():
     ...         line_num = writer.writerow((user_name, password))
-    >>> tuple(csv_reader(csv_path))  # doctest: +NORMALIZE_WHITESPACE
+    >>> tuple(csv_reader(csv_path))
     ({'user_name': 'sally', 'password': 'fig*new£kid'},
      {'user_name': 'george', 'password': 'tee&iguana*sky'},
      {'user_name': 'susan', 'password': 'history!bill-walk'})

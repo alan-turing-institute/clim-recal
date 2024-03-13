@@ -77,15 +77,55 @@ New approach:
 
 
 """
+from os import PathLike
 from pathlib import Path
 from typing import Any, Final
 
-from osgeo.gdal import Warp
-
-from . import ceda_ftp_download, data_loader, resample
+# from . import ceda_ftp_download, data_loader, resample
+from .utils import is_platform_darwin
 
 REPROJECTION_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_one.sh")
 REPROJECTION_WRAPPER_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_all.sh")
+
+DEBIAN_MOUNT_PATH: Final[Path] = Path("/mnt/vmfileshare")
+DARWIN_MOUNT_PATH: Final[Path] = Path("/Volumnes/vmfileshare")
+CLIMATE_DATA_PATH: Final[Path] = Path("ClimateData")
+
+
+def climate_data_mount_path(
+    is_darwin: bool | None = None, full_path: bool = True
+) -> Path:
+    """Return likely climate data mount path based on operating system.
+
+    Parameters
+    ----------
+    is_darwin
+        Whether to use `CLIMATE_DATA_MOUNT_PATH_DARWIN` or
+        call `is_platform_darwin` if None. fixture `is_platform_darwin`.
+
+    Returns
+    -------
+    The `Path` climate data would likely be mounted to.
+    """
+    path: Path
+    if is_darwin is None:
+        is_darwin = is_platform_darwin()
+    if is_darwin:
+        path = DARWIN_MOUNT_PATH
+    else:
+        path = DEBIAN_MOUNT_PATH
+    if full_path:
+        return path / CLIMATE_DATA_PATH
+    else:
+        return path
+
+
+def is_climate_data_mounted(mount_path: PathLike | None = None) -> bool:
+    """Check if `CLIMATE_DATA_MOUNT_PATH` is mounted."""
+    if not mount_path:
+        mount_path = climate_data_mount_path()
+    assert isinstance(mount_path, Path)
+    return mount_path.exists()
 
 
 def main(**kwargs) -> dict[str, Any]:

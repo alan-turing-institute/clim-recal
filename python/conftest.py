@@ -1,6 +1,4 @@
-import sys
 from datetime import date
-from os import PathLike
 from pathlib import Path
 from pprint import pprint
 from typing import Callable, Final, Iterable
@@ -22,10 +20,13 @@ from clim_recal.debiasing.debias_wrapper import (
     RunOptions,
     VariableOptions,
 )
+from clim_recal.pipeline import climate_data_mount_path, is_climate_data_mounted
 from clim_recal.resample import CITY_COORDS, xarray_example
 from clim_recal.utils import (
     ISO_DATE_FORMAT_STR,
     CondaLockFileManager,
+    check_package_path,
+    is_platform_darwin,
     iter_to_tuple_strs,
 )
 from coverage_badge.__main__ import main as gen_cov_badge
@@ -49,7 +50,6 @@ CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData"
 CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateData")
 TEST_PATH = Path().absolute()
 PYTHON_DIR_NAME: Final[Path] = Path("python")
-MODULE_NAMES: Final[tuple[PathLike, ...]] = ("debiasing",)
 
 CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str, ...]] = (
     "python",
@@ -140,13 +140,7 @@ def cli_preprocess_default_command_str_correct() -> str:
 
 
 @pytest.fixture
-def is_platform_darwin() -> bool:
-    """Check if `sys.platform` is `Darwin` (macOS)."""
-    return sys.platform.startswith("darwin")
-
-
-@pytest.fixture
-def climate_data_mount_path(is_platform_darwin: bool) -> Path:
+def data_mount_path() -> Path:
     """Return likely climate data mount path based on operating system.
 
     Parameters
@@ -158,27 +152,20 @@ def climate_data_mount_path(is_platform_darwin: bool) -> Path:
     -------
     The `Path` climate data would likely be mounted to.
     """
-    if is_platform_darwin:
-        return CLIMATE_DATA_MOUNT_PATH_MACOS
-    else:
-        return CLIMATE_DATA_MOUNT_PATH_LINUX
+    return climate_data_mount_path()
 
 
 @pytest.fixture
-def is_climate_data_mounted(climate_data_mount_path) -> bool:
+def is_data_mounted(data_mount_path) -> bool:
     """Check if CLIMATE_DATA_MOUNT_PATH is mounted."""
-    return climate_data_mount_path.exists()
+    return is_climate_data_mounted(mount_path=data_mount_path)
 
 
+# This may be removed in future
 # @pytest.fixture(autouse=True)
-# def ensure_python_path() -> None:
-#     """Return path for test running."""
-#     if not set(MODULE_NAMES) <= set(path.name for path in TEST_PATH.iterdir()):
-#         raise ValueError(
-#             f"'clim-recal' python tests must be "
-#             f"run in 'clim-recal/{PYTHON_DIR_NAME}', "
-#             f"not '{TEST_PATH.absolute()}'"
-#         )
+def ensure_python_path() -> None:
+    """Return path for test running."""
+    check_package_path(try_chdir=True)
 
 
 @pytest.fixture
@@ -257,8 +244,8 @@ def xarray_spatial_4_years_360_day(
 ) -> Dataset:
     """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30."""
     four_normal_years: Dataset = xarray_spatial_temporal(
-        end_date_str=end_date_str
-    ).to_dataset(name="day_360")
+        end_date_str=end_date_str, as_dataset=True, name="day_360"
+    )
     return four_normal_years.convert_calendar("360_day", align_on="year")
 
 
@@ -270,8 +257,7 @@ def conda_lock_file_manager() -> CondaLockFileManager:
 @pytest.fixture(autouse=True)
 def doctest_auto_fixtures(
     doctest_namespace: dict,
-    is_platform_darwin: bool,
-    is_climate_data_mounted: bool,
+    is_data_mounted: bool,
     preprocess_out_folder_files_count_correct: int,
     xarray_spatial_4_days: DataArray,
     xarray_spatial_6_days_2_skipped: DataArray,
@@ -304,8 +290,8 @@ def doctest_auto_fixtures(
     doctest_namespace[
         "CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT"
     ] = CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
-    doctest_namespace["is_platform_darwin"] = is_platform_darwin
-    doctest_namespace["is_climate_data_mounted"] = is_climate_data_mounted
+    doctest_namespace["is_platform_darwin"] = is_platform_darwin()
+    doctest_namespace["is_data_mounted"] = is_data_mounted
     doctest_namespace["pprint"] = pprint
     doctest_namespace["pytest"] = pytest
     doctest_namespace["xarray_spatial_4_days"] = xarray_spatial_4_days

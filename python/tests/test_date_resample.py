@@ -4,91 +4,233 @@ from typing import Callable, Final
 import numpy as np
 import pytest
 import xarray as xr
-from clim_recal.resample import MONTH_DAY_XARRAY_LEAP_YEAR_DROP, xarray_example
+from clim_recal.resample import (
+    MONTH_DAY_XARRAY_LEAP_YEAR_DROP,
+    ConvertCalendarAlignOptions,
+    convert_xr_calendar,
+    xarray_example,
+)
+from clim_recal.utils import DateType, year_days
+from xarray import DataArray, Dataset, cftime_range, open_dataset
 
 HADS_UK_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
 HADS_UK_RESAMPLED_DAY_LOCAL_PATH: Final[Path] = Path(
     "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"
 )
-NORMAL_YEAR_DAYS: int = 365
-LEAP_YAER_DAYS: int = NORMAL_YEAR_DAYS + 1
-# HADS_YEAR_DAYs: int = 360
 
 
 @pytest.fixture
-def hads_tasmax_day_path(climate_data_mount_path: Path) -> Path:
-    return climate_data_mount_path / HADS_UK_TASMAX_DAY_LOCAL_PATH
+def hads_tasmax_day_path(data_mount_path: Path) -> Path:
+    return data_mount_path / HADS_UK_TASMAX_DAY_LOCAL_PATH
 
 
 @pytest.fixture
-def hads_tasmax_resampled_day_path(climate_data_mount_path: Path) -> Path:
-    return climate_data_mount_path / HADS_UK_TASMAX_DAY_LOCAL_PATH
-
-
-# hads_tasmax_day_path: Path = Path("/Volumes/vmfileshare/ClimateData/Raw/HadsUKgrid/tasmax/day")
-# hads_tasmax_resampled_day_path: Path = Path(
-#     "/Volumes/vmfileshare/ClimateData/Processed/HadsUKgrid/resampled_2.2km/tasmax/day"
-# )
+def hads_tasmax_resampled_day_path(data_mount_path: Path) -> Path:
+    return data_mount_path / HADS_UK_TASMAX_DAY_LOCAL_PATH
 
 
 def test_leap_year_days(xarray_spatial_temporal: Callable) -> None:
     """Test covering a leap year of 366 days."""
     start_date_str: str = "2024-03-01"
     end_date_str: str = "2025-03-01"
-    xarray_2024_2025: xr.DataArray = xarray_spatial_temporal(
+    xarray_2024_2025: DataArray = xarray_spatial_temporal(
         start_date_str=start_date_str,
         end_date_str=end_date_str,
         inclusive=True,
     )
-    assert len(xarray_2024_2025) == LEAP_YAER_DAYS
+    assert len(xarray_2024_2025) == year_days(leaps=1)
 
 
-
-# This is roughly what I had in mind for https://github.com/alan-turing-institute/clim-recal/issues/132
+# This is roughly what I had in mind for
+# https://github.com/alan-turing-institute/clim-recal/issues/132
 # This tests converting from a standard calendar to a 360_day calendar.
-# If would be good to have an equivalent test would be to convert from a 360_day calendar to a standard calendar. 
-# These should be two separate tests. Trying to generalise the test to cover both cases would overcomplicate
+# It would be good to have an equivalent test would be to convert from a 360_day
+# calendar to a standard calendar.
+# These should be two separate tests. Trying to generalise the test to cover
+# both cases would overcomplicate
 # the code and make it harder to understand.
 @pytest.mark.parametrize(
     # Only one of start_date and end_date are included the day counts
-    "start_date, end_date, real_days, model_days",
+    "start_date, end_date, gen_date_count, days_360, converted_days, align_on",
     [
         pytest.param(
-            # A whole year, most of which is in a leap year, but avoids the leap day
-            "2024-03-02", "2025-03-02", 365, 360, id="leap_year_but_no_leap_day"
+            # 4 years, including a leap year
+            "2024-03-02",
+            "2028-03-02",
+            year_days(stds=3, leaps=1),
+            year_days(cpms=4),
+            year_days(stds=3, leaps=1),
+            "year",
+            id="years_4_annual_align",
         ),
         pytest.param(
-            # A whole year, the same date range as the previous test, 
+            # A whole year, most of which is in a leap year, but avoids the leap day
+            "2024-03-02",
+            "2025-03-02",
+            year_days(stds=1),
+            year_days(cpms=1) - 1,
+            year_days(stds=1),
+            "year",
+            id="leap_year_but_no_leap_day_annual_align",
+        ),
+        pytest.param(
+            # A whole year, the same date range as the previous test,
             # but includes the leap day and the majority of the days are in a non-leap year
-            "2023-03-02", "2024-03-02", 366, 360, id="leap_year_with_leap_day"
+            # Note: the current final export configuration *adds* a day
+            "2023-03-02",
+            "2024-03-02",
+            year_days(leaps=1),
+            year_days(cpms=1) + 1,
+            year_days(leaps=1) + 1,
+            "year",
+            id="leap_year_with_leap_day_annual_align",
         ),
         pytest.param(
             # An exact calendar year which *IS NOT* a leap year
-            "2023-01-01", "2024-01-01", 365, 360, id="non_leap_year"
+            "2023-01-01",
+            "2024-01-01",
+            year_days(stds=1),
+            year_days(cpms=1),
+            year_days(stds=1),
+            "year",
+            id="non_leap_year_annual_align",
         ),
         pytest.param(
             # A leap day (just the days either side, in a leap year)
-            "2024-02-28", "2024-03-01", 2, 2, id="leap_day"
+            "2024-02-28",
+            "2024-03-01",
+            2,
+            2,
+            2,
+            "year",
+            id="leap_day",
         ),
         pytest.param(
             # A non-leap day (just the days either side, in a non-leap year)
-            "2023-02-28", "2023-03-01", 1, 1, id="non_leap_day"
+            "2023-02-28",
+            "2023-03-01",
+            1,
+            1,
+            1,
+            "year",
+            id="non_leap_day_date_align",
         ),
         # Add more test cases to cover the different scenarios and edge cases
+        pytest.param(
+            # 4 years, including a leap year
+            # WARNING: the intermittent year days seems a week short
+            "2024-03-02",
+            "2028-03-02",
+            year_days(stds=3, leaps=1),
+            year_days(cpms=4) - 7,
+            year_days(stds=3, leaps=1),
+            "date",
+            id="years_4_date_align",
+            marks=pytest.mark.xfail(reason="raises `date_range_like` error"),
+        ),
+        pytest.param(
+            # A whole year, most of which is in a leap year, but avoids the leap day
+            "2024-03-02",
+            "2025-03-02",
+            year_days(stds=1),
+            year_days(cpms=1) - 2,
+            year_days(stds=1),
+            "date",
+            id="leap_year_but_no_leap_day_date_align",
+            marks=pytest.mark.xfail(reason="raises `date_range_like` error"),
+        ),
+        pytest.param(
+            # A whole year, the same date range as the previous test,
+            # but includes the leap day and the majority of the days are in a non-leap year
+            # Note: the current final export configuration *adds* a day
+            "2023-03-02",
+            "2024-03-02",
+            year_days(leaps=1),
+            year_days(cpms=1) - 1,
+            year_days(leaps=1) + 1,
+            "date",
+            id="leap_year_with_leap_day_date_align",
+            marks=pytest.mark.xfail(reason="raises `date_range_like` error"),
+        ),
+        pytest.param(
+            # An exact calendar year which *IS NOT* a leap year
+            "2023-01-01",
+            "2024-01-01",
+            year_days(stds=1),
+            year_days(cpms=1) - 2,
+            year_days(stds=1),
+            "date",
+            id="non_leap_year_date_align",
+            marks=pytest.mark.xfail(reason="raises `date_range_like` error"),
+        ),
+        pytest.param(
+            # A leap day (just the days either side, in a leap year)
+            "2024-02-28",
+            "2024-03-01",
+            2,
+            2,
+            2,
+            "date",
+            id="leap_day",
+        ),
+        pytest.param(
+            # A non-leap day (just the days either side, in a non-leap year)
+            "2023-02-28",
+            "2023-03-01",
+            1,
+            1,
+            1,
+            "date",
+            id="non_leap_day_date_align",
+        ),
     ],
 )
-def test_time_gaps_real_to_model_calendar(start_date, end_date, real_days, model_days):
-    # Create the "real world" dates, and then converted dates
-    base_dates = xarray_example(start_date, end_date)
-    model_dates = base_dates.convert_calendar("360_day", align_on="year")
+def test_time_gaps_360_to_standard_calendar(
+    start_date: DateType,
+    end_date: DateType,
+    gen_date_count: int,
+    days_360: int,
+    converted_days: int,
+    align_on: ConvertCalendarAlignOptions,
+):
+    """Test `convert_xr_calendar` call of `360_day` `DataArray` to `standard` calendar."""
+    # Potential paramaterized variables
+    inclusive_date_range: bool = False  # includes the last day specified
+    use_cftime: bool = True  # Whether to enforece using `cftime` over `datetime64`
+    # align_on: ConvertCalendarAlignOptions = 'date'
+
+    # Create a base
+    base: Dataset = xarray_example(
+        start_date, end_date, as_dataset=True, inclusive=inclusive_date_range
+    )
+
+    # Ensure the generated date range matches for later checks
+    # This occurs for a sigle leap year
+    assert len(base.time) == gen_date_count
+
+    # Convert to `360_day` calendar example
+    dates_360: Dataset = base.convert_calendar(
+        calendar="360_day",
+        align_on=align_on,
+        use_cftime=use_cftime,
+    )
 
     # Check the total number of days are as expected
-    assert len(base_dates) == real_days
-    assert len(model_dates) == model_days
+    assert len(dates_360.time) == days_360
 
-    # Optionally now check which dates have been dropped and added
-    # Add more assertions here...
+    if converted_days < 5:
+        with pytest.raises(ValueError):
+            convert_xr_calendar(dates_360, align_on=align_on, use_cftime=use_cftime)
+    else:
+        dates_converted: Dataset = convert_xr_calendar(
+            dates_360, align_on=align_on, use_cftime=use_cftime
+        )
+        assert len(dates_converted.time) == converted_days
 
+        # Optionally now check which dates have been dropped and added
+        # Add more assertions here...
+        assert all(base.time == dates_converted.time)
+        assert all(base.time != dates_360.time)
 
 
 # The test below was originally a rework of python/resampling/check_calendar.py
@@ -126,8 +268,8 @@ def test_time_gaps_real_to_model_calendar(start_date, end_date, real_days, model
 #         preproc_f: Path = hads_tasmax_resampled_day_path / output_name
 #         # load before and after resampling files
 #         try:
-#             data_raw = xr.open_dataset(raw_f, decode_coords="all")
-#             data_preproc = xr.open_dataset(preproc_f, decode_coords="all")
+#             data_raw = open_dataset(raw_f, decode_coords="all")
+#             data_preproc = open_dataset(preproc_f, decode_coords="all")
 #         # catch OSError and KeyError
 #         except (OSError, KeyError) as e:
 #             with open("check_calendar_log.txt", "a") as f:
@@ -158,7 +300,7 @@ def test_time_gaps_real_to_model_calendar(start_date, end_date, real_days, model
 #     # generating expected dates
 #     start = files[0].split("_")[-1].split("-")[0]
 #     stop = files[-1].split("_")[-1].split("-")[1][:-5] + "30"
-#     time_index = xr.cftime_range(
+#     time_index = cftime_range(
 #         start, stop, freq="D", calendar="360_day", inclusive="both"
 #     )
 #

@@ -6,6 +6,7 @@ from os import PathLike
 from pathlib import Path
 from typing import Final, Generator, Optional, Union
 
+from ..pipeline import climate_data_mount_path
 from ..utils import (
     DATE_FORMAT_SPLIT_STR,
     DATE_FORMAT_STR,
@@ -15,9 +16,7 @@ from ..utils import (
     path_iterdir,
 )
 
-DATA_PATH_DEFAULT: Final[Path] = Path(
-    "/mnt/vmfileshare/ClimateData/Cropped/three.cities/"
-)
+DATA_PATH_DEFAULT: Final[Path] = climate_data_mount_path()
 
 COMMAND_DIR_DEFAULT: Final[Path] = Path("debiasing").resolve()
 PREPROCESS_FILE_NAME: Final[Path] = Path("preprocess_data.py")
@@ -95,7 +94,7 @@ RUN_PREFIX_DEFAULT: Final[str] = "python"
 MOD_FOLDER_DEFAULT: Final[Path] = Path("CPM")
 OBS_FOLDER_DEFAULT: Final[Path] = Path("Hads.updated360")
 PREPROCESS_OUT_FOLDER_DEFAULT: Final[Path] = Path("Preprocessed")
-CMETHODS_OUT_FOLDER_DEFAULT: Final[Path] = Path("../../Debiased/three.cities.cropped")
+CMETHODS_OUT_FOLDER_DEFAULT: Final[Path] = Path("Debiased/three.cities.cropped")
 
 CALIB_DATE_START_DEFAULT: DateType = date(1981, 1, 1)
 CALIB_DATE_END_DEFAULT: DateType = date(1981, 12, 30)
@@ -230,13 +229,13 @@ class RunConfig:
 
         Examples
         --------
-        >>> if not is_climate_data_mounted:
+        >>> if not is_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
         >>> config.mod_path()
-        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/Manchester')
+        PosixPath('/.../ClimateData/Cropped/three.cities/CPM/Manchester')
         >>> config.mod_path('Glasgow')
-        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/Glasgow')
+        PosixPath('/.../ClimateData/Cropped/three.cities/CPM/Glasgow')
         """
         city = city if city else self.city
         return self.data_path / self.mod_folder / city
@@ -246,13 +245,13 @@ class RunConfig:
 
         Examples
         --------
-        >>> if not is_climate_data_mounted:
+        >>> if not is_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
         >>> config.obs_path()
-        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.updated360/Manchester')
+        PosixPath('/.../ClimateData/Cropped/three.cities/Hads.updated360/Manchester')
         >>> config.obs_path('Glasgow')
-        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.updated360/Glasgow')
+        PosixPath('/.../ClimateData/Cropped/three.cities/Hads.updated360/Glasgow')
         """
         city = city if city else self.city
         return self.data_path / self.obs_folder / city
@@ -267,13 +266,13 @@ class RunConfig:
 
         Examples
         --------
-        >>> if not is_climate_data_mounted:
+        >>> if not is_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
         >>> config.preprocess_out_path()
-        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/Manchester/05/tasmax')
+        PosixPath('.../ClimateData/Cropped/three.cities/Preprocessed/Manchester/05/tasmax')
         >>> config.preprocess_out_path(city='Glasgow', run='07')
-        PosixPath('/mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/Glasgow/07/tasmax')
+        PosixPath('.../ClimateData/Cropped/three.cities/Preprocessed/Glasgow/07/tasmax')
         """
         city = city if city else self.city
         run = run if run else self.run
@@ -293,9 +292,9 @@ class RunConfig:
         --------
         >>> config: RunConfig = RunConfig()
         >>> config.cmethods_out_path()
-        PosixPath('/mnt/vmfileshare/ClimateData/Debiased/three.cities.cropped/Manchester/05')
+        PosixPath('/.../ClimateData/Debiased/three.cities.cropped/Manchester/05')
         >>> config.cmethods_out_path(city='Glasgow', run='07')
-        PosixPath('/mnt/vmfileshare/ClimateData/Debiased/three.cities.cropped/Glasgow/07')
+        PosixPath('/.../ClimateData/Debiased/three.cities.cropped/Glasgow/07')
         """
         city = city if city else self.city
         run = run if run else self.run
@@ -416,8 +415,8 @@ class RunConfig:
         >>> config: RunConfig = RunConfig()
         >>> config.to_cli_preprocess_str() == CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
         True
-        >>> CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT[:96]  #doctest: +ELLIPSIS
-        'python preprocess_data.py --mod /.../CPM/Manchester'
+        >>> CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
+        'python preprocess_data.py --mod /.../CPM/Manchester...'
         """
         return " ".join(
             self.to_cli_preprocess_tuple_strs(
@@ -438,7 +437,7 @@ class RunConfig:
 
         Examples
         --------
-        >>> if not is_climate_data_mounted:
+        >>> if not is_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
         >>> len(tuple(config.yield_mod_folder())) == MOD_FOLDER_FILES_COUNT_CORRECT
@@ -454,7 +453,7 @@ class RunConfig:
 
         Examples
         --------
-        >>> if not is_climate_data_mounted:
+        >>> if not is_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
         >>> len(tuple(config.yield_obs_folder())) == OBS_FOLDER_FILES_COUNT_CORRECT
@@ -473,7 +472,7 @@ class RunConfig:
 
         Examples
         --------
-        >>> if not is_climate_data_mounted:
+        >>> if not is_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
         >>> (len(tuple(config.yield_preprocess_out_folder())) ==
@@ -593,7 +592,7 @@ class RunConfig:
         >>> config: RunConfig = RunConfig()
         >>> config.to_cli_run_cmethods_str() == CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
         True
-        >>> CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT  #doctest: +ELLIPSIS
+        >>> CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
         'python run_cmethods.py...--method quantile_delta_mapping...'
         """
         return " ".join(

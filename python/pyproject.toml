@@ -52,6 +52,7 @@ addopts = """
     -ra -q
     --doctest-modules
     --ignore=clim_recal/debiasing/python-cmethods
+    --ignore=python/clim_recal/debiasing/python-cmethods
     --ignore=clim_recal/debiasing/preprocess_data.py
     --ignore=clim_recal/debiasing/run_cmethods.py
     -m "not server"
