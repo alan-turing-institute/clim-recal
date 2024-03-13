@@ -723,59 +723,59 @@ class CondaLockFileManager:
     ) -> list[str] | str:
         """Return `self` configurations, optionally execute as `subprocess`.
 
-        # Parameters
-        # ----------
-        # as_str
-        #     Whether to return as a `str`, if not as a `list[str]`.
-        # include_all
-        #     Include all commands, overriding individual parameters like
-        #     `conda_lock` etc. Combine with `execute_all` to also run.
-        # execute_all
-        #     Run all included commands, overriding individual parameters
-        #     like `execute_conda_lock` etc. Combine with `include_all` to
-        #     run all commands.
-        # conda_lock
-        #     Whether to include `self.run_conda_lock()`.
-        # execute_conda_lock
-        #     Whether to run the generated commands via
-        #     `subprocess.run()`.
-        # use_default_kwargs
-        #     Whether to use `self.default_kwargs` params to run
-        #     `self.run_conda_lock()`.
-        # legacy_export
-        #     Whether to add the `self.legacy_export_cmd_str` command.
-        # execute_legacy_export
-        #     Whether to run the `self.legacy_export_cmd_str()`.
-        # legacy_move
-        #     Whether to add the `self.legacy_mv_cmd_str()` command.
-        # execute_legacy_move
-        #     Whether to run the `self.legacy_mv_cmd_str()`.
-        # cmds_list
-        #     A list of commands to execute. If passed, these are executed prior.
-        # execute_priors
-        #     Execute commands passed in `cmds_list` prior to any others.
-        # cmds_post_list
-        #     A list of commands to run after all others.
-        # execute_cmds_post
-        #     Execute commands passed in `cmds_post_list` after all others.
-        # parent_dir_after_lock
-        #     Whether to return to parent dir after lock command.
+        Parameters
+        ----------
+        as_str
+            Whether to return as a `str`, if not as a `list[str]`.
+        include_all
+            Include all commands, overriding individual parameters like
+            `conda_lock` etc. Combine with `execute_all` to also run.
+        execute_all
+            Run all included commands, overriding individual parameters
+            like `execute_conda_lock` etc. Combine with `include_all` to
+            run all commands.
+        conda_lock
+            Whether to include `self.run_conda_lock()`.
+        execute_conda_lock
+            Whether to run the generated commands via
+            `subprocess.run()`.
+        use_default_kwargs
+            Whether to use `self.default_kwargs` params to run
+            `self.run_conda_lock()`.
+        legacy_export
+            Whether to add the `self.legacy_export_cmd_str` command.
+        execute_legacy_export
+            Whether to run the `self.legacy_export_cmd_str()`.
+        legacy_move
+            Whether to add the `self.legacy_mv_cmd_str()` command.
+        execute_legacy_move
+            Whether to run the `self.legacy_mv_cmd_str()`.
+        cmds_list
+            A list of commands to execute. If passed, these are executed prior.
+        execute_priors
+            Execute commands passed in `cmds_list` prior to any others.
+        cmds_post_list
+            A list of commands to run after all others.
+        execute_cmds_post
+            Execute commands passed in `cmds_post_list` after all others.
+        parent_dir_after_lock
+            Whether to return to parent dir after lock command.
 
-        # Returns
-        # -------
-        # :
-        #     A `list` of commands generated, or a `str` of each command
-        #     separated by `\n`.
+        Returns
+        -------
+        :
+            A `list` of commands generated, or a `str` of each command
+            separated by a newline character (`\\n`).
 
-        # Examples
-        # --------
-        # >>> conda_lock_file_manager.run()
-        # ['conda-lock lock --lockfile ../conda-lock.yml -f ../environment.yml -f pyproject.toml']
-        # >>> print(conda_lock_file_manager.run(
-        # ...     as_str=True, legacy_export=True, legacy_move=True))
-        # conda-lock lock --lockfile ../conda-lock.yml -f ../environment.yml -f pyproject.toml
-        # conda-lock render --kind explicit --platform linux-64
-        # mv conda-linux-64.lock .conda-linux-64.lock
+        Examples
+        --------
+        >>> conda_lock_file_manager.run()
+        ['conda-lock lock --lockfile ../conda-lock.yml -f ../environment.yml -f pyproject.toml']
+        >>> print(conda_lock_file_manager.run(
+        ...     as_str=True, legacy_export=True, legacy_move=True))
+        conda-lock lock --lockfile ../conda-lock.yml -f ../environment.yml -f pyproject.toml
+        conda-lock render --kind explicit --platform linux-64
+        mv conda-linux-64.lock .conda-linux-64.lock
         """
         if not cmds_list:
             cmds_list = []
@@ -815,7 +815,6 @@ class CondaLockFileManager:
 def _pre_commit_conda_lock(
     include_all: bool = True,
     execute_all: bool = False,
-    # legacy_name_prefix: str = CONDA_LEGACY_PREFIX,
     **kwargs,
 ) -> str:
     """A customised config for use in `.pre-commit.yml`.
@@ -841,7 +840,7 @@ def _pre_commit_conda_lock(
     mv conda-linux-64.lock .conda-linux-64.lock
     """
     conda_lock: CondaLockFileManager = CondaLockFileManager(
-        replace_file_path=True,  # legacy_name_prefix=legacy_name_prefix
+        replace_file_path=True,
     )
     return conda_lock.run(
         execute_all=execute_all,
