@@ -17,11 +17,11 @@ env:
 
 on:
   pull_request:
-    branches: ['main', 'day-sampling', 'conda-pdm-refactor' ]
+    branches: ['main', 'day-sampling', 'new-docker-ci']
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['main', 'day-sampling', 'conda-pdm-refactor' ]
+    branches: ['main', 'day-sampling', 'new-docker-ci']
     paths-ignore: ['docs/**']
 
 concurrency:
@@ -107,3 +107,22 @@ jobs:
         shell: bash -el {0}
         run: |
           mamba run -n ${{ env.CONDA_ENV_NAME }} quartodoc build
+
+  docker:
+    needs: [linter, pytest, docs]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: isbang/compose-action@v1.5.1
+      with:
+        compose-file: "./compose.yml"
+        services: |
+          jupyter
+          docs
+          rstudio
+    - name: Check `pytest`
+      run: |
+        docker compose exec jupyter bash
+        conda activate clim-recal
+        cd python
+        pytest
