@@ -114,6 +114,6 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build `docker-compose` and run `python` tests with `root` permission
       run: |
-        docker compose up --detach
+        docker compose up jupyter --detach
         docker compose exec -u 0 jupyter bash -c "conda run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest"
         docker compose down

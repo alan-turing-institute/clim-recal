@@ -1,5 +1,3 @@
-ARG QUARTO_VERSION="1.3.450"
-
 FROM registry.gitlab.com/quarto-forge/docker/polyglot as builder
 
 ARG LOCAL_PORT=8080

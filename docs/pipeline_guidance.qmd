@@ -5,6 +5,7 @@ format:
     toc: true
 execute:
     echo: true
+    eval: false
 ---
 This is a detailed guide to our analysis pipeline.
 *see also this [flowchart viz](https://github.com/alan-turing-institute/clim-recal/blob/documentation/docs/pipeline.md) of the pipeline*
@@ -22,6 +23,8 @@ Given this dual-language nature of our analysis pipeline, we also provide prepro
 Visit [CRAN (The Comprehensive R Archive Network)](https://cran.r-project.org/) to download the latest version of `R` compatible with your operating system. Then verify successful installation via command line:
 
 ```{bash}
+#| eval: false
+
 R --version
 ```
 
@@ -39,7 +42,7 @@ install.packages("package2")
 
 Replace `"package1"`, `"package2"`, etc., with the actual names of the required packages. A list of required `R` packages is usually at the top of each `.R`, `.Rmd`, some `R` specific `.md` files. Below is an example from [WIP Comparing HADs grids](../R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.html):
 
-```{r}
+```{R}
 #| eval: false
 
 library(terra)
@@ -49,22 +52,24 @@ library(exactextractr)
 
 ### Setting up your `python` environment
 
-For your `python` environment, we provide an Anaconda environment file for ease-of-use.
+For your `python` environment, we provide a `conda-lock.yml` environment file for ease-of-use.
 ```{bash}
 #| eval: false
 
-conda env create -f environment.yml
+conda-lock install -name clim-recal conda-lock.yml
 ```
 
+<!--
 ::: {.callout-warning}
 To reproduce our exact outputs, you will require GDAL version 3.4. Please be aware that this specific version of GDAL requires a different `python` version than the one specified in our environment file. Therefore, we have not included it in the environment file and instead, for the reprojection step, you'll need to install GDAL (for example using `conda`) and set up a new environment:
 ```{bash}
 #| eval: false
 
 conda install -c conda-forge gdal
-conda create -n gdal_env python=3.10 gdal=3.4
+conda create -n gdal_env python=3.11 gdal=3.8
 ```
 :::
+-->
 
 In order to paralellize the reprojection step, we make use of the [GNU parallel shell tool](https://www.gnu.org/software/parallel/).
 
@@ -88,7 +93,7 @@ git submodule update --init --recursive
 
 This streamlined pipeline is designed for raw data provided by the Met Office, accessible through the [CEDA archive]((https://catalogue.ceda.ac.uk/uuid/ad2ac0ddd3f34210b0d6e19bfc335539)). It utilizes [UKCP](https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km) control, scenario data at 2.2km resolution, and [HADs](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km) observational data. For those unfamiliar with this data, refer to our [the dataset](#the-dataset) section.
 
-To access the data, [register here](https://archive.ceda.ac.uk/) at the CEDA archive and configure your FTP credentials in "My Account". Utilize our [ceda_ftp_download.py](../python/data_download/ceda_ftp_download.py) script to download the data.
+To access the data, [register here](https://archive.ceda.ac.uk/) at the CEDA archive and configure your FTP credentials in "My Account". Utilize our [ceda_ftp_download.py](../python/clim_recal/ceda_ftp_download.py) script to download the data.
 
 ```{bash}
 #| eval: false
@@ -116,12 +121,16 @@ In addition to the climate data we use geospatial data to divide the data into s
 - Major Towns and Cities boundaries for cropping out Manchester. Downloaded from [https://geoportal.statistics.gov.uk/](https://geoportal.statistics.gov.uk/datasets/980da620a0264647bd679642f96b42c1/explore)
 
 
+::: {.callout-warning}
+Sections below may need updating.
+:::
+
 ## Reprojecting the data
 The HADs data and the UKCP projections have different resolution and coordinate system. For example the HADs dataset uses the British National Grid coordinate system.
 
 The first step in our analysis pipeline is to reproject the UKCP datasets to the British National Grid coordinate system. For this purpose, we utilize the Geospatial Data Abstraction Library (GDAL), designed for reading and writing raster and vector geospatial data formats.
 
-::: {.callout-warning}
+::: {.callout-info}
 Note that, to reproduce our exact pipeline, we switch environments here as explained in the requirements.
 ```{bash}
 #| eval: false
@@ -180,7 +189,7 @@ python preprocess_data.py --mod path_to_cropped --obs path_to_cropped -v tasmax 
 The preprocess_data.py script also aligns the calendars of the historical simulation data and observed data, ensuring that they have the same time dimension and checks that the observed and simulated historical data have the same dimensions.
 
 ::: {.callout-note}
-`preprocess_data.py` makes use of our custom data loader functions. In [`data_loader.py`](../python/load_data/data_loader.py) we have written a few functions for loading and concatenating data into a single xarray which can be used for running debiasing methods. Instructions in how to use these functions can be found in `python/notebooks/load_data_python.ipynb`.
+`preprocess_data.py` makes use of our custom data loader functions. In [`data_loader.py`](../python/clim_recal/data_loader.py) we have written a few functions for loading and concatenating data into a single xarray which can be used for running debiasing methods. Instructions in how to use these functions can be found in `python/notebooks/load_data_python.ipynb`.
 :::
 
 
@@ -191,7 +200,7 @@ By March 2023 we have only implemented the [`python-cmethods`](https://github.co
 :::
 
 
-The [run_cmethods.py](../python/debiasing/run_cmethods.py) allow us to adjusts climate biases in climate data using the `python-cmethods` library. It takes as input observation data (HADs data), control data (historical UKCP data), and scenario data (future UKCP data), and applies a correction method to the scenario data. The resulting output is saved as a `.nc` to a specified directory.
+The [run_cmethods.py](../python/clim_recal/debiasing/run_cmethods.py) allow us to adjusts climate biases in climate data using the `python-cmethods` library. It takes as input observation data (HADs data), control data (historical UKCP data), and scenario data (future UKCP data), and applies a correction method to the scenario data. The resulting output is saved as a `.nc` to a specified directory.
 
 The script will also produce a time-series and a map plot of the debiased data. To run this you need to replace `path_to_validation_data` with the output directories of the previous step and specify `path_to_corrected_data` as your output directory for the bias corrected data. You can also specify your preferred `bias_correction_method` (e.g. quantile_delta_mapping).
 
