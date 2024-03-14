@@ -112,8 +112,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Build `docker-compose` and run `python` tests with `root` permission
+    - uses: isbang/compose-action@v1.5.1
+      with:
+        compose-file: "./compose.yml"
+        services: |
+          jupyter
+          docs
+          rstudio
+    - name: Run `python` tests in `jupyter`
       run: |
-        docker compose up jupyter --detach
         docker compose exec -u 0 jupyter bash -c "conda run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest"
-        docker compose down
+        # `compose-down` should be covered by `compose-action`
+        # leaving as a reminder to check in future
+        # docker compose down
