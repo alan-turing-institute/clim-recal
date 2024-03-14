@@ -117,8 +117,6 @@ jobs:
         compose-file: "./compose.yml"
         services: |
           jupyter
-          # docs
-          # rstudio
     - name: Run `python` tests in `jupyter`
       run: |
         docker compose exec -u 0 jupyter bash -c "conda run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest"
