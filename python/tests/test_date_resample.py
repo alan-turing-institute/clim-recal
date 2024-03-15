@@ -4,13 +4,12 @@ from typing import Callable, Final
 import numpy as np
 import pytest
 import xarray as xr
-from clim_recal.resample import (
-    MONTH_DAY_XARRAY_LEAP_YEAR_DROP,
+from clim_recal.resample import (  # MONTH_DAY_XARRAY_LEAP_YEAR_DROP,  # For specific day checking
     ConvertCalendarAlignOptions,
     convert_xr_calendar,
     xarray_example,
 )
-from clim_recal.utils import DateType, year_days
+from clim_recal.utils import CPM_YEAR_DAYS, LEAP_YEAR_DAYS, NORMAL_YEAR_DAYS, DateType
 from xarray import DataArray, Dataset, cftime_range, open_dataset
 
 HADS_UK_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
@@ -29,6 +28,60 @@ def hads_tasmax_resampled_day_path(data_mount_path: Path) -> Path:
     return data_mount_path / HADS_UK_TASMAX_DAY_LOCAL_PATH
 
 
+class StandardWith360DayError(Exception):
+    ...
+
+
+def year_days_count(
+    standard_years: int = 0,
+    leap_years: int = 0,
+    xarray_360_day_years: int = 0,
+    strict: bool = True,
+) -> int:
+    """Return the number of days for the combination of learn lengths.
+
+    Parameters
+    ----------
+    standard_years
+        Count of 365 day years.
+    leap_years
+        Count of 366 day years.
+    xarray_360_day_years
+        Count of 360 day years following xarray's specification.
+    strict
+        Whether to prevent combining `standard_years` or `leap_years`
+        with `xarray_360_day_years`.
+
+    Returns
+    -------
+    Sum of all year type counts
+
+    Examples
+    --------
+    >>> year_days_count(standard_years=4) == NORMAL_YEAR_DAYS*4 == 365*4
+    True
+    >>> year_days_count(xarray_360_day_years=4) == CPM_YEAR_DAYS*4 == 360*4
+    True
+    >>> (year_days_count(standard_years=3, leap_years=1)
+    ...  == NORMAL_YEAR_DAYS*3 + LEAP_YEAR_DAYS
+    ...  == 365*3 + 366)
+    True
+    """
+    if strict and (standard_years or leap_years) and xarray_360_day_years:
+        raise StandardWith360DayError(
+            f"With 'strict == True', "
+            f"{standard_years} standard (365 day) years and/or "
+            f"{leap_years} leap (366 day) years "
+            f"cannot be combined with "
+            f"xarray_360_day_years ({xarray_360_day_years})."
+        )
+    return (
+        standard_years * NORMAL_YEAR_DAYS
+        + leap_years * LEAP_YEAR_DAYS
+        + xarray_360_day_years * CPM_YEAR_DAYS
+    )
+
+
 def test_leap_year_days(xarray_spatial_temporal: Callable) -> None:
     """Test covering a leap year of 366 days."""
     start_date_str: str = "2024-03-01"
@@ -38,7 +91,7 @@ def test_leap_year_days(xarray_spatial_temporal: Callable) -> None:
         end_date_str=end_date_str,
         inclusive=True,
     )
-    assert len(xarray_2024_2025) == year_days(leaps=1)
+    assert len(xarray_2024_2025) == year_days_count(leap_years=1)
 
 
 # This is roughly what I had in mind for
@@ -57,9 +110,9 @@ def test_leap_year_days(xarray_spatial_temporal: Callable) -> None:
             # 4 years, including a leap year
             "2024-03-02",
             "2028-03-02",
-            year_days(stds=3, leaps=1),
-            year_days(cpms=4),
-            year_days(stds=3, leaps=1),
+            year_days_count(standard_years=3, leap_years=1),
+            year_days_count(xarray_360_day_years=4),
+            year_days_count(standard_years=3, leap_years=1),
             "year",
             id="years_4_annual_align",
         ),
@@ -67,9 +120,9 @@ def test_leap_year_days(xarray_spatial_temporal: Callable) -> None:
             # A whole year, most of which is in a leap year, but avoids the leap day
             "2024-03-02",
             "2025-03-02",
-            year_days(stds=1),
-            year_days(cpms=1) - 1,
-            year_days(stds=1),
+            year_days_count(standard_years=1),
+            year_days_count(xarray_360_day_years=1) - 1,
+            year_days_count(standard_years=1),
             "year",
             id="leap_year_but_no_leap_day_annual_align",
         ),
@@ -79,9 +132,9 @@ def test_leap_year_days(xarray_spatial_temporal: Callable) -> None:
             # Note: the current final export configuration *adds* a day
             "2023-03-02",
             "2024-03-02",
-            year_days(leaps=1),
-            year_days(cpms=1) + 1,
-            year_days(leaps=1) + 1,
+            year_days_count(leap_years=1),
+            year_days_count(xarray_360_day_years=1) + 1,
+            year_days_count(leap_years=1) + 1,
             "year",
             id="leap_year_with_leap_day_annual_align",
         ),
@@ -89,9 +142,9 @@ def test_leap_year_days(xarray_spatial_temporal: Callable) -> None:
             # An exact calendar year which *IS NOT* a leap year
             "2023-01-01",
             "2024-01-01",
-            year_days(stds=1),
-            year_days(cpms=1),
-            year_days(stds=1),
+            year_days_count(standard_years=1),
+            year_days_count(xarray_360_day_years=1),
+            year_days_count(standard_years=1),
             "year",
             id="non_leap_year_annual_align",
         ),
@@ -121,9 +174,9 @@ def test_leap_year_days(xarray_spatial_temporal: Callable) -> None:
             # WARNING: the intermittent year days seems a week short
             "2024-03-02",
             "2028-03-02",
-            year_days(stds=3, leaps=1),
-            year_days(cpms=4) - 7,
-            year_days(stds=3, leaps=1),
+            year_days_count(standard_years=3, leap_years=1),
+            year_days_count(xarray_360_day_years=4) - 7,
+            year_days_count(standard_years=3, leap_years=1),
             "date",
             id="years_4_date_align",
             marks=pytest.mark.xfail(reason="raises `date_range_like` error"),
@@ -132,9 +185,9 @@ def test_leap_year_days(xarray_spatial_temporal: Callable) -> None:
             # A whole year, most of which is in a leap year, but avoids the leap day
             "2024-03-02",
             "2025-03-02",
-            year_days(stds=1),
-            year_days(cpms=1) - 2,
-            year_days(stds=1),
+            year_days_count(standard_years=1),
+            year_days_count(xarray_360_day_years=1) - 2,
+            year_days_count(standard_years=1),
             "date",
             id="leap_year_but_no_leap_day_date_align",
             marks=pytest.mark.xfail(reason="raises `date_range_like` error"),
@@ -145,9 +198,9 @@ def test_leap_year_days(xarray_spatial_temporal: Callable) -> None:
             # Note: the current final export configuration *adds* a day
             "2023-03-02",
             "2024-03-02",
-            year_days(leaps=1),
-            year_days(cpms=1) - 1,
-            year_days(leaps=1) + 1,
+            year_days_count(leap_years=1),
+            year_days_count(xarray_360_day_years=1) - 1,
+            year_days_count(leap_years=1) + 1,
             "date",
             id="leap_year_with_leap_day_date_align",
             marks=pytest.mark.xfail(reason="raises `date_range_like` error"),
@@ -156,9 +209,9 @@ def test_leap_year_days(xarray_spatial_temporal: Callable) -> None:
             # An exact calendar year which *IS NOT* a leap year
             "2023-01-01",
             "2024-01-01",
-            year_days(stds=1),
-            year_days(cpms=1) - 2,
-            year_days(stds=1),
+            year_days_count(standard_years=1),
+            year_days_count(xarray_360_day_years=1) - 2,
+            year_days_count(standard_years=1),
             "date",
             id="non_leap_year_date_align",
             marks=pytest.mark.xfail(reason="raises `date_range_like` error"),
@@ -231,91 +284,3 @@ def test_time_gaps_360_to_standard_calendar(
         # Add more assertions here...
         assert all(base.time == dates_converted.time)
         assert all(base.time != dates_360.time)
-
-
-# The test below was originally a rework of python/resampling/check_calendar.py
-# This will likely be deleted prior to a pull request to the main branch
-# @pytest.mark.mount
-# def test_raw_vs_resampled_dates(
-#     hads_tasmax_day_path: Path, hads_tasmax_resampled_day_path: Path
-# ) -> None:
-#     """Test dates generated via original (raw) and resambling."""
-#     # example files to be compared :
-#     # after resampling: tasmax_hadukgrid_uk_1km_day_2.2km_resampled_19800101-19800131.ncr
-#     # before resampling: tasmax_hadukgrid_uk_1km_day_20211201-20211231.nc
-#
-#     # open log file and write both input paths on top:
-#     with open("check_calendar_log.txt", "w") as f:
-#         f.write(f"{'*'*20} Comparing raw data:  {hads_tasmax_day_path} {'*'*20}\n")
-#         f.write(
-#             f"{'*'*20} to resampled data: {hads_tasmax_resampled_day_path} {'*'*20}\n"
-#         )
-#
-#     # iterate through dir at path and loop through files
-#     files: tuple[Path, ...] = tuple(
-#         Path(f)
-#         for f in glob.glob(str(hads_tasmax_day_path) + "**/*.nc", recursive=True)
-#     )
-#
-#     all_dates = np.array([], dtype="datetime64[ns]")  # Specify the correct data type
-#     for file in files:
-#         # separate filename from flag '2.2km_resamples' from date
-#         output_name: str = f"{'_'.join(str(file).split('_')[:-1])}_2.2km_resampled_{str(file).split('_')[-1]}"
-#
-#         # raw_f = os.path.join(hads_tasmax_day_path, file)
-#         raw_f: Path = hads_tasmax_day_path / file
-#         # preproc_f = os.path.join(hads_tasmax_resampled_day_path, output_name)
-#         preproc_f: Path = hads_tasmax_resampled_day_path / output_name
-#         # load before and after resampling files
-#         try:
-#             data_raw = open_dataset(raw_f, decode_coords="all")
-#             data_preproc = open_dataset(preproc_f, decode_coords="all")
-#         # catch OSError and KeyError
-#         except (OSError, KeyError) as e:
-#             with open("check_calendar_log.txt", "a") as f:
-#                 f.write(f"File: {file} produced errors: {e}\n")
-#             continue
-#
-#         # convert to string
-#         time_raw = [str(t).split("T")[0] for t in data_raw.coords["time"].values]
-#         time_pre = [str(t).split(" ")[0] for t in data_preproc.coords["time"].values]
-#
-#         # Use sets to find differences
-#         dates_in_raw_not_in_pre = set(time_raw) - set(time_pre)
-#         dates_in_pre_not_in_raw = set(time_pre) - set(time_raw)
-#
-#         # check if dates are empty
-#         if dates_in_raw_not_in_pre | dates_in_pre_not_in_raw:
-#             # write to log file
-#             with open("check_calendar_log.txt", "a") as f:
-#                 f.write(
-#                     f"raw # days: {len(set(time_raw))} - resampled # days: {len(set(time_pre))}\n"
-#                 )
-#                 f.write(f"Dates in raw not in resampled: {dates_in_raw_not_in_pre}\n")
-#                 f.write(f"Dates in resampled not in raw: {dates_in_pre_not_in_raw}\n")
-#
-#         # save dates for later overall comparison
-#         all_dates = np.concatenate((all_dates, data_preproc.coords["time"].values))
-#
-#     # generating expected dates
-#     start = files[0].split("_")[-1].split("-")[0]
-#     stop = files[-1].split("_")[-1].split("-")[1][:-5] + "30"
-#     time_index = cftime_range(
-#         start, stop, freq="D", calendar="360_day", inclusive="both"
-#     )
-#
-#     # convert to strings
-#     x_dates_str = [
-#         f"{date.year}-{date.month:02d}-{date.day:02d}" for date in time_index
-#     ]
-#     y_dates_str = [f"{date.year}-{date.month:02d}-{date.day:02d}" for date in all_dates]
-#     # compare if all present
-#     not_in_y = [date_x for date_x in x_dates_str if date_x not in y_dates_str]
-#     with open("check_calendar_log.txt", "a") as f:
-#         f.write(f"______________________________\n")
-#         f.write(f"missing dates: {len(not_in_y)}\n")
-#         # find duplicates
-#         counts = Counter(y_dates_str)
-#         for string, count in counts.items():
-#             if count > 1:
-#                 f.write(f"date '{string}' appears {count} times.\n")

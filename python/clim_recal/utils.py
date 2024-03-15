@@ -224,34 +224,6 @@ def is_platform_darwin() -> bool:
     return sys.platform.startswith("darwin")
 
 
-def year_days(stds: int = 0, leaps: int = 0, cpms: int = 0) -> int:
-    """Return the number of days for the combination of learn lengths.
-
-    Parameters
-    ----------
-    stds
-        Count of 365 day years.
-    leaps
-        Count of 366 day years.
-    cpms
-        Count of 360 day years following Convection Permitted Model (CPM) standard.
-
-    Returns
-    -------
-    Sum of all year type counts
-
-    Examples
-    --------
-    >>> year_days(stds=4) == NORMAL_YEAR_DAYS*4 == 365*4
-    True
-    >>> year_days(cpms=4) == CPM_YEAR_DAYS*4 == 360*4
-    True
-    >>> year_days(stds=3, leaps=1) == NORMAL_YEAR_DAYS*3 + LEAP_YEAR_DAYS == 365*3 + 366
-    True
-    """
-    return stds * NORMAL_YEAR_DAYS + leaps * LEAP_YEAR_DAYS + cpms * CPM_YEAR_DAYS
-
-
 def date_to_str(
     date_obj: DateType,
     in_format_str: str = DATE_FORMAT_STR,
