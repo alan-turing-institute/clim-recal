@@ -853,15 +853,15 @@ def make_user(
     >>> import os
     >>> if os.geteuid() != 0:
     ...     pytest.skip('requires root permission to run')
-    >>> user_name: str = 'very_unlinkely_test_user'
+    >>> user_name: str = 'an_unlinkely_test_user'
     >>> password: str = 'test_pass'
-    >>> code_path: Path = Path('../python')
+    >>> code_path: Path = Path('..')
     >>> make_user(user_name, password, code_path=code_path)
-    PosixPath('/home/very_unlinkely_test_user')
+    PosixPath('/home/an_unlinkely_test_user')
     >>> Path(f'/home/{user_name}/python/conftest.py').is_file()
     True
     >>> rm_user(user_name)
-    'very_unlinkely_test_user'
+    'an_unlinkely_test_user'
     """
     home_path: Path = Path(user_home_path) / Path(user)
     subprocess.run(f"useradd {user}", shell=True)
