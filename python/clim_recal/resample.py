@@ -1,8 +1,7 @@
 """Resample UKHADS data and UKCP18 data.
 
-- Both UKHADS and UKCP18 are spatially reprojected to X.
 - UKHADS is resampled spatially from 1km to 2.2km.
-- UKCP18 is resampled temporally from a 360 day calendar to a standard (365/366 day) calendar.
+- UKCP18 is resampled temporally from a 360 day calendar to a standard (365/366 day) calendar and projected to British National Grid (BNG) (from rotated polar grid).
 """
 
 import argparse
