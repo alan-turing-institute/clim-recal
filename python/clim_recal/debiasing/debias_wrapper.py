@@ -18,7 +18,7 @@ from ..utils import (
 
 DATA_PATH_DEFAULT: Final[Path] = climate_data_mount_path()
 
-COMMAND_DIR_DEFAULT: Final[Path] = Path("debiasing").resolve()
+COMMAND_DIR_DEFAULT: Final[Path] = Path("clim_recal/debiasing").resolve()
 PREPROCESS_FILE_NAME: Final[Path] = Path("preprocess_data.py")
 CMETHODS_FILE_NAME: Final[Path] = Path("run_cmethods.py")
 
@@ -232,6 +232,7 @@ class RunConfig:
         >>> if not is_data_mounted:
         ...     pytest.skip('requires linux server mount paths')
         >>> config: RunConfig = RunConfig()
+        >>> assert False
         >>> config.mod_path()
         PosixPath('/.../ClimateData/Cropped/three.cities/CPM/Manchester')
         >>> config.mod_path('Glasgow')

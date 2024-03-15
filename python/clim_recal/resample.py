@@ -1,7 +1,8 @@
-"""This script resamples the UKHADS data to match UKCP18 data.
+"""Resample UKHADS data and UKCP18 data.
 
-It resamples spatially, from 1km to 2.2km.
-It resamples temporally to a 365 day calendar.
+- Both UKHADS and UKCP18 are spatially reprojected to X.
+- UKHADS is resampled spatially from 1km to 2.2km.
+- UKCP18 is resampled temporally from a 360 day calendar to a standard (365/366 day) calendar.
 """
 
 import argparse
@@ -176,9 +177,10 @@ def xarray_example(
 
     Returns
     -------
-    A `DataArray` of `start_date` to `end_date` date range a
-    random variable for coordinates regions
-    (Glasgow, Manchester and London as default).
+    :
+        A `DataArray` of `start_date` to `end_date` date
+        range a random variable for coordinates regions
+        (Glasgow, Manchester and London as default).
 
     Examples
     --------
@@ -247,7 +249,8 @@ def ensure_xr_dataset(
 
     Returns
     -------
-    Converted (or original) `Dataset`.
+    :
+        Converted (or original) `Dataset`.
 
     Examples
     --------
@@ -277,7 +280,7 @@ def convert_xr_calendar(
     ensure_output_type_is_dataset: bool = False,
     interpolate_method: InterpOptions = DEFAULT_INTERPOLATION_METHOD,
     keep_attrs: bool = True,
-    limit: int = 5,
+    limit: int = 1,
     **kwargs,
 ) -> Dataset | DataArray:
     """Convert cpm 360 day time series to HADs 365 day time series.
@@ -285,7 +288,7 @@ def convert_xr_calendar(
     Notes
     -----
     Short time examples (like 2 skipped out of 8 days) raises:
-    `ValueError("`date_range_like` was unable to generate a range as the source frequency was not inferable."`)
+    `ValueError("date_range_like was unable to generate a range as the source frequency was not inferable."`)
 
     Parameters
     ----------
@@ -317,8 +320,9 @@ def convert_xr_calendar(
 
     Returns
     -------
-    Converted `xr_time_series` to specified `calendar` with optional
-    interpolation.
+    :
+        Converted `xr_time_series` to specified `calendar`
+        with optional interpolation.
 
     Examples
     --------
