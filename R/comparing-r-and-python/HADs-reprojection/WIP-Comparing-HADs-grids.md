@@ -38,8 +38,8 @@ doc is to:
 
 ### **1a. HadUK grid resampled in R**
 
-    Resampling script [here](https://github.com/alan-turing-institute/clim-recal/blob/main/R/Resampling.HADs.inR.R)
-    The 2.2km grid was derived from a reprojected (to BNG) UKCP 2.2km .nc file
+Resampling script [here](https://github.com/alan-turing-institute/clim-recal/blob/main/R/Resampling.HADs.inR.R)
+The 2.2km grid was derived from a reprojected (to BNG) UKCP 2.2km .nc file
 
 In resampling it resampled the Sea as xx so replacing those vals as NA
 
@@ -52,11 +52,8 @@ r1[r1 > 200] = NA
 
 #check the crs
 crs(r1, proj=T)
-```
+## [1] "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +a=6377563.396 +rf=299.324961266495 +units=m +no_defs"
 
-    ## [1] "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +a=6377563.396 +rf=299.324961266495 +units=m +no_defs"
-
-``` r
 #Plot to check
 plot(r1$tasmax_1)
 ```
@@ -99,11 +96,9 @@ og <- paste0(f, hads.tasmax2)
 
 og <- rast(og)
 crs(og, proj=T)
-```
 
-    ## [1] "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +a=6377563.396 +rf=299.324961266495 +units=m +no_defs"
+## [1] "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +a=6377563.396 +rf=299.324961266495 +units=m +no_defs"
 
-``` r
 plot(og$tasmax_1)
 ```
 
@@ -118,11 +113,9 @@ ukcp <- rast(f)
 ukcp.r <- ukcp$`tasmax_rcp85_land-cpm_uk_2.2km_01_day_19991201-20001130_31`
 
 crs(ukcp.r, proj=T)
-```
 
-    ## [1] "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +units=m +no_defs"
+## [1] "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +units=m +no_defs"
 
-``` r
 #plot(ukcp.r)
 ```
 
@@ -146,11 +139,8 @@ b <- Sys.time()
 r1_c <- terra::crop(r1, scotland, snap="in")
 e <- Sys.time()
 e-b
-```
 
-    ## Time difference of 0.02198005 secs
-
-``` r
+## Time difference of 0.02198005 secs
 plot(r1_c$tasmax_1)
 ```
 
@@ -161,11 +151,7 @@ b <- Sys.time()
 r2_c <- terra::crop(r2, scotland, snap="in")
 e <- Sys.time()
 e-b
-```
-
-    ## Time difference of 33.57785 secs
-
-``` r
+## Time difference of 33.57785 secs
 plot(r2_c$tasmax_1)
 ```
 

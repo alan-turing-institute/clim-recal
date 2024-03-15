@@ -110,7 +110,7 @@ def load_data(
 
 
 def clip_dataset(xa: xr.DataArray, variable: str, shapefile: str) -> xr.DataArray:
-    """Spatially clip `xa` `DataArray` variable via `shapefile.
+    """Spatially clip `xa` (a `DataArray`) variable via `shapefile`.
 
     Parameters
     ----------

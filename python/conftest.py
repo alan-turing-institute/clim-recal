@@ -1,12 +1,10 @@
-import pprint
-import sys
-from os import PathLike
+from datetime import date
 from pathlib import Path
-from typing import Final
+from pprint import pprint
+from typing import Callable, Final, Iterable
 
 import pytest
-from coverage_badge.__main__ import main as gen_cov_badge
-from debiasing.debias_wrapper import (
+from clim_recal.debiasing.debias_wrapper import (
     CALIB_DATES_STR_DEFAULT,
     CMETHODS_FILE_NAME,
     CMETHODS_OUT_FOLDER_DEFAULT,
@@ -22,18 +20,36 @@ from debiasing.debias_wrapper import (
     RunOptions,
     VariableOptions,
 )
-from utils import iter_to_tuple_strs
+from clim_recal.pipeline import climate_data_mount_path, is_climate_data_mounted
+from clim_recal.resample import CITY_COORDS, xarray_example
+from clim_recal.utils import (
+    ISO_DATE_FORMAT_STR,
+    CondaLockFileManager,
+    check_package_path,
+    is_platform_darwin,
+    iter_to_tuple_strs,
+)
+from coverage_badge.__main__ import main as gen_cov_badge
+from osgeo.gdal import DataTypeUnion
+from pandas import to_datetime
+from xarray import DataArray, Dataset
+
+# Date Range covering leap year
+XARRAY_START_DATE_STR: Final[str] = "1980-11-30"
+XARRAY_END_DATE_4_DAYS: Final[str] = "1980-12-5"
+XARRAY_END_DATE_8_DAYS: Final[str] = "1980-12-10"
+XARRAY_SKIP_2_FROM_8_DAYS: Final[tuple[str, str]] = (
+    "1980-12-7",
+    "1980-12-8",
+)
+XARRAY_END_DATE_4_YEARS: Final[str] = "1984-11-30"
+
 
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
-CLIMATE_DATA_MOUNT_PATH = Path("/mnt/vmfileshare/ClimateData")
+CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData")
+CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateData")
 TEST_PATH = Path().absolute()
 PYTHON_DIR_NAME: Final[Path] = Path("python")
-MODULE_NAMES: Final[tuple[PathLike, ...]] = (
-    "debiasing",
-    "resampling",
-    "data_download",
-    "load_data",
-)
 
 CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str, ...]] = (
     "python",
@@ -102,27 +118,14 @@ OBS_FOLDER_FILES_COUNT_CORRECT: Final[int] = MOD_FOLDER_FILES_COUNT_CORRECT
 PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT: Final[int] = 4
 
 
-@pytest.fixture()
-def is_platform_darwin() -> bool:
-    """Check if `sys.platform` is `Darwin` (macOS)."""
-    return sys.platform.startswith("darwin")
+@pytest.fixture
+def mod_folder_files_count_correct() -> int:
+    return MOD_FOLDER_FILES_COUNT_CORRECT
 
 
-@pytest.fixture()
-def is_climate_data_mounted() -> bool:
-    """Check if `sys.platform` is `Darwin` (macOS)."""
-    return CLIMATE_DATA_MOUNT_PATH.exists()
-
-
-@pytest.fixture(autouse=True)
-def ensure_python_path() -> None:
-    """Return path for test running."""
-    if not set(MODULE_NAMES) <= set(path.name for path in TEST_PATH.iterdir()):
-        raise ValueError(
-            f"'clim-recal' python tests must be "
-            f"run in 'clim-recal/{PYTHON_DIR_NAME}', "
-            f"not '{TEST_PATH.absolute()}'"
-        )
+@pytest.fixture
+def obs_folder_files_count_correct() -> int:
+    return OBS_FOLDER_FILES_COUNT_CORRECT
 
 
 @pytest.fixture
@@ -131,12 +134,137 @@ def preprocess_out_folder_files_count_correct() -> int:
     return PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT
 
 
+@pytest.fixture
+def cli_preprocess_default_command_str_correct() -> str:
+    return CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
+
+
+@pytest.fixture
+def data_mount_path() -> Path:
+    """Return likely climate data mount path based on operating system.
+
+    Parameters
+    ----------
+    is_platform_darwin
+        Calls fixture `is_platform_darwin`.
+
+    Returns
+    -------
+    The `Path` climate data would likely be mounted to.
+    """
+    return climate_data_mount_path()
+
+
+@pytest.fixture
+def is_data_mounted(data_mount_path) -> bool:
+    """Check if CLIMATE_DATA_MOUNT_PATH is mounted."""
+    return is_climate_data_mounted(mount_path=data_mount_path)
+
+
+# This may be removed in future
+# @pytest.fixture(autouse=True)
+def ensure_python_path() -> None:
+    """Return path for test running."""
+    check_package_path(try_chdir=True)
+
+
+@pytest.fixture
+def xarray_spatial_temporal() -> (
+    Callable[[str, str, dict[str, tuple[float, float]]], DataArray]
+):
+    """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30.
+
+    See https://xarray-spatial.org/user_guide/local.html?highlight=time
+    """
+
+    def _xarray_spatial_temporal(
+        start_date_str: str = XARRAY_START_DATE_STR,
+        end_date_str: str = XARRAY_END_DATE_4_YEARS,
+        coordinates: dict[str, tuple[float, float]] = CITY_COORDS,
+        skip_dates: Iterable[date] | None = None,
+        **kwargs,
+    ) -> DataArray:
+        return xarray_example(
+            start_date=start_date_str,
+            end_date=end_date_str,
+            coordinates=coordinates,
+            skip_dates=skip_dates,
+            random_seed_int=0,
+            **kwargs,
+        )
+
+    return _xarray_spatial_temporal
+
+
+@pytest.fixture
+def xarray_spatial_4_days(
+    xarray_spatial_temporal: Callable,
+    end_date_str: str = XARRAY_END_DATE_4_DAYS,
+) -> DataArray:
+    """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-05."""
+    return xarray_spatial_temporal(end_date_str=end_date_str)
+
+
+@pytest.fixture
+def xarray_spatial_8_days(
+    xarray_spatial_temporal: Callable,
+    end_date_str: str = XARRAY_END_DATE_8_DAYS,
+) -> DataArray:
+    """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-10."""
+    return xarray_spatial_temporal(end_date_str=end_date_str)
+
+
+@pytest.fixture
+def xarray_spatial_6_days_2_skipped(
+    xarray_spatial_temporal: Callable,
+    end_date_str: str = XARRAY_END_DATE_8_DAYS,
+    skip_dates: tuple[str, ...] = XARRAY_SKIP_2_FROM_8_DAYS,
+) -> DataArray:
+    """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-05."""
+    return xarray_spatial_temporal(
+        end_date_str=end_date_str,
+        skip_dates=skip_dates,
+        skip_dates_format_str=ISO_DATE_FORMAT_STR,
+    )
+
+
+@pytest.fixture
+def xarray_spatial_4_years(
+    xarray_spatial_temporal: Callable,
+    end_date_str: str = XARRAY_END_DATE_4_YEARS,
+) -> DataArray:
+    """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30."""
+    return xarray_spatial_temporal(end_date_str=end_date_str)
+
+
+@pytest.fixture
+def xarray_spatial_4_years_360_day(
+    xarray_spatial_temporal: Callable,
+    end_date_str: str = XARRAY_END_DATE_4_YEARS,
+) -> Dataset:
+    """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30."""
+    four_normal_years: Dataset = xarray_spatial_temporal(
+        end_date_str=end_date_str, as_dataset=True, name="day_360"
+    )
+    return four_normal_years.convert_calendar("360_day", align_on="year")
+
+
+@pytest.fixture
+def conda_lock_file_manager() -> CondaLockFileManager:
+    return CondaLockFileManager()
+
+
 @pytest.fixture(autouse=True)
 def doctest_auto_fixtures(
     doctest_namespace: dict,
-    is_platform_darwin: bool,
-    is_climate_data_mounted: bool,
+    is_data_mounted: bool,
     preprocess_out_folder_files_count_correct: int,
+    xarray_spatial_4_days: DataArray,
+    xarray_spatial_6_days_2_skipped: DataArray,
+    xarray_spatial_8_days: DataArray,
+    xarray_spatial_4_years: DataArray,
+    xarray_spatial_4_years_360_day: Dataset,
+    conda_lock_file_manager: CondaLockFileManager,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
     doctest_namespace[
@@ -162,10 +290,18 @@ def doctest_auto_fixtures(
     doctest_namespace[
         "CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT"
     ] = CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
-    doctest_namespace["is_platform_darwin"] = is_platform_darwin
-    doctest_namespace["is_climate_data_mounted"] = is_climate_data_mounted
+    doctest_namespace["is_platform_darwin"] = is_platform_darwin()
+    doctest_namespace["is_data_mounted"] = is_data_mounted
     doctest_namespace["pprint"] = pprint
     doctest_namespace["pytest"] = pytest
+    doctest_namespace["xarray_spatial_4_days"] = xarray_spatial_4_days
+    doctest_namespace[
+        "xarray_spatial_6_days_2_skipped"
+    ] = xarray_spatial_6_days_2_skipped
+    doctest_namespace["xarray_spatial_8_days"] = xarray_spatial_8_days
+    doctest_namespace["xarray_spatial_4_years"] = xarray_spatial_4_years
+    doctest_namespace["xarray_spatial_4_years_360_day"] = xarray_spatial_4_years_360_day
+    doctest_namespace["conda_lock_file_manager"] = conda_lock_file_manager
 
 
 def pytest_sessionfinish(session, exitstatus):

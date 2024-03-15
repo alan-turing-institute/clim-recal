@@ -5,8 +5,8 @@ env:
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
   CONDA_ENV_NAME: clim-recal
-  CONDA_ENV_PATH: environment.yml
-  MIN_PYTHON_VERSION: "3.10"
+  CONDA_ENV_PATH: .conda-linux-64.lock
+  MIN_PYTHON_VERSION: 3.11
   PYTHON_MODULE_FOLDER: python/
   COVERAGE_SVG_FOLDER: docs/assets/
   COVERAGE_SVG_FILE_NAME: coverage.svg
@@ -16,11 +16,12 @@ env:
 
 on:
   pull_request:
-    branches: ['main', 'fix-quartodoc']
+    branches: ['main', 'day-sampling', ]
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['main', 'fix-quartodoc']
+    branches: ['main', 'day-sampling', ]
+    paths-ignore: ['docs/**']
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -50,6 +51,9 @@ jobs:
 
   pytest:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
 
     steps:
       - name: Checkout Code Repository
@@ -58,13 +62,13 @@ jobs:
       - name: Build Conda Environment
         uses: conda-incubator/setup-miniconda@v3
         with:
+          auto-update-conda: false
           activate-environment: ${{ env.CONDA_ENV_NAME }}
           environment-file: ${{ env.CONDA_ENV_PATH }}
-          auto-activate-base: false
           miniforge-version: latest
+          use-mamba: true
 
-      - name: Test and Save Test Coverage
-        shell: bash -el {0}
+      - name: Run Python Tests
         run: |
           mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest
 
@@ -102,3 +106,24 @@ jobs:
         shell: bash -el {0}
         run: |
           mamba run -n ${{ env.CONDA_ENV_NAME }} quartodoc build
+
+  # The below configuration is a WIP, while it builds
+  # and runs locally, sometimes it fails build *before*
+  # running tests on `GitHub`
+
+  # docker:
+  #   needs: [linter, pytest]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - uses: isbang/compose-action@v1.5.1
+  #     with:
+  #       compose-file: "./compose.yml"
+  #       services: |
+  #         jupyter
+  #   - name: Run `python` tests in `jupyter`
+  #     run: |
+  #       docker compose exec -u 0 jupyter bash -c "conda run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest"
+  #       # `compose-down` should be covered by `compose-action`
+  #       # leaving as a reminder to check in future
+  #       # docker compose down
