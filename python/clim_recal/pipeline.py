@@ -121,7 +121,13 @@ def climate_data_mount_path(
 
 
 def is_climate_data_mounted(mount_path: PathLike | None = None) -> bool:
-    """Check if `CLIMATE_DATA_MOUNT_PATH` is mounted."""
+    """Check if `CLIMATE_DATA_MOUNT_PATH` is mounted.
+
+    Todo
+    ----
+        Consider refactoring to `climate_data_mount_path` returns
+        `None` when conditions here return `False`.
+    """
     if not mount_path:
         mount_path = climate_data_mount_path()
     assert isinstance(mount_path, Path)

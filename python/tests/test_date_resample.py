@@ -4,12 +4,17 @@ from typing import Callable, Final
 import numpy as np
 import pytest
 import xarray as xr
-from clim_recal.resample import (  # MONTH_DAY_XARRAY_LEAP_YEAR_DROP,  # For specific day checking
+from clim_recal.resample import (  # MONTH_DAY_XARRAY_LEAP_YEAR_DROP,  # For specific day checking; crop_nc,
     ConvertCalendarAlignOptions,
     convert_xr_calendar,
+)
+from clim_recal.utils import (
+    CPM_YEAR_DAYS,
+    LEAP_YEAR_DAYS,
+    NORMAL_YEAR_DAYS,
+    DateType,
     xarray_example,
 )
-from clim_recal.utils import CPM_YEAR_DAYS, LEAP_YEAR_DAYS, NORMAL_YEAR_DAYS, DateType
 from xarray import DataArray, Dataset, cftime_range, open_dataset
 
 HADS_UK_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
@@ -284,3 +289,48 @@ def test_time_gaps_360_to_standard_calendar(
         # Add more assertions here...
         assert all(base.time == dates_converted.time)
         assert all(base.time != dates_360.time)
+
+
+# @pytest.mark.server
+# def test_crop_nc(
+#     start_date: DateType = '1980-12-01',
+#     end_date: DateType = '1985-12-01',
+#     # align_on: ConvertCalendarAlignOptions,
+# ):
+#     """Test `cropping` `DataArray` to `standard` calendar."""
+#
+#     # Create a base
+#     base: Dataset = xarray_example(
+#         start_date, end_date, as_dataset=True, inclusive=inclusive_date_range
+#     )
+#     assert False
+#
+#
+# @pytest.mark.server
+# def test_ukcp_raw(
+#         start_date: DateType = '1980-12-01',
+#     end_date: DateType = '1985-12-01',
+#     align_on: ConvertCalendarAlignOptions,
+# ):
+#     """Test `convert_xr_calendar` call of `360_day` `DataArray` to `standard` calendar."""
+#     # Potential paramaterized variables
+#     inclusive_date_range: bool = False  # includes the last day specified
+#     use_cftime: bool = True  # Whether to enforece using `cftime` over `datetime64`
+#     # align_on: ConvertCalendarAlignOptions = 'date'
+#
+#     # Create a base
+#     base: Dataset = xarray_example(
+#         start_date, end_date, as_dataset=True, inclusive=inclusive_date_range
+#     )
+#     assert False
+#
+#     # Ensure the generated date range matches for later checks
+#     # This occurs for a sigle leap year
+#     assert len(base.time) == gen_date_count
+#
+#     # Convert to `360_day` calendar example
+#     dates_360: Dataset = base.convert_calendar(
+#         calendar="360_day",
+#         align_on=align_on,
+#         use_cftime=use_cftime,
+#     )

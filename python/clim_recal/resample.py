@@ -5,7 +5,6 @@
 """
 
 import argparse
-import datetime
 import multiprocessing
 import os
 from dataclasses import dataclass
@@ -67,16 +66,6 @@ CPRUK_RESOLUTION: Final[int] = 2200
 CPRUK_RESAMPLING_METHOD: Final[str] = GRA_NearestNeighbour
 ResamplingArgs = tuple[os.PathLike, np.ndarray, np.ndarray, os.PathLike]
 ResamplingCallable = Callable[[list | tuple], int]
-
-GLASGOW_COORDS: Final[tuple[float, float]] = (55.86279, -4.25424)
-MANCHESTER_COORDS: Final[tuple[float, float]] = (53.48095, -2.23743)
-LONDON_COORDS: Final[tuple[float, float]] = (51.509865, -0.118092)
-CITY_COORDS: Final[dict[str, tuple[float, float]]] = {
-    "Glasgow": GLASGOW_COORDS,
-    "Manchester": MANCHESTER_COORDS,
-    "London": LONDON_COORDS,
-}
-"""Coordinates of Glasgow, Manchester and London as `(lon, lat)` `tuples`."""
 
 
 def warp_cruk(
@@ -141,97 +130,6 @@ def warp_cruk(
     # Todo: future refactors will return something more useful
     # Below is simply meant to match `resample_hadukgrid`
     return 0 if conversion_result else 1
-
-
-def xarray_example(
-    start_date: DateType,
-    end_date: DateType,
-    coordinates: dict[str, tuple[float, float]] = CITY_COORDS,
-    skip_dates: Iterable[datetime.date] | None = None,
-    random_seed_int: int | None = None,
-    name: str | None = None,
-    as_dataset: bool = False,
-    **kwargs,
-) -> DataArray | Dataset:
-    """Generate spatial and temporal `xarray` objects.
-
-    Parameters
-    ----------
-    start_date
-        Start of time series.
-    end_date
-        End of time series (by default not inclusive).
-    coordinates
-        A `dict` of region name `str` to `tuple` of
-        `(lon, lat)` form.
-    skip_dates
-        A list of `date` objects to drop/skip between
-        `start_date` and `end_date`.
-    as_dataset
-        Convert output to `Dataset`.
-    name
-        Name of returned `DataArray` and `Dataset`.
-    kwargs
-        Additional parameters to pass to `date_range_generator`.
-
-    Returns
-    -------
-    :
-        A `DataArray` of `start_date` to `end_date` date
-        range a random variable for coordinates regions
-        (Glasgow, Manchester and London as default).
-
-    Examples
-    --------
-    >>> xarray_example('1980-11-30', '1980-12-5')
-    <xarray.DataArray 'xa_template' (time: 5, space: 3)>...
-    array([[..., ..., ...],
-           [..., ..., ...],
-           [..., ..., ...],
-           [..., ..., ...],
-           [..., ..., ...]])
-    Coordinates:
-      * time     (time) datetime64[ns] ...1980-11-30 ... 1980-12-04
-      * space    (space) <U10 ...'Glasgow' 'Manchester' 'London'
-    """
-    dates: list[DateType] = list(
-        date_range_generator(
-            start_date=start_date,
-            end_date=end_date,
-            start_format_str=ISO_DATE_FORMAT_STR,
-            end_format_str=ISO_DATE_FORMAT_STR,
-            skip_dates=skip_dates,
-            **kwargs,
-        )
-    )
-    if not name:
-        name = f"xa_template"
-    if isinstance(random_seed_int, int):
-        random.seed(random_seed_int)  # ensure results are predictable
-    data: array = random.rand(len(dates), len(coordinates))
-    spaces: list[str] = list(coordinates.keys())
-    # If useful, add lat/lon (currently not working)
-    # lat: list[float] = [coord[0] for coord in coordinates.values()]
-    # lon: list[float] = [coord[1] for coord in coordinates.values()]
-    da: DataArray = DataArray(
-        data,
-        name=name,
-        coords=[
-            to_datetime(dates),
-            spaces,
-        ],
-        dims=[
-            "time",
-            "space",
-        ],
-        # If useful, add lat/lon (currently not working)
-        # coords=[dates, spaces, lon, lat],
-        # dims=["time", "space", "lon", "lat"]
-    )
-    if as_dataset:
-        return da.to_dataset()
-    else:
-        return da
 
 
 def ensure_xr_dataset(
@@ -369,6 +267,30 @@ def convert_xr_calendar(
             limit=limit,
             **kwargs,
         )
+
+
+def crop_nc(xr_time_series: Dataset, crop_path: os.PathLike) -> Dataset:
+    """Crop `xr_time_series` with `crop_path` `shapefile`.
+
+    Parameters
+    ----------
+    xr_time_series
+        Dataset to crop.
+    crop_path
+        Path of file to crop with.
+
+    Returns
+    -------
+    :
+        Cropped `Dataset`
+
+    Examples
+    --------
+    >>> if not is_data_mounted:
+    ...     pytest.skip('Can only run with mounted data files')
+    >>> open_dataset()
+
+    """
 
 
 def resample_cruk(x: list | tuple) -> int:

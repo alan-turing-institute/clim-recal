@@ -21,13 +21,14 @@ from clim_recal.debiasing.debias_wrapper import (
     VariableOptions,
 )
 from clim_recal.pipeline import climate_data_mount_path, is_climate_data_mounted
-from clim_recal.resample import CITY_COORDS, xarray_example
 from clim_recal.utils import (
     ISO_DATE_FORMAT_STR,
+    THREE_CITY_COORDS,
     CondaLockFileManager,
     check_package_path,
     is_platform_darwin,
     iter_to_tuple_strs,
+    xarray_example,
 )
 from coverage_badge.__main__ import main as gen_cov_badge
 from osgeo.gdal import DataTypeUnion
@@ -157,7 +158,12 @@ def data_mount_path() -> Path:
 
 @pytest.fixture
 def is_data_mounted(data_mount_path) -> bool:
-    """Check if CLIMATE_DATA_MOUNT_PATH is mounted."""
+    """Check if CLIMATE_DATA_MOUNT_PATH is mounted.
+
+    Todo:
+        Remove if `climate_data_mount_path` can manage
+        condition by returning `None`.
+    """
     return is_climate_data_mounted(mount_path=data_mount_path)
 
 
@@ -180,7 +186,7 @@ def xarray_spatial_temporal() -> (
     def _xarray_spatial_temporal(
         start_date_str: str = XARRAY_START_DATE_STR,
         end_date_str: str = XARRAY_END_DATE_4_YEARS,
-        coordinates: dict[str, tuple[float, float]] = CITY_COORDS,
+        coordinates: dict[str, tuple[float, float]] = THREE_CITY_COORDS,
         skip_dates: Iterable[date] | None = None,
         **kwargs,
     ) -> DataArray:
@@ -292,6 +298,7 @@ def doctest_auto_fixtures(
     ] = CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
     doctest_namespace["is_platform_darwin"] = is_platform_darwin()
     doctest_namespace["is_data_mounted"] = is_data_mounted
+    doctest_namespace["mount_path"] = climate_data_mount_path()
     doctest_namespace["pprint"] = pprint
     doctest_namespace["pytest"] = pytest
     doctest_namespace["xarray_spatial_4_days"] = xarray_spatial_4_days
