@@ -44,7 +44,7 @@ XARRAY_SKIP_2_FROM_8_DAYS: Final[tuple[str, str]] = (
     "1980-12-8",
 )
 XARRAY_END_DATE_4_YEARS: Final[str] = "1984-11-30"
-
+TEST_AUTH_CSV_FILE_NAME: Final[Path] = Path("test_auth.csv")
 
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
 CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData")
@@ -296,6 +296,7 @@ def doctest_auto_fixtures(
     doctest_namespace[
         "CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT"
     ] = CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
+    doctest_namespace["TEST_AUTH_CSV_PATH"] = TEST_AUTH_CSV_FILE_NAME
     doctest_namespace["is_platform_darwin"] = is_platform_darwin()
     doctest_namespace["is_data_mounted"] = is_data_mounted
     doctest_namespace["mount_path"] = climate_data_mount_path()
@@ -312,7 +313,16 @@ def doctest_auto_fixtures(
 
 
 def pytest_sessionfinish(session, exitstatus):
-    """Generate badges for docs after tests finish."""
+    """Generate badges for docs after tests finish.
+
+    Note
+    ----
+    This example assumes the `doctest` for `utils.csv_reader` is written in
+    the `tests/` folder.
+    """
+    test_auth_csv_path: Path = Path("tests") / TEST_AUTH_CSV_FILE_NAME
+    if test_auth_csv_path.exists():
+        test_auth_csv_path.unlink()
     if exitstatus == 0:
         BADGE_PATH.parent.mkdir(parents=True, exist_ok=True)
         gen_cov_badge(["-o", f"{BADGE_PATH}", "-f"])

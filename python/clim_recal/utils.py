@@ -931,7 +931,7 @@ def csv_reader(path: PathLike, **kwargs) -> Iterator[dict[str, str]]:
     Examples
     --------
     >>> import csv
-    >>> csv_path: Path = 'test_auth.csv'
+    >>> csv_path: Path = TEST_AUTH_CSV_PATH
     >>> auth_dict: dict[str, str] = {
     ...    'sally': 'fig*new£kid',
     ...    'george': 'tee&iguana*sky',
