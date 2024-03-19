@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable, Final
+from typing import Final
 
 import numpy as np
 import pytest
@@ -87,13 +87,13 @@ def year_days_count(
     )
 
 
-def test_leap_year_days(xarray_spatial_temporal: Callable) -> None:
+def test_leap_year_days() -> None:
     """Test covering a leap year of 366 days."""
     start_date_str: str = "2024-03-01"
     end_date_str: str = "2025-03-01"
-    xarray_2024_2025: DataArray = xarray_spatial_temporal(
-        start_date_str=start_date_str,
-        end_date_str=end_date_str,
+    xarray_2024_2025: DataArray = xarray_example(
+        start_date=start_date_str,
+        end_date=end_date_str,
         inclusive=True,
     )
     assert len(xarray_2024_2025) == year_days_count(leap_years=1)

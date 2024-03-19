@@ -61,6 +61,10 @@ THREE_CITY_COORDS: Final[dict[str, tuple[float, float]]] = {
 }
 """Coordinates of Glasgow, Manchester and London as `(lon, lat)` `tuples`."""
 
+XARRAY_EXAMPLE_START_DATE_STR: Final[str] = "1980-11-30"
+XARRAY_EXAMPLE_END_DATE_4_YEARS: Final[str] = "1984-11-30"
+XARRAY_EXAMPLE_RANDOM_SEED: Final[int] = 0
+
 
 def ensure_date(date_to_check: DateType, format_str: str = DATE_FORMAT_STR) -> date:
     """Ensure passed `date_to_check` is a `date`.
@@ -1016,11 +1020,11 @@ try:
     from xarray import DataArray, Dataset
 
     def xarray_example(
-        start_date: DateType,
-        end_date: DateType,
+        start_date: DateType = XARRAY_EXAMPLE_START_DATE_STR,
+        end_date: DateType = XARRAY_EXAMPLE_END_DATE_4_YEARS,
         coordinates: dict[str, tuple[float, float]] = THREE_CITY_COORDS,
         skip_dates: Iterable[date] | None = None,
-        random_seed_int: int | None = None,
+        random_seed_int: int | None = XARRAY_EXAMPLE_RANDOM_SEED,
         name: str | None = None,
         as_dataset: bool = False,
         **kwargs,

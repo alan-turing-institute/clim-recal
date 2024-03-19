@@ -1,7 +1,6 @@
-from datetime import date
 from pathlib import Path
 from pprint import pprint
-from typing import Callable, Final, Iterable
+from typing import Final
 
 import pytest
 from clim_recal.debiasing.debias_wrapper import (
@@ -24,6 +23,8 @@ from clim_recal.pipeline import climate_data_mount_path, is_climate_data_mounted
 from clim_recal.utils import (
     ISO_DATE_FORMAT_STR,
     THREE_CITY_COORDS,
+    XARRAY_EXAMPLE_END_DATE_4_YEARS,
+    XARRAY_EXAMPLE_START_DATE_STR,
     CondaLockFileManager,
     check_package_path,
     is_platform_darwin,
@@ -175,82 +176,38 @@ def ensure_python_path() -> None:
 
 
 @pytest.fixture
-def xarray_spatial_temporal() -> (
-    Callable[[str, str, dict[str, tuple[float, float]]], DataArray]
-):
-    """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30.
-
-    See https://xarray-spatial.org/user_guide/local.html?highlight=time
-    """
-
-    def _xarray_spatial_temporal(
-        start_date_str: str = XARRAY_START_DATE_STR,
-        end_date_str: str = XARRAY_END_DATE_4_YEARS,
-        coordinates: dict[str, tuple[float, float]] = THREE_CITY_COORDS,
-        skip_dates: Iterable[date] | None = None,
-        **kwargs,
-    ) -> DataArray:
-        return xarray_example(
-            start_date=start_date_str,
-            end_date=end_date_str,
-            coordinates=coordinates,
-            skip_dates=skip_dates,
-            random_seed_int=0,
-            **kwargs,
-        )
-
-    return _xarray_spatial_temporal
-
-
-@pytest.fixture
-def xarray_spatial_4_days(
-    xarray_spatial_temporal: Callable,
-    end_date_str: str = XARRAY_END_DATE_4_DAYS,
-) -> DataArray:
+def xarray_spatial_4_days() -> DataArray:
     """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-05."""
-    return xarray_spatial_temporal(end_date_str=end_date_str)
+    return xarray_example(end_date=XARRAY_END_DATE_4_DAYS)
 
 
 @pytest.fixture
-def xarray_spatial_8_days(
-    xarray_spatial_temporal: Callable,
-    end_date_str: str = XARRAY_END_DATE_8_DAYS,
-) -> DataArray:
+def xarray_spatial_8_days() -> DataArray:
     """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-10."""
-    return xarray_spatial_temporal(end_date_str=end_date_str)
+    return xarray_example(end_date=XARRAY_END_DATE_8_DAYS)
 
 
 @pytest.fixture
-def xarray_spatial_6_days_2_skipped(
-    xarray_spatial_temporal: Callable,
-    end_date_str: str = XARRAY_END_DATE_8_DAYS,
-    skip_dates: tuple[str, ...] = XARRAY_SKIP_2_FROM_8_DAYS,
-) -> DataArray:
+def xarray_spatial_6_days_2_skipped() -> DataArray:
     """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-05."""
-    return xarray_spatial_temporal(
-        end_date_str=end_date_str,
-        skip_dates=skip_dates,
+    return xarray_example(
+        end_date=XARRAY_END_DATE_8_DAYS,
+        skip_dates=XARRAY_SKIP_2_FROM_8_DAYS,
         skip_dates_format_str=ISO_DATE_FORMAT_STR,
     )
 
 
 @pytest.fixture
-def xarray_spatial_4_years(
-    xarray_spatial_temporal: Callable,
-    end_date_str: str = XARRAY_END_DATE_4_YEARS,
-) -> DataArray:
+def xarray_spatial_4_years() -> DataArray:
     """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30."""
-    return xarray_spatial_temporal(end_date_str=end_date_str)
+    return xarray_example(end_date=XARRAY_END_DATE_4_YEARS)
 
 
 @pytest.fixture
-def xarray_spatial_4_years_360_day(
-    xarray_spatial_temporal: Callable,
-    end_date_str: str = XARRAY_END_DATE_4_YEARS,
-) -> Dataset:
+def xarray_spatial_4_years_360_day() -> Dataset:
     """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30."""
-    four_normal_years: Dataset = xarray_spatial_temporal(
-        end_date_str=end_date_str, as_dataset=True, name="day_360"
+    four_normal_years: Dataset = xarray_example(
+        end_date=XARRAY_EXAMPLE_END_DATE_4_YEARS, as_dataset=True, name="day_360"
     )
     return four_normal_years.convert_calendar("360_day", align_on="year")
 
