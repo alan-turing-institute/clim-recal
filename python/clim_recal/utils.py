@@ -61,9 +61,10 @@ THREE_CITY_COORDS: Final[dict[str, tuple[float, float]]] = {
 }
 """Coordinates of Glasgow, Manchester and London as `(lon, lat)` `tuples`."""
 
+XARRAY_EXAMPLE_RANDOM_SEED: Final[int] = 0
+# Default 4 year start and end date covering leap year
 XARRAY_EXAMPLE_START_DATE_STR: Final[str] = "1980-11-30"
 XARRAY_EXAMPLE_END_DATE_4_YEARS: Final[str] = "1984-11-30"
-XARRAY_EXAMPLE_RANDOM_SEED: Final[int] = 0
 
 
 def ensure_date(date_to_check: DateType, format_str: str = DATE_FORMAT_STR) -> date:
@@ -707,7 +708,7 @@ class CondaLockFileManager:
         parent_dir_after_lock: bool = False,
         **kwargs,
     ) -> list[str] | str:
-        """Return `self` configurations, optionally execute as `subprocess`.
+        r"""Return `self` configurations, optionally execute as `subprocess`.
 
         Parameters
         ----------
@@ -751,7 +752,7 @@ class CondaLockFileManager:
         -------
         :
             A `list` of commands generated, or a `str` of each command
-            separated by a newline character (`\\n`).
+            separated by a newline character (`\n`).
 
         Examples
         --------

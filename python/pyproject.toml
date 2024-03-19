@@ -37,6 +37,12 @@ dependencies = [
     "pdm>=2.12.4",
 ]
 
+[tool.isort]
+profile = "black"
+
+[tool.pycln]
+all = true
+
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"

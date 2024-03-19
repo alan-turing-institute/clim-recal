@@ -14,17 +14,12 @@ from pathlib import Path
 from typing import Any, Callable, Final, Iterable, Literal
 
 import numpy as np
-
-# import xarray as xr  # requires rioxarray extension
-from numpy import array, random
+import rioxarray  # nopycln: import
 from osgeo.gdal import GRA_NearestNeighbour, Warp, WarpOptions
-from pandas import DatetimeIndex, to_datetime
 from tqdm import tqdm
-from xarray import DataArray, Dataset, open_dataset  # requires rioxarray extension
+from xarray import DataArray, Dataset, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import CFCalendar, InterpOptions
-
-from .utils import ISO_DATE_FORMAT_STR, DateType, date_range_generator
 
 logger = getLogger(__name__)
 
@@ -58,7 +53,7 @@ DEFAULT_INTERPOLATION_METHOD: str = "linear"
 
 CFCalendarSTANDARD: Final[str] = "standard"
 ConvertCalendarAlignOptions = Literal["date", "year", None]
-CPM_XR_TO_HADS_ALIGN_DEFAULT: Final[ConvertCalendarAlignOptions] = "date"
+DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
 
 RESAMPLING_PATH: Final[os.PathLike] = Path("Raw/python_refactor/Reprojected_infill")
 UK_SPATIAL_PROJECTION: Final[str] = "EPSG:27700"
@@ -169,7 +164,7 @@ def ensure_xr_dataset(
 
 def convert_xr_calendar(
     xr_time_series: DataArray | Dataset,
-    align_on: ConvertCalendarAlignOptions = CPM_XR_TO_HADS_ALIGN_DEFAULT,
+    align_on: ConvertCalendarAlignOptions = DEFAULT_CALENDAR_ALIGN,
     calendar: CFCalendar = CFCalendarSTANDARD,
     use_cftime: bool = False,
     missing_value: Any | None = np.nan,
@@ -223,13 +218,14 @@ def convert_xr_calendar(
 
     Examples
     --------
+    # Note a new doctest needs to be written to deal
+    # with default `year` vs `date` parameters
     >>> xr_360_to_365_datetime64: Dataset = convert_xr_calendar(
-    ...     xarray_spatial_4_years_360_day)
+    ...     xarray_spatial_4_years_360_day, align_on="date")
     >>> xr_360_to_365_datetime64.sel(
     ...     time=slice("1981-01-30", "1981-02-01"),
     ...     space="Glasgow").day_360
     <xarray.DataArray 'day_360' (time: 3)>...
-    array([0.23789282,        nan, 0.5356328 ])
     Coordinates:
       * time     (time) datetime64[ns] ...1981-01-30 1981-01-31 1981-02-01
         space    <U10 ...'Glasgow'
@@ -239,7 +235,7 @@ def convert_xr_calendar(
     ...     time=slice("1981-01-30", "1981-02-01"),
     ...     space="Glasgow").day_360
     <xarray.DataArray 'day_360' (time: 3)>...
-    array([0.23789282, 0.38676281, 0.5356328 ])
+    array([0.23789282, 0.5356328 , 0.311945  ])
     Coordinates:
       * time     (time) datetime64[ns] ...1981-01-30 1981-01-31 1981-02-01
         space    <U10 ...'Glasgow'

@@ -70,8 +70,6 @@ website:
                 text: "Data Loading"
               - href: "docs/reference/clim_recal.resample.qmd"
                 text: "Data Resampling"
-              - href: "docs/reference/clim_recal.pipeline.qmd"
-                text: "Pipeline"
               - section: "Debiasing"
                 contents:
                   - href: "docs/reference/clim_recal.debiasing.debias_wrapper.qmd"

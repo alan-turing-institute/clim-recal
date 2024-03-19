@@ -1,9 +1,9 @@
 from pathlib import Path
 from typing import Final
 
-import numpy as np
 import pytest
-import xarray as xr
+from xarray import DataArray, Dataset
+
 from clim_recal.resample import (  # MONTH_DAY_XARRAY_LEAP_YEAR_DROP,  # For specific day checking; crop_nc,
     ConvertCalendarAlignOptions,
     convert_xr_calendar,
@@ -15,7 +15,6 @@ from clim_recal.utils import (
     DateType,
     xarray_example,
 )
-from xarray import DataArray, Dataset, cftime_range, open_dataset
 
 HADS_UK_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
 HADS_UK_RESAMPLED_DAY_LOCAL_PATH: Final[Path] = Path(
@@ -293,16 +292,12 @@ def test_time_gaps_360_to_standard_calendar(
 
 # @pytest.mark.server
 # def test_crop_nc(
-#     start_date: DateType = '1980-12-01',
-#     end_date: DateType = '1985-12-01',
 #     # align_on: ConvertCalendarAlignOptions,
 # ):
 #     """Test `cropping` `DataArray` to `standard` calendar."""
-#
 #     # Create a base
 #     base: Dataset = xarray_example(
-#         start_date, end_date, as_dataset=True, inclusive=inclusive_date_range
-#     )
+#         as_dataset=True    )
 #     assert False
 #
 #

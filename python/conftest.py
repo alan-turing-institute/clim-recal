@@ -3,6 +3,9 @@ from pprint import pprint
 from typing import Final
 
 import pytest
+from coverage_badge.__main__ import main as gen_cov_badge
+from xarray import DataArray, Dataset
+
 from clim_recal.debiasing.debias_wrapper import (
     CALIB_DATES_STR_DEFAULT,
     CMETHODS_FILE_NAME,
@@ -22,29 +25,21 @@ from clim_recal.debiasing.debias_wrapper import (
 from clim_recal.pipeline import climate_data_mount_path, is_climate_data_mounted
 from clim_recal.utils import (
     ISO_DATE_FORMAT_STR,
-    THREE_CITY_COORDS,
     XARRAY_EXAMPLE_END_DATE_4_YEARS,
-    XARRAY_EXAMPLE_START_DATE_STR,
     CondaLockFileManager,
     check_package_path,
     is_platform_darwin,
     iter_to_tuple_strs,
     xarray_example,
 )
-from coverage_badge.__main__ import main as gen_cov_badge
-from osgeo.gdal import DataTypeUnion
-from pandas import to_datetime
-from xarray import DataArray, Dataset
 
 # Date Range covering leap year
-XARRAY_START_DATE_STR: Final[str] = "1980-11-30"
 XARRAY_END_DATE_4_DAYS: Final[str] = "1980-12-5"
 XARRAY_END_DATE_8_DAYS: Final[str] = "1980-12-10"
 XARRAY_SKIP_2_FROM_8_DAYS: Final[tuple[str, str]] = (
     "1980-12-7",
     "1980-12-8",
 )
-XARRAY_END_DATE_4_YEARS: Final[str] = "1984-11-30"
 TEST_AUTH_CSV_FILE_NAME: Final[Path] = Path("test_auth.csv")
 
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
@@ -200,7 +195,7 @@ def xarray_spatial_6_days_2_skipped() -> DataArray:
 @pytest.fixture
 def xarray_spatial_4_years() -> DataArray:
     """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30."""
-    return xarray_example(end_date=XARRAY_END_DATE_4_YEARS)
+    return xarray_example(end_date=XARRAY_EXAMPLE_END_DATE_4_YEARS)
 
 
 @pytest.fixture
@@ -209,7 +204,7 @@ def xarray_spatial_4_years_360_day() -> Dataset:
     four_normal_years: Dataset = xarray_example(
         end_date=XARRAY_EXAMPLE_END_DATE_4_YEARS, as_dataset=True, name="day_360"
     )
-    return four_normal_years.convert_calendar("360_day", align_on="year")
+    return four_normal_years.convert_calendar("360_day", align_on="day")
 
 
 @pytest.fixture
