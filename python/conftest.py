@@ -272,9 +272,13 @@ def pytest_sessionfinish(session, exitstatus):
     This example assumes the `doctest` for `utils.csv_reader` is written in
     the `tests/` folder.
     """
-    test_auth_csv_path: Path = Path("tests") / TEST_AUTH_CSV_FILE_NAME
-    if test_auth_csv_path.exists():
-        test_auth_csv_path.unlink()
+    test_auth_csv_paths: tuple[Path, ...] = (
+        Path(TEST_AUTH_CSV_FILE_NAME),
+        Path("tests") / TEST_AUTH_CSV_FILE_NAME,
+    )
+    for test_auth_path in test_auth_csv_paths:
+        if test_auth_path.exists():
+            test_auth_path.unlink()
     if exitstatus == 0:
         BADGE_PATH.parent.mkdir(parents=True, exist_ok=True)
         gen_cov_badge(["-o", f"{BADGE_PATH}", "-f"])
