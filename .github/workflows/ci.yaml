@@ -112,7 +112,7 @@ jobs:
   # running tests on `GitHub`
 
   docker:
-    # needs: [linter, pytest]
+    needs: [linter, pytest]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@main
