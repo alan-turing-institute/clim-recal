@@ -425,7 +425,7 @@ def make_user(
     ...     pytest.skip('requires root permission to run')
     >>> user_name: str = 'an_unlinkely_test_user'
     >>> password: str = 'test_pass'
-    >>> code_path: Path = Path('..')
+    >>> code_path: Path = JUPYTER_DOCKER_USER_PATH
     >>> make_user(user_name, password, code_path=code_path)
     PosixPath('/home/an_unlinkely_test_user')
     >>> Path(f'/home/{user_name}/python/conftest.py').is_file()
@@ -462,6 +462,8 @@ def rm_user(user: str, user_home_path: PathLike = DEBIAN_HOME_PATH) -> str:
     >>> import os
     >>> if os.geteuid() != 0:
     ...     pytest.skip('requires root permission to run')
+    >>> if is_platform_darwin:
+    ...     pytest.skip('test designed for docker jupyter')
     >>> user_name: str = 'very_unlinkely_test_user'
     >>> password: str = 'test_pass'
     >>> make_user(user_name, password, code_path=JUPYTER_DOCKER_USER_PATH)
@@ -506,12 +508,15 @@ def make_users(
     >>> import os
     >>> if os.geteuid() != 0:
     ...     pytest.skip('requires root permission to run')
+    >>> if is_platform_darwin:
+    ...     pytest.skip('test designed for docker jupyter')
     >>> from pandas import read_excel
-    >>> code_path: Path = Path('/home/jovyan')
     >>> def excel_row_iter(path: Path, **kwargs) -> dict:
     ...     df: DataFrame = read_excel(path, **kwargs)
     ...     return df.to_dict(orient="records")
-    >>> test_accounts_path: Path = Path('tests/test_user_accounts.xlsx')
+    >>> test_accounts_path: Path = Path(
+    ...     'tests/test_user_accounts.xlsx')
+    >>> assert test_accounts_path.exists()
     >>> user_paths: tuple[Path, ...] = tuple(make_users(
     ...     file_path=test_accounts_path,
     ...     user_col="User Name",
@@ -519,7 +524,8 @@ def make_users(
     ...     file_reader=excel_row_iter,
     ...     code_path=JUPYTER_DOCKER_USER_PATH,
     ... ))
-    >>> [(path / 'python' / 'conftest.py').is_file() for path in user_paths]
+    >>> [(path / 'python' / 'conftest.py').is_file()
+    ...  for path in user_paths]
     [True, True, True, True, True]
     >>> [rm_user(user_path.name) for user_path in user_paths]
     ['sally', 'george', 'jean', 'felicity', 'frank']
