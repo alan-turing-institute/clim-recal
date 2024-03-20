@@ -10,6 +10,7 @@ import os
 from dataclasses import dataclass
 from glob import glob
 from logging import getLogger
+from os import PathLike
 from pathlib import Path
 from typing import Any, Callable, Final, Iterable, Literal
 
@@ -21,6 +22,8 @@ from tqdm import tqdm
 from xarray import DataArray, Dataset, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import CFCalendar, InterpOptions
+
+from .utils.xarray import ensure_xr_dataset
 
 logger = getLogger(__name__)
 
@@ -56,17 +59,17 @@ CFCalendarSTANDARD: Final[str] = "standard"
 ConvertCalendarAlignOptions = Literal["date", "year", None]
 DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
 
-RESAMPLING_PATH: Final[os.PathLike] = Path("Raw/python_refactor/Reprojected_infill")
+RESAMPLING_PATH: Final[PathLike] = Path("Raw/python_refactor/Reprojected_infill")
 UK_SPATIAL_PROJECTION: Final[str] = "EPSG:27700"
 CPRUK_RESOLUTION: Final[int] = 2200
 CPRUK_RESAMPLING_METHOD: Final[str] = GRA_NearestNeighbour
-ResamplingArgs = tuple[os.PathLike, np.ndarray, np.ndarray, os.PathLike]
+ResamplingArgs = tuple[PathLike, np.ndarray, np.ndarray, PathLike]
 ResamplingCallable = Callable[[list | tuple], int]
 
 
 def warp_cruk(
-    input_path: os.PathLike = RESAMPLING_PATH,
-    output_path: os.PathLike = RESAMPLING_PATH,
+    input_path: PathLike = RESAMPLING_PATH,
+    output_path: PathLike = RESAMPLING_PATH,
     output_coord_system: str = UK_SPATIAL_PROJECTION,
     output_x_resolution: int = CPRUK_RESOLUTION,
     output_y_resolution: int = CPRUK_RESOLUTION,
@@ -126,41 +129,6 @@ def warp_cruk(
     # Todo: future refactors will return something more useful
     # Below is simply meant to match `resample_hadukgrid`
     return 0 if conversion_result else 1
-
-
-def ensure_xr_dataset(
-    xr_time_series: Dataset | DataArray, default_name="to_convert"
-) -> Dataset:
-    """Return `xr_time_series` as a `xarray.Dataset` instance.
-
-    Parameters
-    ----------
-    xr_time_series
-        Instance to check and if necessary to convert to `Dataset`.
-    default_name
-        Name to give returned `Dataset` if `xr_time_series.name` is empty.
-
-    Returns
-    -------
-    :
-        Converted (or original) `Dataset`.
-
-    Examples
-    --------
-    >>> ensure_xr_dataset(xarray_spatial_4_days)
-    <xarray.Dataset>...
-    Dimensions:      (time: 5, space: 3)
-    Coordinates:
-      * time         (time) datetime64[ns] ...1980-11-30 1980-12-01 ... 1980-12-04
-      * space        (space) <U10 ...'Glasgow' 'Manchester' 'London'
-    Data variables:
-        xa_template  (time, space) float64 ...0.5488 0.7152 ... 0.9256 0.07104
-    """
-    if isinstance(xr_time_series, DataArray):
-        array_name = xr_time_series.name or default_name
-        return xr_time_series.to_dataset(name=array_name)
-    else:
-        return xr_time_series
 
 
 def convert_xr_calendar(
@@ -266,7 +234,7 @@ def convert_xr_calendar(
         )
 
 
-def crop_nc(xr_time_series: Dataset, crop_geom: os.PathLike | GeoDataFrame) -> Dataset:
+def crop_nc(xr_time_series: Dataset, crop_geom: PathLike | GeoDataFrame) -> Dataset:
     """Crop `xr_time_series` with `crop_path` `shapefile`.
 
     Parameters
@@ -285,11 +253,9 @@ def crop_nc(xr_time_series: Dataset, crop_geom: os.PathLike | GeoDataFrame) -> D
     --------
     >>> if not is_data_mounted:
     ...     pytest.skip('Can only run with mounted data files')
-
-    open_dataset()
-
+    >>> crop_nc
     """
-    if isinstance(crop_geom, os.PathLike):
+    if isinstance(crop_geom, PathLike):
         crop_geom = read_file(crop_geom)
     assert False
 
@@ -375,11 +341,29 @@ def resample_hadukgrid(x: list | tuple) -> int:
 
 @dataclass
 class HADsUKResampleManager:
-    input: os.PathLike | None
-    output: os.PathLike
-    grid_data: os.PathLike | None
+    """Manage resampling HADsUK datafiles for modelling.
+
+    Attributes
+    ----------
+    input
+        `Path` to `HADs` files to process.
+    output
+        `Path` to save processed `HADS` files.
+    grid_data
+        `Path` to grid data to process and save as `self.grid` via `set_grid_x_y`.
+    grid
+        `Dataset` of
+
+
+
+
+    """
+
+    input: PathLike | None
+    output: PathLike
+    grid_data: PathLike | None
     grid: Dataset | None = None
-    input_nc_files: Iterable[os.PathLike] | None = None
+    input_nc_files: Iterable[PathLike] | None = None
     cpus: int | None = None
     resampling_func: ResamplingCallable = resample_hadukgrid
 
@@ -387,7 +371,7 @@ class HADsUKResampleManager:
         """Return the length of `self.input_nc_files`."""
         return len(self.input_nc_files) if self.input_nc_files else 0
 
-    def set_input_nc_files(self, new_input_path: os.PathLike | None = None) -> None:
+    def set_input_nc_files(self, new_input_path: PathLike | None = None) -> None:
         """Replace `self.input` and process `self.input_nc_files`."""
         if new_input_path:
             self.input = new_input_path
@@ -396,7 +380,7 @@ class HADsUKResampleManager:
                 glob(f"{parser_args.input}/*.nc", recursive=True)
             )
 
-    def set_grid_x_y(self, new_grid_data: os.PathLike | None = None) -> None:
+    def set_grid_x_y(self, new_grid_data: PathLike | None = None) -> None:
         if new_grid_data:
             self.grid_data = new_grid_data
         if not self.grid:

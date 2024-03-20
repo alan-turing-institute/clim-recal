@@ -16,8 +16,8 @@ from clim_recal.utils.core import (
     NORMAL_YEAR_DAYS,
     DateType,
     annual_data_paths,
-    xarray_example,
 )
+from clim_recal.utils.xarray import xarray_example
 
 HADS_UK_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
 HADS_UK_RESAMPLED_DAY_LOCAL_PATH: Final[Path] = Path(

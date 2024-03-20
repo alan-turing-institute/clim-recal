@@ -30,9 +30,9 @@ from clim_recal.utils.core import (
     check_package_path,
     is_platform_darwin,
     iter_to_tuple_strs,
-    xarray_example,
 )
 from clim_recal.utils.server import CondaLockFileManager
+from clim_recal.utils.xarray import xarray_example
 
 # Date Range covering leap year
 XARRAY_END_DATE_4_DAYS: Final[str] = "1980-12-5"
