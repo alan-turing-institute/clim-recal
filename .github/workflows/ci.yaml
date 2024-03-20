@@ -107,21 +107,19 @@ jobs:
         run: |
           mamba run -n ${{ env.CONDA_ENV_NAME }} quartodoc build
 
-  # The below configuration is a WIP, while it builds
-  # and runs locally, sometimes it fails build *before*
-  # running tests on `GitHub`
+  # The below raises a code 137 error on `GitHub` Actions
 
-  docker:
-    needs: [linter, pytest]
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@main
-
-    - name: Build and Test with Root permission
-      run: |
-        docker compose build jupyter
-        docker compose up jupyter --detach
-        docker compose exec jupyter bash -c "conda run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest"
-
-    - name: Clean-up
-      run: docker compose down
+  # docker:
+  #   needs: [linter, pytest]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@main
+  #
+  #   - name: Build and Test with Root permission
+  #     run: |
+  #       docker compose build jupyter
+  #       docker compose up jupyter --detach
+  #       docker compose exec jupyter bash -c "conda run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest"
+  #
+  #   - name: Clean-up
+  #     run: docker compose down
