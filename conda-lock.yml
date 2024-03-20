@@ -4330,45 +4330,45 @@ package:
   category: main
   optional: false
 - name: griffe
-  version: 0.42.0
+  version: 0.42.1
   manager: conda
   platform: linux-64
   dependencies:
     astunparse: '>=1.6'
     colorama: '>=0.4'
     python: '>=3.8'
-  url: https://conda.anaconda.org/conda-forge/noarch/griffe-0.42.0-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/griffe-0.42.1-pyhd8ed1ab_0.conda
   hash:
-    md5: 9f464ae2cc26282ca79c7562377cd917
-    sha256: cea8abaa82625a62b7c65294e24698c12bbff37779243fc31a3157b099f2dac5
+    md5: c6adb089706beaef0673bc32953913e8
+    sha256: cdb9afdb4eb66b6c43c6f34ed14da4a4d8686e51f3fafc23e2846e4a166ce700
   category: dev
   optional: true
 - name: griffe
-  version: 0.42.0
+  version: 0.42.1
   manager: conda
   platform: linux-aarch64
   dependencies:
     astunparse: '>=1.6'
     colorama: '>=0.4'
     python: '>=3.8'
-  url: https://conda.anaconda.org/conda-forge/noarch/griffe-0.42.0-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/griffe-0.42.1-pyhd8ed1ab_0.conda
   hash:
-    md5: 9f464ae2cc26282ca79c7562377cd917
-    sha256: cea8abaa82625a62b7c65294e24698c12bbff37779243fc31a3157b099f2dac5
+    md5: c6adb089706beaef0673bc32953913e8
+    sha256: cdb9afdb4eb66b6c43c6f34ed14da4a4d8686e51f3fafc23e2846e4a166ce700
   category: dev
   optional: true
 - name: griffe
-  version: 0.42.0
+  version: 0.42.1
   manager: conda
   platform: osx-arm64
   dependencies:
     astunparse: '>=1.6'
     colorama: '>=0.4'
     python: '>=3.8'
-  url: https://conda.anaconda.org/conda-forge/noarch/griffe-0.42.0-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/griffe-0.42.1-pyhd8ed1ab_0.conda
   hash:
-    md5: 9f464ae2cc26282ca79c7562377cd917
-    sha256: cea8abaa82625a62b7c65294e24698c12bbff37779243fc31a3157b099f2dac5
+    md5: c6adb089706beaef0673bc32953913e8
+    sha256: cdb9afdb4eb66b6c43c6f34ed14da4a4d8686e51f3fafc23e2846e4a166ce700
   category: dev
   optional: true
 - name: h11
@@ -7692,10 +7692,10 @@ package:
     krb5: '>=1.21.2,<1.22.0a0'
     libgcc-ng: '>=12'
     openssl: '>=3.2.1,<4.0a0'
-  url: https://conda.anaconda.org/conda-forge/linux-64/libpq-16.2-h33b98f1_0.conda
+  url: https://conda.anaconda.org/conda-forge/linux-64/libpq-16.2-h33b98f1_1.conda
   hash:
-    md5: fe0e297faf462ee579c95071a5211665
-    sha256: 352748b0499a22e2a8e103f071b8d9357e1fb710c0aec0f79895d3ba03dccb03
+    md5: 9e49ec2a61d02623b379dc332eb6889d
+    sha256: e03a8439b79e013840c44c957d37dbce10316888b2b5dc7dcfcfc0cfe3a3b128
   category: main
   optional: false
 - name: libpq
@@ -7706,10 +7706,10 @@ package:
     krb5: '>=1.21.2,<1.22.0a0'
     libgcc-ng: '>=12'
     openssl: '>=3.2.1,<4.0a0'
-  url: https://conda.anaconda.org/conda-forge/linux-aarch64/libpq-16.2-h58720eb_0.conda
+  url: https://conda.anaconda.org/conda-forge/linux-aarch64/libpq-16.2-h58720eb_1.conda
   hash:
-    md5: ca0572c11209701741812f657ebeef82
-    sha256: 439633fee193ad250d97da135a7fb1c497b4f496ec6baabcb73bdba554926943
+    md5: 08197815d955b96d6ad5ac18e2c8f322
+    sha256: 41013bae4c01518394ed366de29d1d1b6851efee9f41b7fd4cd8c53bd74c1ba7
   category: main
   optional: false
 - name: libpq
@@ -7719,10 +7719,10 @@ package:
   dependencies:
     krb5: '>=1.21.2,<1.22.0a0'
     openssl: '>=3.2.1,<4.0a0'
-  url: https://conda.anaconda.org/conda-forge/osx-arm64/libpq-16.2-h0f8b458_0.conda
+  url: https://conda.anaconda.org/conda-forge/osx-arm64/libpq-16.2-h0f8b458_1.conda
   hash:
-    md5: fea5d30234a7158f4eaa915b5a6e0c9c
-    sha256: 0ad2265131a6d79fcfe8c5b7a04884f7377f981d18af775ebb71bc61b0c938b6
+    md5: e236a8e95b82a454e333f22418b9c879
+    sha256: 7a6a195d37f6fe2f2d608033755f6e9522c9a2b7b07e52529159105f635c6cae
   category: main
   optional: false
 - name: libprotobuf
@@ -10551,16 +10551,16 @@ package:
     krb5: '>=1.21.2,<1.22.0a0'
     libgcc-ng: '>=12'
     libpq: '16.2'
-    libxml2: '>=2.12.5,<3.0a0'
+    libxml2: '>=2.12.6,<3.0a0'
     libzlib: '>=1.2.13,<1.3.0a0'
     openssl: '>=3.2.1,<4.0a0'
     readline: '>=8.2,<9.0a0'
     tzcode: ''
     tzdata: ''
-  url: https://conda.anaconda.org/conda-forge/linux-64/postgresql-16.2-h7387d8b_0.conda
+  url: https://conda.anaconda.org/conda-forge/linux-64/postgresql-16.2-h82ecc9d_1.conda
   hash:
-    md5: 4e86738066b4966f0357f661b3691cae
-    sha256: 5b4fcfbd51957bb51fb1d2d28c3e9d8f4a50be0ac1be9c40083b1e9a39df7f3d
+    md5: 7a5806219d0f77ce8393375d040df065
+    sha256: 7fc52e69478973f173f055ade6c4087564362be9172c294b493a79671fef9a7e
   category: main
   optional: false
 - name: postgresql
@@ -10571,16 +10571,16 @@ package:
     krb5: '>=1.21.2,<1.22.0a0'
     libgcc-ng: '>=12'
     libpq: '16.2'
-    libxml2: '>=2.12.5,<3.0a0'
+    libxml2: '>=2.12.6,<3.0a0'
     libzlib: '>=1.2.13,<1.3.0a0'
     openssl: '>=3.2.1,<4.0a0'
     readline: '>=8.2,<9.0a0'
     tzcode: ''
     tzdata: ''
-  url: https://conda.anaconda.org/conda-forge/linux-aarch64/postgresql-16.2-he703394_0.conda
+  url: https://conda.anaconda.org/conda-forge/linux-aarch64/postgresql-16.2-h841b8aa_1.conda
   hash:
-    md5: 7d74ee5fdce72a81c2f2a31bb614a561
-    sha256: 93be901453e588baebb2ff5ba624e24812a7892ae86f415e2439b16b1e2642c0
+    md5: 4a561786a1734dbba64c12fd3acb715d
+    sha256: 5080f6b64991ccb35509b54ea6495a58295d5c03360f36c87c9d4ce1eea0e19a
   category: main
   optional: false
 - name: postgresql
@@ -10590,16 +10590,16 @@ package:
   dependencies:
     krb5: '>=1.21.2,<1.22.0a0'
     libpq: '16.2'
-    libxml2: '>=2.12.5,<3.0a0'
+    libxml2: '>=2.12.6,<3.0a0'
     libzlib: '>=1.2.13,<1.3.0a0'
     openssl: '>=3.2.1,<4.0a0'
     readline: '>=8.2,<9.0a0'
     tzcode: ''
     tzdata: ''
-  url: https://conda.anaconda.org/conda-forge/osx-arm64/postgresql-16.2-h1d0603d_0.conda
+  url: https://conda.anaconda.org/conda-forge/osx-arm64/postgresql-16.2-hf829917_1.conda
   hash:
-    md5: 29f3fd38f23da95692ab11af12fdb6da
-    sha256: 01b5bb78c909778fefca380bb808044850adba2972cd92f8fe6ead122a34fc45
+    md5: a80492a97dc9c6f05b4181b8ab4dfb14
+    sha256: cfc337097f145a3e527c45b2ab40663421480acc225c3eb997459a80e5e1f9ae
   category: main
   optional: false
 - name: pre-commit
