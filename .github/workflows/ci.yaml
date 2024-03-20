@@ -114,8 +114,6 @@ jobs:
   docker:
     # needs: [linter, pytest]
     runs-on: ubuntu-latest
-    container:
-      image:
     steps:
     - uses: actions/checkout@main
 
