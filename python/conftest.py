@@ -1,6 +1,7 @@
 from pathlib import Path
 from pprint import pprint
-from typing import Final
+from shutil import copytree, rmtree
+from typing import Final, Iterator
 
 import pytest
 from coverage_badge.__main__ import main as gen_cov_badge
@@ -45,7 +46,9 @@ TEST_AUTH_CSV_FILE_NAME: Final[Path] = Path("test_auth.csv")
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
 CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData")
 CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateData")
-TEST_PATH = Path().absolute()
+
+TEST_PATH: Final[Path] = Path().absolute()
+TEST_DATA_PATH: Final[Path] = TEST_PATH / "tests/data"
 PYTHON_DIR_NAME: Final[Path] = Path("python")
 
 CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str, ...]] = (
@@ -210,6 +213,12 @@ def xarray_spatial_4_years_360_day() -> Dataset:
 @pytest.fixture
 def conda_lock_file_manager() -> CondaLockFileManager:
     return CondaLockFileManager()
+
+
+@pytest.fixture
+def data_fixtures_path(tmp_path) -> Iterator[Path]:
+    yield copytree(TEST_DATA_PATH, tmp_path / TEST_DATA_PATH.name)
+    rmtree(tmp_path / TEST_DATA_PATH.name)
 
 
 @pytest.fixture(autouse=True)

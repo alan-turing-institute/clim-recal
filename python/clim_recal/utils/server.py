@@ -505,17 +505,17 @@ def make_users(
 
     Examples
     --------
+    >>> if is_platform_darwin:
+    ...     pytest.skip('test designed for docker jupyter')
     >>> import os
     >>> if os.geteuid() != 0:
     ...     pytest.skip('requires root permission to run')
-    >>> if is_platform_darwin:
-    ...     pytest.skip('test designed for docker jupyter')
+    >>> tmp_data_path = getfixture('data_fixtures_path')
     >>> from pandas import read_excel
     >>> def excel_row_iter(path: Path, **kwargs) -> dict:
     ...     df: DataFrame = read_excel(path, **kwargs)
     ...     return df.to_dict(orient="records")
-    >>> test_accounts_path: Path = Path(
-    ...     'tests/test_user_accounts.xlsx')
+    >>> test_accounts_path: Path = tmp_data_path / 'test_user_accounts.xlsx'
     >>> assert test_accounts_path.exists()
     >>> user_paths: tuple[Path, ...] = tuple(make_users(
     ...     file_path=test_accounts_path,
