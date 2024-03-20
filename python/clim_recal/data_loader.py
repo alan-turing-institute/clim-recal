@@ -4,8 +4,8 @@ from datetime import datetime
 from typing import Final
 
 from geopandas import read_file
-from xarray import DataArray, cftime_range, concat, open_dataset
 from rioxarray import open_rasterio
+from xarray import DataArray, cftime_range, concat, open_dataset
 
 BritishNationalGridCoordsNum: Final[int] = 27700
 BritishNationalGridCoordinates: Final[str] = f'epsg:{BritishNationalGridCoordsNum}'

@@ -7,6 +7,7 @@ from os import chdir
 from pathlib import Path
 
 import pytest
+
 from clim_recal.debiasing.debias_wrapper import (
     PREPROCESS_FILE_NAME,
     CityOptions,
