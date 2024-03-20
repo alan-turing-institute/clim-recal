@@ -54,7 +54,7 @@ repos:
         files:  ^(\.pre-commit-hooks.yaml|environment.yml|conda-lock.yml|python/pyproject.toml)$
         entry: >
           bash -c 'cd python &&
-          python -c "from clim_recal.utils.core import _pre_commit_conda_lock; _pre_commit_conda_lock(execute_all=True)"'
+          python -c "from clim_recal.utils.server import _pre_commit_conda_lock; _pre_commit_conda_lock(execute_all=True)"'
 
   # Currently fails to build.
   # See: https://github.com/lorenzwalthert/precommit/issues/476

@@ -26,12 +26,12 @@ from clim_recal.debiasing.debias_wrapper import (
 from clim_recal.utils.core import (
     ISO_DATE_FORMAT_STR,
     XARRAY_EXAMPLE_END_DATE_4_YEARS,
-    CondaLockFileManager,
     check_package_path,
     is_platform_darwin,
     iter_to_tuple_strs,
     xarray_example,
 )
+from clim_recal.utils.server import CondaLockFileManager
 
 # Date Range covering leap year
 XARRAY_END_DATE_4_DAYS: Final[str] = "1980-12-5"
