@@ -111,19 +111,19 @@ jobs:
   # and runs locally, sometimes it fails build *before*
   # running tests on `GitHub`
 
-  # docker:
-  #   needs: [linter, pytest]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - uses: isbang/compose-action@v1.5.1
-  #     with:
-  #       compose-file: "./compose.yml"
-  #       services: |
-  #         jupyter
-  #   - name: Run `python` tests in `jupyter`
-  #     run: |
-  #       docker compose exec -u 0 jupyter bash -c "conda run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest"
-  #       # `compose-down` should be covered by `compose-action`
-  #       # leaving as a reminder to check in future
-  #       # docker compose down
+  docker:
+    needs: [linter, pytest]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: isbang/compose-action@v1.5.1
+      with:
+        compose-file: "./compose.yml"
+        services: |
+          jupyter
+    - name: Run `python` tests in `jupyter`
+      run: |
+        docker compose exec -u 0 jupyter bash -c "conda run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest"
+        # `compose-down` should be covered by `compose-action`
+        # leaving as a reminder to check in future
+        # docker compose down
