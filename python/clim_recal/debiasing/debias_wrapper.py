@@ -4,10 +4,10 @@ from datetime import date
 from enum import StrEnum, auto
 from os import PathLike
 from pathlib import Path
-from typing import Final, Generator, Optional, Union
+from typing import Final, Iterator, Optional, Union
 
-from ..pipeline import climate_data_mount_path
-from ..utils import (
+from ..config import CityOptions, RunOptions, VariableOptions, climate_data_mount_path
+from ..utils.core import (
     DATE_FORMAT_SPLIT_STR,
     DATE_FORMAT_STR,
     DateType,
@@ -21,57 +21,6 @@ DATA_PATH_DEFAULT: Final[Path] = climate_data_mount_path()
 COMMAND_DIR_DEFAULT: Final[Path] = Path("clim_recal/debiasing").resolve()
 PREPROCESS_FILE_NAME: Final[Path] = Path("preprocess_data.py")
 CMETHODS_FILE_NAME: Final[Path] = Path("run_cmethods.py")
-
-
-class VariableOptions(StrEnum):
-    """Supported options for variables"""
-
-    TASMAX = auto()
-    RAINFALL = auto()
-    TASMIN = auto()
-
-    @classmethod
-    def default(cls) -> str:
-        """Default option."""
-        return cls.TASMAX.value
-
-
-class RunOptions(StrEnum):
-    """Supported options for variables"""
-
-    ONE = "01"
-    TWO = "02"
-    THREE = "03"
-    FOUR = "04"
-    FIVE = "05"
-    SIX = "06"
-    SEVEN = "07"
-    EIGHT = "08"
-    NINE = "09"
-    TEN = "10"
-    ELEVEN = "11"
-    TWELVE = "12"
-    THIRTEEN = "13"
-    FOURTEEN = "14"
-    FIFTEEN = "15"
-
-    @classmethod
-    def default(cls) -> str:
-        """Default option."""
-        return cls.FIVE.value
-
-
-class CityOptions(StrEnum):
-    """Supported options for variables."""
-
-    GLASGOW = "Glasgow"
-    MANCHESTER = "Manchester"
-    LONDON = "London"
-
-    @classmethod
-    def default(cls) -> str:
-        """Default option."""
-        return cls.MANCHESTER.value
 
 
 class MethodOptions(StrEnum):
@@ -91,9 +40,9 @@ class MethodOptions(StrEnum):
 PROCESSESORS_DEFAULT: Final[int] = 2
 RUN_PREFIX_DEFAULT: Final[str] = "python"
 
-MOD_FOLDER_DEFAULT: Final[Path] = Path("CPM")
-OBS_FOLDER_DEFAULT: Final[Path] = Path("Hads.updated360")
-PREPROCESS_OUT_FOLDER_DEFAULT: Final[Path] = Path("Preprocessed")
+MOD_FOLDER_DEFAULT: Final[Path] = Path("Cropped/three.cities/CPM")
+OBS_FOLDER_DEFAULT: Final[Path] = Path("Cropped/three.cities/Hads.updated360")
+PREPROCESS_OUT_FOLDER_DEFAULT: Final[Path] = Path("Cropped/three.cities/Preprocessed")
 CMETHODS_OUT_FOLDER_DEFAULT: Final[Path] = Path("Debiased/three.cities.cropped")
 
 CALIB_DATE_START_DEFAULT: DateType = date(1981, 1, 1)
@@ -230,9 +179,8 @@ class RunConfig:
         Examples
         --------
         >>> if not is_data_mounted:
-        ...     pytest.skip('requires linux server mount paths')
+        ...     pytest.skip('requires "vmfileshare/ClimateData" mounted')
         >>> config: RunConfig = RunConfig()
-        >>> assert False
         >>> config.mod_path()
         PosixPath('/.../ClimateData/Cropped/three.cities/CPM/Manchester')
         >>> config.mod_path('Glasgow')
@@ -247,7 +195,7 @@ class RunConfig:
         Examples
         --------
         >>> if not is_data_mounted:
-        ...     pytest.skip('requires linux server mount paths')
+        ...     pytest.skip('requires "vmfileshare/ClimateData" mounted')
         >>> config: RunConfig = RunConfig()
         >>> config.obs_path()
         PosixPath('/.../ClimateData/Cropped/three.cities/Hads.updated360/Manchester')
@@ -268,7 +216,7 @@ class RunConfig:
         Examples
         --------
         >>> if not is_data_mounted:
-        ...     pytest.skip('requires linux server mount paths')
+        ...     pytest.skip('requires "vmfileshare/ClimateData" mounted')
         >>> config: RunConfig = RunConfig()
         >>> config.preprocess_out_path()
         PosixPath('.../ClimateData/Cropped/three.cities/Preprocessed/Manchester/05/tasmax')
@@ -431,15 +379,13 @@ class RunConfig:
             )
         )
 
-    def yield_mod_folder(
-        self, city: Optional[str] = None
-    ) -> Generator[Path, None, None]:
+    def yield_mod_folder(self, city: Optional[str] = None) -> Iterator[Path]:
         """`Iterable` of all `Path`s in `self.mod_folder`.
 
         Examples
         --------
         >>> if not is_data_mounted:
-        ...     pytest.skip('requires linux server mount paths')
+        ...     pytest.skip('requires "vmfileshare/ClimateData" mounted')
         >>> config: RunConfig = RunConfig()
         >>> len(tuple(config.yield_mod_folder())) == MOD_FOLDER_FILES_COUNT_CORRECT
         True
@@ -447,15 +393,13 @@ class RunConfig:
         city = city if city else self.city
         return path_iterdir(self.obs_path(city=city))
 
-    def yield_obs_folder(
-        self, city: Optional[str] = None
-    ) -> Generator[Path, None, None]:
+    def yield_obs_folder(self, city: Optional[str] = None) -> Iterator[Path]:
         """`Iterable` of all `Path`s in `self.obs_folder`.
 
         Examples
         --------
         >>> if not is_data_mounted:
-        ...     pytest.skip('requires linux server mount paths')
+        ...     pytest.skip('requires "vmfileshare/ClimateData" mounted')
         >>> config: RunConfig = RunConfig()
         >>> len(tuple(config.yield_obs_folder())) == OBS_FOLDER_FILES_COUNT_CORRECT
         True
@@ -468,13 +412,13 @@ class RunConfig:
         city: Optional[str] = None,
         run: Optional[str] = None,
         variable: Optional[str] = None,
-    ) -> Generator[Path, None, None]:
+    ) -> Iterator[Path]:
         """`Iterable` of all `Path`s in `self.preprocess_out_folder`.
 
         Examples
         --------
         >>> if not is_data_mounted:
-        ...     pytest.skip('requires linux server mount paths')
+        ...     pytest.skip('requires "vmfileshare/ClimateData" mounted')
         >>> config: RunConfig = RunConfig()
         >>> (len(tuple(config.yield_preprocess_out_folder())) ==
         ...  PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT)

@@ -75,7 +75,11 @@ website:
                   - href: "docs/reference/clim_recal.debiasing.debias_wrapper.qmd"
                     text: "Wrapper"
               - href: "docs/reference/clim_recal.utils.qmd"
-                text: "Utilities"
+                section: "Utilities"
+                contents:
+
+                - href: "docs/reference/clim_recal.utils.core.qmd"
+                  text: "core"
       - text: "Docker"
         href: "docs/docker-configurations.qmd"
       - text: "Contributing"
@@ -106,3 +110,4 @@ quartodoc:
         - clim_recal.resample
         - clim_recal.debiasing.debias_wrapper
         - clim_recal.utils
+        - clim_recal.utils.core

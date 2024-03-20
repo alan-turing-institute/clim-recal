@@ -15,6 +15,7 @@ from typing import Any, Callable, Final, Iterable, Literal
 
 import numpy as np
 import rioxarray  # nopycln: import
+from geopandas import GeoDataFrame, read_file
 from osgeo.gdal import GRA_NearestNeighbour, Warp, WarpOptions
 from tqdm import tqdm
 from xarray import DataArray, Dataset, open_dataset
@@ -265,7 +266,7 @@ def convert_xr_calendar(
         )
 
 
-def crop_nc(xr_time_series: Dataset, crop_path: os.PathLike) -> Dataset:
+def crop_nc(xr_time_series: Dataset, crop_geom: os.PathLike | GeoDataFrame) -> Dataset:
     """Crop `xr_time_series` with `crop_path` `shapefile`.
 
     Parameters
@@ -284,9 +285,13 @@ def crop_nc(xr_time_series: Dataset, crop_path: os.PathLike) -> Dataset:
     --------
     >>> if not is_data_mounted:
     ...     pytest.skip('Can only run with mounted data files')
-    >>> open_dataset()
+
+    open_dataset()
 
     """
+    if isinstance(crop_geom, os.PathLike):
+        crop_geom = read_file(crop_geom)
+    assert False
 
 
 def resample_cruk(x: list | tuple) -> int:

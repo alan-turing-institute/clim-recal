@@ -2,17 +2,20 @@ from pathlib import Path
 from typing import Final
 
 import pytest
-from xarray import DataArray, Dataset
+from geopandas import GeoDataFrame, read_file
+from xarray import DataArray, Dataset, open_dataset
 
-from clim_recal.resample import (  # MONTH_DAY_XARRAY_LEAP_YEAR_DROP,  # For specific day checking; crop_nc,
+from clim_recal.resample import (
     ConvertCalendarAlignOptions,
     convert_xr_calendar,
+    crop_nc,
 )
-from clim_recal.utils import (
+from clim_recal.utils.core import (
     CPM_YEAR_DAYS,
     LEAP_YEAR_DAYS,
     NORMAL_YEAR_DAYS,
     DateType,
+    annual_data_paths,
     xarray_example,
 )
 
@@ -20,6 +23,28 @@ HADS_UK_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
 HADS_UK_RESAMPLED_DAY_LOCAL_PATH: Final[Path] = Path(
     "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"
 )
+UKCP_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/UKCP2.2/tasmax/01/latest")
+
+GLASGOW_GEOM_LOCAL_PATH: Final[Path] = Path(
+    "shapefiles/three.cities/Glasgow/Glasgow.shp"
+)
+
+
+@pytest.fixture
+def ukcp_tasmax_raw_path(data_mount_path: Path) -> Path:
+    return data_mount_path / UKCP_TASMAX_DAY_LOCAL_PATH
+
+
+@pytest.fixture
+def ukcp_tasmax_raw_5_years_paths(ukcp_tasmax_raw_path: Path) -> tuple[Path, ...]:
+    """Return a `tuple` of valid paths for 5 years of"""
+    return tuple(annual_data_paths(parent_path=ukcp_tasmax_raw_path))
+
+
+#
+# @pytest.mark.slow
+# @pytest.mark.mount
+# def ukcp_tasmax_raw_5_years(ukcp_tasmax_raw_5_years_paths) -> Dataset:
 
 
 @pytest.fixture
@@ -30,6 +55,12 @@ def hads_tasmax_day_path(data_mount_path: Path) -> Path:
 @pytest.fixture
 def hads_tasmax_resampled_day_path(data_mount_path: Path) -> Path:
     return data_mount_path / HADS_UK_TASMAX_DAY_LOCAL_PATH
+
+
+@pytest.mark.mount
+@pytest.fixture
+def glasgow_shape(data_mount_path) -> GeoDataFrame:
+    yield read_file(data_mount_path / GLASGOW_GEOM_LOCAL_PATH)
 
 
 class StandardWith360DayError(Exception):
@@ -290,15 +321,26 @@ def test_time_gaps_360_to_standard_calendar(
         assert all(base.time != dates_360.time)
 
 
-# @pytest.mark.server
-# def test_crop_nc(
-#     # align_on: ConvertCalendarAlignOptions,
-# ):
-#     """Test `cropping` `DataArray` to `standard` calendar."""
-#     # Create a base
-#     base: Dataset = xarray_example(
-#         as_dataset=True    )
-#     assert False
+@pytest.mark.xfail("test still in development")
+@pytest.mark.slow
+@pytest.mark.mount
+def test_crop_nc(
+    # align_on: ConvertCalendarAlignOptions,
+    # ukcp_tasmax_raw_path
+    ukcp_tasmax_raw_5_years_paths,
+    glasgow_shape,
+):
+    """Test `cropping` `DataArray` to `standard` calendar."""
+    # Create a base
+    ts_to_crop: dict[Path, Dataset] = {}
+    for path in ukcp_tasmax_raw_5_years_paths:
+        assert path.exists()
+        ts_to_crop[path] = open_dataset(path, decode_coords="all")
+
+    assert False
+    test_crop = crop_nc()
+
+
 #
 #
 # @pytest.mark.server

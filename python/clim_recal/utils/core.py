@@ -66,6 +66,89 @@ XARRAY_EXAMPLE_RANDOM_SEED: Final[int] = 0
 XARRAY_EXAMPLE_START_DATE_STR: Final[str] = "1980-11-30"
 XARRAY_EXAMPLE_END_DATE_4_YEARS: Final[str] = "1984-11-30"
 
+CPM_FILE_NAME_MIDDLE_STR: Final[str] = "_rcp85_land-cpm_uk_2.2km_01_day_"
+NETCDF_EXTENSION: Final[str] = "nc"
+MAX_TEMP_STR: Final[str] = "tasmax"
+
+
+@dataclass
+class MonthDay:
+    """A class to ease generating annual time series.
+
+    Attributes
+    ----------
+    month
+        What Month as an integer from 1 to 12.
+    day
+        What day in the month, an integer from 1 to 31.
+    format_str
+        Format to use if generating a `str`.
+
+    Examples
+    --------
+    >>> jan_1: MonthDay = MonthDay()
+    >>> jan_1.from_year(1980)
+    datetime.date(1980, 1, 1)
+    >>> jan_1.from_year('1980')
+    datetime.date(1980, 1, 1)
+    >>> jan_1.from_year('1980', as_str=True)
+    '1980-01-01'
+    """
+
+    month: int = 1
+    day: int = 1
+    format_str: str = ISO_DATE_FORMAT_STR
+
+    def from_year(self, year: int | str, as_str: bool = False) -> date | str:
+        """Return a"""
+        year_date: date = date(int(year), self.month, self.day)
+        return year_date.strftime(self.format_str) if as_str else year_date
+
+    def from_year_range_to_str(
+        self,
+        start_year: int | str,
+        end_year: int | str,
+        split_str: str = DATE_FORMAT_SPLIT_STR,
+        in_format_str: str = DATE_FORMAT_STR,
+        out_format_str: str = DATE_FORMAT_STR,
+        include_end_date: bool = True,
+    ) -> str:
+        """Return an annual range str.
+
+        Parameters
+        ----------
+        start_year
+            Starting year to combine with `self.month` and `self.day`.
+        end_year
+            Starting year to combine with `self.month` and `self.day`.
+        split_str
+            `str` between `start_date` and `end_date` generated.
+        include_end_date
+            Whether to include the end_date in the final `str`. If `False`
+            follow `python` convention to return the day prior.
+
+        Examples
+        --------
+        >>> jan_1: MonthDay = MonthDay()
+        >>> jan_1.from_year_range_to_str(1980, 1982, include_end_date=False)
+        '19800101-19811231'
+        >>> jan_1.from_year_range_to_str('1980', 2020)
+        '19800101-20200101'
+        """
+        start_date: date = date(int(start_year), self.month, self.day)
+        end_date: date = date(int(end_year), self.month, self.day)
+        return date_range_to_str(
+            start_date=start_date,
+            end_date=end_date,
+            split_str=split_str,
+            in_format_str=in_format_str,
+            out_format_str=out_format_str,
+            include_end_date=include_end_date,
+        )
+
+
+DEFAULT_START_MONTH_DAY: Final[MonthDay] = MonthDay(month=12, day=1)
+
 
 def ensure_date(date_to_check: DateType, format_str: str = DATE_FORMAT_STR) -> date:
     """Ensure passed `date_to_check` is a `date`.
@@ -279,8 +362,9 @@ def date_range_to_str(
     split_str: str = DATE_FORMAT_SPLIT_STR,
     in_format_str: str = DATE_FORMAT_STR,
     out_format_str: str = DATE_FORMAT_STR,
+    include_end_date: bool = True,
 ) -> str:
-    """Take `start_date` and `end_date` `str` or `date` instances and return a range `str`.
+    """Take `start_date` and `end_date` and return a date range `str`.
 
     Parameters
     ----------
@@ -307,11 +391,14 @@ def date_range_to_str(
     '20100101-20100330'
     >>> date_range_to_str(date(2010, 1, 1), '20100330')
     '20100101-20100330'
-
+    >>> date_range_to_str(date(2010, 1, 1), '20100330', include_end_date=False)
+    '20100101-20100329'
     """
     start_date = date_to_str(
         start_date, in_format_str=in_format_str, out_format_str=out_format_str
     )
+    if not include_end_date:
+        end_date = ensure_date(end_date) - timedelta(days=1)
     end_date = date_to_str(
         end_date, in_format_str=in_format_str, out_format_str=out_format_str
     )
@@ -471,6 +558,52 @@ def set_and_pop_attr_kwargs(instance: Any, **kwargs) -> dict[str, Any]:
             setattr(instance, key, val)
             kwargs_copy.pop(key)  # This should eliminate all `kwargs` for `instance`
     return kwargs_copy
+
+
+def annual_data_paths(
+    start_year: int = 1980,
+    end_year: int = 1986,
+    month_day: MonthDay | tuple[int, int] | None = DEFAULT_START_MONTH_DAY,
+    include_end_date: bool = False,
+    parent_path: Path | None = None,
+    file_name_middle_str: str = CPM_FILE_NAME_MIDDLE_STR,
+    file_name_extension: str = NETCDF_EXTENSION,
+    data_type: str = MAX_TEMP_STR,
+    make_paths: bool = False,
+) -> Iterator[Path]:
+    """Yield `Path` of annual data files.
+
+    Examples
+    --------
+    >>> pprint(tuple(annual_data_paths()))
+    (PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc'),
+     PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19811201-19821130.nc'),
+     PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc'),
+     PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19831201-19841130.nc'),
+     PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19841201-19851130.nc'),
+     PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19851201-19861130.nc'))
+    >>> parent_path_example: Iterator[Path] = annual_data_paths(
+    ...     parent_path=Path('test/path'))
+    >>> str(next(parent_path_example))
+    'test/path/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc'
+    """
+    if not month_day:
+        month_day = MonthDay()
+    elif not isinstance(month_day, MonthDay):
+        month_day = MonthDay(*month_day)
+    for year in range(start_year, end_year):
+        date_range_str: str = month_day.from_year_range_to_str(
+            year, year + 1, include_end_date=include_end_date
+        )
+        file_name: str = (
+            f"{data_type}{file_name_middle_str}{date_range_str}.{file_name_extension}"
+        )
+        if parent_path:
+            if make_paths:
+                parent_path.mkdir(exist_ok=True, parents=True)
+            yield parent_path / file_name
+        else:
+            yield Path(file_name)
 
 
 @dataclass
@@ -804,7 +937,7 @@ def _pre_commit_conda_lock(
     execute_all: bool = False,
     **kwargs,
 ) -> str:
-    """A customised config for use in `.pre-commit.yml`.
+    r"""A customised config for use in `.pre-commit.yml`.
 
     Parameters
     ----------
@@ -1093,17 +1226,12 @@ try:
         da: DataArray = DataArray(
             random_data,
             name=name,
-            coords=[
-                to_datetime(date_range),
-                spaces,
-            ],
-            dims=[
-                "time",
-                "space",
-            ],
-            # If useful, add lat/lon (currently not working)
-            # coords=[dates, spaces, lon, lat],
-            # dims=["time", "space", "lon", "lat"]
+            coords={
+                "time": to_datetime(date_range),
+                "space": spaces,
+                # "lon": lon,# *len(date_range),
+                # "lat": lat,
+            },
         )
         if as_dataset:
             return da.to_dataset()
