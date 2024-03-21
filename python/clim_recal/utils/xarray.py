@@ -1,4 +1,5 @@
 from datetime import date
+from pathlib import Path
 from typing import Final, Iterable
 
 import rioxarray  # nopycln: import
@@ -22,6 +23,11 @@ XARRAY_EXAMPLE_RANDOM_SEED: Final[int] = 0
 # Default 4 year start and end date covering leap year
 XARRAY_EXAMPLE_START_DATE_STR: Final[str] = "1980-11-30"
 XARRAY_EXAMPLE_END_DATE_4_YEARS: Final[str] = "1984-11-30"
+
+
+GLASGOW_GEOM_LOCAL_PATH: Final[Path] = Path(
+    "shapefiles/three.cities/Glasgow/Glasgow.shp"
+)
 
 
 def ensure_xr_dataset(

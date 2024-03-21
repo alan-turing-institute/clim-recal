@@ -12,7 +12,7 @@ from glob import glob
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
-from typing import Any, Callable, Final, Iterable, Literal
+from typing import Any, Callable, Final, Iterable, Iterator, Literal
 
 import numpy as np
 import rioxarray  # nopycln: import
@@ -234,7 +234,13 @@ def convert_xr_calendar(
         )
 
 
-def crop_nc(xr_time_series: Dataset, crop_geom: PathLike | GeoDataFrame) -> Dataset:
+def crop_nc(
+    xr_time_series: Dataset | PathLike,
+    crop_geom: PathLike | GeoDataFrame,
+    initial_clip_box: bool = False,
+    invert=True,
+    **kwargs,
+) -> Dataset:
     """Crop `xr_time_series` with `crop_path` `shapefile`.
 
     Parameters
@@ -243,6 +249,10 @@ def crop_nc(xr_time_series: Dataset, crop_geom: PathLike | GeoDataFrame) -> Data
         Dataset to crop.
     crop_path
         Path of file to crop with.
+    invert
+        Whether to invert the `crop_geom` coordinates.
+    initial_clip_box
+
 
     Returns
     -------
@@ -253,11 +263,35 @@ def crop_nc(xr_time_series: Dataset, crop_geom: PathLike | GeoDataFrame) -> Data
     --------
     >>> if not is_data_mounted:
     ...     pytest.skip('Can only run with mounted data files')
-    >>> crop_nc
+    >>> cropped = crop_nc(
+    ...     'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
+    ...     crop_geom=glasgow_shape_file_path, invert=True)
+    >>> cropped.rio.bounds()
+    (353.92520902961434,
+     -4.693282346489016,
+     364.3162765660888,
+     8.073382596733156)
+
+    Notes
+    -----
+    Cropped bound coords need to be checked.
     """
+    if isinstance(xr_time_series, PathLike | str):
+        xr_time_series = open_dataset(xr_time_series, decode_coords="all")
     if isinstance(crop_geom, PathLike):
         crop_geom = read_file(crop_geom)
-    assert False
+    assert isinstance(crop_geom, GeoDataFrame)
+    if initial_clip_box:
+        xr_time_series = xr_time_series.rio.clip_box(
+            minx=crop_geom.bounds.minx,
+            miny=crop_geom.bounds.miny,
+            maxx=crop_geom.bounds.maxx,
+            maxy=crop_geom.bounds.maxy,
+            crs=crop_geom.crs,
+        )
+    return xr_time_series.rio.clip(
+        crop_geom.geometry.values, crs=crop_geom.crs, invert=invert, **kwargs
+    )
 
 
 def resample_cruk(x: list | tuple) -> int:
@@ -349,23 +383,43 @@ class HADsUKResampleManager:
         `Path` to `HADs` files to process.
     output
         `Path` to save processed `HADS` files.
-    grid_data
-        `Path` to grid data to process and save as `self.grid` via `set_grid_x_y`.
+    grid_data_path
+        `Path` to load to `self.grid`.
     grid
-        `Dataset` of
+        `Dataset` of grid (either passed via `grid_data_path` or as a parameter).
+    input_nc_files
+        NCF files to process with `self.grid` etc.
+    cpus
+        Number of `cpu` cores to use during multiprocessing.
+    resampling_func
+        Function to call on `self.input_nc_files` with `self.grid`
 
-
-
-
+    Examples
+    --------
+    >>> if not is_data_mounted:
+    ...     pytest.skip('Can only run with mounted data files')
+    >>> hads_resampler: HADsUKResampleManager = HADsUKResampleManager(
+    ...     input='tests/data',
+    ...     output='tests/resample/hadsuk/',
+    ...     grid_data_path=mount_path / GLASGOW_GEOM_LOCAL_PATH,
+    ...     )
+    Grid file: .../ClimateData/shapefiles/three.cities/Glasgow/Glasgow.shp produced errors: 'projection_x_coordinate'
+    >>> pprint(hads_resampler.input_nc_files)
+    ('tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
+     'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19841201-19851130.nc',
+     'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19811201-19821130.nc',
+     'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19831201-19841130.nc',
+     'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc')
     """
 
     input: PathLike | None
     output: PathLike
-    grid_data: PathLike | None
+    grid_data_path: PathLike | None
     grid: Dataset | None = None
     input_nc_files: Iterable[PathLike] | None = None
     cpus: int | None = None
     resampling_func: ResamplingCallable = resample_hadukgrid
+    crop: PathLike | GeoDataFrame | None = None
 
     def __len__(self) -> int:
         """Return the length of `self.input_nc_files`."""
@@ -376,21 +430,19 @@ class HADsUKResampleManager:
         if new_input_path:
             self.input = new_input_path
         if not self.input_nc_files:
-            self.input_nc_files = tuple(
-                glob(f"{parser_args.input}/*.nc", recursive=True)
-            )
+            self.input_nc_files = tuple(glob(f"{self.input}/*.nc", recursive=True))
 
-    def set_grid_x_y(self, new_grid_data: PathLike | None = None) -> None:
-        if new_grid_data:
-            self.grid_data = new_grid_data
+    def set_grid_x_y(self, new_grid_data_path: PathLike | None = None) -> None:
+        if new_grid_data_path:
+            self.grid_data_path = new_grid_data_path
         if not self.grid:
-            self.grid = open_dataset(self.grid_data)
+            self.grid = read_file(self.grid_data_path)
         try:
             # must have dimensions named projection_x_coordinate and projection_y_coordinate
             self.x: np.ndarray = self.grid["projection_x_coordinate"][:].values
             self.y: np.ndarray = self.grid["projection_y_coordinate"][:].values
         except Exception as e:
-            print(f"Grid file: {parser_args.grid_data} produced errors: {e}")
+            print(f"Grid file: {self.grid_data_path} produced errors: {e}")
 
     def __post_init__(self) -> None:
         """Generate related attributes."""
@@ -402,7 +454,7 @@ class HADsUKResampleManager:
             self.cpus = 1 if not self.total_cpus else self.total_cpus
 
     @property
-    def resample_args(self) -> Iterable[ResamplingArgs]:
+    def resample_args(self) -> Iterator[ResamplingArgs]:
         """Return args to pass to `self.resample`."""
         if not self.input_nc_files:
             self.set_input_nc_files()

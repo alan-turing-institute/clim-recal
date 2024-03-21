@@ -25,10 +25,6 @@ HADS_UK_RESAMPLED_DAY_LOCAL_PATH: Final[Path] = Path(
 )
 UKCP_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/UKCP2.2/tasmax/01/latest")
 
-GLASGOW_GEOM_LOCAL_PATH: Final[Path] = Path(
-    "shapefiles/three.cities/Glasgow/Glasgow.shp"
-)
-
 
 @pytest.fixture
 def ukcp_tasmax_raw_path(data_mount_path: Path) -> Path:

@@ -26,13 +26,16 @@ from clim_recal.debiasing.debias_wrapper import (
 )
 from clim_recal.utils.core import (
     ISO_DATE_FORMAT_STR,
-    XARRAY_EXAMPLE_END_DATE_4_YEARS,
     check_package_path,
     is_platform_darwin,
     iter_to_tuple_strs,
 )
 from clim_recal.utils.server import CondaLockFileManager
-from clim_recal.utils.xarray import xarray_example
+from clim_recal.utils.xarray import (
+    GLASGOW_GEOM_LOCAL_PATH,
+    XARRAY_EXAMPLE_END_DATE_4_YEARS,
+    xarray_example,
+)
 
 # Date Range covering leap year
 XARRAY_END_DATE_4_DAYS: Final[str] = "1980-12-5"
@@ -221,6 +224,12 @@ def data_fixtures_path(tmp_path) -> Iterator[Path]:
     rmtree(tmp_path / TEST_DATA_PATH.name)
 
 
+@pytest.mark.mount
+@pytest.fixture
+def glasgow_shape_file_path(data_fixtures_path) -> Path:
+    return data_fixtures_path / Path(*GLASGOW_GEOM_LOCAL_PATH.parts[-2:])
+
+
 @pytest.fixture(autouse=True)
 def doctest_auto_fixtures(
     doctest_namespace: dict,
@@ -232,6 +241,7 @@ def doctest_auto_fixtures(
     xarray_spatial_4_years: DataArray,
     xarray_spatial_4_years_360_day: Dataset,
     conda_lock_file_manager: CondaLockFileManager,
+    glasgow_shape_file_path: Path,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
     doctest_namespace[
@@ -271,6 +281,7 @@ def doctest_auto_fixtures(
     doctest_namespace["xarray_spatial_4_years"] = xarray_spatial_4_years
     doctest_namespace["xarray_spatial_4_years_360_day"] = xarray_spatial_4_years_360_day
     doctest_namespace["conda_lock_file_manager"] = conda_lock_file_manager
+    doctest_namespace["glasgow_shape_file_path"] = glasgow_shape_file_path
 
 
 def pytest_sessionfinish(session, exitstatus):
