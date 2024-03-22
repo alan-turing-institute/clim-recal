@@ -518,9 +518,32 @@ def set_and_pop_attr_kwargs(instance: Any, **kwargs) -> dict[str, Any]:
     return kwargs_copy
 
 
-def annual_data_paths(
+def annual_data_paths_generator(
+    start_year: int = 1980, end_year: int = 1986, **kwargs
+) -> Iterator[Path]:
+    """Yield `Path` of annual data files.
+
+    Examples
+    --------
+    >>> pprint(tuple(annual_data_paths_generator()))
+    (PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc'),
+     PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19811201-19821130.nc'),
+     PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc'),
+     PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19831201-19841130.nc'),
+     PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19841201-19851130.nc'),
+     PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19851201-19861130.nc'))
+    >>> parent_path_example: Iterator[Path] = annual_data_paths_generator(
+    ...     parent_path=Path('test/path'))
+    >>> str(next(parent_path_example))
+    'test/path/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc'
+    """
+    for year in range(start_year, end_year):
+        yield annual_data_path(start_year=year, end_year=year + 1, **kwargs)
+
+
+def annual_data_path(
     start_year: int = 1980,
-    end_year: int = 1986,
+    end_year: int = 1981,
     month_day: MonthDay | tuple[int, int] | None = DEFAULT_START_MONTH_DAY,
     include_end_date: bool = False,
     parent_path: Path | None = None,
@@ -528,40 +551,30 @@ def annual_data_paths(
     file_name_extension: str = NETCDF_EXTENSION,
     data_type: str = MAX_TEMP_STR,
     make_paths: bool = False,
-) -> Iterator[Path]:
-    """Yield `Path` of annual data files.
+) -> Path:
+    """Return `Path` of annual data files.
 
     Examples
     --------
-    >>> pprint(tuple(annual_data_paths()))
-    (PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc'),
-     PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19811201-19821130.nc'),
-     PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc'),
-     PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19831201-19841130.nc'),
-     PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19841201-19851130.nc'),
-     PosixPath('tasmax_rcp85_land-cpm_uk_2.2km_01_day_19851201-19861130.nc'))
-    >>> parent_path_example: Iterator[Path] = annual_data_paths(
-    ...     parent_path=Path('test/path'))
-    >>> str(next(parent_path_example))
+    >>> str(annual_data_path(parent_path=Path('test/path')))
     'test/path/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc'
     """
     if not month_day:
         month_day = MonthDay()
     elif not isinstance(month_day, MonthDay):
         month_day = MonthDay(*month_day)
-    for year in range(start_year, end_year):
-        date_range_str: str = month_day.from_year_range_to_str(
-            year, year + 1, include_end_date=include_end_date
-        )
-        file_name: str = (
-            f"{data_type}{file_name_middle_str}{date_range_str}.{file_name_extension}"
-        )
-        if parent_path:
-            if make_paths:
-                parent_path.mkdir(exist_ok=True, parents=True)
-            yield parent_path / file_name
-        else:
-            yield Path(file_name)
+    date_range_str: str = month_day.from_year_range_to_str(
+        start_year=start_year, end_year=end_year, include_end_date=include_end_date
+    )
+    file_name: str = (
+        f"{data_type}{file_name_middle_str}{date_range_str}.{file_name_extension}"
+    )
+    if parent_path:
+        if make_paths:
+            parent_path.mkdir(exist_ok=True, parents=True)
+        return parent_path / file_name
+    else:
+        return Path(file_name)
 
 
 def csv_reader(path: PathLike, **kwargs) -> Iterator[dict[str, str]]:

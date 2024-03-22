@@ -29,6 +29,8 @@ GLASGOW_GEOM_LOCAL_PATH: Final[Path] = Path(
     "shapefiles/three.cities/Glasgow/Glasgow.shp"
 )
 
+BoundsTupleType = tuple[float, float, float, float]
+
 
 def ensure_xr_dataset(
     xr_time_series: Dataset | DataArray, default_name="to_convert"

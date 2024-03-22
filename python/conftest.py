@@ -230,6 +230,13 @@ def glasgow_shape_file_path(data_fixtures_path) -> Path:
     return data_fixtures_path / Path(*GLASGOW_GEOM_LOCAL_PATH.parts[-2:])
 
 
+@pytest.fixture
+def resample_test_output_path(path=Path("tests/resample/")) -> Iterator[Path]:
+    path.mkdir(exist_ok=True, parents=True)
+    yield path
+    rmtree(path, ignore_errors=True)
+
+
 @pytest.fixture(autouse=True)
 def doctest_auto_fixtures(
     doctest_namespace: dict,
@@ -241,7 +248,9 @@ def doctest_auto_fixtures(
     xarray_spatial_4_years: DataArray,
     xarray_spatial_4_years_360_day: Dataset,
     conda_lock_file_manager: CondaLockFileManager,
+    data_fixtures_path: Path,
     glasgow_shape_file_path: Path,
+    resample_test_output_path: Path,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
     doctest_namespace[
@@ -281,7 +290,9 @@ def doctest_auto_fixtures(
     doctest_namespace["xarray_spatial_4_years"] = xarray_spatial_4_years
     doctest_namespace["xarray_spatial_4_years_360_day"] = xarray_spatial_4_years_360_day
     doctest_namespace["conda_lock_file_manager"] = conda_lock_file_manager
+    doctest_namespace["data_fixtures_path"] = data_fixtures_path
     doctest_namespace["glasgow_shape_file_path"] = glasgow_shape_file_path
+    doctest_namespace["resample_test_output_path"] = resample_test_output_path
 
 
 def pytest_sessionfinish(session, exitstatus):

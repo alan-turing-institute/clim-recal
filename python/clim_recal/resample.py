@@ -237,8 +237,12 @@ def convert_xr_calendar(
 def crop_nc(
     xr_time_series: Dataset | PathLike,
     crop_geom: PathLike | GeoDataFrame,
+    final_crs: str = UK_SPATIAL_PROJECTION,
     initial_clip_box: bool = False,
-    invert=True,
+    enforce_xarray_spatial_dims: bool = True,
+    xr_spatial_xdim: str = "grid_longitude",
+    xr_spatial_ydim: str = "grid_latitude",
+    invert=False,
     **kwargs,
 ) -> Dataset:
     """Crop `xr_time_series` with `crop_path` `shapefile`.
@@ -264,13 +268,15 @@ def crop_nc(
     >>> if not is_data_mounted:
     ...     pytest.skip('Can only run with mounted data files')
     >>> cropped = crop_nc(
-    ...     'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
+    ...     data_fixtures_path /
+    ...     'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
     ...     crop_geom=glasgow_shape_file_path, invert=True)
     >>> cropped.rio.bounds()
     (353.92520902961434,
      -4.693282346489016,
      364.3162765660888,
      8.073382596733156)
+    >>> assert False
 
     Notes
     -----
@@ -278,19 +284,25 @@ def crop_nc(
     """
     if isinstance(xr_time_series, PathLike | str):
         xr_time_series = open_dataset(xr_time_series, decode_coords="all")
+    assert isinstance(xr_time_series, Dataset)
+    xr_time_series.rio.write_crs(final_crs, inplace=True)
+    if enforce_xarray_spatial_dims:
+        xr_time_series.rio.set_spatial_dims(
+            x_dim=xr_spatial_xdim, y_dim=xr_spatial_ydim
+        )
     if isinstance(crop_geom, PathLike):
         crop_geom = read_file(crop_geom)
     assert isinstance(crop_geom, GeoDataFrame)
+    crop_geom.set_crs(crs=final_crs, inplace=True)
     if initial_clip_box:
         xr_time_series = xr_time_series.rio.clip_box(
             minx=crop_geom.bounds.minx,
             miny=crop_geom.bounds.miny,
             maxx=crop_geom.bounds.maxx,
             maxy=crop_geom.bounds.maxy,
-            crs=crop_geom.crs,
         )
     return xr_time_series.rio.clip(
-        crop_geom.geometry.values, crs=crop_geom.crs, invert=invert, **kwargs
+        crop_geom.geometry.values, drop=True, invert=invert, **kwargs
     )
 
 
@@ -399,11 +411,11 @@ class HADsUKResampleManager:
     >>> if not is_data_mounted:
     ...     pytest.skip('Can only run with mounted data files')
     >>> hads_resampler: HADsUKResampleManager = HADsUKResampleManager(
-    ...     input='tests/data',
-    ...     output='tests/resample/hadsuk/',
-    ...     grid_data_path=mount_path / GLASGOW_GEOM_LOCAL_PATH,
-    ...     )
-    Grid file: .../ClimateData/shapefiles/three.cities/Glasgow/Glasgow.shp produced errors: 'projection_x_coordinate'
+    ...     input=data_fixtures_path,
+    ...     output=resample_test_output_path,
+    ...     grid_data_path=glasgow_shape_file_path,
+    ... )
+    Grid file: .../tests/data/Glasgow/Glasgow.shp produced errors: 'projection_x_coordinate'
     >>> pprint(hads_resampler.input_nc_files)
     ('tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
      'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19841201-19851130.nc',
@@ -420,6 +432,7 @@ class HADsUKResampleManager:
     cpus: int | None = None
     resampling_func: ResamplingCallable = resample_hadukgrid
     crop: PathLike | GeoDataFrame | None = None
+    final_crs: str = UK_SPATIAL_PROJECTION
 
     def __len__(self) -> int:
         """Return the length of `self.input_nc_files`."""

@@ -1,11 +1,14 @@
+from datetime import datetime
 from pathlib import Path
 from typing import Final
 
 import pytest
 from geopandas import GeoDataFrame, read_file
+from matplotlib import pyplot as plt
 from xarray import DataArray, Dataset, open_dataset
 
 from clim_recal.resample import (
+    UK_SPATIAL_PROJECTION,
     ConvertCalendarAlignOptions,
     convert_xr_calendar,
     crop_nc,
@@ -15,9 +18,13 @@ from clim_recal.utils.core import (
     LEAP_YEAR_DAYS,
     NORMAL_YEAR_DAYS,
     DateType,
-    annual_data_paths,
+    annual_data_path,
 )
-from clim_recal.utils.xarray import xarray_example
+from clim_recal.utils.xarray import (
+    GLASGOW_GEOM_LOCAL_PATH,
+    BoundsTupleType,
+    xarray_example,
+)
 
 HADS_UK_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
 HADS_UK_RESAMPLED_DAY_LOCAL_PATH: Final[Path] = Path(
@@ -55,7 +62,7 @@ def hads_tasmax_resampled_day_path(data_mount_path: Path) -> Path:
 
 @pytest.mark.mount
 @pytest.fixture
-def glasgow_shape(data_mount_path) -> GeoDataFrame:
+def glasgow_server_shape(data_mount_path) -> GeoDataFrame:
     yield read_file(data_mount_path / GLASGOW_GEOM_LOCAL_PATH)
 
 
@@ -317,24 +324,103 @@ def test_time_gaps_360_to_standard_calendar(
         assert all(base.time != dates_360.time)
 
 
-@pytest.mark.xfail("test still in development")
-@pytest.mark.slow
-@pytest.mark.mount
 def test_crop_nc(
     # align_on: ConvertCalendarAlignOptions,
     # ukcp_tasmax_raw_path
-    ukcp_tasmax_raw_5_years_paths,
-    glasgow_shape,
+    glasgow_shape_file_path,
+    data_fixtures_path,
 ):
     """Test `cropping` `DataArray` to `standard` calendar."""
     # Create a base
-    ts_to_crop: dict[Path, Dataset] = {}
-    for path in ukcp_tasmax_raw_5_years_paths:
-        assert path.exists()
-        ts_to_crop[path] = open_dataset(path, decode_coords="all")
+    glasgow_epsg_27700_bounds: BoundsTupleType = (
+        249799.9996000016,
+        657761.4720000029,
+        269234.99959999975,
+        672330.6968000066,
+    )
+    uk_epsg_27700_bounds: BoundsTupleType = (
+        353.92520902961434,
+        -4.693282346489016,
+        364.3162765660888,
+        8.073382596733156,
+    )
+    # cropped.rio.set_spatial_dims(x_dim="grid_longitude", y_dim="grid_latitude")
+    datetime_now_str: str = str(datetime.now()).replace(" ", "-")
 
+    # plot_path: Path = data_fixtures_path / 'output'
+    plot_path: Path = Path("tests") / "runs"
+    plot_path.mkdir(parents=True, exist_ok=True)
+
+    glasgow_fig_file_name: Path = Path(f"glasgow_{datetime_now_str}.png")
+    pre_crop_fig_file_name: Path = Path(f"pre_crop_{datetime_now_str}.png")
+    crop_fig_file_name: Path = Path(f"test_crop_{datetime_now_str}.png")
+
+    glasgow_test_fig_path: Path = plot_path / glasgow_fig_file_name
+    pre_crop_test_fig_path: Path = plot_path / pre_crop_fig_file_name
+    crop_test_fig_path: Path = plot_path / crop_fig_file_name
+
+    glasgow_geo_df: GeoDataFrame = read_file(glasgow_shape_file_path)
+    glasgow_geo_df.plot()
+    plt.savefig(glasgow_test_fig_path)
+    assert glasgow_geo_df.crs == UK_SPATIAL_PROJECTION
+    assert tuple(glasgow_geo_df.bounds.values.tolist()[0]) == glasgow_epsg_27700_bounds
+
+    max_temp_1981_path: Path = annual_data_path(
+        end_year=1981,
+        parent_path=data_fixtures_path,
+    )
+    xarray_pre_crop: Dataset = open_dataset(max_temp_1981_path, decode_coords="all")
+    xarray_pre_crop.isel(time=0).tasmax.plot()
+    plt.savefig(pre_crop_test_fig_path)
+
+    assert str(xarray_pre_crop.rio.crs) != UK_SPATIAL_PROJECTION
+    assert xarray_pre_crop.rio.bounds() == uk_epsg_27700_bounds
+
+    cropped: Dataset = crop_nc(
+        xr_time_series=max_temp_1981_path,
+        crop_geom=glasgow_shape_file_path,
+        enforce_xarray_spatial_dims=True,
+        invert=True,
+        initial_clip_box=False,
+    )
+
+    cropped.isel(time=0).tasmax.plot()
+    plt.savefig(crop_test_fig_path)
+
+    assert str(cropped.rio.crs) == UK_SPATIAL_PROJECTION
+    assert cropped.rio.bounds() == glasgow_epsg_27700_bounds
     assert False
-    test_crop = crop_nc()
+
+
+# @pytest.mark.xfail("test still in development")
+# @pytest.mark.slow
+# @pytest.mark.mount
+# def test_crop_merged_nc(
+#     # align_on: ConvertCalendarAlignOptions,
+#     # ukcp_tasmax_raw_path
+#     glasgow_shape_file_path,
+#     data_mount_path,
+# ):
+#     """Test `cropping` `DataArray` to `standard` calendar."""
+#     # Create a base
+#     result_bounds: BoundsTupleType = (
+#         353.92520902961434,
+#         -4.693282346489016,
+#         364.3162765660888,
+#         8.073382596733156
+#      )
+#
+#     cropped = crop_nc(
+#         'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
+#         crop_geom=glasgow_shape_file_path, invert=True)
+#     assert cropped.rio.bounds == result_bounds
+#     ts_to_crop: dict[Path, Dataset] = {}
+#     for path in ukcp_tasmax_raw_5_years_paths:
+#         assert path.exists()
+#         ts_to_crop[path] = open_dataset(path, decode_coords="all")
+#
+#     assert False
+#     test_crop = crop_nc()
 
 
 #
