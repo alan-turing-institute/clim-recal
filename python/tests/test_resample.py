@@ -1,21 +1,49 @@
+from datetime import datetime
 from pathlib import Path
-from typing import Callable, Final
+from typing import Final
 
-import numpy as np
 import pytest
-import xarray as xr
-from clim_recal.resample import (  # MONTH_DAY_XARRAY_LEAP_YEAR_DROP,  # For specific day checking
+from geopandas import GeoDataFrame, read_file
+from matplotlib import pyplot as plt
+from xarray import DataArray, Dataset, open_dataset
+
+from clim_recal.resample import (
+    UK_SPATIAL_PROJECTION,
     ConvertCalendarAlignOptions,
     convert_xr_calendar,
-    xarray_example,
+    crop_nc,
 )
-from clim_recal.utils import CPM_YEAR_DAYS, LEAP_YEAR_DAYS, NORMAL_YEAR_DAYS, DateType
-from xarray import DataArray, Dataset, cftime_range, open_dataset
+from clim_recal.utils.core import (
+    CPM_YEAR_DAYS,
+    LEAP_YEAR_DAYS,
+    NORMAL_YEAR_DAYS,
+    DateType,
+    annual_data_path,
+)
+from clim_recal.utils.xarray import GLASGOW_GEOM_LOCAL_PATH, xarray_example
 
 HADS_UK_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
 HADS_UK_RESAMPLED_DAY_LOCAL_PATH: Final[Path] = Path(
     "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"
 )
+UKCP_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/UKCP2.2/tasmax/01/latest")
+
+
+@pytest.fixture
+def ukcp_tasmax_raw_path(data_mount_path: Path) -> Path:
+    return data_mount_path / UKCP_TASMAX_DAY_LOCAL_PATH
+
+
+@pytest.fixture
+def ukcp_tasmax_raw_5_years_paths(ukcp_tasmax_raw_path: Path) -> tuple[Path, ...]:
+    """Return a `tuple` of valid paths for 5 years of"""
+    return tuple(annual_data_paths(parent_path=ukcp_tasmax_raw_path))
+
+
+#
+# @pytest.mark.slow
+# @pytest.mark.mount
+# def ukcp_tasmax_raw_5_years(ukcp_tasmax_raw_5_years_paths) -> Dataset:
 
 
 @pytest.fixture
@@ -26,6 +54,12 @@ def hads_tasmax_day_path(data_mount_path: Path) -> Path:
 @pytest.fixture
 def hads_tasmax_resampled_day_path(data_mount_path: Path) -> Path:
     return data_mount_path / HADS_UK_TASMAX_DAY_LOCAL_PATH
+
+
+@pytest.mark.mount
+@pytest.fixture
+def glasgow_server_shape(data_mount_path) -> GeoDataFrame:
+    yield read_file(data_mount_path / GLASGOW_GEOM_LOCAL_PATH)
 
 
 class StandardWith360DayError(Exception):
@@ -82,13 +116,13 @@ def year_days_count(
     )
 
 
-def test_leap_year_days(xarray_spatial_temporal: Callable) -> None:
+def test_leap_year_days() -> None:
     """Test covering a leap year of 366 days."""
     start_date_str: str = "2024-03-01"
     end_date_str: str = "2025-03-01"
-    xarray_2024_2025: DataArray = xarray_spatial_temporal(
-        start_date_str=start_date_str,
-        end_date_str=end_date_str,
+    xarray_2024_2025: DataArray = xarray_example(
+        start_date=start_date_str,
+        end_date=end_date_str,
         inclusive=True,
     )
     assert len(xarray_2024_2025) == year_days_count(leap_years=1)
@@ -284,3 +318,123 @@ def test_time_gaps_360_to_standard_calendar(
         # Add more assertions here...
         assert all(base.time == dates_converted.time)
         assert all(base.time != dates_360.time)
+
+
+def test_crop_nc(
+    # align_on: ConvertCalendarAlignOptions,
+    # ukcp_tasmax_raw_path
+    glasgow_shape_file_path,
+    data_fixtures_path,
+    glasgow_epsg_27700_bounds,
+    uk_epsg_27700_bounds,
+):
+    """Test `cropping` `DataArray` to `standard` calendar."""
+    # cropped.rio.set_spatial_dims(x_dim="grid_longitude", y_dim="grid_latitude")
+    datetime_now_str: str = str(datetime.now()).replace(" ", "-")
+
+    # plot_path: Path = data_fixtures_path / 'output'
+    plot_path: Path = Path("tests") / "runs"
+    plot_path.mkdir(parents=True, exist_ok=True)
+
+    glasgow_fig_file_name: Path = Path(f"glasgow_{datetime_now_str}.png")
+    pre_crop_fig_file_name: Path = Path(f"pre_crop_{datetime_now_str}.png")
+    crop_fig_file_name: Path = Path(f"test_crop_{datetime_now_str}.png")
+
+    glasgow_test_fig_path: Path = plot_path / glasgow_fig_file_name
+    pre_crop_test_fig_path: Path = plot_path / pre_crop_fig_file_name
+    crop_test_fig_path: Path = plot_path / crop_fig_file_name
+
+    glasgow_geo_df: GeoDataFrame = read_file(glasgow_shape_file_path)
+    glasgow_geo_df.plot()
+    plt.savefig(glasgow_test_fig_path)
+    assert glasgow_geo_df.crs == UK_SPATIAL_PROJECTION
+    assert tuple(glasgow_geo_df.bounds.values.tolist()[0]) == glasgow_epsg_27700_bounds
+
+    max_temp_1981_path: Path = annual_data_path(
+        end_year=1981,
+        parent_path=data_fixtures_path,
+    )
+    xarray_pre_crop: Dataset = open_dataset(max_temp_1981_path, decode_coords="all")
+    xarray_pre_crop.isel(time=0).tasmax.plot()
+    plt.savefig(pre_crop_test_fig_path)
+
+    assert str(xarray_pre_crop.rio.crs) != UK_SPATIAL_PROJECTION
+    assert xarray_pre_crop.rio.bounds() == uk_epsg_27700_bounds
+
+    cropped: Dataset = crop_nc(
+        xr_time_series=max_temp_1981_path,
+        crop_geom=glasgow_shape_file_path,
+        enforce_xarray_spatial_dims=True,
+        invert=True,
+        initial_clip_box=False,
+    )
+
+    cropped.isel(time=0).tasmax.plot()
+    plt.savefig(crop_test_fig_path)
+
+    assert str(cropped.rio.crs) == UK_SPATIAL_PROJECTION
+    assert cropped.rio.bounds() == glasgow_epsg_27700_bounds
+    assert False
+
+
+# @pytest.mark.xfail("test still in development")
+# @pytest.mark.slow
+# @pytest.mark.mount
+# def test_crop_merged_nc(
+#     # align_on: ConvertCalendarAlignOptions,
+#     # ukcp_tasmax_raw_path
+#     glasgow_shape_file_path,
+#     data_mount_path,
+# ):
+#     """Test `cropping` `DataArray` to `standard` calendar."""
+#     # Create a base
+#     result_bounds: BoundsTupleType = (
+#         353.92520902961434,
+#         -4.693282346489016,
+#         364.3162765660888,
+#         8.073382596733156
+#      )
+#
+#     cropped = crop_nc(
+#         'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
+#         crop_geom=glasgow_shape_file_path, invert=True)
+#     assert cropped.rio.bounds == result_bounds
+#     ts_to_crop: dict[Path, Dataset] = {}
+#     for path in ukcp_tasmax_raw_5_years_paths:
+#         assert path.exists()
+#         ts_to_crop[path] = open_dataset(path, decode_coords="all")
+#
+#     assert False
+#     test_crop = crop_nc()
+
+
+#
+#
+# @pytest.mark.server
+# def test_ukcp_raw(
+#         start_date: DateType = '1980-12-01',
+#     end_date: DateType = '1985-12-01',
+#     align_on: ConvertCalendarAlignOptions,
+# ):
+#     """Test `convert_xr_calendar` call of `360_day` `DataArray` to `standard` calendar."""
+#     # Potential paramaterized variables
+#     inclusive_date_range: bool = False  # includes the last day specified
+#     use_cftime: bool = True  # Whether to enforece using `cftime` over `datetime64`
+#     # align_on: ConvertCalendarAlignOptions = 'date'
+#
+#     # Create a base
+#     base: Dataset = xarray_example(
+#         start_date, end_date, as_dataset=True, inclusive=inclusive_date_range
+#     )
+#     assert False
+#
+#     # Ensure the generated date range matches for later checks
+#     # This occurs for a sigle leap year
+#     assert len(base.time) == gen_date_count
+#
+#     # Convert to `360_day` calendar example
+#     dates_360: Dataset = base.convert_calendar(
+#         calendar="360_day",
+#         align_on=align_on,
+#         use_cftime=use_cftime,
+#     )

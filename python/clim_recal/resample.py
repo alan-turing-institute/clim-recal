@@ -5,27 +5,25 @@
 """
 
 import argparse
-import datetime
 import multiprocessing
 import os
 from dataclasses import dataclass
 from glob import glob
 from logging import getLogger
+from os import PathLike
 from pathlib import Path
-from typing import Any, Callable, Final, Iterable, Literal
+from typing import Any, Callable, Final, Iterable, Iterator, Literal
 
 import numpy as np
-
-# import xarray as xr  # requires rioxarray extension
-from numpy import array, random
+import rioxarray  # nopycln: import
+from geopandas import GeoDataFrame, read_file
 from osgeo.gdal import GRA_NearestNeighbour, Warp, WarpOptions
-from pandas import DatetimeIndex, to_datetime
 from tqdm import tqdm
-from xarray import DataArray, Dataset, open_dataset  # requires rioxarray extension
+from xarray import DataArray, Dataset, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import CFCalendar, InterpOptions
 
-from .utils import ISO_DATE_FORMAT_STR, DateType, date_range_generator
+from .utils.xarray import ensure_xr_dataset
 
 logger = getLogger(__name__)
 
@@ -59,29 +57,19 @@ DEFAULT_INTERPOLATION_METHOD: str = "linear"
 
 CFCalendarSTANDARD: Final[str] = "standard"
 ConvertCalendarAlignOptions = Literal["date", "year", None]
-CPM_XR_TO_HADS_ALIGN_DEFAULT: Final[ConvertCalendarAlignOptions] = "date"
+DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
 
-RESAMPLING_PATH: Final[os.PathLike] = Path("Raw/python_refactor/Reprojected_infill")
+RESAMPLING_PATH: Final[PathLike] = Path("Raw/python_refactor/Reprojected_infill")
 UK_SPATIAL_PROJECTION: Final[str] = "EPSG:27700"
 CPRUK_RESOLUTION: Final[int] = 2200
 CPRUK_RESAMPLING_METHOD: Final[str] = GRA_NearestNeighbour
-ResamplingArgs = tuple[os.PathLike, np.ndarray, np.ndarray, os.PathLike]
+ResamplingArgs = tuple[PathLike, np.ndarray, np.ndarray, PathLike]
 ResamplingCallable = Callable[[list | tuple], int]
-
-GLASGOW_COORDS: Final[tuple[float, float]] = (55.86279, -4.25424)
-MANCHESTER_COORDS: Final[tuple[float, float]] = (53.48095, -2.23743)
-LONDON_COORDS: Final[tuple[float, float]] = (51.509865, -0.118092)
-CITY_COORDS: Final[dict[str, tuple[float, float]]] = {
-    "Glasgow": GLASGOW_COORDS,
-    "Manchester": MANCHESTER_COORDS,
-    "London": LONDON_COORDS,
-}
-"""Coordinates of Glasgow, Manchester and London as `(lon, lat)` `tuples`."""
 
 
 def warp_cruk(
-    input_path: os.PathLike = RESAMPLING_PATH,
-    output_path: os.PathLike = RESAMPLING_PATH,
+    input_path: PathLike = RESAMPLING_PATH,
+    output_path: PathLike = RESAMPLING_PATH,
     output_coord_system: str = UK_SPATIAL_PROJECTION,
     output_x_resolution: int = CPRUK_RESOLUTION,
     output_y_resolution: int = CPRUK_RESOLUTION,
@@ -143,135 +131,9 @@ def warp_cruk(
     return 0 if conversion_result else 1
 
 
-def xarray_example(
-    start_date: DateType,
-    end_date: DateType,
-    coordinates: dict[str, tuple[float, float]] = CITY_COORDS,
-    skip_dates: Iterable[datetime.date] | None = None,
-    random_seed_int: int | None = None,
-    name: str | None = None,
-    as_dataset: bool = False,
-    **kwargs,
-) -> DataArray | Dataset:
-    """Generate spatial and temporal `xarray` objects.
-
-    Parameters
-    ----------
-    start_date
-        Start of time series.
-    end_date
-        End of time series (by default not inclusive).
-    coordinates
-        A `dict` of region name `str` to `tuple` of
-        `(lon, lat)` form.
-    skip_dates
-        A list of `date` objects to drop/skip between
-        `start_date` and `end_date`.
-    as_dataset
-        Convert output to `Dataset`.
-    name
-        Name of returned `DataArray` and `Dataset`.
-    kwargs
-        Additional parameters to pass to `date_range_generator`.
-
-    Returns
-    -------
-    :
-        A `DataArray` of `start_date` to `end_date` date
-        range a random variable for coordinates regions
-        (Glasgow, Manchester and London as default).
-
-    Examples
-    --------
-    >>> xarray_example('1980-11-30', '1980-12-5')
-    <xarray.DataArray 'xa_template' (time: 5, space: 3)>...
-    array([[..., ..., ...],
-           [..., ..., ...],
-           [..., ..., ...],
-           [..., ..., ...],
-           [..., ..., ...]])
-    Coordinates:
-      * time     (time) datetime64[ns] ...1980-11-30 ... 1980-12-04
-      * space    (space) <U10 ...'Glasgow' 'Manchester' 'London'
-    """
-    dates: list[DateType] = list(
-        date_range_generator(
-            start_date=start_date,
-            end_date=end_date,
-            start_format_str=ISO_DATE_FORMAT_STR,
-            end_format_str=ISO_DATE_FORMAT_STR,
-            skip_dates=skip_dates,
-            **kwargs,
-        )
-    )
-    if not name:
-        name = f"xa_template"
-    if isinstance(random_seed_int, int):
-        random.seed(random_seed_int)  # ensure results are predictable
-    data: array = random.rand(len(dates), len(coordinates))
-    spaces: list[str] = list(coordinates.keys())
-    # If useful, add lat/lon (currently not working)
-    # lat: list[float] = [coord[0] for coord in coordinates.values()]
-    # lon: list[float] = [coord[1] for coord in coordinates.values()]
-    da: DataArray = DataArray(
-        data,
-        name=name,
-        coords=[
-            to_datetime(dates),
-            spaces,
-        ],
-        dims=[
-            "time",
-            "space",
-        ],
-        # If useful, add lat/lon (currently not working)
-        # coords=[dates, spaces, lon, lat],
-        # dims=["time", "space", "lon", "lat"]
-    )
-    if as_dataset:
-        return da.to_dataset()
-    else:
-        return da
-
-
-def ensure_xr_dataset(
-    xr_time_series: Dataset | DataArray, default_name="to_convert"
-) -> Dataset:
-    """Return `xr_time_series` as a `xarray.Dataset` instance.
-
-    Parameters
-    ----------
-    xr_time_series
-        Instance to check and if necessary to convert to `Dataset`.
-    default_name
-        Name to give returned `Dataset` if `xr_time_series.name` is empty.
-
-    Returns
-    -------
-    :
-        Converted (or original) `Dataset`.
-
-    Examples
-    --------
-    >>> ensure_xr_dataset(xarray_spatial_4_days)
-    <xarray.Dataset>...
-    Dimensions:      (time: 5, space: 3)
-    Coordinates:
-      * time         (time) datetime64[ns] ...1980-11-30 1980-12-01 ... 1980-12-04
-      * space        (space) <U10 ...'Glasgow' 'Manchester' 'London'
-    Data variables:
-        xa_template  (time, space) float64 ...0.5488 0.7152 ... 0.9256 0.07104
-    """
-    if isinstance(xr_time_series, DataArray):
-        array_name = xr_time_series.name or default_name
-        return xr_time_series.to_dataset(name=array_name)
-    else:
-        return xr_time_series
-
-
 def convert_xr_calendar(
     xr_time_series: DataArray | Dataset,
-    align_on: ConvertCalendarAlignOptions = CPM_XR_TO_HADS_ALIGN_DEFAULT,
+    align_on: ConvertCalendarAlignOptions = DEFAULT_CALENDAR_ALIGN,
     calendar: CFCalendar = CFCalendarSTANDARD,
     use_cftime: bool = False,
     missing_value: Any | None = np.nan,
@@ -325,13 +187,14 @@ def convert_xr_calendar(
 
     Examples
     --------
+    # Note a new doctest needs to be written to deal
+    # with default `year` vs `date` parameters
     >>> xr_360_to_365_datetime64: Dataset = convert_xr_calendar(
-    ...     xarray_spatial_4_years_360_day)
+    ...     xarray_spatial_4_years_360_day, align_on="date")
     >>> xr_360_to_365_datetime64.sel(
     ...     time=slice("1981-01-30", "1981-02-01"),
     ...     space="Glasgow").day_360
     <xarray.DataArray 'day_360' (time: 3)>...
-    array([0.23789282,        nan, 0.5356328 ])
     Coordinates:
       * time     (time) datetime64[ns] ...1981-01-30 1981-01-31 1981-02-01
         space    <U10 ...'Glasgow'
@@ -341,7 +204,7 @@ def convert_xr_calendar(
     ...     time=slice("1981-01-30", "1981-02-01"),
     ...     space="Glasgow").day_360
     <xarray.DataArray 'day_360' (time: 3)>...
-    array([0.23789282, 0.38676281, 0.5356328 ])
+    array([0.23789282, 0.5356328 , 0.311945  ])
     Coordinates:
       * time     (time) datetime64[ns] ...1981-01-30 1981-01-31 1981-02-01
         space    <U10 ...'Glasgow'
@@ -369,6 +232,99 @@ def convert_xr_calendar(
             limit=limit,
             **kwargs,
         )
+
+
+def set_xarray_crm(
+    xr_time_series: Dataset,
+    crs: str,
+    enforce_xarray_spatial_dims: bool = True,
+    xr_spatial_xdim: str = "grid_longitude",
+    xr_spatial_ydim: str = "grid_latitude",
+) -> Dataset:
+    if isinstance(xr_time_series, PathLike | str):
+        xr_time_series = open_dataset(xr_time_series, decode_coords="all")
+    assert isinstance(xr_time_series, Dataset)
+    xr_time_series.rio.write_crs(crs, inplace=True)
+    if enforce_xarray_spatial_dims:
+        xr_time_series.rio.set_spatial_dims(
+            x_dim=xr_spatial_xdim, y_dim=xr_spatial_ydim
+        )
+    return xr_time_series
+
+
+def crop_nc(
+    xr_time_series: Dataset | PathLike,
+    crop_geom: PathLike | GeoDataFrame,
+    invert=False,
+    final_crs: str = UK_SPATIAL_PROJECTION,
+    initial_clip_box: bool = False,
+    enforce_xarray_spatial_dims: bool = True,
+    xr_spatial_xdim: str = "grid_longitude",
+    xr_spatial_ydim: str = "grid_latitude",
+    **kwargs,
+) -> Dataset:
+    """Crop `xr_time_series` with `crop_path` `shapefile`.
+
+    Parameters
+    ----------
+    xr_time_series
+        `Dataset` or path to `netcdf` file to load and crop.
+    crop_geom
+        `GeoDataFrame` or `Path` of file to crop with.
+    invert
+        Whether to invert the `crop_geom` coordinates.
+    final_crs
+        Final coordinate system to return cropped `xr_time_series` in.
+    initial_clip_box
+        Whether to initially clip `xr_time_series` via `crop_geom`
+        boundaries. For more details on chained clip approaches see
+        https://corteva.github.io/rioxarray/html/examples/clip_geom.html#Clipping-larger-rasters
+    enforce_xarray_spatial_dims
+        Whether to use `set_spatial_dims` on `xr_time_series` prior to `clip`.
+    xr_spatial_xdim
+        Column parameter to pass as `xdim` to `set_spatial_dims` if used.
+    xr_spatial_ydim
+        Column parameter to pass as `ydim` to `set_spatial_dims` if used.
+    kwargs
+        Any additional parameters to pass to `clip`
+
+    Returns
+    -------
+    :
+        Spatially cropped `xr_time_series` `Dataset` with `final_crs` spatial coords.
+
+    Examples
+    --------
+    >>> if not is_data_mounted:
+    ...     pytest.skip('Can only run with mounted data files')
+    >>> cropped = crop_nc(
+    ...     data_fixtures_path /
+    ...     'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
+    ...     crop_geom=glasgow_shape_file_path, invert=True)
+    >>> cropped.rio.bounds() == glasgow_epsg_27700_bounds
+    True
+    """
+    xr_time_series = set_xarray_crm(
+        xr_time_series,
+        crs=final_crs,
+        enforce_xarray_spatial_dims=enforce_xarray_spatial_dims,
+        xr_spatial_xdim=xr_spatial_xdim,
+        xr_spatial_ydim=xr_spatial_ydim,
+    )
+    if isinstance(crop_geom, PathLike):
+        crop_geom = read_file(crop_geom)
+    assert isinstance(crop_geom, GeoDataFrame)
+    crop_geom.set_crs(crs=final_crs, inplace=True)
+    if initial_clip_box:
+        xr_time_series = xr_time_series.rio.clip_box(
+            minx=crop_geom.bounds.minx,
+            miny=crop_geom.bounds.miny,
+            maxx=crop_geom.bounds.maxx,
+            maxy=crop_geom.bounds.maxy,
+        )
+    return xr_time_series.rio.clip(
+        crop_geom.geometry.values, drop=True, invert=invert, **kwargs
+    )
 
 
 def resample_cruk(x: list | tuple) -> int:
@@ -452,38 +408,75 @@ def resample_hadukgrid(x: list | tuple) -> int:
 
 @dataclass
 class HADsUKResampleManager:
-    input: os.PathLike | None
-    output: os.PathLike
-    grid_data: os.PathLike | None
+    """Manage resampling HADsUK datafiles for modelling.
+
+    Attributes
+    ----------
+    input
+        `Path` to `HADs` files to process.
+    output
+        `Path` to save processed `HADS` files.
+    grid_data_path
+        `Path` to load to `self.grid`.
+    grid
+        `Dataset` of grid (either passed via `grid_data_path` or as a parameter).
+    input_nc_files
+        NCF files to process with `self.grid` etc.
+    cpus
+        Number of `cpu` cores to use during multiprocessing.
+    resampling_func
+        Function to call on `self.input_nc_files` with `self.grid`
+
+    Examples
+    --------
+    >>> if not is_data_mounted:
+    ...     pytest.skip('Can only run with mounted data files')
+    >>> hads_resampler: HADsUKResampleManager = HADsUKResampleManager(
+    ...     input=data_fixtures_path,
+    ...     output=resample_test_output_path,
+    ...     grid_data_path=glasgow_shape_file_path,
+    ... )
+    Grid file: .../tests/data/Glasgow/Glasgow.shp produced errors: 'projection_x_coordinate'
+    >>> pprint(hads_resampler.input_nc_files)
+    ('tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
+     'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19841201-19851130.nc',
+     'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19811201-19821130.nc',
+     'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19831201-19841130.nc',
+     'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc')
+    """
+
+    input: PathLike | None
+    output: PathLike
+    grid_data_path: PathLike | None
     grid: Dataset | None = None
-    input_nc_files: Iterable[os.PathLike] | None = None
+    input_nc_files: Iterable[PathLike] | None = None
     cpus: int | None = None
     resampling_func: ResamplingCallable = resample_hadukgrid
+    crop: PathLike | GeoDataFrame | None = None
+    final_crs: str = UK_SPATIAL_PROJECTION
 
     def __len__(self) -> int:
         """Return the length of `self.input_nc_files`."""
         return len(self.input_nc_files) if self.input_nc_files else 0
 
-    def set_input_nc_files(self, new_input_path: os.PathLike | None = None) -> None:
+    def set_input_nc_files(self, new_input_path: PathLike | None = None) -> None:
         """Replace `self.input` and process `self.input_nc_files`."""
         if new_input_path:
             self.input = new_input_path
         if not self.input_nc_files:
-            self.input_nc_files = tuple(
-                glob(f"{parser_args.input}/*.nc", recursive=True)
-            )
+            self.input_nc_files = tuple(glob(f"{self.input}/*.nc", recursive=True))
 
-    def set_grid_x_y(self, new_grid_data: os.PathLike | None = None) -> None:
-        if new_grid_data:
-            self.grid_data = new_grid_data
+    def set_grid_x_y(self, new_grid_data_path: PathLike | None = None) -> None:
+        if new_grid_data_path:
+            self.grid_data_path = new_grid_data_path
         if not self.grid:
-            self.grid = open_dataset(self.grid_data)
+            self.grid = read_file(self.grid_data_path)
         try:
             # must have dimensions named projection_x_coordinate and projection_y_coordinate
             self.x: np.ndarray = self.grid["projection_x_coordinate"][:].values
             self.y: np.ndarray = self.grid["projection_y_coordinate"][:].values
         except Exception as e:
-            print(f"Grid file: {parser_args.grid_data} produced errors: {e}")
+            print(f"Grid file: {self.grid_data_path} produced errors: {e}")
 
     def __post_init__(self) -> None:
         """Generate related attributes."""
@@ -495,7 +488,7 @@ class HADsUKResampleManager:
             self.cpus = 1 if not self.total_cpus else self.total_cpus
 
     @property
-    def resample_args(self) -> Iterable[ResamplingArgs]:
+    def resample_args(self) -> Iterator[ResamplingArgs]:
         """Return args to pass to `self.resample`."""
         if not self.input_nc_files:
             self.set_input_nc_files()
