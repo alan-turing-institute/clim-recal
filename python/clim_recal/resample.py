@@ -234,6 +234,24 @@ def convert_xr_calendar(
         )
 
 
+def set_xarray_crm(
+    xr_time_series: Dataset,
+    crs: str,
+    enforce_xarray_spatial_dims: bool = True,
+    xr_spatial_xdim: str = "grid_longitude",
+    xr_spatial_ydim: str = "grid_latitude",
+) -> Dataset:
+    if isinstance(xr_time_series, PathLike | str):
+        xr_time_series = open_dataset(xr_time_series, decode_coords="all")
+    assert isinstance(xr_time_series, Dataset)
+    xr_time_series.rio.write_crs(crs, inplace=True)
+    if enforce_xarray_spatial_dims:
+        xr_time_series.rio.set_spatial_dims(
+            x_dim=xr_spatial_xdim, y_dim=xr_spatial_ydim
+        )
+    return xr_time_series
+
+
 def crop_nc(
     xr_time_series: Dataset | PathLike,
     crop_geom: PathLike | GeoDataFrame,
@@ -286,14 +304,13 @@ def crop_nc(
     >>> cropped.rio.bounds() == glasgow_epsg_27700_bounds
     True
     """
-    if isinstance(xr_time_series, PathLike | str):
-        xr_time_series = open_dataset(xr_time_series, decode_coords="all")
-    assert isinstance(xr_time_series, Dataset)
-    xr_time_series.rio.write_crs(final_crs, inplace=True)
-    if enforce_xarray_spatial_dims:
-        xr_time_series.rio.set_spatial_dims(
-            x_dim=xr_spatial_xdim, y_dim=xr_spatial_ydim
-        )
+    xr_time_series = set_xarray_crm(
+        xr_time_series,
+        crs=final_crs,
+        enforce_xarray_spatial_dims=enforce_xarray_spatial_dims,
+        xr_spatial_xdim=xr_spatial_xdim,
+        xr_spatial_ydim=xr_spatial_ydim,
+    )
     if isinstance(crop_geom, PathLike):
         crop_geom = read_file(crop_geom)
     assert isinstance(crop_geom, GeoDataFrame)
