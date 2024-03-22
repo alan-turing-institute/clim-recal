@@ -34,6 +34,7 @@ from clim_recal.utils.server import CondaLockFileManager
 from clim_recal.utils.xarray import (
     GLASGOW_GEOM_LOCAL_PATH,
     XARRAY_EXAMPLE_END_DATE_4_YEARS,
+    BoundsTupleType,
     xarray_example,
 )
 
@@ -237,6 +238,34 @@ def resample_test_output_path(path=Path("tests/resample/")) -> Iterator[Path]:
     rmtree(path, ignore_errors=True)
 
 
+@pytest.fixture
+def glasgow_epsg_27700_bounds() -> BoundsTupleType:
+    """Boundaries of Glasgow in EPSG:27700 coords.
+
+    The structure is (`minx`, `miny`, `maxx`, `maxy`)
+    """
+    return (
+        249799.9996000016,
+        657761.4720000029,
+        269234.99959999975,
+        672330.6968000066,
+    )
+
+
+@pytest.fixture
+def uk_epsg_27700_bounds() -> BoundsTupleType:
+    """Boundaries of the UK in EPSG:27700 coords.
+
+    The structure is (`minx`, `miny`, `maxx`, `maxy`)
+    """
+    return (
+        353.92520902961434,
+        -4.693282346489016,
+        364.3162765660888,
+        8.073382596733156,
+    )
+
+
 @pytest.fixture(autouse=True)
 def doctest_auto_fixtures(
     doctest_namespace: dict,
@@ -249,6 +278,8 @@ def doctest_auto_fixtures(
     xarray_spatial_4_years_360_day: Dataset,
     conda_lock_file_manager: CondaLockFileManager,
     data_fixtures_path: Path,
+    uk_epsg_27700_bounds: BoundsTupleType,
+    glasgow_epsg_27700_bounds: BoundsTupleType,
     glasgow_shape_file_path: Path,
     resample_test_output_path: Path,
 ) -> None:
@@ -291,6 +322,8 @@ def doctest_auto_fixtures(
     doctest_namespace["xarray_spatial_4_years_360_day"] = xarray_spatial_4_years_360_day
     doctest_namespace["conda_lock_file_manager"] = conda_lock_file_manager
     doctest_namespace["data_fixtures_path"] = data_fixtures_path
+    doctest_namespace["uk_epsg_27700_bounds"] = uk_epsg_27700_bounds
+    doctest_namespace["glasgow_epsg_27700_bounds"] = glasgow_epsg_27700_bounds
     doctest_namespace["glasgow_shape_file_path"] = glasgow_shape_file_path
     doctest_namespace["resample_test_output_path"] = resample_test_output_path
 

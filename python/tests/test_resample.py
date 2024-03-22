@@ -20,11 +20,7 @@ from clim_recal.utils.core import (
     DateType,
     annual_data_path,
 )
-from clim_recal.utils.xarray import (
-    GLASGOW_GEOM_LOCAL_PATH,
-    BoundsTupleType,
-    xarray_example,
-)
+from clim_recal.utils.xarray import GLASGOW_GEOM_LOCAL_PATH, xarray_example
 
 HADS_UK_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
 HADS_UK_RESAMPLED_DAY_LOCAL_PATH: Final[Path] = Path(
@@ -329,21 +325,10 @@ def test_crop_nc(
     # ukcp_tasmax_raw_path
     glasgow_shape_file_path,
     data_fixtures_path,
+    glasgow_epsg_27700_bounds,
+    uk_epsg_27700_bounds,
 ):
     """Test `cropping` `DataArray` to `standard` calendar."""
-    # Create a base
-    glasgow_epsg_27700_bounds: BoundsTupleType = (
-        249799.9996000016,
-        657761.4720000029,
-        269234.99959999975,
-        672330.6968000066,
-    )
-    uk_epsg_27700_bounds: BoundsTupleType = (
-        353.92520902961434,
-        -4.693282346489016,
-        364.3162765660888,
-        8.073382596733156,
-    )
     # cropped.rio.set_spatial_dims(x_dim="grid_longitude", y_dim="grid_latitude")
     datetime_now_str: str = str(datetime.now()).replace(" ", "-")
 

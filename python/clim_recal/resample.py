@@ -237,12 +237,12 @@ def convert_xr_calendar(
 def crop_nc(
     xr_time_series: Dataset | PathLike,
     crop_geom: PathLike | GeoDataFrame,
+    invert=False,
     final_crs: str = UK_SPATIAL_PROJECTION,
     initial_clip_box: bool = False,
     enforce_xarray_spatial_dims: bool = True,
     xr_spatial_xdim: str = "grid_longitude",
     xr_spatial_ydim: str = "grid_latitude",
-    invert=False,
     **kwargs,
 ) -> Dataset:
     """Crop `xr_time_series` with `crop_path` `shapefile`.
@@ -250,18 +250,30 @@ def crop_nc(
     Parameters
     ----------
     xr_time_series
-        Dataset to crop.
-    crop_path
-        Path of file to crop with.
+        `Dataset` or path to `netcdf` file to load and crop.
+    crop_geom
+        `GeoDataFrame` or `Path` of file to crop with.
     invert
         Whether to invert the `crop_geom` coordinates.
+    final_crs
+        Final coordinate system to return cropped `xr_time_series` in.
     initial_clip_box
-
+        Whether to initially clip `xr_time_series` via `crop_geom`
+        boundaries. For more details on chained clip approaches see
+        https://corteva.github.io/rioxarray/html/examples/clip_geom.html#Clipping-larger-rasters
+    enforce_xarray_spatial_dims
+        Whether to use `set_spatial_dims` on `xr_time_series` prior to `clip`.
+    xr_spatial_xdim
+        Column parameter to pass as `xdim` to `set_spatial_dims` if used.
+    xr_spatial_ydim
+        Column parameter to pass as `ydim` to `set_spatial_dims` if used.
+    kwargs
+        Any additional parameters to pass to `clip`
 
     Returns
     -------
     :
-        Cropped `Dataset`
+        Spatially cropped `xr_time_series` `Dataset` with `final_crs` spatial coords.
 
     Examples
     --------
@@ -271,16 +283,8 @@ def crop_nc(
     ...     data_fixtures_path /
     ...     'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
     ...     crop_geom=glasgow_shape_file_path, invert=True)
-    >>> cropped.rio.bounds()
-    (353.92520902961434,
-     -4.693282346489016,
-     364.3162765660888,
-     8.073382596733156)
-    >>> assert False
-
-    Notes
-    -----
-    Cropped bound coords need to be checked.
+    >>> cropped.rio.bounds() == glasgow_epsg_27700_bounds
+    True
     """
     if isinstance(xr_time_series, PathLike | str):
         xr_time_series = open_dataset(xr_time_series, decode_coords="all")

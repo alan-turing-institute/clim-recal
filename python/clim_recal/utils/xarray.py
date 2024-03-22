@@ -30,6 +30,7 @@ GLASGOW_GEOM_LOCAL_PATH: Final[Path] = Path(
 )
 
 BoundsTupleType = tuple[float, float, float, float]
+"""`GeoPandas` bounds: (`minx`, `miny`, `maxx`, `maxy`)."""
 
 
 def ensure_xr_dataset(
