@@ -17,13 +17,19 @@ from typing import Any, Callable, Final, Iterable, Iterator, Literal
 import numpy as np
 import rioxarray  # nopycln: import
 from geopandas import GeoDataFrame, read_file
+from osgeo.gdal import Dataset as GDALDataset
 from osgeo.gdal import GRA_NearestNeighbour, Warp, WarpOptions
 from tqdm import tqdm
 from xarray import DataArray, Dataset, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import CFCalendar, InterpOptions
 
-from .utils.xarray import ensure_xr_dataset
+from .utils.xarray import (
+    BoundsTupleType,
+    GDALFormatsType,
+    XArrayEngineType,
+    ensure_xr_dataset,
+)
 
 logger = getLogger(__name__)
 
@@ -65,17 +71,22 @@ CPRUK_RESOLUTION: Final[int] = 2200
 CPRUK_RESAMPLING_METHOD: Final[str] = GRA_NearestNeighbour
 ResamplingArgs = tuple[PathLike, np.ndarray, np.ndarray, PathLike]
 ResamplingCallable = Callable[[list | tuple], int]
+CPRUK_XDIM: Final[str] = "grid_longitude"
+CPRUK_YDIM: Final[str] = "grid_latitude"
 
 
-def warp_cruk(
-    input_path: PathLike = RESAMPLING_PATH,
-    output_path: PathLike = RESAMPLING_PATH,
+def geo_warp(
+    input_path: PathLike,
+    output_path: PathLike,
+    format: GDALFormatsType | None = None,
     output_coord_system: str = UK_SPATIAL_PROJECTION,
     output_x_resolution: int = CPRUK_RESOLUTION,
     output_y_resolution: int = CPRUK_RESOLUTION,
     resampling_method: str = CPRUK_RESAMPLING_METHOD,
+    copy_metadata: bool = True,
+    output_bounds: BoundsTupleType | None = None,
     **kwargs,
-) -> int:
+) -> GDALDataset:
     """Execute the `gdalwrap` function within `python`.
 
     This is following a script in the `bash/` folder that uses
@@ -98,6 +109,8 @@ def warp_cruk(
         Path to save resampled `input_path` file(s) to. If equal to
         `input_path` then the `overwrite` parameter is called.
         `destNameOrDestDS` in `Warp`.
+    format
+        Format to convert `input_path` to in `output_path`.
     output_coord_system
         Coordinate system to convert `input_path` file(s) to.
         `dstSRS` in `WarpOptions`.
@@ -110,8 +123,30 @@ def warp_cruk(
     resampling_method
         Sampling method. `resampleAlg` in `WarpOption`. See other options
         in: `https://gdal.org/programs/gdalwarp.html#cmdoption-gdalwarp-r`.
+    copy_metadata
+        Whether to copy metadata when possible.
+    output_bounds
+        Output bounds as (minX, minY, maxX, maxY) in target Spatial
+        Reference System (SRS) or `None`.
+
+    Examples
+    --------
+    >>> if not is_data_mounted:
+    ...     pytest.skip("requires external data mounted")
+    >>> warped_cpm = geo_warp(
+    ...     input_path = (
+    ...         data_mount_path /
+    ...         'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc'),
+    ...     output_path = resample_test_output_path,
+    ...     output_format=GDALNetCDFFormatStr)
+    >>> warped_cpm is not None
+    True
     """
-    Path(output_path).mkdir(parents=True, exist_ok=True)
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    try:
+        assert not Path(output_path).is_dir()
+    except AssertionError:
+        raise FileExistsError(f"Path exists as a directory: {output_path}")
     if input_path == output_path:
         kwargs["overwrite"] = True
     warp_options: WarpOptions = WarpOptions(
@@ -119,16 +154,14 @@ def warp_cruk(
         xRes=output_x_resolution,
         yRes=output_y_resolution,
         resampleAlg=resampling_method,
+        format=format,
+        copyMetadata=copy_metadata,
+        outputBounds=output_bounds,
         **kwargs,
     )
-    conversion_result = Warp(
-        destNameOrDestDS=output_path,
-        srcDSOrSrcDSTab=input_path,
-        options=warp_options,
+    return Warp(
+        destNameOrDestDS=output_path, srcDSOrSrcDSTab=input_path, options=warp_options
     )
-    # Todo: future refactors will return something more useful
-    # Below is simply meant to match `resample_hadukgrid`
-    return 0 if conversion_result else 1
 
 
 def convert_xr_calendar(
@@ -234,21 +267,27 @@ def convert_xr_calendar(
         )
 
 
-def set_xarray_crm(
+def reproject_xarray_by_crs(
     xr_time_series: Dataset,
     crs: str,
     enforce_xarray_spatial_dims: bool = True,
-    xr_spatial_xdim: str = "grid_longitude",
-    xr_spatial_ydim: str = "grid_latitude",
+    xr_spatial_xdim: str = CPRUK_XDIM,
+    xr_spatial_ydim: str = CPRUK_YDIM,
+    engine: XArrayEngineType = CPRUK_RESAMPLING_METHOD,
 ) -> Dataset:
     if isinstance(xr_time_series, PathLike | str):
-        xr_time_series = open_dataset(xr_time_series, decode_coords="all")
+        xr_time_series = open_dataset(
+            xr_time_series, decode_coords="all", engine=engine
+        )
     assert isinstance(xr_time_series, Dataset)
-    xr_time_series.rio.write_crs(crs, inplace=True)
     if enforce_xarray_spatial_dims:
         xr_time_series.rio.set_spatial_dims(
-            x_dim=xr_spatial_xdim, y_dim=xr_spatial_ydim
+            x_dim=xr_spatial_xdim,
+            y_dim=xr_spatial_ydim,
+            inplace=True,
         )
+    xr_time_series.rio.reproject(crs, inplace=True)
+    xr_time_series.rio.write_crs(crs, inplace=True)
     return xr_time_series
 
 
@@ -304,7 +343,7 @@ def crop_nc(
     >>> cropped.rio.bounds() == glasgow_epsg_27700_bounds
     True
     """
-    xr_time_series = set_xarray_crm(
+    xr_time_series = reproject_xarray_by_crs(
         xr_time_series,
         crs=final_crs,
         enforce_xarray_spatial_dims=enforce_xarray_spatial_dims,

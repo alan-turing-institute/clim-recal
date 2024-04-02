@@ -232,10 +232,12 @@ def glasgow_shape_file_path(data_fixtures_path) -> Path:
 
 
 @pytest.fixture
-def resample_test_output_path(path=Path("tests/resample/")) -> Iterator[Path]:
+def resample_test_runs_output_path(
+    path=TEST_DATA_PATH / "resample" / "runs",
+) -> Iterator[Path]:
     path.mkdir(exist_ok=True, parents=True)
     yield path
-    rmtree(path, ignore_errors=True)
+    # rmtree(path, ignore_errors=True)
 
 
 @pytest.fixture
@@ -278,10 +280,11 @@ def doctest_auto_fixtures(
     xarray_spatial_4_years_360_day: Dataset,
     conda_lock_file_manager: CondaLockFileManager,
     data_fixtures_path: Path,
+    data_mount_path: Path,
     uk_epsg_27700_bounds: BoundsTupleType,
     glasgow_epsg_27700_bounds: BoundsTupleType,
     glasgow_shape_file_path: Path,
-    resample_test_output_path: Path,
+    resample_test_runs_output_path: Path,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
     doctest_namespace[
@@ -310,7 +313,7 @@ def doctest_auto_fixtures(
     doctest_namespace["TEST_AUTH_CSV_PATH"] = TEST_AUTH_CSV_FILE_NAME
     doctest_namespace["is_platform_darwin"] = is_platform_darwin()
     doctest_namespace["is_data_mounted"] = is_data_mounted
-    doctest_namespace["mount_path"] = climate_data_mount_path()
+    doctest_namespace["mount_path"] = data_mount_path
     doctest_namespace["pprint"] = pprint
     doctest_namespace["pytest"] = pytest
     doctest_namespace["xarray_spatial_4_days"] = xarray_spatial_4_days
@@ -325,7 +328,7 @@ def doctest_auto_fixtures(
     doctest_namespace["uk_epsg_27700_bounds"] = uk_epsg_27700_bounds
     doctest_namespace["glasgow_epsg_27700_bounds"] = glasgow_epsg_27700_bounds
     doctest_namespace["glasgow_shape_file_path"] = glasgow_shape_file_path
-    doctest_namespace["resample_test_output_path"] = resample_test_output_path
+    doctest_namespace["resample_test_output_path"] = resample_test_runs_output_path
 
 
 def pytest_sessionfinish(session, exitstatus):

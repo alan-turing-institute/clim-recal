@@ -1,10 +1,11 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Final
+from typing import Final, Literal
 
 import pytest
 from geopandas import GeoDataFrame, read_file
 from matplotlib import pyplot as plt
+from osgeo.gdal import Dataset as GDALDataset
 from xarray import DataArray, Dataset, open_dataset
 
 from clim_recal.resample import (
@@ -12,6 +13,7 @@ from clim_recal.resample import (
     ConvertCalendarAlignOptions,
     convert_xr_calendar,
     crop_nc,
+    geo_warp,
 )
 from clim_recal.utils.core import (
     CPM_YEAR_DAYS,
@@ -19,25 +21,48 @@ from clim_recal.utils.core import (
     NORMAL_YEAR_DAYS,
     DateType,
     annual_data_path,
+    annual_data_paths_generator,
+    run_path,
 )
-from clim_recal.utils.xarray import GLASGOW_GEOM_LOCAL_PATH, xarray_example
+from clim_recal.utils.data import CEDADataSources, HadUKGrid, UKCPLocalProjections
+from clim_recal.utils.xarray import (
+    NETCDF4_XARRAY_ENGINE,
+    BoundsTupleType,
+    GDALFormatExtensions,
+    GDALFormatsType,
+    GDALGeoTiffFormatStr,
+    GDALNetCDFFormatStr,
+    xarray_example,
+)
 
-HADS_UK_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
-HADS_UK_RESAMPLED_DAY_LOCAL_PATH: Final[Path] = Path(
+HADS_UK_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
+HADS_UK_RESAMPLED_DAY_SERVER_PATH: Final[Path] = Path(
     "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"
 )
-UKCP_TASMAX_DAY_LOCAL_PATH: Final[Path] = Path("Raw/UKCP2.2/tasmax/01/latest")
+# Todo: Change "tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc"
+# to "tasmax_hads_example.nc"
+HADS_UK_TASMAX_LOCAL_TEST_PATH: Final[Path] = (
+    Path(HadUKGrid.slug) / "tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc"
+)
+
+UKCP_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/UKCP2.2/tasmax/01/latest")
+# Todo: Change "tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc"
+# to "tasmax_cpm_example.nc"
+UKCP_TASMAX_LOCAL_TEST_PATH: Final[Path] = (
+    Path(UKCPLocalProjections.slug)
+    / "tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc"
+)
 
 
 @pytest.fixture
-def ukcp_tasmax_raw_path(data_mount_path: Path) -> Path:
-    return data_mount_path / UKCP_TASMAX_DAY_LOCAL_PATH
+def ukcp_tasmax_raw_mount_path(data_mount_path: Path) -> Path:
+    return data_mount_path / UKCP_TASMAX_DAY_SERVER_PATH
 
 
 @pytest.fixture
 def ukcp_tasmax_raw_5_years_paths(ukcp_tasmax_raw_path: Path) -> tuple[Path, ...]:
     """Return a `tuple` of valid paths for 5 years of"""
-    return tuple(annual_data_paths(parent_path=ukcp_tasmax_raw_path))
+    return tuple(annual_data_paths_generator(parent_path=ukcp_tasmax_raw_path))
 
 
 #
@@ -47,19 +72,25 @@ def ukcp_tasmax_raw_5_years_paths(ukcp_tasmax_raw_path: Path) -> tuple[Path, ...
 
 
 @pytest.fixture
-def hads_tasmax_day_path(data_mount_path: Path) -> Path:
-    return data_mount_path / HADS_UK_TASMAX_DAY_LOCAL_PATH
+def hads_tasmax_raw_mount_path(data_mount_path: Path) -> Path:
+    return data_mount_path / HADS_UK_TASMAX_DAY_SERVER_PATH
 
 
 @pytest.fixture
-def hads_tasmax_resampled_day_path(data_mount_path: Path) -> Path:
-    return data_mount_path / HADS_UK_TASMAX_DAY_LOCAL_PATH
+def hads_tasmax_local_test_path(data_fixtures_path: Path) -> Path:
+    return data_fixtures_path / HADS_UK_TASMAX_LOCAL_TEST_PATH
 
 
-@pytest.mark.mount
 @pytest.fixture
-def glasgow_server_shape(data_mount_path) -> GeoDataFrame:
-    yield read_file(data_mount_path / GLASGOW_GEOM_LOCAL_PATH)
+def ukcp_tasmax_local_test_path(data_fixtures_path: Path) -> Path:
+    return data_fixtures_path / UKCP_TASMAX_LOCAL_TEST_PATH
+
+
+# May be replaced by `glasgow_shape_file_path` fixture
+# @pytest.mark.mount
+# @pytest.fixture
+# def glasgow_server_shape(data_mount_path) -> GeoDataFrame:
+#     yield read_file(data_mount_path / GLASGOW_GEOM_LOCAL_PATH)
 
 
 class StandardWith360DayError(Exception):
@@ -320,6 +351,118 @@ def test_time_gaps_360_to_standard_calendar(
         assert all(base.time != dates_360.time)
 
 
+@pytest.mark.slow
+@pytest.mark.xfail
+@pytest.mark.parametrize("data_type", (UKCPLocalProjections, HadUKGrid))
+@pytest.mark.parametrize("data_source", ("mounted", "local"))
+@pytest.mark.parametrize("output_format", (GDALNetCDFFormatStr, GDALGeoTiffFormatStr))
+@pytest.mark.parametrize("glasgow_crop", (True, False))
+def test_geo_warp(
+    data_type: CEDADataSources,
+    data_source: Literal["mounted", "local"],
+    output_format: GDALFormatsType,
+    glasgow_crop: bool,
+    resample_test_runs_output_path: Path,
+    glasgow_shape_file_path: Path,
+    glasgow_epsg_27700_bounds: BoundsTupleType,
+    uk_epsg_27700_bounds,
+    ukcp_tasmax_raw_mount_path: Path,
+    hads_tasmax_raw_mount_path: Path,
+    hads_tasmax_local_test_path: Path,
+    ukcp_tasmax_local_test_path: Path,
+    is_data_mounted: bool,
+) -> None:
+    """Test using `geo_warp` with mounted raw data."""
+    server_data_path: Path = (
+        ukcp_tasmax_raw_mount_path
+        if data_type == UKCPLocalProjections
+        else hads_tasmax_raw_mount_path
+    )
+    local_data_path: Path = (
+        ukcp_tasmax_local_test_path
+        if data_type == UKCPLocalProjections
+        else hads_tasmax_local_test_path
+    )
+    data_path: Path = server_data_path if data_source == "mounted" else local_data_path
+    if data_source == "mounted" and not is_data_mounted:
+        pytest.skip("requires external data mounted")
+    assert data_path.exists()
+
+    # cropped.rio.set_spatial_dims(x_dim="grid_longitude", y_dim="grid_latitude")
+    datetime_now = datetime.now()
+    warp_path: Path = resample_test_runs_output_path / "geo_warp"
+    if glasgow_crop:
+        glasgow_test_fig_path = run_path(
+            name="glasgow",
+            path=warp_path,
+            time=datetime_now,
+            extension="png",
+            mkdir=True,
+        )
+    pre_warp_test_fig_path = run_path(
+        name="pre_warp", path=warp_path, time=datetime_now, extension="png", mkdir=True
+    )
+    warp_test_file_path = run_path(
+        name="test_warp_file",
+        path=warp_path,
+        time=datetime_now,
+        extension=GDALFormatExtensions[output_format],
+        mkdir=False,
+    )
+    warp_test_fig_path = run_path(
+        name="test_warp", path=warp_path, time=datetime_now, extension="png", mkdir=True
+    )
+
+    if glasgow_crop:
+        glasgow_geo_df: GeoDataFrame = read_file(glasgow_shape_file_path)
+        glasgow_geo_df.plot()
+        plt.savefig(glasgow_test_fig_path)
+        assert glasgow_geo_df.crs == UK_SPATIAL_PROJECTION
+        assert (
+            tuple(glasgow_geo_df.bounds.values.tolist()[0]) == glasgow_epsg_27700_bounds
+        )
+
+    max_temp_data_path: Path = (
+        data_path
+        if data_source == "local"
+        else annual_data_path(
+            end_year=1981,
+            parent_path=data_path,
+        )
+    )
+    xarray_pre_warp: Dataset = open_dataset(
+        max_temp_data_path, decode_coords="all", engine=NETCDF4_XARRAY_ENGINE
+    )
+    xarray_pre_warp.isel(time=0).tasmax.plot()
+    plt.savefig(pre_warp_test_fig_path)
+
+    assert str(xarray_pre_warp.rio.crs) != UK_SPATIAL_PROJECTION
+    assert xarray_pre_warp.rio.bounds() == uk_epsg_27700_bounds
+    # output_path: Path = warp_path / (max_temp_data_path.stem + ".tif" if output_format == GDALGeoTiffFormatStr else ".nc")
+    xarray_warped: GDALDataset
+    if glasgow_crop:
+        xarray_warped = geo_warp(
+            max_temp_data_path, output_path=warp_test_file_path, format=output_format
+        )
+    else:
+        xarray_warped = geo_warp(
+            max_temp_data_path,
+            output_path=warp_test_file_path,
+            format=output_format,
+            output_bounds=uk_epsg_27700_bounds,
+        )
+    assert xarray_warped is not None
+    read_exported: Dataset = open_dataset(warp_test_file_path, decode_coords="all")
+
+    read_exported.Band1.plot()
+    plt.savefig(warp_test_fig_path)
+
+    assert str(read_exported.rio.crs) == UK_SPATIAL_PROJECTION
+    if glasgow_crop:
+        assert read_exported.rio.bounds() == glasgow_epsg_27700_bounds
+
+
+@pytest.mark.xfail
 def test_crop_nc(
     # align_on: ConvertCalendarAlignOptions,
     # ukcp_tasmax_raw_path

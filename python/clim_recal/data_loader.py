@@ -7,10 +7,10 @@ from geopandas import read_file
 from rioxarray import open_rasterio
 from xarray import DataArray, cftime_range, concat, open_dataset
 
+from .utils.core import DateRange
+
 BritishNationalGridCoordsNum: Final[int] = 27700
 BritishNationalGridCoordinates: Final[str] = f'epsg:{BritishNationalGridCoordsNum}'
-
-DateRange = tuple[datetime, datetime]
 
 
 def load_data(

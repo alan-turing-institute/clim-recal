@@ -15,7 +15,7 @@ from pathlib import Path
 import numpy as np
 
 #sys.path.insert(1, "../load_data")
-from ..data_loader import load_data
+from ..data_loader import load_data, DateRange
 
 # * ----- L O G G I N G -----
 formatter = logging.Formatter(
@@ -114,7 +114,7 @@ unit = params["unit"]
 run_number = params["run_number"]
 
 calib_list = calibration_date_range.split("-")
-h_date_period = (
+h_date_period: DateRange = (
     datetime.strptime(calib_list[0], "%Y%m%d").strftime("%Y-%m-%d"),
     datetime.strptime(calib_list[1], "%Y%m%d").strftime("%Y-%m-%d"),
 )

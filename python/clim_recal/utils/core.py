@@ -12,6 +12,7 @@ from typing import Any, Callable, Final, Generator, Iterable, Iterator, Optional
 logger = getLogger(__name__)
 
 DateType = Union[date, str]
+DateRange = tuple[DateType, DateType]
 DATE_FORMAT_STR: Final[str] = "%Y%m%d"
 ISO_DATE_FORMAT_STR: Final[str] = "%Y-%m-%d"
 DATE_FORMAT_SPLIT_STR: Final[str] = "-"
@@ -27,6 +28,7 @@ MAX_TEMP_STR: Final[str] = "tasmax"
 MODULE_NAMES: Final[tuple[PathLike, ...]] = ("clim_recal",)
 CURRENT_PATH = Path().absolute()
 PYTHON_PACKAGE_DIR_NAME: Final[Path] = Path("python")
+RUN_TIME_STAMP_FORMAT: Final[str] = "%y-%m-%d_%H-%M"
 
 
 @dataclass
@@ -575,6 +577,62 @@ def annual_data_path(
         return parent_path / file_name
     else:
         return Path(file_name)
+
+
+def time_str(
+    time: date | datetime | None = None,
+    format: str = RUN_TIME_STAMP_FORMAT,
+    replace_char_tuple: tuple[str, str] | None = None,
+) -> str:
+    """Return a `str` of passed or generated time suitable for a file name.
+
+    Arguments
+    ---------
+    time
+        Time to format. Will be set to current time if `None` is passed, and add current time if a `date` is passed to convert to a `datetime`.
+    format
+        `strftime` `str` format to return `time` as. If `replace_chars` is passed, these will be used to replace those in `strftime`.
+    replace_char_tuple
+        `tuple` of (char_to_match, char_to_replace) order.
+
+    Examples
+    --------
+    >>> time_str(datetime(2024, 10, 10, 10, 10, 10))
+    '24-10-10_10-10'
+    """
+    time = time if time else datetime.now()
+    # `isinstance` would faile because `date` is a
+    # subclass of `datetime`
+    if type(time) is date:
+        time = datetime.combine(time, datetime.now().time())
+    if replace_char_tuple:
+        format = format.replace(*replace_char_tuple)
+    return time.strftime(format)
+
+
+def run_path(
+    name: str,
+    path: PathLike | None = None,
+    time: datetime | None = None,
+    extension: str | None = None,
+    mkdir: bool = False,
+) -> Path:
+    """Return `Path`: `path`/`name`_`time`.`extension`.
+
+    Examples
+    --------
+    >>> str(run_path('hads', 'test_example/folder', extension='cat'))
+    'test_example/folder/hads_..._...-....cat'
+    """
+    path = Path() if path is None else Path(path)
+    if mkdir:
+        path.mkdir(parents=True, exist_ok=True)
+    if not time:
+        time = datetime.now()
+    file_name: str = f"{name}_{time_str(time)}"
+    if extension:
+        file_name += f".{extension}"
+    return path / file_name
 
 
 def csv_reader(path: PathLike, **kwargs) -> Iterator[dict[str, str]]:
