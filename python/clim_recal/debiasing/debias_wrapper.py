@@ -4,7 +4,7 @@ from datetime import date
 from enum import auto
 from os import PathLike
 from pathlib import Path
-from typing import Final, Iterator, Optional, Sequence, TypedDict, Union
+from typing import Final, Iterator, Optional, TypedDict, Union
 
 from ..utils.core import (
     DATE_FORMAT_SPLIT_STR,
@@ -130,16 +130,6 @@ class RunConfigType(TypedDict):
     variable: VariableOptions
     run: RunOptions
     method: MethodOptions
-
-
-class ClimRecalRunsConfigType(TypedDict):
-
-    """Lists of parameters to generate `RunConfigType` instances."""
-
-    cities: Sequence[CityOptions] | None
-    variables: Sequence[VariableOptions]
-    runs: Sequence[RunOptions]
-    methods: Sequence[MethodOptions]
 
 
 @dataclass

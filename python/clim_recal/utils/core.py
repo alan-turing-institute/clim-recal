@@ -620,8 +620,8 @@ def time_str(
 ) -> str:
     """Return a `str` of passed or generated time suitable for a file name.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     time
         Time to format. Will be set to current time if `None` is passed, and add current time if a `date` is passed to convert to a `datetime`.
     format

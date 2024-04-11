@@ -11,6 +11,7 @@ from .debiasing.debias_wrapper import (
     CityOptions,
     MethodOptions,
     RunConfig,
+    RunConfigType,
     RunOptions,
     VariableOptions,
     climate_data_mount_path,
@@ -18,15 +19,6 @@ from .debiasing.debias_wrapper import (
 from .utils.core import product_dict
 
 DATA_PATH_DEFAULT: Final[Path] = climate_data_mount_path()
-
-
-class RunConfigType(TypedDict):
-    """Parameters needed for a model run."""
-
-    city: CityOptions | None
-    variable: VariableOptions
-    run: RunOptions
-    method: MethodOptions
 
 
 class ClimRecalRunsConfigType(TypedDict):

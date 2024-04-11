@@ -64,6 +64,8 @@ website:
             contents:
               - href: "docs/reference/clim_recal.pipeline.qmd"
                 text: "Pipeline"
+              - href: "docs/reference/clim_recal.config.qmd"
+                text: "Configure"
               - href: "docs/reference/clim_recal.ceda_ftp_download.qmd"
                 text: "CEDA Data Access"
               - href: "docs/reference/clim_recal.data_loader.qmd"
@@ -74,14 +76,16 @@ website:
                 contents:
                   - href: "docs/reference/clim_recal.debiasing.debias_wrapper.qmd"
                     text: "Wrapper"
-              - href: "docs/reference/clim_recal.utils.qmd"
-                section: "Utilities"
+              - section: "Utilities"
                 contents:
-
                   - href: "docs/reference/clim_recal.utils.core.qmd"
                     text: "core"
                   - href: "docs/reference/clim_recal.utils.server.qmd"
                     text: "server"
+                  - href: "docs/reference/clim_recal.utils.xarray.qmd"
+                    text: "xarray"
+                  - href: "docs/reference/clim_recal.utils.data.qmd"
+                    text: "data"
       - text: "Docker"
         href: "docs/docker-configurations.qmd"
       - text: "Contributing"
@@ -109,8 +113,10 @@ quartodoc:
         - clim_recal.pipeline
         - clim_recal.ceda_ftp_download
         - clim_recal.data_loader
+        - clim_recal.config
         - clim_recal.resample
         - clim_recal.debiasing.debias_wrapper
-        - clim_recal.utils
         - clim_recal.utils.core
         - clim_recal.utils.server
+        - clim_recal.utils.xarray
+        - clim_recal.utils.data
