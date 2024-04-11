@@ -1,13 +1,26 @@
 """Utility functions."""
 import sys
+from collections.abc import KeysView
 from copy import deepcopy
 from csv import DictReader
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
+from enum import StrEnum
+from itertools import product
 from logging import getLogger
 from os import PathLike, chdir
 from pathlib import Path
-from typing import Any, Callable, Final, Generator, Iterable, Iterator, Optional, Union
+from typing import (
+    Any,
+    Callable,
+    Final,
+    Generator,
+    Hashable,
+    Iterable,
+    Iterator,
+    Optional,
+    Union,
+)
 
 logger = getLogger(__name__)
 
@@ -108,6 +121,23 @@ class MonthDay:
 
 
 DEFAULT_START_MONTH_DAY: Final[MonthDay] = MonthDay(month=12, day=1)
+
+
+def product_dict(**kwargs) -> Iterator[dict[Hashable, Any]]:
+    """Return product combinatorics of `kwargs`.
+
+    Examples
+    --------
+    >>> pprint(tuple(
+    ...     product_dict(animal=['cat', 'fish'], activity=('swim', 'eat'))))
+    ({'activity': 'swim', 'animal': 'cat'},
+     {'activity': 'eat', 'animal': 'cat'},
+     {'activity': 'swim', 'animal': 'fish'},
+     {'activity': 'eat', 'animal': 'fish'})
+    """
+    keys: KeysView = kwargs.keys()
+    for instance in product(*kwargs.values()):
+        yield dict(zip(keys, instance))
 
 
 def check_package_path(strict: bool = True, try_chdir: bool = False) -> bool:
@@ -671,3 +701,9 @@ def csv_reader(path: PathLike, **kwargs) -> Iterator[dict[str, str]]:
     with open(path) as csv_file:
         for row in DictReader(csv_file, **kwargs):
             yield row
+
+
+class StrEnumReprName(StrEnum):
+    def __repr__(self) -> str:
+        """Return value as `str`."""
+        return f"'{self.value}'"

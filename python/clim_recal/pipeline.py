@@ -75,14 +75,15 @@ New approach:
     - Refactor `debiasing.debias-wrapper`
 - `R`
 
+# Keep track
+
+- What is being superseded
+- What can be removed
 
 
 """
 from pathlib import Path
 from typing import Any, Final
-
-# from . import ceda_ftp_download, data_loader, resample
-# from .utils.core import DateType, is_platform_darwin, MonthDay, date_range_to_str, ensure_date
 
 REPROJECTION_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_one.sh")
 REPROJECTION_WRAPPER_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_all.sh")

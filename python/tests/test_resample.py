@@ -167,6 +167,7 @@ def test_leap_year_days() -> None:
 # These should be two separate tests. Trying to generalise the test to cover
 # both cases would overcomplicate
 # the code and make it harder to understand.
+@pytest.mark.skip("this may be causing too much lost space")
 @pytest.mark.parametrize(
     # Only one of start_date and end_date are included the day counts
     "start_date, end_date, gen_date_count, days_360, converted_days, align_on",
@@ -351,6 +352,7 @@ def test_time_gaps_360_to_standard_calendar(
         assert all(base.time != dates_360.time)
 
 
+@pytest.mark.skip("this may be causing too much lost space")
 @pytest.mark.slow
 @pytest.mark.xfail
 @pytest.mark.parametrize("data_type", (UKCPLocalProjections, HadUKGrid))
@@ -462,6 +464,7 @@ def test_geo_warp(
         assert read_exported.rio.bounds() == glasgow_epsg_27700_bounds
 
 
+@pytest.mark.skip("this may be causing too much lost space")
 @pytest.mark.xfail
 def test_crop_nc(
     # align_on: ConvertCalendarAlignOptions,

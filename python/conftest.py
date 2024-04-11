@@ -7,7 +7,11 @@ import pytest
 from coverage_badge.__main__ import main as gen_cov_badge
 from xarray import DataArray, Dataset
 
-from clim_recal.config import climate_data_mount_path, is_climate_data_mounted
+from clim_recal.config import (
+    ClimRecalConfig,
+    climate_data_mount_path,
+    is_climate_data_mounted,
+)
 from clim_recal.debiasing.debias_wrapper import (
     CALIB_DATES_STR_DEFAULT,
     CMETHODS_FILE_NAME,
@@ -268,6 +272,15 @@ def uk_epsg_27700_bounds() -> BoundsTupleType:
     )
 
 
+@pytest.fixture
+def clim_runner(tmp_path) -> ClimRecalConfig:
+    """Return default `ClimRecalConfig`."""
+    return ClimRecalConfig(
+        preprocess_out_folder=tmp_path,
+        cities=(CityOptions.GLASGOW, CityOptions.MANCHESTER),
+    )
+
+
 @pytest.fixture(autouse=True)
 def doctest_auto_fixtures(
     doctest_namespace: dict,
@@ -285,6 +298,7 @@ def doctest_auto_fixtures(
     glasgow_epsg_27700_bounds: BoundsTupleType,
     glasgow_shape_file_path: Path,
     resample_test_runs_output_path: Path,
+    clim_runner: ClimRecalConfig,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
     doctest_namespace[
@@ -329,6 +343,7 @@ def doctest_auto_fixtures(
     doctest_namespace["glasgow_epsg_27700_bounds"] = glasgow_epsg_27700_bounds
     doctest_namespace["glasgow_shape_file_path"] = glasgow_shape_file_path
     doctest_namespace["resample_test_output_path"] = resample_test_runs_output_path
+    doctest_namespace["clim_runner"] = clim_runner
 
 
 def pytest_sessionfinish(session, exitstatus):
