@@ -7,11 +7,7 @@ import pytest
 from coverage_badge.__main__ import main as gen_cov_badge
 from xarray import DataArray, Dataset
 
-from clim_recal.config import (
-    ClimRecalConfig,
-    climate_data_mount_path,
-    is_climate_data_mounted,
-)
+from clim_recal.config import ClimRecalConfig
 from clim_recal.debiasing.debias_wrapper import (
     CALIB_DATES_STR_DEFAULT,
     CMETHODS_FILE_NAME,
@@ -31,6 +27,8 @@ from clim_recal.debiasing.debias_wrapper import (
 from clim_recal.utils.core import (
     ISO_DATE_FORMAT_STR,
     check_package_path,
+    climate_data_mount_path,
+    is_climate_data_mounted,
     is_platform_darwin,
     iter_to_tuple_strs,
 )

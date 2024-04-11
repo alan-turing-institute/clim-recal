@@ -1,10 +1,10 @@
-from clim_recal.config import (
+from clim_recal.utils.core import (
     CLIMATE_DATA_PATH,
     DARWIN_MOUNT_PATH,
     DEBIAN_MOUNT_PATH,
     climate_data_mount_path,
+    is_platform_darwin,
 )
-from clim_recal.utils.core import is_platform_darwin
 
 
 def test_climate_data_mount_path() -> None:
