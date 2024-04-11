@@ -162,12 +162,6 @@ def test_leap_year_days() -> None:
 # This is roughly what I had in mind for
 # https://github.com/alan-turing-institute/clim-recal/issues/132
 # This tests converting from a standard calendar to a 360_day calendar.
-# It would be good to have an equivalent test would be to convert from a 360_day
-# calendar to a standard calendar.
-# These should be two separate tests. Trying to generalise the test to cover
-# both cases would overcomplicate
-# the code and make it harder to understand.
-@pytest.mark.skip("this may be causing too much lost space")
 @pytest.mark.parametrize(
     # Only one of start_date and end_date are included the day counts
     "start_date, end_date, gen_date_count, days_360, converted_days, align_on",
@@ -352,7 +346,6 @@ def test_time_gaps_360_to_standard_calendar(
         assert all(base.time != dates_360.time)
 
 
-@pytest.mark.skip("this may be causing too much lost space")
 @pytest.mark.slow
 @pytest.mark.xfail
 @pytest.mark.parametrize("data_type", (UKCPLocalProjections, HadUKGrid))
@@ -464,7 +457,6 @@ def test_geo_warp(
         assert read_exported.rio.bounds() == glasgow_epsg_27700_bounds
 
 
-@pytest.mark.skip("this may be causing too much lost space")
 @pytest.mark.xfail
 def test_crop_nc(
     # align_on: ConvertCalendarAlignOptions,
