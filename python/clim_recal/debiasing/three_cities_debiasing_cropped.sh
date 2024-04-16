@@ -13,13 +13,18 @@ for run in "${runs[@]}"; do
 
       python preprocess_data.py --mod /mnt/vmfileshare/ClimateData/Cropped/three.cities/CPM/$city --obs /mnt/vmfileshare/ClimateData/Cropped/three.cities/Hads.updated360/$city -v $var -r $run --out /mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/$city/$run/$var --calib_dates 19810101-19831230 --valid_dates 20100101-20101230
 
-      for method in "${methods[@]}"; do
-        python run_cmethods.py --input_data_folder /mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/$city/$run/$var --out /mnt/vmfileshare/ClimateData/Debiased/three.cities.cropped/$city/$run --method $method --v $var -p 32
-      done
+      ###########
+      # Running the `cmethods` is currently skipped, whilst we confirm that the preprocessing is working correctly.
+      # See https://github.com/alan-turing-institute/clim-recal/milestone/12
+      ###########
 
-      for method in "${methods_2[@]}"; do
-        python run_cmethods.py --input_data_folder /mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/$city/$run/$var --out /mnt/vmfileshare/ClimateData/Debiased/three.cities.cropped/$city/$run --method $method --group time.month --v $var -p 32
-      done
+      # for method in "${methods[@]}"; do
+      #   python run_cmethods.py --input_data_folder /mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/$city/$run/$var --out /mnt/vmfileshare/ClimateData/Debiased/three.cities.cropped/$city/$run --method $method --v $var -p 32
+      # done
+
+      # for method in "${methods_2[@]}"; do
+      #   python run_cmethods.py --input_data_folder /mnt/vmfileshare/ClimateData/Cropped/three.cities/Preprocessed/$city/$run/$var --out /mnt/vmfileshare/ClimateData/Debiased/three.cities.cropped/$city/$run --method $method --group time.month --v $var -p 32
+      # done
 
     done
   done
