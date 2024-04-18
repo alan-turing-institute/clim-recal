@@ -1,11 +1,5 @@
 version: "3.8"
 
-# env:
-#   export UID=$(id -u)
-# export GID=$(id -g)
-# docker run -it \
-#     --user $UID:$GID \
-
 services:
 
   jupyter:
