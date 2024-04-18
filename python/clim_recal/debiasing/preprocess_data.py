@@ -15,7 +15,7 @@ from pathlib import Path
 import numpy as np
 
 #sys.path.insert(1, "../load_data")
-from ..data_loader import load_data
+from clim_recal.data_loader import load_data
 
 # * ----- L O G G I N G -----
 formatter = logging.Formatter(

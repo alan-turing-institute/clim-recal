@@ -273,3 +273,14 @@ data/*
 python/test_auth.csv
 python/debiasing/python-cmethods
 python/clim_recal/debiasing/python-cmethods
+python/docs/assets/coverage.svg
+
+
+
+# Shell stuff
+.bash_history
+.bashrc
+.python_history
+environments.txt
+.jupyter/
+.local/
