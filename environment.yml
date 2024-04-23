@@ -7,10 +7,8 @@ dependencies:
   # - r-quarto=1.4
   - python=3.11
   - gdal=3.8.3
-  # - tk=8.6.12
-  # - tzdata=2023c
-  # - wheel=0.41.2
-  # - xz=5.4.2
+  - pip:
+    - e ./python  # editable local clim-recal python package
 platforms:
   - osx-arm64
   - linux-64
