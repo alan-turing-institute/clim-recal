@@ -1,5 +1,5 @@
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from os import chdir
 from pathlib import Path
 from typing import Any, Final, Sequence, TypedDict
@@ -16,6 +16,7 @@ from .debiasing.debias_wrapper import (
     VariableOptions,
     climate_data_mount_path,
 )
+from .resample import CPMResampleManager, HADsUKResampleManager
 from .utils.core import product_dict
 
 DATA_PATH_DEFAULT: Final[Path] = climate_data_mount_path()
@@ -37,12 +38,62 @@ ClimRecalRunResultsType = dict[RunConfig, dict[str, subprocess.CompletedProcess]
 @dataclass
 class ClimRecalConfig(BaseRunConfig):
 
-    """Manage creating command line scripts to run `debiasing` `cli`."""
+    """Manage creating command line scripts to run `debiasing` `cli`.
+
+    Parameters
+    ----------
+    variables
+        Variables to include in the model, eg. `tasmax`, `tasmin`.
+    runs
+        Which model runs to include, eg. "01", "08", "11".
+    cities
+        Which cities to crop data to. Future plans facilitate
+        skipping to run for entire UK.
+    methods
+        Which debiasing methods to apply.
+    cpm_kwargs
+        A `dict` of parameters to pass to `CPMResampleManager`.
+    hads_kwargs
+        A `dict` of parameters to pass to `HADsUKResampleManager`.
+
+    Examples
+    --------
+    >>> if not is_data_mounted:
+    ...     pytest.skip(mount_doctest_skip_message)
+    >>> run_config: ClimRecalConfig = ClimRecalConfig(
+    ...     cities=('Manchester', 'Glasgow'),
+    ...     cpm_kwargs={'output_path': resample_cpm_output_path},
+    ...     hads_kwargs={'output_path': resample_hads_output_path})
+    >>> run_config
+    <ClimRecalConfig(variables=1, runs=1, cities=2, methods=1,
+                     cpm_files=100, hads_files=504)>
+    """
 
     variables: Sequence[VariableOptions] = (VariableOptions.default(),)
     runs: Sequence[RunOptions] = (RunOptions.default(),)
     cities: Sequence[CityOptions] | None = (CityOptions.default(),)
     methods: Sequence[MethodOptions] = (MethodOptions.default(),)
+    # cpm_raw_input_path: PathLike = RAW_CPM_PATH
+    # hads_raw_input_path: PathLike = RAW_CPM_PATH
+    cpm_kwargs: dict = field(default_factory=dict)
+    hads_kwargs: dict = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        """Initiate related `HADs` and `CPM` Mangers."""
+        self.cpm = CPMResampleManager(**self.cpm_kwargs)
+        self.hads = HADsUKResampleManager(**self.hads_kwargs)
+
+    def __repr__(self) -> str:
+        """Summary of `self` configuration as a `str`."""
+        return (
+            f"<{self.__class__.__name__}("
+            f"variables={len(self.variables)}, "
+            f"runs={len(self.runs)}, "
+            f"cities={len(self.cities) if self.cities else None}, "
+            f"methods={len(self.methods)}, "
+            f"cpm_files={len(self.cpm)}, "
+            f"hads_files={len(self.hads)})>"
+        )
 
     @property
     def model_vars(self) -> ClimRecalRunsConfigType:

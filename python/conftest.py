@@ -40,6 +40,7 @@ from clim_recal.utils.xarray import (
     xarray_example,
 )
 
+MOUNT_DOCTEST_SKIP_MESSAGE: Final[str] = "Can only run with mounted data files"
 # Date Range covering leap year
 XARRAY_END_DATE_4_DAYS: Final[str] = "1980-12-5"
 XARRAY_END_DATE_8_DAYS: Final[str] = "1980-12-10"
@@ -341,6 +342,13 @@ def doctest_auto_fixtures(
     doctest_namespace["glasgow_epsg_27700_bounds"] = glasgow_epsg_27700_bounds
     doctest_namespace["glasgow_shape_file_path"] = glasgow_shape_file_path
     doctest_namespace["resample_test_output_path"] = resample_test_runs_output_path
+    doctest_namespace["resample_hads_output_path"] = (
+        resample_test_runs_output_path / "hads"
+    )
+    doctest_namespace["resample_cpm_output_path"] = (
+        resample_test_runs_output_path / "cpm"
+    )
+    doctest_namespace["mount_doctest_skip_message"] = MOUNT_DOCTEST_SKIP_MESSAGE
     doctest_namespace["clim_runner"] = clim_runner
 
 

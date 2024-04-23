@@ -73,9 +73,10 @@ DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
 RESAMPLING_OUTPUT_PATH: Final[PathLike] = (
     CLIMATE_DATA_MOUNT_PATH / "Raw/python_refactor/"
 )
-RESAMPLING_HADS_RAW_PATH: Final[PathLike] = (
-    CLIMATE_DATA_MOUNT_PATH / "Raw/HadsUKgrid/tasmax/day/"
-)
+RAW_HADS_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/HadsUKgrid"
+RAW_CPM_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/CPM2.2/UKCP2.2"
+RAW_HADS_TASMAX_PATH: Final[PathLike] = RAW_HADS_PATH / "tasmax/day"
+RAW_CPM_TASMAX_PATH: Final[PathLike] = RAW_CPM_PATH / "tasmax/01/latest"
 REPROJECTED_CPM_INPUT_PATH: Final[PathLike] = (
     CLIMATE_DATA_MOUNT_PATH / "Reprojected_infill/UKCP2.2/tasmax/01/latest"
 )
@@ -505,10 +506,9 @@ class HADsUKResampleManager:
     Examples
     --------
     >>> if not is_data_mounted:
-    ...     pytest.skip('Can only run with mounted data files')
-    >>> from .utils.xarray import TIF_EXTENSION_STR
+    ...     pytest.skip(mount_doctest_skip_message)
     >>> hads_resampler: HADsUKResampleManager = HADsUKResampleManager(
-    ...     output_path=resample_test_output_path / 'hads',
+    ...     output_path=resample_hads_output_path,
     ... )
     >>> hads_resampler
     <HADsUKResampleManager(...count=504,...
@@ -521,7 +521,7 @@ class HADsUKResampleManager:
      ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_20211201-20211231.nc'))
     """
 
-    input_path: PathLike | None = RESAMPLING_HADS_RAW_PATH
+    input_path: PathLike | None = RAW_HADS_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / "hads"
     grid_data_path: PathLike | None = GLASGOW_GEOM_ABSOLUTE_PATH
     grid: GeoDataFrame | None = None
