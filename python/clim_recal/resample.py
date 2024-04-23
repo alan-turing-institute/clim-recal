@@ -24,7 +24,11 @@ from xarray import DataArray, Dataset, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import CFCalendar, InterpOptions
 
+from .utils.core import climate_data_mount_path
 from .utils.xarray import (
+    GLASGOW_GEOM_ABSOLUTE_PATH,
+    NETCDF_EXTENSION_STR,
+    TIF_EXTENSION_STR,
     BoundsTupleType,
     GDALFormatsType,
     XArrayEngineType,
@@ -36,6 +40,7 @@ logger = getLogger(__name__)
 DropDayType = set[tuple[int, int]]
 ChangeDayType = set[tuple[int, int]]
 
+CLIMATE_DATA_MOUNT_PATH: Path = climate_data_mount_path()
 MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
 """A `set` of tuples of month and day numbers for `enforce_date_changes`."""
 
@@ -65,7 +70,16 @@ CFCalendarSTANDARD: Final[str] = "standard"
 ConvertCalendarAlignOptions = Literal["date", "year", None]
 DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
 
-RESAMPLING_PATH: Final[PathLike] = Path("Raw/python_refactor/Reprojected_infill")
+RESAMPLING_OUTPUT_PATH: Final[PathLike] = (
+    CLIMATE_DATA_MOUNT_PATH / "Raw/python_refactor/"
+)
+RESAMPLING_HADS_RAW_PATH: Final[PathLike] = (
+    CLIMATE_DATA_MOUNT_PATH / "Raw/HadsUKgrid/tasmax/day/"
+)
+REPROJECTED_CPM_INPUT_PATH: Final[PathLike] = (
+    CLIMATE_DATA_MOUNT_PATH / "Reprojected_infill/UKCP2.2/tasmax/01/latest"
+)
+
 UK_SPATIAL_PROJECTION: Final[str] = "EPSG:27700"
 CPRUK_RESOLUTION: Final[int] = 2200
 CPRUK_RESAMPLING_METHOD: Final[str] = GRA_NearestNeighbour
@@ -73,6 +87,11 @@ ResamplingArgs = tuple[PathLike, np.ndarray, np.ndarray, PathLike]
 ResamplingCallable = Callable[[list | tuple], int]
 CPRUK_XDIM: Final[str] = "grid_longitude"
 CPRUK_YDIM: Final[str] = "grid_latitude"
+
+DEFAULT_X_GRID_COLUMN_NAME: Final[str] = "projection_x_coordinate"
+DEFAULT_Y_GRID_COLUMN_NAME: Final[str] = "projection_y_coordinate"
+
+NETCDF_OR_TIF = Literal[TIF_EXTENSION_STR, NETCDF_EXTENSION_STR]
 
 
 def geo_warp(
@@ -366,8 +385,8 @@ def crop_nc(
     )
 
 
-def resample_cruk(x: list | tuple) -> int:
-    """Resample CRUK data to match `UKHADs` spatially and temporally."""
+def resample_cpm(x: list | tuple) -> int:
+    """Resample CRUK CPM data to match `UKHADs` spatially and temporally."""
     pass
 
 
@@ -445,13 +464,13 @@ def resample_hadukgrid(x: list | tuple) -> int:
     return 0
 
 
-@dataclass
+@dataclass(kw_only=True)
 class HADsUKResampleManager:
     """Manage resampling HADsUK datafiles for modelling.
 
     Attributes
     ----------
-    input
+    input_path
         `Path` to `HADs` files to process.
     output
         `Path` to save processed `HADS` files.
@@ -459,83 +478,152 @@ class HADsUKResampleManager:
         `Path` to load to `self.grid`.
     grid
         `Dataset` of grid (either passed via `grid_data_path` or as a parameter).
-    input_nc_files
-        NCF files to process with `self.grid` etc.
+    input_files
+        NCF or TIF files to process with `self.grid` etc.
     cpus
         Number of `cpu` cores to use during multiprocessing.
     resampling_func
-        Function to call on `self.input_nc_files` with `self.grid`
+        Function to call on `self.input_files` with `self.grid`
+    crop
+        Path or file to spatially crop `input_files` with.
+    final_crs
+        Coordinate Reference System (CRS) to return final format in.
+    grid_x_column_name
+        Column name in `input_files` or `input` for `x` coordinates.
+    grid_y_column_name
+        Column name in `input_files` or `input` for `y` coordinates.
+    input_file_extension
+        File extensions to glob `input_files` with.
+
+    Todo
+    ----
+    - Try time projection first
+    - Then space
+    - then crop
+
 
     Examples
     --------
     >>> if not is_data_mounted:
     ...     pytest.skip('Can only run with mounted data files')
+    >>> from .utils.xarray import TIF_EXTENSION_STR
     >>> hads_resampler: HADsUKResampleManager = HADsUKResampleManager(
-    ...     input=data_fixtures_path,
-    ...     output=resample_test_output_path,
-    ...     grid_data_path=glasgow_shape_file_path,
+    ...     output_path=resample_test_output_path / 'hads',
     ... )
-    Grid file: .../tests/data/Glasgow/Glasgow.shp produced errors: 'projection_x_coordinate'
-    >>> pprint(hads_resampler.input_nc_files)
-    ('tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
-     'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19841201-19851130.nc',
-     'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19811201-19821130.nc',
-     'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19831201-19841130.nc',
-     'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc')
+    >>> hads_resampler
+    <HADsUKResampleManager(...count=504,...
+        ...input_path='.../tasmax/day',...
+        ...output_path='.../resample/runs/hads')>
+    >>> pprint(hads_resampler.input_files)
+    (...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc'),
+     ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800201-19800229.nc'),
+     ...,
+     ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_20211201-20211231.nc'))
     """
 
-    input: PathLike | None
-    output: PathLike
-    grid_data_path: PathLike | None
-    grid: Dataset | None = None
-    input_nc_files: Iterable[PathLike] | None = None
+    input_path: PathLike | None = RESAMPLING_HADS_RAW_PATH
+    output_path: PathLike = RESAMPLING_OUTPUT_PATH / "hads"
+    grid_data_path: PathLike | None = GLASGOW_GEOM_ABSOLUTE_PATH
+    grid: GeoDataFrame | None = None
+    input_files: Iterable[PathLike] | None = None
     cpus: int | None = None
     resampling_func: ResamplingCallable = resample_hadukgrid
     crop: PathLike | GeoDataFrame | None = None
     final_crs: str = UK_SPATIAL_PROJECTION
+    grid_x_column_name: str = DEFAULT_X_GRID_COLUMN_NAME
+    grid_y_column_name: str = DEFAULT_Y_GRID_COLUMN_NAME
+    input_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
 
     def __len__(self) -> int:
-        """Return the length of `self.input_nc_files`."""
-        return len(self.input_nc_files) if self.input_nc_files else 0
+        """Return the length of `self.input_files`."""
+        return len(self.input_files) if self.input_files else 0
 
-    def set_input_nc_files(self, new_input_path: PathLike | None = None) -> None:
-        """Replace `self.input` and process `self.input_nc_files`."""
+    def set_input_files(self, new_input_path: PathLike | None = None) -> None:
+        """Replace `self.input` and process `self.input_files`."""
         if new_input_path:
             self.input = new_input_path
-        if not self.input_nc_files:
-            self.input_nc_files = tuple(glob(f"{self.input}/*.nc", recursive=True))
+        if not self.input_files:
+            self.input_files = tuple(
+                Path(path)
+                for path in glob(
+                    f"{self.input_path}/*.{self.input_file_extension}", recursive=True
+                )
+            )
 
-    def set_grid_x_y(self, new_grid_data_path: PathLike | None = None) -> None:
-        if new_grid_data_path:
-            self.grid_data_path = new_grid_data_path
-        if not self.grid:
-            self.grid = read_file(self.grid_data_path)
-        try:
-            # must have dimensions named projection_x_coordinate and projection_y_coordinate
-            self.x: np.ndarray = self.grid["projection_x_coordinate"][:].values
-            self.y: np.ndarray = self.grid["projection_y_coordinate"][:].values
-        except Exception as e:
-            print(f"Grid file: {self.grid_data_path} produced errors: {e}")
+    def __repr__(self) -> str:
+        """Summary of `self` configuration as a `str`."""
+        return f"<{self.__class__.__name__}(count={len(self)}, input_path='{self.input_path}', output_path='{self.output_path}')>"
 
     def __post_init__(self) -> None:
         """Generate related attributes."""
-        self.set_grid_x_y()
-        self.set_input_nc_files()
-        Path(self.output).mkdir(parents=True, exist_ok=True)
+        try:
+            assert self.input_path or self.input_files
+        except AssertionError:
+            raise AttributeError(
+                f"'input_path' or 'input_file' are None; at least one must be set."
+            )
+        # self.set_grid_x_y()
+        self.set_grid()
+        self.set_input_files()
+        Path(self.output_path).mkdir(parents=True, exist_ok=True)
         self.total_cpus: int | None = os.cpu_count()
         if not self.cpus:
             self.cpus = 1 if not self.total_cpus else self.total_cpus
 
+    def set_grid(self, new_grid_data_path: PathLike | None = None) -> None:
+        """Set check and set (if necessary) `grid` attribute of `self`.
+
+        Parameters
+        ----------
+        new_grid_data_path
+            New `Path` to set `self.grid_data_path` to and use in loading for `self.grid`.
+        """
+        if new_grid_data_path:
+            self.grid_data_path = new_grid_data_path
+        if not self.grid_data_path and not self.grid:
+            raise ValueError(f"'grid' or a valid 'grid_data_path' are required.")
+        if not self.grid:
+            self.grid = read_file(self.grid_data_path)
+        assert isinstance(self.grid, GeoDataFrame)
+
+    def set_grid_x_y(
+        self,
+        grid_x_column_name: str | None = None,
+        grid_y_column_name: str | None = None,
+    ) -> None:
+        """Set the `x` `y` values via `grid_x_column_name` and `grid_y_column_name`.
+
+        Parameters
+        ----------
+        grid_x_column_name
+            Name of column in `self.grid` `Dataset` to extract to `self.x`.
+            If `None` use `self.grid_x_column_name`, else overwrite.
+        grid_y_column_name
+            Name of column in `self.grid` `Dataset` to extract to `self.y`.
+            If `None` use `self.grid_y_column_name`, else overwrite.
+        """
+        if not self.grid:
+            self.set_grid()
+        assert isinstance(self.grid, Dataset)
+        self.grid_x_column_name = grid_x_column_name or self.grid_x_column_name
+        self.grid_y_column_name = grid_y_column_name or self.grid_y_column_name
+        # try:
+        #     # must have dimensions named projection_x_coordinate and projection_y_coordinate
+        self.x: np.ndarray = self.grid[self.grid_x_column_name][:].values
+        self.y: np.ndarray = self.grid[self.grid_y_column_name][:].values
+        # except Exception as e:
+        #     print(f"Grid file: {self.grid_data_path} produced errors: {e}")
+
     @property
     def resample_args(self) -> Iterator[ResamplingArgs]:
         """Return args to pass to `self.resample`."""
-        if not self.input_nc_files:
-            self.set_input_nc_files()
-        if not self.x or not self.y:
-            self.set_grid_x_y()
-        assert self.input_nc_files
-        for f in self.input_nc_files:
-            yield f, self.x, self.x, self.output
+        if not self.input_files:
+            self.set_input_files()
+        # if not self.x or not self.y:
+        #     self.set_grid_x_y()
+        assert self.input_files
+        for f in self.input_files:
+            yield f, self.x, self.x, self.output_path
 
     def resample_multiprocessing(self) -> list[int]:
         """Run `self.resampling_func` via `multiprocessing`."""
@@ -550,9 +638,60 @@ class HADsUKResampleManager:
         return self.results
 
 
-@dataclass
+@dataclass(kw_only=True, repr=False)
 class CPMResampleManager(HADsUKResampleManager):
-    resampling_func: ResamplingCallable = resample_hadukgrid
+    """CPM specific changes to HADsUKResampleManager.
+
+    Attributes
+    ----------
+    input_path
+        `Path` to `CPM` files to process.
+    output
+        `Path` to save processed `CPM` files.
+    grid_data_path
+        `Path` to load to `self.grid`.
+    grid
+        `Dataset` of grid (either passed via `grid_data_path` or as a parameter).
+    input_files
+        NCF or TIF files to process with `self.grid` etc.
+    cpus
+        Number of `cpu` cores to use during multiprocessing.
+    resampling_func
+        Function to call on `self.input_files` with `self.grid`
+    crop
+        Path or file to spatially crop `input_files` with.
+    final_crs
+        Coordinate Reference System (CRS) to return final format in.
+    grid_x_column_name
+        Column name in `input_files` or `input` for `x` coordinates.
+    grid_y_column_name
+        Column name in `input_files` or `input` for `y` coordinates.
+    input_file_extension
+        File extensions to glob `input_files` with.
+
+    Examples
+    --------
+    >>> if not is_data_mounted:
+    ...     pytest.skip('Can only run with mounted data files')
+    >>> cpm_resampler: CPMResampleManager = CPMResampleManager(
+    ...     output_path=resample_test_output_path / 'cpm',
+    ... )
+    >>> cpm_resampler
+    <CPMResampleManager(...count=100,...
+        ...input_path='.../tasmax/01/latest',...
+        ...output_path='.../resample/runs/cpm')>
+    >>> pprint(cpm_resampler.input_files)
+    (...Path('.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_19801201-19811130.tif'),
+     ...Path('.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_19811201-19821130.tif'),
+     ...,
+     ...Path('.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_20791201-20801130.tif'))
+
+    """
+
+    input_path: PathLike | None = REPROJECTED_CPM_INPUT_PATH
+    output_path: PathLike = RESAMPLING_OUTPUT_PATH / "cpm"
+    resampling_func: ResamplingCallable = resample_cpm
+    input_file_extension: NETCDF_OR_TIF = TIF_EXTENSION_STR
 
     # if not os.path.exists(parser_args.output):
     #     os.makedirs(parser_args.output)
@@ -594,20 +733,20 @@ if __name__ == "__main__":
 
     # Adding arguments
     parser.add_argument(
-        "--input",
+        "--input-path",
         help="Path where the .nc files to resample is located",
         required=True,
         type=str,
     )
     parser.add_argument(
-        "--grid_data",
+        "--grid-data-path",
         help="Path where the .nc file with the grid to resample is located",
         required=False,
         type=str,
         default="../../data/rcp85_land-cpm_uk_2.2km_grid.nc",
     )
     parser.add_argument(
-        "--output",
+        "--output-path",
         help="Path to save the resampled data data",
         required=False,
         default=".",
@@ -615,9 +754,9 @@ if __name__ == "__main__":
     )
     parser_args = parser.parse_args()
     hads_run_manager = HADsUKResampleManager(
-        input=parser_args.input,
-        grid_data=parser_args.grid_data,
-        output=parser_args.output,
+        input_path=parser_args.input_path,
+        grid_data_path=parser_args.grid_data_path,
+        output_path=parser_args.output,
     )
     res = hads_run_manager.resample_multiprocessing()
 

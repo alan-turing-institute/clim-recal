@@ -15,7 +15,13 @@ from pathlib import Path
 import numpy as np
 
 #sys.path.insert(1, "../load_data")
-from ..data_loader import load_data, DateRange
+try:
+    from ..data_loader import load_data, DateRange
+except ImportError:
+    try:
+        from clim_recal.data_loader import load_data, DateRange
+    except ImportError as err:
+        raise err
 
 # * ----- L O G G I N G -----
 formatter = logging.Formatter(

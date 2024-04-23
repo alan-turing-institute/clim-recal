@@ -8,7 +8,12 @@ from pandas import to_datetime
 from xarray import DataArray, Dataset
 from xarray.backends.api import ENGINES
 
-from .core import ISO_DATE_FORMAT_STR, DateType, date_range_generator
+from .core import (
+    ISO_DATE_FORMAT_STR,
+    DateType,
+    climate_data_mount_path,
+    date_range_generator,
+)
 
 GLASGOW_COORDS: Final[tuple[float, float]] = (55.86279, -4.25424)
 MANCHESTER_COORDS: Final[tuple[float, float]] = (53.48095, -2.23743)
@@ -28,6 +33,9 @@ XARRAY_EXAMPLE_END_DATE_4_YEARS: Final[str] = "1984-11-30"
 
 GLASGOW_GEOM_LOCAL_PATH: Final[Path] = Path(
     "shapefiles/three.cities/Glasgow/Glasgow.shp"
+)
+GLASGOW_GEOM_ABSOLUTE_PATH: Final[Path] = (
+    climate_data_mount_path() / GLASGOW_GEOM_LOCAL_PATH
 )
 
 BoundsTupleType = tuple[float, float, float, float]
@@ -316,7 +324,10 @@ GDALFormatsType = Literal[
 GDALGeoTiffFormatStr: Final[str] = "GTiff"
 GDALNetCDFFormatStr: Final[str] = "netCDF"
 
+TIF_EXTENSION_STR: Final[str] = "tif"
+NETCDF_EXTENSION_STR: Final[str] = "nc"
+
 GDALFormatExtensions: Final[dict[str, str]] = {
-    GDALGeoTiffFormatStr: "tif",
-    GDALNetCDFFormatStr: "nc",
+    GDALGeoTiffFormatStr: TIF_EXTENSION_STR,
+    GDALNetCDFFormatStr: NETCDF_EXTENSION_STR,
 }
