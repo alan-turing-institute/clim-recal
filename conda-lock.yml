@@ -15,9 +15,9 @@
 version: 1
 metadata:
   content_hash:
-    osx-arm64: 095feac71364eff1316963c2b4d7bc44390dedf37e1529acaac6902b646fe0a7
-    linux-64: 20578929b87c35df3bca0e0eaa57c3a5bef6429595916b26e7b3fdb6621acf9b
-    linux-aarch64: fb6b45456f2fcb7d5a4ce88310a8f38930c053f20602b2dba3cd0bb8af7f4b73
+    osx-arm64: b83e16eec19aece3db3ade8315d18a3cfffe76e9430454a817b47a5369f58146
+    linux-64: bcdc27aa8ab6468746e78b4ee242332dbd20bea6e66e9ad4e381fc05367ab2f1
+    linux-aarch64: b32aae1e0bffbdf98c1c140fc8c58ecd5632a065961b1b6a23aec852be624985
   channels:
   - url: r
     used_env_vars: []
@@ -10350,48 +10350,6 @@ package:
     sha256: 756788e2fa2088131da13cfaf923e33b8e5411fa07cac01eba7dfc95ef769920
   category: main
   optional: false
-- name: pip
-  version: 23.3.1
-  manager: conda
-  platform: linux-64
-  dependencies:
-    python: '>=3.11,<3.12.0a0'
-    setuptools: ''
-    wheel: ''
-  url: https://repo.anaconda.com/pkgs/main/linux-64/pip-23.3.1-py311h06a4308_0.conda
-  hash:
-    md5: 6fdb2a3c731f093b0014450a071c7f7f
-    sha256: 245dfbf9ec278e63671a8eb87e78e9919c0e771df9d46282bb267d7322cfb8b9
-  category: main
-  optional: false
-- name: pip
-  version: 23.3.1
-  manager: conda
-  platform: linux-aarch64
-  dependencies:
-    python: '>=3.11,<3.12.0a0'
-    setuptools: ''
-    wheel: ''
-  url: https://repo.anaconda.com/pkgs/main/linux-aarch64/pip-23.3.1-py311hd43f75c_0.conda
-  hash:
-    md5: 681b069e83368782d17bf9c475a7d729
-    sha256: aa968afd7bed2e22221abd4d4fd48c69c817eae14fe57116eeae21f066d9ac2a
-  category: main
-  optional: false
-- name: pip
-  version: 23.3.1
-  manager: conda
-  platform: osx-arm64
-  dependencies:
-    python: '>=3.11,<3.12.0a0'
-    setuptools: ''
-    wheel: ''
-  url: https://repo.anaconda.com/pkgs/main/osx-arm64/pip-23.3.1-py311hca03da5_0.conda
-  hash:
-    md5: 7e96f7f49e5cde3afb0faf6473075a36
-    sha256: 02913b52ba51aeb375808ea5b0c107bd7c1d1dc1b69e5b8dd6d692b488ba2090
-  category: main
-  optional: false
 - name: pixman
   version: 0.43.2
   manager: conda
@@ -14665,42 +14623,6 @@ package:
   hash:
     md5: 491159d1f134d202d45e063449044d89
     sha256: 02de830d5b2a61210b01037144eb3066d7cc31278ac88a2cac09b446b6c0a0f4
-  category: main
-  optional: false
-- name: wheel
-  version: 0.41.2
-  manager: conda
-  platform: linux-64
-  dependencies:
-    python: '>=3.11,<3.12.0a0'
-  url: https://repo.anaconda.com/pkgs/main/linux-64/wheel-0.41.2-py311h06a4308_0.conda
-  hash:
-    md5: 2d4ff85d3dfb7749ae0485ee148d4ea5
-    sha256: f5f1bb77fb1216a12e8c053e5724d31f416041c299a48b8029b147ac4ce8c365
-  category: main
-  optional: false
-- name: wheel
-  version: 0.41.2
-  manager: conda
-  platform: linux-aarch64
-  dependencies:
-    python: '>=3.11,<3.12.0a0'
-  url: https://repo.anaconda.com/pkgs/main/linux-aarch64/wheel-0.41.2-py311hd43f75c_0.conda
-  hash:
-    md5: c0d5dbecde9fb87a4ba4cfe62f8483b5
-    sha256: 023807d08b672378d55a8357e34704770bcf27ed9688b69e25a306cb6e5f1bd5
-  category: main
-  optional: false
-- name: wheel
-  version: 0.41.2
-  manager: conda
-  platform: osx-arm64
-  dependencies:
-    python: '>=3.11,<3.12.0a0'
-  url: https://repo.anaconda.com/pkgs/main/osx-arm64/wheel-0.41.2-py311hca03da5_0.conda
-  hash:
-    md5: 546bf47c4c259b31163b3bc3a4b4f287
-    sha256: 32e99e206b408b111c1bd3d025e98ffc7d5a4978032a88f10a0ffa0c4be8ad29
   category: main
   optional: false
 - name: xarray
