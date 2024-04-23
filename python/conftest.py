@@ -271,6 +271,7 @@ def uk_epsg_27700_bounds() -> BoundsTupleType:
     )
 
 
+@pytest.mark.mount
 @pytest.fixture
 def clim_runner(tmp_path) -> ClimRecalConfig:
     """Return default `ClimRecalConfig`."""

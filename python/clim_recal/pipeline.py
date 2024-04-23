@@ -83,12 +83,48 @@ New approach:
 
 """
 from pathlib import Path
-from typing import Any, Final
+from typing import Final, Sequence
+
+from rich import print
+
+from .config import (
+    CityOptions,
+    ClimRecalConfig,
+    ClimRecalRunResultsType,
+    MethodOptions,
+    RunOptions,
+    VariableOptions,
+)
 
 REPROJECTION_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_one.sh")
 REPROJECTION_WRAPPER_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_all.sh")
 
 
-def main(**kwargs) -> dict[str, Any]:
-    """Run all elements of the pipeline."""
-    pass
+def main(
+    variables: Sequence[VariableOptions] = (VariableOptions.default(),),
+    cities: Sequence[CityOptions] | None = (CityOptions.default(),),
+    runs: Sequence[RunOptions] = (RunOptions.default(),),
+    methods: Sequence[MethodOptions] = (MethodOptions.default(),),
+    **kwargs,
+) -> ClimRecalRunResultsType:
+    """Run all elements of the pipeline.
+
+    Parameters
+    ----------
+    variables
+        Variables to include in the model, eg. `tasmax`, `tasmin`.
+    runs
+        Which model runs to include, eg. "01", "08", "11".
+    cities
+        Which cities to crop data to. Future plans facilitate
+        skipping to run for entire UK.
+    methods
+        Which debiasing methods to apply.
+    **kwargs
+        Additional parameters to pass to a `ClimRecalConfig`.
+    """
+    config: ClimRecalConfig = ClimRecalConfig(
+        variables=variables, cities=cities, methods=methods, runs=runs, **kwargs
+    )
+    print(config)
+    # config.cpm.resample_multiprocessing()

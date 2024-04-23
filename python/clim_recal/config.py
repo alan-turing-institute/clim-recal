@@ -40,7 +40,7 @@ class ClimRecalConfig(BaseRunConfig):
 
     """Manage creating command line scripts to run `debiasing` `cli`.
 
-    Parameters
+    Attributes
     ----------
     variables
         Variables to include in the model, eg. `tasmax`, `tasmin`.

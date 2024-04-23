@@ -15,9 +15,9 @@
 version: 1
 metadata:
   content_hash:
-    osx-arm64: b83e16eec19aece3db3ade8315d18a3cfffe76e9430454a817b47a5369f58146
-    linux-64: bcdc27aa8ab6468746e78b4ee242332dbd20bea6e66e9ad4e381fc05367ab2f1
-    linux-aarch64: b32aae1e0bffbdf98c1c140fc8c58ecd5632a065961b1b6a23aec852be624985
+    osx-arm64: 8a88ba6158cc6590c5477769d4480eae9f6855e86d80d6d4a49dc3fdd892659a
+    linux-64: 7c404a55d66a2d7b79e7e19c238899df0ba9a2a57f28c371d7171765d50b6449
+    linux-aarch64: 3d7e686637f40d9ed58af485066b3abfd2d1d44729de9423b084d0fbec077dc4
   channels:
   - url: r
     used_env_vars: []
@@ -14062,6 +14062,129 @@ package:
   hash:
     md5: 9badb874aa7dcc11d0fd8f962390f721
     sha256: 3269a8c858f0e2ce542719cbcf15ba463544649b0da055ef940071c88bbdab80
+  category: main
+  optional: false
+- name: typer
+  version: 0.12.3
+  manager: conda
+  platform: linux-64
+  dependencies:
+    python: '>=3.7'
+    typer-slim-standard: 0.12.3
+  url: https://conda.anaconda.org/conda-forge/noarch/typer-0.12.3-pyhd8ed1ab_0.conda
+  hash:
+    md5: 10efd02b22c39c0a46312ef7cb16d237
+    sha256: b8b182303858c512fa04f38a3123c892958f708d2ae90afd35246da7c4829485
+  category: main
+  optional: false
+- name: typer
+  version: 0.12.3
+  manager: conda
+  platform: linux-aarch64
+  dependencies:
+    python: '>=3.7'
+    typer-slim-standard: 0.12.3
+  url: https://conda.anaconda.org/conda-forge/noarch/typer-0.12.3-pyhd8ed1ab_0.conda
+  hash:
+    md5: 10efd02b22c39c0a46312ef7cb16d237
+    sha256: b8b182303858c512fa04f38a3123c892958f708d2ae90afd35246da7c4829485
+  category: main
+  optional: false
+- name: typer
+  version: 0.12.3
+  manager: conda
+  platform: osx-arm64
+  dependencies:
+    python: '>=3.7'
+    typer-slim-standard: 0.12.3
+  url: https://conda.anaconda.org/conda-forge/noarch/typer-0.12.3-pyhd8ed1ab_0.conda
+  hash:
+    md5: 10efd02b22c39c0a46312ef7cb16d237
+    sha256: b8b182303858c512fa04f38a3123c892958f708d2ae90afd35246da7c4829485
+  category: main
+  optional: false
+- name: typer-slim
+  version: 0.12.3
+  manager: conda
+  platform: linux-64
+  dependencies:
+    click: '>=8.0.0'
+    python: '>=3.7'
+    typing_extensions: '>=3.7.4.3'
+  url: https://conda.anaconda.org/conda-forge/noarch/typer-slim-0.12.3-pyhd8ed1ab_0.conda
+  hash:
+    md5: cf2c3a89f89644c53cadbfeb124914e9
+    sha256: 01dcb54375c8eae54d13374ed3d5823635401c552340b87e67fdbbb507760596
+  category: main
+  optional: false
+- name: typer-slim
+  version: 0.12.3
+  manager: conda
+  platform: linux-aarch64
+  dependencies:
+    click: '>=8.0.0'
+    python: '>=3.7'
+    typing_extensions: '>=3.7.4.3'
+  url: https://conda.anaconda.org/conda-forge/noarch/typer-slim-0.12.3-pyhd8ed1ab_0.conda
+  hash:
+    md5: cf2c3a89f89644c53cadbfeb124914e9
+    sha256: 01dcb54375c8eae54d13374ed3d5823635401c552340b87e67fdbbb507760596
+  category: main
+  optional: false
+- name: typer-slim
+  version: 0.12.3
+  manager: conda
+  platform: osx-arm64
+  dependencies:
+    click: '>=8.0.0'
+    python: '>=3.7'
+    typing_extensions: '>=3.7.4.3'
+  url: https://conda.anaconda.org/conda-forge/noarch/typer-slim-0.12.3-pyhd8ed1ab_0.conda
+  hash:
+    md5: cf2c3a89f89644c53cadbfeb124914e9
+    sha256: 01dcb54375c8eae54d13374ed3d5823635401c552340b87e67fdbbb507760596
+  category: main
+  optional: false
+- name: typer-slim-standard
+  version: 0.12.3
+  manager: conda
+  platform: linux-64
+  dependencies:
+    rich: ''
+    shellingham: ''
+    typer-slim: 0.12.3
+  url: https://conda.anaconda.org/conda-forge/noarch/typer-slim-standard-0.12.3-hd8ed1ab_0.conda
+  hash:
+    md5: 8e56b98837d17e6ace4dc455d905709a
+    sha256: 06e2f8ca7e3f7168a39d3d2cc62ee1e220928e1e5a4370f4ade2566342c4a459
+  category: main
+  optional: false
+- name: typer-slim-standard
+  version: 0.12.3
+  manager: conda
+  platform: linux-aarch64
+  dependencies:
+    rich: ''
+    shellingham: ''
+    typer-slim: 0.12.3
+  url: https://conda.anaconda.org/conda-forge/noarch/typer-slim-standard-0.12.3-hd8ed1ab_0.conda
+  hash:
+    md5: 8e56b98837d17e6ace4dc455d905709a
+    sha256: 06e2f8ca7e3f7168a39d3d2cc62ee1e220928e1e5a4370f4ade2566342c4a459
+  category: main
+  optional: false
+- name: typer-slim-standard
+  version: 0.12.3
+  manager: conda
+  platform: osx-arm64
+  dependencies:
+    rich: ''
+    shellingham: ''
+    typer-slim: 0.12.3
+  url: https://conda.anaconda.org/conda-forge/noarch/typer-slim-standard-0.12.3-hd8ed1ab_0.conda
+  hash:
+    md5: 8e56b98837d17e6ace4dc455d905709a
+    sha256: 06e2f8ca7e3f7168a39d3d2cc62ee1e220928e1e5a4370f4ade2566342c4a459
   category: main
   optional: false
 - name: typing-extensions
