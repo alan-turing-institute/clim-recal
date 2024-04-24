@@ -20,13 +20,18 @@ from geopandas import GeoDataFrame, read_file
 from osgeo.gdal import Dataset as GDALDataset
 from osgeo.gdal import GRA_NearestNeighbour, Warp, WarpOptions
 from tqdm import tqdm
-from xarray import DataArray, Dataset, open_dataset
+from xarray import DataArray, Dataset, cftime_range, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import CFCalendar, InterpOptions
 
-from .utils.core import climate_data_mount_path
+from .utils.core import (
+    CLI_DATE_FORMAT_STR,
+    ISO_DATE_FORMAT_STR,
+    climate_data_mount_path,
+)
 from .utils.xarray import (
     GLASGOW_GEOM_ABSOLUTE_PATH,
+    NETCDF4_XARRAY_ENGINE,
     NETCDF_EXTENSION_STR,
     TIF_EXTENSION_STR,
     BoundsTupleType,
@@ -74,10 +79,10 @@ RESAMPLING_OUTPUT_PATH: Final[PathLike] = (
     CLIMATE_DATA_MOUNT_PATH / "Raw/python_refactor/"
 )
 RAW_HADS_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/HadsUKgrid"
-RAW_CPM_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/CPM2.2/UKCP2.2"
+RAW_CPM_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/UKCP2.2"
 RAW_HADS_TASMAX_PATH: Final[PathLike] = RAW_HADS_PATH / "tasmax/day"
 RAW_CPM_TASMAX_PATH: Final[PathLike] = RAW_CPM_PATH / "tasmax/01/latest"
-REPROJECTED_CPM_INPUT_PATH: Final[PathLike] = (
+REPROJECTED_CPM_TASMAX_01_LATEST_INPUT_PATH: Final[PathLike] = (
     CLIMATE_DATA_MOUNT_PATH / "Reprojected_infill/UKCP2.2/tasmax/01/latest"
 )
 
@@ -86,6 +91,7 @@ CPRUK_RESOLUTION: Final[int] = 2200
 CPRUK_RESAMPLING_METHOD: Final[str] = GRA_NearestNeighbour
 ResamplingArgs = tuple[PathLike, np.ndarray, np.ndarray, PathLike]
 ResamplingCallable = Callable[[list | tuple], int]
+STANDARD_CALENDAR_PATH: Final[Path] = Path("cpm-standard-calendar")
 CPRUK_XDIM: Final[str] = "grid_longitude"
 CPRUK_YDIM: Final[str] = "grid_latitude"
 
@@ -152,13 +158,16 @@ def geo_warp(
     Examples
     --------
     >>> if not is_data_mounted:
-    ...     pytest.skip("requires external data mounted")
+    ...     pytest.skip(mount_doctest_skip_message)
+    >>> from .utils.xarray import GDALNetCDFFormatStr
+    >>> test_nc_file: Path = Path(
+    ...     'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc')
     >>> warped_cpm = geo_warp(
     ...     input_path = (
-    ...         data_mount_path /
+    ...         RAW_CPM_TASMAX_PATH /
     ...         'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc'),
-    ...     output_path = resample_test_output_path,
-    ...     output_format=GDALNetCDFFormatStr)
+    ...     output_path = resample_test_output_path / test_nc_file,
+    ...     format=GDALNetCDFFormatStr)
     >>> warped_cpm is not None
     True
     """
@@ -185,7 +194,7 @@ def geo_warp(
 
 
 def convert_xr_calendar(
-    xr_time_series: DataArray | Dataset,
+    xr_time_series: DataArray | Dataset | PathLike,
     align_on: ConvertCalendarAlignOptions = DEFAULT_CALENDAR_ALIGN,
     calendar: CFCalendar = CFCalendarSTANDARD,
     use_cftime: bool = False,
@@ -195,6 +204,8 @@ def convert_xr_calendar(
     interpolate_method: InterpOptions = DEFAULT_INTERPOLATION_METHOD,
     keep_attrs: bool = True,
     limit: int = 1,
+    engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
+    extrapolate_fill_value: bool = True,
     **kwargs,
 ) -> Dataset | DataArray:
     """Convert cpm 360 day time series to HADs 365 day time series.
@@ -224,6 +235,12 @@ def convert_xr_calendar(
         Whether to keep all attributes on after `interpolate_na`
     limit
         Limit of number of continuous missing day values allowed in `interpolate_na`.
+    engine
+        Which `XArrayEngineType` to use in parsing files and operations.
+    extrapolate_fill_value
+        If `True`, then pass `fill_value=extrapolate`. See:
+         * https://docs.xarray.dev/en/stable/generated/xarray.Dataset.interpolate_na.html
+         * https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html#scipy.interpolate.interp1d
     **kwargs
         Any additional parameters to pass to `interpolate_na`.
 
@@ -237,6 +254,13 @@ def convert_xr_calendar(
     :
         Converted `xr_time_series` to specified `calendar`
         with optional interpolation.
+
+    Notes
+    -------
+    Certain values may fail to interpolate in cases of 360 -> 365/366
+    (Gregorian) calendar. Examples include projecting CPM data, which is
+    able to fill in measurement values (e.g. `tasmax`) but the `year`
+    and `month_number` variables have `nan` values
 
     Examples
     --------
@@ -266,6 +290,13 @@ def convert_xr_calendar(
        ...
     ValueError: `date_range_like` was unable to generate a range as the source frequency was not inferable.
     """
+    if isinstance(xr_time_series, PathLike):
+        if Path(xr_time_series).suffix.endswith(NETCDF_EXTENSION_STR):
+            xr_time_series = open_dataset(
+                xr_time_series, decode_coords="all", engine=engine
+            )
+        else:
+            xr_time_series = open_dataset(xr_time_series, engine=engine)
     if ensure_output_type_is_dataset:
         xr_time_series = ensure_xr_dataset(xr_time_series)
     calendar_converted_ts: Dataset | DataArray = convert_calendar(
@@ -278,6 +309,8 @@ def convert_xr_calendar(
     if not interpolate_na:
         return calendar_converted_ts
     else:
+        if extrapolate_fill_value:
+            kwargs["fill_value"] = "extrapolate"
         return calendar_converted_ts.interpolate_na(
             dim="time",
             method=interpolate_method,
@@ -287,13 +320,40 @@ def convert_xr_calendar(
         )
 
 
+def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> Dataset:
+    """Convert a CPM `nc` file of 360 day calendars to standard calendar.
+
+    Parameters
+    ----------
+    cpm_xr_time_series
+        A raw `xarray` of the form provided by CPM.
+    """
+    xr_std_calendar: Dataset = convert_xr_calendar(
+        cpm_xr_time_series, interpolate_na=True
+    )
+    time_bnds_fix: DataArray = cftime_range(
+        xr_std_calendar.time.dt.strftime(ISO_DATE_FORMAT_STR).values[0],
+        xr_std_calendar.time.dt.strftime(ISO_DATE_FORMAT_STR).values[-1],
+    )
+    xr_std_calendar["time_bnds"] = time_bnds_fix
+    xr_std_calendar["month_number"] = xr_std_calendar.month_number.interpolate_na(
+        "time", fill_value="extrapolate"
+    )
+    xr_std_calendar["year"] = xr_std_calendar.year.interpolate_na(
+        "time", fill_value="extrapolate"
+    )
+    yyyymmdd_fix: DataArray = xr_std_calendar.time.dt.strftime(CLI_DATE_FORMAT_STR)
+    xr_std_calendar["yyyymmdd"] = yyyymmdd_fix
+    return xr_std_calendar
+
+
 def reproject_xarray_by_crs(
     xr_time_series: Dataset,
     crs: str,
     enforce_xarray_spatial_dims: bool = True,
     xr_spatial_xdim: str = CPRUK_XDIM,
     xr_spatial_ydim: str = CPRUK_YDIM,
-    engine: XArrayEngineType = CPRUK_RESAMPLING_METHOD,
+    engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
 ) -> Dataset:
     if isinstance(xr_time_series, PathLike | str):
         xr_time_series = open_dataset(
@@ -354,10 +414,11 @@ def crop_nc(
 
     Examples
     --------
+    >>> pytest.skip('Refactor needed, may be removed.')
     >>> if not is_data_mounted:
-    ...     pytest.skip('Can only run with mounted data files')
+    ...     pytest.skip(mount_doctest_skip_message)
     >>> cropped = crop_nc(
-    ...     data_fixtures_path /
+    ...     RAW_CPM_TASMAX_PATH /
     ...     'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
     ...     crop_geom=glasgow_shape_file_path, invert=True)
     >>> cropped.rio.bounds() == glasgow_epsg_27700_bounds
@@ -388,7 +449,23 @@ def crop_nc(
 
 def resample_cpm(x: list | tuple) -> int:
     """Resample CRUK CPM data to match `UKHADs` spatially and temporally."""
-    pass
+    # due to the multiprocessing implementations inputs come as list
+    file: Path = Path(x[0])
+    x_grid: np.ndarray = x[1]
+    y_grid: np.ndarray = x[2]
+    output_dir: Path = Path(x[3])
+    file_name: str = file.name
+    output_name = f"{'_'.join(file_name.split('_')[:-1])}_2.2km_resampled_{file_name.split('_')[-1]}"
+    if (output_dir / output_name).exists():
+        print(f"File: {output_name} already exists in this directory. Skipping.")
+        return 0
+
+    # files have the variable name as input (e.g. tasmax_hadukgrid_uk_1km_day_20211101-20211130.nc)
+    variable = file_name.split("_")[0]
+
+    data = open_dataset(file, decode_coords="all")
+    xr_360_to_365_datetime64: Dataset = convert_xr_calendar(xr_time_series=data)
+    assert False
 
 
 def resample_hadukgrid(x: list | tuple) -> int:
@@ -508,7 +585,7 @@ class HADsUKResampleManager:
     >>> if not is_data_mounted:
     ...     pytest.skip(mount_doctest_skip_message)
     >>> hads_resampler: HADsUKResampleManager = HADsUKResampleManager(
-    ...     output_path=resample_hads_output_path,
+    ...     output_path=resample_test_hads_output_path,
     ... )
     >>> hads_resampler
     <HADsUKResampleManager(...count=504,...
@@ -537,6 +614,23 @@ class HADsUKResampleManager:
     def __len__(self) -> int:
         """Return the length of `self.input_files`."""
         return len(self.input_files) if self.input_files else 0
+
+    def __iter__(self) -> Iterator[Path] | None:
+        if self.input_files:
+            for file_path in self.input_files:
+                yield Path(file_path)
+        else:
+            return None
+
+    def __getitem__(self, key: int | slice) -> Path | tuple[Path] | None:
+        if not self.input_files:
+            return None
+        elif isinstance(key, int):
+            return Path(self.input_files[key])
+        elif isinstance(key, slice):
+            return tuple(Path(path) for path in self.input_files[key])
+        else:
+            raise IndexError(f"Can only index with 'int', not: '{key}'")
 
     def set_input_files(self, new_input_path: PathLike | None = None) -> None:
         """Replace `self.input` and process `self.input_files`."""
@@ -582,7 +676,7 @@ class HADsUKResampleManager:
             self.grid_data_path = new_grid_data_path
         if not self.grid_data_path and not self.grid:
             raise ValueError(f"'grid' or a valid 'grid_data_path' are required.")
-        if not self.grid:
+        if self.grid is None:
             self.grid = read_file(self.grid_data_path)
         assert isinstance(self.grid, GeoDataFrame)
 
@@ -602,9 +696,9 @@ class HADsUKResampleManager:
             Name of column in `self.grid` `Dataset` to extract to `self.y`.
             If `None` use `self.grid_y_column_name`, else overwrite.
         """
-        if not self.grid:
+        if self.grid is not None:
             self.set_grid()
-        assert isinstance(self.grid, Dataset)
+        assert isinstance(self.grid, GeoDataFrame)
         self.grid_x_column_name = grid_x_column_name or self.grid_x_column_name
         self.grid_y_column_name = grid_y_column_name or self.grid_y_column_name
         # try:
@@ -672,9 +766,11 @@ class CPMResampleManager(HADsUKResampleManager):
     Examples
     --------
     >>> if not is_data_mounted:
-    ...     pytest.skip('Can only run with mounted data files')
+    ...     pytest.skip(mount_doctest_skip_message)
     >>> cpm_resampler: CPMResampleManager = CPMResampleManager(
-    ...     output_path=resample_test_output_path / 'cpm',
+    ...     input_path=REPROJECTED_CPM_TASMAX_01_LATEST_INPUT_PATH,
+    ...     output_path=resample_test_cpm_output_path,
+    ...     input_file_extension=TIF_EXTENSION_STR,
     ... )
     >>> cpm_resampler
     <CPMResampleManager(...count=100,...
@@ -688,10 +784,46 @@ class CPMResampleManager(HADsUKResampleManager):
 
     """
 
-    input_path: PathLike | None = REPROJECTED_CPM_INPUT_PATH
+    input_path: PathLike | None = RAW_CPM_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / "cpm"
     resampling_func: ResamplingCallable = resample_cpm
-    input_file_extension: NETCDF_OR_TIF = TIF_EXTENSION_STR
+    standard_calendar_path: Path = STANDARD_CALENDAR_PATH
+
+    def _mk_output_path(self, path: PathLike, in_output_path: bool = True) -> Path:
+        """Ensure `path` is created relative to `self`."""
+        path = Path(self.output_path) / path if in_output_path else Path(path)
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def to_standard_calendar(
+        self, index: int | slice = 0, in_output_path: bool = True
+    ) -> list[Path]:
+        path: Path = self._mk_output_path(self.standard_calendar_path, in_output_path)
+        index = slice(index, index + 1) if isinstance(index, int) else index
+        assert isinstance(index, slice)
+        export_paths: list[Path] = []
+        for raw_cpm_path in tqdm(self[index]):
+            standard_projection: Dataset = cpm_xarray_to_standard_calendar(raw_cpm_path)
+            export_path: Path = path / raw_cpm_path.name.replace("01_day", "std_year")
+            standard_projection.to_netcdf(export_path)
+            export_paths.append(export_path)
+        return export_paths
+
+    # input_file_extension: NETCDF_OR_TIF = TIF_EXTENSION_STR
+
+    # def resample_file(self, index: 0) -> Path:
+    #     """Call `self.resample` func on index."""
+
+    # @property
+    # def resample_args(self) -> Iterator[ResamplingArgs]:
+    #     """Return args to pass to `self.resample`."""
+    #     if not self.input_files:
+    #         self.set_input_files()
+    #     # if not self.x or not self.y:
+    #     #     self.set_grid_x_y()
+    #     assert self.input_files
+    #     for f in self:
+    #         yield f, self.x, self.x, self.output_path
 
     # if not os.path.exists(parser_args.output):
     #     os.makedirs(parser_args.output)

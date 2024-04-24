@@ -62,8 +62,8 @@ class ClimRecalConfig(BaseRunConfig):
     ...     pytest.skip(mount_doctest_skip_message)
     >>> run_config: ClimRecalConfig = ClimRecalConfig(
     ...     cities=('Manchester', 'Glasgow'),
-    ...     cpm_kwargs={'output_path': resample_cpm_output_path},
-    ...     hads_kwargs={'output_path': resample_hads_output_path})
+    ...     cpm_kwargs={'output_path': resample_test_cpm_output_path},
+    ...     hads_kwargs={'output_path': resample_test_hads_output_path})
     >>> run_config
     <ClimRecalConfig(variables=1, runs=1, cities=2, methods=1,
                      cpm_files=100, hads_files=504)>

@@ -26,7 +26,7 @@ logger = getLogger(__name__)
 
 DateType = Union[date, str]
 DateRange = tuple[DateType, DateType]
-DATE_FORMAT_STR: Final[str] = "%Y%m%d"
+CLI_DATE_FORMAT_STR: Final[str] = "%Y%m%d"
 ISO_DATE_FORMAT_STR: Final[str] = "%Y-%m-%d"
 DATE_FORMAT_SPLIT_STR: Final[str] = "-"
 
@@ -86,8 +86,8 @@ class MonthDay:
         start_year: int | str,
         end_year: int | str,
         split_str: str = DATE_FORMAT_SPLIT_STR,
-        in_format_str: str = DATE_FORMAT_STR,
-        out_format_str: str = DATE_FORMAT_STR,
+        in_format_str: str = CLI_DATE_FORMAT_STR,
+        out_format_str: str = CLI_DATE_FORMAT_STR,
         include_end_date: bool = True,
     ) -> str:
         """Return an annual range str.
@@ -199,7 +199,7 @@ def is_platform_darwin() -> bool:
     return sys.platform.startswith("darwin")
 
 
-def ensure_date(date_to_check: DateType, format_str: str = DATE_FORMAT_STR) -> date:
+def ensure_date(date_to_check: DateType, format_str: str = CLI_DATE_FORMAT_STR) -> date:
     """Ensure passed `date_to_check` is a `date`.
 
     Parameters
@@ -231,10 +231,10 @@ def date_range_generator(
     end_date: DateType,
     inclusive: bool = False,
     skip_dates: Iterable[DateType] | DateType | None = None,
-    start_format_str: str = DATE_FORMAT_STR,
-    end_format_str: str = DATE_FORMAT_STR,
-    output_format_str: str = DATE_FORMAT_STR,
-    skip_dates_format_str: str = DATE_FORMAT_STR,
+    start_format_str: str = CLI_DATE_FORMAT_STR,
+    end_format_str: str = CLI_DATE_FORMAT_STR,
+    output_format_str: str = CLI_DATE_FORMAT_STR,
+    skip_dates_format_str: str = CLI_DATE_FORMAT_STR,
     yield_type: type[date] | type[str] = date,
 ) -> Iterator[DateType]:
     """Return a tuple of `DateType` objects.
@@ -318,8 +318,8 @@ def date_range_generator(
 
 def date_to_str(
     date_obj: DateType,
-    in_format_str: str = DATE_FORMAT_STR,
-    out_format_str: str = DATE_FORMAT_STR,
+    in_format_str: str = CLI_DATE_FORMAT_STR,
+    out_format_str: str = CLI_DATE_FORMAT_STR,
 ) -> str:
     """Return a `str` in `date_format_str` of `date_obj`.
 
@@ -354,8 +354,8 @@ def date_range_to_str(
     start_date: DateType,
     end_date: DateType,
     split_str: str = DATE_FORMAT_SPLIT_STR,
-    in_format_str: str = DATE_FORMAT_STR,
-    out_format_str: str = DATE_FORMAT_STR,
+    in_format_str: str = CLI_DATE_FORMAT_STR,
+    out_format_str: str = CLI_DATE_FORMAT_STR,
     include_end_date: bool = True,
 ) -> str:
     """Take `start_date` and `end_date` and return a date range `str`.

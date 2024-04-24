@@ -2,6 +2,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Final, Literal
 
+import numpy as np
 import pytest
 from geopandas import GeoDataFrame, read_file
 from matplotlib import pyplot as plt
@@ -9,13 +10,16 @@ from osgeo.gdal import Dataset as GDALDataset
 from xarray import DataArray, Dataset, open_dataset
 
 from clim_recal.resample import (
+    RAW_CPM_TASMAX_PATH,
     UK_SPATIAL_PROJECTION,
     ConvertCalendarAlignOptions,
+    CPMResampleManager,
     convert_xr_calendar,
     crop_nc,
     geo_warp,
 )
 from clim_recal.utils.core import (
+    CLI_DATE_FORMAT_STR,
     CPM_YEAR_DAYS,
     LEAP_YEAR_DAYS,
     NORMAL_YEAR_DAYS,
@@ -39,18 +43,27 @@ HADS_UK_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
 HADS_UK_RESAMPLED_DAY_SERVER_PATH: Final[Path] = Path(
     "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"
 )
-# Todo: Change "tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc"
-# to "tasmax_hads_example.nc"
+
+UKCP_RAW_TASMAX_1980_FILE: Final[Path] = Path(
+    "tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc"
+)
+HADS_RAW_TASMAX_1980_FILE: Final[Path] = Path(
+    "tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc"
+)
+
 HADS_UK_TASMAX_LOCAL_TEST_PATH: Final[Path] = (
-    Path(HadUKGrid.slug) / "tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc"
+    Path(HadUKGrid.slug) / HADS_RAW_TASMAX_1980_FILE
 )
 
 UKCP_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/UKCP2.2/tasmax/01/latest")
 # Todo: Change "tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc"
 # to "tasmax_cpm_example.nc"
 UKCP_TASMAX_LOCAL_TEST_PATH: Final[Path] = (
-    Path(UKCPLocalProjections.slug)
-    / "tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc"
+    Path(UKCPLocalProjections.slug) / UKCP_RAW_TASMAX_1980_FILE
+)
+
+UKCP_RAW_TASMAX_EXAMPLE_PATH: Final[Path] = (
+    RAW_CPM_TASMAX_PATH / UKCP_RAW_TASMAX_1980_FILE
 )
 
 
@@ -63,12 +76,6 @@ def ukcp_tasmax_raw_mount_path(data_mount_path: Path) -> Path:
 def ukcp_tasmax_raw_5_years_paths(ukcp_tasmax_raw_path: Path) -> tuple[Path, ...]:
     """Return a `tuple` of valid paths for 5 years of"""
     return tuple(annual_data_paths_generator(parent_path=ukcp_tasmax_raw_path))
-
-
-#
-# @pytest.mark.slow
-# @pytest.mark.mount
-# def ukcp_tasmax_raw_5_years(ukcp_tasmax_raw_5_years_paths) -> Dataset:
 
 
 @pytest.fixture
@@ -347,12 +354,38 @@ def test_time_gaps_360_to_standard_calendar(
 
 
 @pytest.mark.slow
+@pytest.mark.mount
+@pytest.mark.parametrize("interpolate_na", (True, False))
+def test_convert_cpm_calendar(interpolate_na: bool) -> None:
+    """Test `convert_calendar` on mounted `cpm` data.
+
+    Notes
+    -----
+    If `interpolate_na` is `True`, there shouldn't be `tasmax` `nan` values, hence
+    creating the `na_values` `bool` as the inverse of `interpolate_na`.
+    """
+    any_na_values_in_tasmax: bool = not interpolate_na
+    raw_nc: Dataset = open_dataset(
+        UKCP_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all", engine=NETCDF4_XARRAY_ENGINE
+    )
+    assert len(raw_nc.time) == 360
+    assert len(raw_nc.time_bnds) == 360
+    converted: Dataset = convert_xr_calendar(raw_nc, interpolate_na=interpolate_na)
+    assert len(converted.time) == 365
+    assert len(converted.time_bnds) == 365
+    assert (
+        np.isnan(converted.tasmax.head()[0][0][0].values).all()
+        == any_na_values_in_tasmax
+    )
+
+
+@pytest.mark.slow
 @pytest.mark.xfail
 @pytest.mark.parametrize("data_type", (UKCPLocalProjections, HadUKGrid))
 @pytest.mark.parametrize("data_source", ("mounted", "local"))
 @pytest.mark.parametrize("output_format", (GDALNetCDFFormatStr, GDALGeoTiffFormatStr))
 @pytest.mark.parametrize("glasgow_crop", (True, False))
-def test_geo_warp(
+def test_geo_warp_format_type_crop(
     data_type: CEDADataSources,
     data_source: Literal["mounted", "local"],
     output_format: GDALFormatsType,
@@ -513,6 +546,34 @@ def test_crop_nc(
     assert str(cropped.rio.crs) == UK_SPATIAL_PROJECTION
     assert cropped.rio.bounds() == glasgow_epsg_27700_bounds
     assert False
+
+
+@pytest.mark.slow
+@pytest.mark.mount
+@pytest.mark.parametrize("index", (0, slice(0, 1)))
+def test_ukcp_manager(resample_test_cpm_output_path, index: int | slice) -> None:
+    """Test running default CPM calendar fix."""
+    CORRECT_FIRST_DATES: np.array = np.array(
+        ["19801201", "19801202", "19801203", "19801204", "19801205"]
+    )
+    test_config = CPMResampleManager(
+        input_path=RAW_CPM_TASMAX_PATH,
+        output_path=resample_test_cpm_output_path,
+    )
+    paths: list[Path] = test_config.to_standard_calendar(index=index)
+    export: Dataset = open_dataset(paths[0])
+    assert len(export.time) == 365
+    assert len(export.time_bnds) == 365
+    assert not np.isnan(export.tasmax.head()[0][0][0].values).all()
+    assert (
+        CORRECT_FIRST_DATES
+        == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
+    ).all()
+    assert (
+        CORRECT_FIRST_DATES
+        == export.time_bnds.dt.strftime(CLI_DATE_FORMAT_STR).head().values
+    ).all()
+    assert (CORRECT_FIRST_DATES == export.yyyymmdd.head().values).all()
 
 
 # @pytest.mark.xfail("test still in development")

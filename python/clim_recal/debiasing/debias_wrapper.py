@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Final, Iterator, Optional, TypedDict, Union
 
 from ..utils.core import (
+    CLI_DATE_FORMAT_STR,
     DATE_FORMAT_SPLIT_STR,
-    DATE_FORMAT_STR,
     DateType,
     StrEnumReprName,
     climate_data_mount_path,
@@ -156,7 +156,7 @@ class BaseRunConfig:
 
     processors: int = PROCESSESORS_DEFAULT
 
-    date_format_str: str = DATE_FORMAT_STR
+    date_format_str: str = CLI_DATE_FORMAT_STR
     date_split_str: str = DATE_FORMAT_SPLIT_STR
 
 
