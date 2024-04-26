@@ -19,7 +19,7 @@ import rioxarray  # nopycln: import
 from geopandas import GeoDataFrame, read_file
 from osgeo.gdal import Dataset as GDALDataset
 from osgeo.gdal import GRA_NearestNeighbour, Warp, WarpOptions
-from tqdm import tqdm
+from tqdm.rich import tqdm, trange
 from xarray import DataArray, Dataset, cftime_range, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import CFCalendar, InterpOptions
@@ -636,7 +636,7 @@ class HADsUKResampleManager:
         """Replace `self.input` and process `self.input_files`."""
         if new_input_path:
             self.input = new_input_path
-        if not self.input_files:
+        if not self.input_files or new_input_path:
             self.input_files = tuple(
                 Path(path)
                 for path in glob(
@@ -732,6 +732,33 @@ class HADsUKResampleManager:
         return self.results
 
 
+def func_to_netcdf_file(
+    netcdf_source_path: PathLike,
+    func: Callable[[Dataset], Dataset],
+    export_folder: PathLike,
+    path_name_replace_tuple: tuple[str, str] | None = None,
+) -> Path:
+    """Apply a `Callable` to `netcdf_source` file and export via `to_netcdf`.
+
+    Parameters
+    ----------
+    netcdf_source_path
+        `netcdf` file to apply `func` to.
+    func
+        `Callable` to modify `netcdf`.
+    export_folder
+        Where to save results.
+    path_name_replace_tuple
+        Optional replacement `str` to apply to `netcdf_source_path.name` when exporting
+    """
+    results: Dataset = func(netcdf_source_path)
+    export_path = Path(export_folder) / netcdf_source_path
+    if path_name_replace_tuple:
+        export_path = export_path.name.replace(*path_name_replace_tuple)
+    results.to_netcdf(export_path)
+    return export_path
+
+
 @dataclass(kw_only=True, repr=False)
 class CPMResampleManager(HADsUKResampleManager):
     """CPM specific changes to HADsUKResampleManager.
@@ -787,32 +814,39 @@ class CPMResampleManager(HADsUKResampleManager):
     input_path: PathLike | None = RAW_CPM_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / "cpm"
     resampling_func: ResamplingCallable = resample_cpm
-    standard_calendar_path: Path = STANDARD_CALENDAR_PATH
-
-    def _mk_output_path(self, path: PathLike, in_output_path: bool = True) -> Path:
-        """Ensure `path` is created relative to `self`."""
-        path = Path(self.output_path) / path if in_output_path else Path(path)
-        path.mkdir(parents=True, exist_ok=True)
-        return path
-
-    def to_standard_calendar(
-        self, index: int | slice = 0, in_output_path: bool = True
-    ) -> list[Path]:
-        path: Path = self._mk_output_path(self.standard_calendar_path, in_output_path)
-        index = slice(index, index + 1) if isinstance(index, int) else index
-        assert isinstance(index, slice)
-        export_paths: list[Path] = []
-        for raw_cpm_path in tqdm(self[index]):
-            standard_projection: Dataset = cpm_xarray_to_standard_calendar(raw_cpm_path)
-            export_path: Path = path / raw_cpm_path.name.replace("01_day", "std_year")
-            standard_projection.to_netcdf(export_path)
-            export_paths.append(export_path)
-        return export_paths
-
+    standard_calendar_relative_path: Path = STANDARD_CALENDAR_PATH
     # input_file_extension: NETCDF_OR_TIF = TIF_EXTENSION_STR
 
-    # def resample_file(self, index: 0) -> Path:
-    #     """Call `self.resample` func on index."""
+    def to_standard_calendar(
+        self, index: int, force_export_path: Path | None = None
+    ) -> Path:
+        path: PathLike = (
+            force_export_path
+            or Path(self.output_path) / self.standard_calendar_relative_path
+        )
+        path.mkdir(exist_ok=True, parents=True)
+        return func_to_netcdf_file(
+            self[index],
+            cpm_xarray_to_standard_calendar,
+            path,
+            ("01_day", "01_day_std_year"),
+        )
+
+    def range_to_standard_calendar(
+        self,
+        start: int = 0,
+        stop: int | None = None,
+        step: int = 1,
+        force_export_path: Path | None = None,
+    ) -> list[Path]:
+        export_paths: list[Path] = []
+        for index in trange(start, stop, step):
+            export_paths.append(
+                self.to_standard_calendar(
+                    index=index, force_export_path=force_export_path
+                )
+            )
+        return export_paths
 
     # @property
     # def resample_args(self) -> Iterator[ResamplingArgs]:

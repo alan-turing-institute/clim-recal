@@ -33,29 +33,38 @@ Relevant `xarray` utilities:
 - [`convert_calendar`](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html)
 - [`interp_calendar`](https://docs.xarray.dev/en/stable/generated/xarray.Dataset.interp_calendar.html)
 
-# Resample HadUK-Grid
-
-Previous approach:
-
-- `resampling_hads.py`
+# Resample CPM
 
 New approach:
 
 - `resampling.py`
 - check `x_grid` and `y_grid` interpolation
-```
-# the dataset to be resample must have dimensions named
-# projection_x_coordinate and projection_y_coordinate .
-resampled = data_360[[variable]].interp(
-    projection_x_coordinate=x_grid,
-    projection_y_coordinate=y_grid,
-    method="linear",
-)
-```
-- [ ] Refactor to facilitate testing
+
+## Todo:
+
+- [x] Update the example here
+- [x] Remove out of date elements
+- [x] Hardcode the process below
+- [x] Refactor to facilitate testing
 - [ ] Ensure HADs still works
-- [ ] Add function for UKCP
-- [ ] Check `convert_xr_calendar` `doctest` examples
+- [x] Add function for UKCP
+- [x] Check `convert_xr_calendar` `doctest` examples
+
+```python
+from clim_recal.resample import CPMResampleManager
+
+# Below assumes running with data mounted to `/mnt/vmfileshare/` following the `linux` config
+for measure in ("tasmax", "tasmin"):
+    # Assuming indexing doesn't go above 10
+    for i in range(5, 9):
+        # Create instance specifying paths
+        cpm_resampler= CPMResampleManager(
+            input_path=f'/mnt/vmfileshare/ClimateData/Raw/UKCP2.2/{measure}/0{i}/latest',
+            standard_calendar_path=f"cpm-standard-calendar/{measure}/0{i}"
+        )
+        # Indicate running the standard calandar projection over all elements in `cpm_resampler`
+        cpm_resampler_tasmin.to_standard_calendar(slice(0, len(cpm_resampler)))
+```
 
 # Cropping
 
@@ -122,6 +131,12 @@ def main(
         Which debiasing methods to apply.
     **kwargs
         Additional parameters to pass to a `ClimRecalConfig`.
+
+    Notes
+    -----
+    The default parameters here are meant to reflect the entire
+    workflow process to ease reproducibility.
+
     """
     config: ClimRecalConfig = ClimRecalConfig(
         variables=variables, cities=cities, methods=methods, runs=runs, **kwargs

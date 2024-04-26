@@ -550,8 +550,8 @@ def test_crop_nc(
 
 @pytest.mark.slow
 @pytest.mark.mount
-@pytest.mark.parametrize("index", (0, slice(0, 1)))
-def test_ukcp_manager(resample_test_cpm_output_path, index: int | slice) -> None:
+@pytest.mark.parametrize("range", (True, False))
+def test_ukcp_manager(resample_test_cpm_output_path, range: bool) -> None:
     """Test running default CPM calendar fix."""
     CORRECT_FIRST_DATES: np.array = np.array(
         ["19801201", "19801202", "19801203", "19801204", "19801205"]
@@ -560,7 +560,11 @@ def test_ukcp_manager(resample_test_cpm_output_path, index: int | slice) -> None
         input_path=RAW_CPM_TASMAX_PATH,
         output_path=resample_test_cpm_output_path,
     )
-    paths: list[Path] = test_config.to_standard_calendar(index=index)
+    paths: list[Path]
+    if range:
+        paths = test_config.range_to_standard_calendar(stop=1)
+    else:
+        paths = [test_config.to_standard_calendar(index=0)]
     export: Dataset = open_dataset(paths[0])
     assert len(export.time) == 365
     assert len(export.time_bnds) == 365
