@@ -3,9 +3,6 @@ title: Analysis pipeline guidance
 format:
   html:
     toc: true
-execute:
-    echo: true
-    eval: false
 ---
 This is a detailed guide to our analysis pipeline.
 *see also this [flowchart viz](https://github.com/alan-turing-institute/clim-recal/blob/documentation/docs/pipeline.md) of the pipeline*
@@ -22,9 +19,7 @@ Given this dual-language nature of our analysis pipeline, we also provide prepro
 
 Visit [CRAN (The Comprehensive R Archive Network)](https://cran.r-project.org/) to download the latest version of `R` compatible with your operating system. Then verify successful installation via command line:
 
-```{bash}
-#| eval: false
-
+```bash
 R --version
 ```
 
@@ -32,9 +27,7 @@ R --version
 
 Our analysis utilizes several `R` packages. You can install these packages by starting `R` (just type `R` in your command line and press enter) and entering the following commands in the `R` console:
 
-```{R}
-#| eval: false
-
+```R
 install.packages("package1")
 install.packages("package2")
 #... (continue for all necessary packages)
@@ -42,9 +35,7 @@ install.packages("package2")
 
 Replace `"package1"`, `"package2"`, etc., with the actual names of the required packages. A list of required `R` packages is usually at the top of each `.R`, `.Rmd`, some `R` specific `.md` files. Below is an example from [WIP Comparing HADs grids](../R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.html):
 
-```{R}
-#| eval: false
-
+```R
 library(terra)
 library(sp)
 library(exactextractr)
@@ -53,9 +44,7 @@ library(exactextractr)
 ### Setting up your `python` environment
 
 For your `python` environment, we provide a `conda-lock.yml` environment file for ease-of-use.
-```{bash}
-#| eval: false
-
+```bash
 conda-lock install -name clim-recal conda-lock.yml
 ```
 
@@ -73,9 +62,7 @@ conda create -n gdal_env python=3.11 gdal=3.8
 
 In order to paralellize the reprojection step, we make use of the [GNU parallel shell tool](https://www.gnu.org/software/parallel/).
 
-```{bash}
-#| eval: false
-
+```bash
 parallel --version
 ```
 
@@ -83,7 +70,7 @@ parallel --version
 
 This repository contains a `python` script used to run debiasing in climate data using a fork of the [original `python-cmethods`](https://github.com/btschwertfeger/python-cmethods) module written by Benjamin Thomas Schwertfeger's , which has been modified to function with the dataset used in the `clim-recal` project. This library has been included as a submodule to this project, so you must run the following command to pull the submodules required.
 
-```{bash}
+```bash
 git submodule update --init --recursive
 ```
 
@@ -95,9 +82,7 @@ This streamlined pipeline is designed for raw data provided by the Met Office, a
 
 To access the data, [register here](https://archive.ceda.ac.uk/) at the CEDA archive and configure your FTP credentials in "My Account". Utilize our [ceda_ftp_download.py](../python/clim_recal/ceda_ftp_download.py) script to download the data.
 
-```{bash}
-#| eval: false
-
+```bash
 # cpm data
 python3 ceda_ftp_download.py --input /badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/ --output 'output_dir' --username 'uuu' --psw 'ppp' --change_hierarchy
 
@@ -126,24 +111,33 @@ Sections below may need updating.
 :::
 
 ## Reprojecting the data
-The HADs data and the UKCP projections have different resolution and coordinate system. For example the HADs dataset uses the British National Grid coordinate system.
+The HADs data and the UKCP projections have different resolution and coordinate system. For example: the HADs dataset uses the British National Grid coordinate system.
+
+<details>
+  <summary>Click for raw HADs and CPM coordinate structures</summary>
+
+```python
+CRS.from_wkt('PROJCS["undefined",GEOGCS["undefined",DATUM["undefined",SPHEROID["undefined",6377563.396,299.324961266495]],PRIMEM["undefined",0],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",49],PARAMETER["central_meridian",-2],PARAMETER["scale_factor",0.9996012717],PARAMETER["false_easting",400000],PARAMETER["false_northing",-100000],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH]]')
+```
+
+```python
+CRS.from_wkt('GEOGCRS["undefined",BASEGEOGCRS["undefined",DATUM["undefined",ELLIPSOID["undefined",6371229,0,LENGTHUNIT["metre",1,ID["EPSG",9001]]]],PRIMEM["undefined",0,ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",9122]]]],DERIVINGCONVERSION["Pole rotation (netCDF CF convention)",METHOD["Pole rotation (netCDF CF convention)"],PARAMETER["Grid north pole latitude (netCDF CF convention)",37.5,ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",9122]]],PARAMETER["Grid north pole longitude (netCDF CF convention)",177.5,ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",9122]]],PARAMETER["North pole grid longitude (netCDF CF convention)",0,ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",9122]]]],CS[ellipsoidal,2],AXIS["longitude",east,ORDER[1],ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",9122]]],AXIS["latitude",north,ORDER[2],ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",9122]]]]')
+```
+</details>
+
 
 The first step in our analysis pipeline is to reproject the UKCP datasets to the British National Grid coordinate system. For this purpose, we utilize the Geospatial Data Abstraction Library (GDAL), designed for reading and writing raster and vector geospatial data formats.
 
 ::: {.callout-info}
 Note that, to reproduce our exact pipeline, we switch environments here as explained in the requirements.
-```{bash}
-#| eval: false
-
+```bash
 conda activate gdal_env
 ```
 :::
 
 To execute the reprojection in parallel fashion, run the `reproject_all.sh` script from your shell. As an input to the script replace `path_to_netcdf_files` with the path to the raw netCDF files.
 
-```{bash}
-#| eval: false
-
+```bash
 cd bash
 sh reproject_all.sh path_to_netcdf_files
 ```
@@ -152,9 +146,7 @@ sh reproject_all.sh path_to_netcdf_files
 
 Resample the HADs UK dataset from 1km to 2.2km grid to match the UKCP reprojected grid. We run the resampling `python` script specifying the `--input` location of the reprojected files from the previous step, the UKCP `--grid` file an the `--output` location for saving the resampled files.
 
-```{bash}
-#| eval: false
-
+```bash
 # switch to main environment
 conda activate clim-recal
 
@@ -169,9 +161,7 @@ Because the bias correction process is computationally intensive, handling large
 
 For the purposes of our example pipeline, we've opted for reducing the data to individual city boundaries. To crop you need to adjust the paths in `Cropping_Rasters_to_three_cities.R` script to fit 1your own directory sturcture. The cropping is implemented in the `cpm_read_crop` and `hads_read_crop` functions.
 
-```{bash}
-#| eval: false
-
+```bash
 Rscript Cropping_Rasters_to_three_cities.R
 ```
 ### calibration-validation data split
@@ -179,9 +169,7 @@ For the purpose of assessing our bias correction, we then split our data, both t
 
 We then use data from year 2010 to validate the quality of the bias correction. You need to replace `path_to_cropped` with the path where the data from the previous cropping step was saved and  `path_to_preprocessed` with the output directory you choose. You can leave the `-v` and `-r` flags as specified below or choose another metric and run if you prefer.
 
-```{bash}
-#| eval: false
-
+```bash
 cd ../debiasing
 python preprocess_data.py --mod path_to_cropped --obs path_to_cropped -v tasmax -r '05' --out path_to_preprocessed --calib_dates 19810101-19831230 --valid_dates 20100101-20101230
 ```
@@ -204,9 +192,7 @@ The [run_cmethods.py](../python/clim_recal/debiasing/run_cmethods.py) allow us t
 
 The script will also produce a time-series and a map plot of the debiased data. To run this you need to replace `path_to_validation_data` with the output directories of the previous step and specify `path_to_corrected_data` as your output directory for the bias corrected data. You can also specify your preferred `bias_correction_method` (e.g. quantile_delta_mapping).
 
-```{bash}
-#| eval: false
-
+```bash
 python3 run_cmethods.py --input_data_folder path_to_validation_data --out path_to_corrected_data --method bias_correction_method --v 'tas'
 ```
 

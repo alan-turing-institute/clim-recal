@@ -77,7 +77,7 @@ class MonthDay:
     format_str: str = ISO_DATE_FORMAT_STR
 
     def from_year(self, year: int | str, as_str: bool = False) -> date | str:
-        """Return a"""
+        """Return a `date` or `str` of date given `year`."""
         year_date: date = date(int(year), self.month, self.day)
         return year_date.strftime(self.format_str) if as_str else year_date
 

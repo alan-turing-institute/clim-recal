@@ -1,7 +1,6 @@
 """Wrapper for running `preprocess_data.py` and `run_cmethods.py`"""
 from dataclasses import dataclass
 from datetime import date
-from enum import auto
 from os import PathLike
 from pathlib import Path
 from typing import Final, Iterator, Optional, TypedDict, Union
@@ -10,12 +9,12 @@ from ..utils.core import (
     CLI_DATE_FORMAT_STR,
     DATE_FORMAT_SPLIT_STR,
     DateType,
-    StrEnumReprName,
     climate_data_mount_path,
     date_range_to_str,
     iter_to_tuple_strs,
     path_iterdir,
 )
+from ..utils.data import CityOptions, MethodOptions, RunOptions, VariableOptions
 
 DATA_PATH_DEFAULT: Final[Path] = climate_data_mount_path()
 
@@ -51,76 +50,6 @@ VALID_DATE_START_DEFAULT: DateType = date(2010, 1, 1)
 VALID_DATE_END_DEFAULT: DateType = date(2010, 12, 30)
 
 DEBIAS_DIR_DEFAULT: Final[Path] = (COMMAND_DIR_DEFAULT / "debiasing").resolve()
-
-
-class MethodOptions(StrEnumReprName):
-    """Supported options for methods."""
-
-    QUANTILE_DELTA_MAPPING = auto()
-    QUANTILE_MAPPING = auto()
-    VARIANCE_SCALING = auto()
-    DELTA_METHOD = auto()
-
-    @classmethod
-    def default(cls) -> str:
-        """Default method option."""
-        return cls.QUANTILE_DELTA_MAPPING.value
-
-
-class VariableOptions(StrEnumReprName):
-    """Supported options for variables"""
-
-    TASMAX = auto()
-    RAINFALL = auto()
-    TASMIN = auto()
-
-    @classmethod
-    def default(cls) -> str:
-        """Default option."""
-        return cls.TASMAX.value
-
-
-class RunOptions(StrEnumReprName):
-    """Supported options for variables.
-
-    Notes
-    -----
-    Options `TWO` and `THREE` are not available for `UKCP2.2`.
-    """
-
-    ONE = "01"
-    # TWO = "02"
-    # THREE = "03"
-    FOUR = "04"
-    FIVE = "05"
-    SIX = "06"
-    SEVEN = "07"
-    EIGHT = "08"
-    NINE = "09"
-    TEN = "10"
-    ELEVEN = "11"
-    TWELVE = "12"
-    THIRTEEN = "13"
-    FOURTEEN = "14"
-    FIFTEEN = "15"
-
-    @classmethod
-    def default(cls) -> str:
-        """Default option."""
-        return cls.FIVE.value
-
-
-class CityOptions(StrEnumReprName):
-    """Supported options for variables."""
-
-    GLASGOW = "Glasgow"
-    MANCHESTER = "Manchester"
-    LONDON = "London"
-
-    @classmethod
-    def default(cls) -> str:
-        """Default option."""
-        return cls.MANCHESTER.value
 
 
 class RunConfigType(TypedDict):

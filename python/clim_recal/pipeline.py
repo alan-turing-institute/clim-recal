@@ -40,7 +40,7 @@ New approach:
 - `resampling.py`
 - check `x_grid` and `y_grid` interpolation
 
-## Todo:
+## Todo
 
 - [x] Update the example here
 - [x] Remove out of date elements
@@ -91,12 +91,14 @@ New approach:
 
 
 """
+from os import PathLike
 from pathlib import Path
 from typing import Final, Sequence
 
 from rich import print
 
 from .config import (
+    DEFAULT_OUTPUT_PATH,
     CityOptions,
     ClimRecalConfig,
     ClimRecalRunResultsType,
@@ -110,10 +112,13 @@ REPROJECTION_WRAPPER_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_all.sh"
 
 
 def main(
+    execute: bool = False,
     variables: Sequence[VariableOptions] = (VariableOptions.default(),),
     cities: Sequence[CityOptions] | None = (CityOptions.default(),),
     runs: Sequence[RunOptions] = (RunOptions.default(),),
     methods: Sequence[MethodOptions] = (MethodOptions.default(),),
+    output_path: PathLike = DEFAULT_OUTPUT_PATH,
+    cpus: int | None = None,
     **kwargs,
 ) -> ClimRecalRunResultsType:
     """Run all elements of the pipeline.
@@ -129,6 +134,10 @@ def main(
         skipping to run for entire UK.
     methods
         Which debiasing methods to apply.
+    output_path
+        `Path` to save intermediate and final results to.
+    cpus
+        Number of cpus to use when parallelising.
     **kwargs
         Additional parameters to pass to a `ClimRecalConfig`.
 
@@ -137,9 +146,34 @@ def main(
     The default parameters here are meant to reflect the entire
     workflow process to ease reproducibility.
 
+
+    Examples
+    --------
+    >>> main(variables=("rainfall", "tasmin"),
+    ...      output_path=resample_test_output_path)
+    clim-recal pipeline configurations:
+    <ClimRecalConfig(variables_count=2, runs_count=1,
+                     cities_count=1, methods_count=1,
+                     cpm_folders_count=2, hads_folders_count=2,
+                     cpus=...)>
+    <CPMResamplerManager(variables_count=2, runs_count=1,
+                         input_files_count=2)>
+    <HADsResamplerManager(variables_count=2, input_paths_count=2)>
     """
     config: ClimRecalConfig = ClimRecalConfig(
-        variables=variables, cities=cities, methods=methods, runs=runs, **kwargs
+        output_path=output_path,
+        variables=variables,
+        cities=cities,
+        methods=methods,
+        runs=runs,
+        cpus=cpus,
+        **kwargs,
     )
+    print("clim-recal pipeline configurations:")
     print(config)
+    print(config.cpm_manger)
+    print(config.hads_manger)
+    if execute:
+        print("Running CPM Manager process...")
+        config.cpm_manger.run_resample_configs()
     # config.cpm.resample_multiprocessing()

@@ -1,10 +1,11 @@
 import subprocess
+import warnings
 from dataclasses import dataclass, field
-from os import chdir
+from os import PathLike, chdir, cpu_count
 from pathlib import Path
 from typing import Any, Final, Sequence, TypedDict
 
-from tqdm import tqdm
+from tqdm import TqdmExperimentalWarning, tqdm
 
 from .debiasing.debias_wrapper import (
     BaseRunConfig,
@@ -12,14 +13,25 @@ from .debiasing.debias_wrapper import (
     MethodOptions,
     RunConfig,
     RunConfigType,
-    RunOptions,
-    VariableOptions,
     climate_data_mount_path,
 )
-from .resample import CPMResampleManager, HADsUKResampleManager
+from .resample import (
+    CPM_OUTPUT_LOCAL_PATH,
+    HADS_OUTPUT_LOCAL_PATH,
+    CPMResamplerManager,
+    HADsResamplerManager,
+)
 from .utils.core import product_dict
+from .utils.data import RunOptions, VariableOptions
+
+warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 
 DATA_PATH_DEFAULT: Final[Path] = climate_data_mount_path()
+
+
+DEFAULT_OUTPUT_PATH: Final[Path] = Path("clim-recal-runs")
+DEFAULT_RESAMPLE_FOLDER: Final[Path] = Path("resample")
+DEFAULT_CPUS: Final[int] = 2
 
 
 class ClimRecalRunsConfigType(TypedDict):
@@ -47,14 +59,25 @@ class ClimRecalConfig(BaseRunConfig):
     runs
         Which model runs to include, eg. "01", "08", "11".
     cities
-        Which cities to crop data to. Future plans facilitate
-        skipping to run for entire UK.
+        Which cities to crop data to. Future plans facilitate skipping to run for entire UK.
     methods
         Which debiasing methods to apply.
+    multiprocessing
+        Whether to use `multiprocessing` where available
+    cpus
+        Number of cpus to use if multiprocessing
+    output_path
+        `Path` to save all intermediate and final results to.
+    resample_folder
+        `Path` to append to `output_path` for resampling result files.
+    hads_folder
+        `Path` to append to `output_path` / `resample_folder` for resampling `HADs` files.
+    cpm_folder
+        `Path` to append to `output_path` / `resample_folder` for resampling `CPM` files.
     cpm_kwargs
-        A `dict` of parameters to pass to `CPMResampleManager`.
+        A `dict` of parameters to pass to a `CPMResamplerManager`.
     hads_kwargs
-        A `dict` of parameters to pass to `HADsUKResampleManager`.
+        A `dict` of parameters to pass to `HADsResamplerManager`.
 
     Examples
     --------
@@ -62,37 +85,70 @@ class ClimRecalConfig(BaseRunConfig):
     ...     pytest.skip(mount_doctest_skip_message)
     >>> run_config: ClimRecalConfig = ClimRecalConfig(
     ...     cities=('Manchester', 'Glasgow'),
-    ...     cpm_kwargs={'output_path': resample_test_cpm_output_path},
-    ...     hads_kwargs={'output_path': resample_test_hads_output_path})
+    ...     output_path=resample_test_output_path,
+    ...     cpus=1)
     >>> run_config
-    <ClimRecalConfig(variables=1, runs=1, cities=2, methods=1,
-                     cpm_files=100, hads_files=504)>
+    <ClimRecalConfig(variables_count=1, runs_count=1, cities_count=2,
+                     methods_count=1, cpm_folders_count=1,
+                     hads_folders_count=1, cpus=1)>
     """
 
     variables: Sequence[VariableOptions] = (VariableOptions.default(),)
     runs: Sequence[RunOptions] = (RunOptions.default(),)
     cities: Sequence[CityOptions] | None = (CityOptions.default(),)
     methods: Sequence[MethodOptions] = (MethodOptions.default(),)
-    # cpm_raw_input_path: PathLike = RAW_CPM_PATH
-    # hads_raw_input_path: PathLike = RAW_CPM_PATH
+    multiprocessing: bool = False
+    cpus: int | None = DEFAULT_CPUS
+    output_path: PathLike = DEFAULT_OUTPUT_PATH
+    resample_folder: PathLike = DEFAULT_RESAMPLE_FOLDER
+    hads_folder: PathLike = HADS_OUTPUT_LOCAL_PATH
+    cpm_folder: PathLike = CPM_OUTPUT_LOCAL_PATH
     cpm_kwargs: dict = field(default_factory=dict)
     hads_kwargs: dict = field(default_factory=dict)
 
+    @property
+    def resample_path(self) -> Path:
+        """The resample_path property."""
+        return Path(self.output_path) / self.resample_folder
+
+    @property
+    def resample_hads_path(self) -> Path:
+        """The resample_hads_path property."""
+        return self.resample_path / self.hads_folder
+
+    @property
+    def resample_cpm_path(self) -> Path:
+        """The resample_hads_path property."""
+        return self.resample_path / self.cpm_folder
+
     def __post_init__(self) -> None:
         """Initiate related `HADs` and `CPM` Mangers."""
-        self.cpm = CPMResampleManager(**self.cpm_kwargs)
-        self.hads = HADsUKResampleManager(**self.hads_kwargs)
+        self.cpm_manger = CPMResamplerManager(
+            variables=VariableOptions.cpm_values(self.variables),
+            runs=self.runs,
+            output_paths=self.resample_cpm_path,
+            **self.cpm_kwargs,
+        )
+        self.hads_manger = HADsResamplerManager(
+            variables=self.variables,
+            output_paths=self.resample_hads_path,
+            **self.hads_kwargs,
+        )
+        self.total_cpus: int | None = cpu_count()
+        if self.cpus == None or (self.total_cpus and self.cpus >= self.total_cpus):
+            self.cpus = 1 if not self.total_cpus else self.total_cpus - 1
 
     def __repr__(self) -> str:
         """Summary of `self` configuration as a `str`."""
         return (
             f"<{self.__class__.__name__}("
-            f"variables={len(self.variables)}, "
-            f"runs={len(self.runs)}, "
-            f"cities={len(self.cities) if self.cities else None}, "
-            f"methods={len(self.methods)}, "
-            f"cpm_files={len(self.cpm)}, "
-            f"hads_files={len(self.hads)})>"
+            f"variables_count={len(self.variables)}, "
+            f"runs_count={len(self.runs)}, "
+            f"cities_count={len(self.cities) if self.cities else None}, "
+            f"methods_count={len(self.methods)}, "
+            f"cpm_folders_count={len(self.cpm_manger)}, "
+            f"hads_folders_count={len(self.hads_manger)}, "
+            f"cpus={self.cpus})>"
         )
 
     @property

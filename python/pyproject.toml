@@ -39,7 +39,7 @@ dependencies = [
 ]
 
 [project.scripts]
-clim-recal = "pipeline:main"
+clim-recal = "clim_recal.cli:clim_recal"
 
 [tool.isort]
 profile = "black"

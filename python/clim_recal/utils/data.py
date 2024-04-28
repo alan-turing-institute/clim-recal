@@ -1,13 +1,153 @@
 from dataclasses import dataclass, field
-from typing import Collection, Union, Callable, Any, Literal, Final
+from typing import Collection, Union, Callable, Any, Literal, Final, Iterable
 from os import PathLike
 from datetime import date
+from enum import auto
 
+from .core import StrEnumReprName
 
 AuthorshipType = Union[
     str | tuple[str, ...], dict[str, str] |
     dict[str, dict[str, str]] | dict[str, Collection[str]]
 ]
+
+class VariableOptions(StrEnumReprName):
+    """Supported options for variables"""
+
+    TASMAX = auto()
+    RAINFALL = auto()
+    TASMIN = auto()
+
+    @classmethod
+    def cpm_value(cls, variable: str) -> str:
+        """Return `CPM` value equivalent of `variable`.
+        
+        Parameters
+        ----------
+        variable
+            `VariableOptions` attribute to query value of.
+
+        Examples
+        --------
+        >>> VariableOptions.cpm_value('rainfall')
+        'pr'
+        >>> VariableOptions.cpm_value('tasmin')
+        'tasmin'
+        """
+        if variable.lower() == cls.RAINFALL:
+            return 'pr'
+        else:
+            return getattr(cls, variable.upper()).value
+
+    @classmethod
+    def cpm_values(cls, variables: Iterable[str] | None = None) -> tuple[str, ...]:
+        """Return `CPM` values equivalent of `variable`.
+        
+        Parameters
+        ----------
+        variables
+            `VariableOptions` attributes to query values of.
+
+        Examples
+        --------
+        >>> VariableOptions.cpm_values(['rainfall', 'tasmin'])
+        ('pr', 'tasmin')
+        """
+        variables = variables if variables else cls.all()
+        return tuple(cls.cpm_value(var) for var in variables)
+
+    @classmethod
+    def default(cls) -> str:
+        """Default option."""
+        return cls.TASMAX.value
+
+    @classmethod
+    def all(cls) -> tuple[str, ...]:
+        """Return a `tuple` of all options"""
+        return tuple(map(lambda c: c.value, cls))
+
+
+class RunOptions(StrEnumReprName):
+    """Supported options for variables.
+
+    Notes
+    -----
+    Options `TWO` and `THREE` are not available for `UKCP2.2`.
+    """
+
+    ONE = "01"
+    # TWO = "02"
+    # THREE = "03"
+    FOUR = "04"
+    FIVE = "05"
+    SIX = "06"
+    SEVEN = "07"
+    EIGHT = "08"
+    NINE = "09"
+    TEN = "10"
+    ELEVEN = "11"
+    TWELVE = "12"
+    THIRTEEN = "13"
+    FOURTEEN = "14"
+    FIFTEEN = "15"
+
+    @classmethod
+    def default(cls) -> str:
+        """Default option."""
+        return cls.FIVE.value
+
+    @classmethod
+    def preferred(cls) -> tuple[str, ...]:
+        """Return the prferred runs determined by initial results.
+
+        Notes
+        -----
+        See `R/misc/Identifying_Runs.md` for motivation and results.
+        """
+        return (cls.FIVE.value, cls.SIX.value, cls.SEVEN.value, cls.EIGHT.value)
+
+    @classmethod
+    def all(cls) -> tuple[str, ...]:
+        """Return a `tuple` of all options"""
+        return tuple(map(lambda c: c.value, cls))
+
+
+
+class MethodOptions(StrEnumReprName):
+    """Supported options for methods."""
+
+    QUANTILE_DELTA_MAPPING = auto()
+    QUANTILE_MAPPING = auto()
+    VARIANCE_SCALING = auto()
+    DELTA_METHOD = auto()
+
+    @classmethod
+    def default(cls) -> str:
+        """Default method option."""
+        return cls.QUANTILE_DELTA_MAPPING.value
+
+    @classmethod
+    def all(cls) -> tuple[str, ...]:
+        """Return a `tuple` of all options"""
+        return tuple(map(lambda c: c.value, cls))
+
+
+class CityOptions(StrEnumReprName):
+    """Supported options for variables."""
+
+    GLASGOW = "Glasgow"
+    MANCHESTER = "Manchester"
+    LONDON = "London"
+
+    @classmethod
+    def default(cls) -> str:
+        """Default option."""
+        return cls.MANCHESTER.value
+
+    @classmethod
+    def all(cls) -> tuple[str, ...]:
+        """Return a `tuple` of all options"""
+        return tuple(map(lambda c: c.value, cls))
 
 
 @dataclass

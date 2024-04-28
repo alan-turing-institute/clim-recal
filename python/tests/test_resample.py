@@ -11,12 +11,14 @@ from xarray import DataArray, Dataset, open_dataset
 
 from clim_recal.resample import (
     RAW_CPM_TASMAX_PATH,
+    RAW_HADS_TASMAX_PATH,
     UK_SPATIAL_PROJECTION,
     ConvertCalendarAlignOptions,
-    CPMResampleManager,
+    CPMResampler,
+    HADsResampler,
     convert_xr_calendar,
     crop_nc,
-    geo_warp,
+    gdal_warp_wrapper,
 )
 from clim_recal.utils.core import (
     CLI_DATE_FORMAT_STR,
@@ -469,12 +471,14 @@ def test_geo_warp_format_type_crop(
     # output_path: Path = warp_path / (max_temp_data_path.stem + ".tif" if output_format == GDALGeoTiffFormatStr else ".nc")
     xarray_warped: GDALDataset
     if glasgow_crop:
-        xarray_warped = geo_warp(
-            max_temp_data_path, output_path=warp_test_file_path, format=output_format
+        xarray_warped = gdal_warp_wrapper(
+            input_path=max_temp_data_path,
+            output_path=warp_test_file_path,
+            format=output_format,
         )
     else:
-        xarray_warped = geo_warp(
-            max_temp_data_path,
+        xarray_warped = gdal_warp_wrapper(
+            input_path=max_temp_data_path,
             output_path=warp_test_file_path,
             format=output_format,
             output_bounds=uk_epsg_27700_bounds,
@@ -550,13 +554,13 @@ def test_crop_nc(
 
 @pytest.mark.slow
 @pytest.mark.mount
-@pytest.mark.parametrize("range", (True, False))
+@pytest.mark.parametrize("range", (False, True))
 def test_ukcp_manager(resample_test_cpm_output_path, range: bool) -> None:
     """Test running default CPM calendar fix."""
     CORRECT_FIRST_DATES: np.array = np.array(
         ["19801201", "19801202", "19801203", "19801204", "19801205"]
     )
-    test_config = CPMResampleManager(
+    test_config = CPMResampler(
         input_path=RAW_CPM_TASMAX_PATH,
         output_path=resample_test_cpm_output_path,
     )
@@ -564,10 +568,42 @@ def test_ukcp_manager(resample_test_cpm_output_path, range: bool) -> None:
     if range:
         paths = test_config.range_to_standard_calendar(stop=1)
     else:
-        paths = [test_config.to_standard_calendar(index=0)]
+        paths = [test_config.to_standard_calendar()]
     export: Dataset = open_dataset(paths[0])
     assert len(export.time) == 365
     assert len(export.time_bnds) == 365
+    assert not np.isnan(export.tasmax.head()[0][0][0].values).all()
+    assert (
+        CORRECT_FIRST_DATES
+        == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
+    ).all()
+    assert (
+        CORRECT_FIRST_DATES
+        == export.time_bnds.dt.strftime(CLI_DATE_FORMAT_STR).head().values
+    ).all()
+    assert (CORRECT_FIRST_DATES == export.yyyymmdd.head().values).all()
+
+
+@pytest.mark.xfail("checking `export.tasmax` vlues currently yields `nan`")
+@pytest.mark.slow
+@pytest.mark.mount
+@pytest.mark.parametrize("range", (False, True))
+def test_hads_manager(resample_test_hads_output_path, range: bool) -> None:
+    """Test running default CPM calendar fix."""
+    CORRECT_FIRST_DATES: np.array = np.array(
+        ["19801201", "19801202", "19801203", "19801204", "19801205"]
+    )
+    test_config = HADsResampler(
+        input_path=RAW_HADS_TASMAX_PATH,
+        output_path=resample_test_hads_output_path,
+    )
+    paths: list[Path]
+    if range:
+        paths = test_config.range_to_reprojected_tif(stop=1)
+    else:
+        paths = [test_config.to_reprojected_tif()]
+    export: Dataset = open_dataset(paths[0])
+    assert len(export.time) == 31
     assert not np.isnan(export.tasmax.head()[0][0][0].values).all()
     assert (
         CORRECT_FIRST_DATES
