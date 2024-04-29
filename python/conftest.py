@@ -24,6 +24,7 @@ from clim_recal.debiasing.debias_wrapper import (
     RunOptions,
     VariableOptions,
 )
+from clim_recal.resample import CPM_OUTPUT_LOCAL_PATH, HADS_OUTPUT_LOCAL_PATH
 from clim_recal.utils.core import (
     ISO_DATE_FORMAT_STR,
     check_package_path,
@@ -285,14 +286,14 @@ def clim_runner(tmp_path) -> ClimRecalConfig:
 def resample_test_cpm_output_path(
     resample_test_runs_output_path: Path,
 ) -> Path:
-    return resample_test_runs_output_path / "cpm"
+    return resample_test_runs_output_path / CPM_OUTPUT_LOCAL_PATH
 
 
 @pytest.fixture
 def resample_test_hads_output_path(
     resample_test_runs_output_path: Path,
 ) -> Path:
-    return resample_test_runs_output_path / "hads"
+    return resample_test_runs_output_path / HADS_OUTPUT_LOCAL_PATH
 
 
 @pytest.fixture(autouse=True)

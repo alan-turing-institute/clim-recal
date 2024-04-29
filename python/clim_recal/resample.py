@@ -7,7 +7,6 @@
 
 """
 
-import argparse
 import multiprocessing
 import os
 from dataclasses import dataclass, field
@@ -53,28 +52,6 @@ DropDayType = set[tuple[int, int]]
 ChangeDayType = set[tuple[int, int]]
 
 CLIMATE_DATA_MOUNT_PATH: Path = climate_data_mount_path()
-MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
-"""A `set` of tuples of month and day numbers for `enforce_date_changes`."""
-
-MONTH_DAY_XARRAY_LEAP_YEAR_DROP: DropDayType = {
-    (1, 31),
-    (4, 1),
-    (6, 1),
-    (8, 1),
-    (9, 31),
-    (12, 1),
-}
-"""A `set` of month and day tuples dropped for `xarray.day_360` leap years."""
-
-MONTH_DAY_XARRAY_NO_LEAP_YEAR_DROP: DropDayType = {
-    (2, 6),
-    (4, 20),
-    (7, 2),
-    (9, 13),
-    (11, 25),
-}
-"""A `set` of month and day tuples dropped for `xarray.day_360` non leap years."""
-
 DEFAULT_INTERPOLATION_METHOD: str = "linear"
 """Default method to infer missing estimates in a time series."""
 
@@ -121,98 +98,6 @@ HADS_OUTPUT_LOCAL_PATH: Final[Path] = Path("hads")
 
 
 NETCDF_OR_TIF = Literal[TIF_EXTENSION_STR, NETCDF_EXTENSION_STR]
-
-
-# def geo_warp(
-#     input_path: PathLike,
-#     output_path: PathLike,
-#     format: GDALFormatsType | None = None,
-#     output_coord_system: str = UK_SPATIAL_PROJECTION,
-#     output_x_resolution: int = CPRUK_RESOLUTION,
-#     output_y_resolution: int = CPRUK_RESOLUTION,
-#     resampling_method: str = CPRUK_RESAMPLING_METHOD,
-#     copy_metadata: bool = True,
-#     output_bounds: BoundsTupleType | None = None,
-#     **kwargs,
-# ) -> GDALDataset:
-#     """Execute the `gdalwrap` function within `python`.
-#
-#     This is following a script in the `bash/` folder that uses
-#     this programme:
-#
-#     ```bash
-#     f=$1 # The first argument is the file to reproject
-#     fn=${f/Raw/Reprojected_infill} # Replace Raw with Reprojected_infill in the filename
-#     folder=`dirname $fn` # Get the folder name
-#     mkdir -p $folder # Create the folder if it doesn't exist
-#     gdalwarp -t_srs 'EPSG:27700' -tr 2200 2200 -r near -overwrite $f "${fn%.nc}.tif" # Reproject the file
-#     ```
-#
-#     Parameters
-#     ----------
-#     input_path
-#         Path with `CPRUK` files to resample. `srcDSOrSrcDSTab` in
-#         `Warp`.
-#     output_path
-#         Path to save resampled `input_path` file(s) to. If equal to
-#         `input_path` then the `overwrite` parameter is called.
-#         `destNameOrDestDS` in `Warp`.
-#     format
-#         Format to convert `input_path` to in `output_path`.
-#     output_coord_system
-#         Coordinate system to convert `input_path` file(s) to.
-#         `dstSRS` in `WarpOptions`.
-#     output_x_resolution
-#         Resolution of `x` cordinates to convert `input_path` file(s) to.
-#         `xRes` in `WarpOptions`.
-#     output_y_resolution
-#         Resolution of `y` cordinates to convert `input_path` file(s) to.
-#         `yRes` in `WarpOptions`.
-#     resampling_method
-#         Sampling method. `resampleAlg` in `WarpOption`. See other options
-#         in: `https://gdal.org/programs/gdalwarp.html#cmdoption-gdalwarp-r`.
-#     copy_metadata
-#         Whether to copy metadata when possible.
-#     output_bounds
-#         Output bounds as (minX, minY, maxX, maxY) in target Spatial
-#         Reference System (SRS) or `None`.
-#
-#     Examples
-#     --------
-#     >>> if not is_data_mounted:
-#     ...     pytest.skip(mount_doctest_skip_message)
-#     >>> from .utils.xarray import GDALNetCDFFormatStr
-#     >>> test_nc_file: Path = Path(
-#     ...     'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc')
-#     >>> warped_cpm = geo_warp(
-#     ...     input_path = (
-#     ...         RAW_CPM_TASMAX_PATH /
-#     ...         'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc'),
-#     ...     output_path = resample_test_output_path / test_nc_file,
-#     ...     format=GDALNetCDFFormatStr)
-#     >>> warped_cpm is not None
-#     True
-#     """
-#     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-#     try:
-#         assert not Path(output_path).is_dir()
-#     except AssertionError:
-#         raise FileExistsError(f"Path exists as a directory: {output_path}")
-#     if input_path == output_path:
-#         kwargs["overwrite"] = True
-#     warp_options: WarpOptions = WarpOptions(
-#         dstSRS=output_coord_system,
-#         xRes=output_x_resolution,
-#         yRes=output_y_resolution,
-#         resampleAlg=resampling_method,
-#         format=format,
-#         copyMetadata=copy_metadata,
-#         outputBounds=output_bounds,
-#         **kwargs,
-#     )
-#     return Warp(
-#         destNameOrDestDS=output_path, srcDSOrSrcDSTab=input_path, options=warp_options
-#     )
 
 
 def convert_xr_calendar(
@@ -410,21 +295,6 @@ def reproject_coords(
     )
 
 
-#         resampled = data[[variable]].interp(
-#             projection_x_coordinate=x_grid,
-#             projection_y_coordinate=y_grid,
-#             method="linear",
-#         )
-# if enforce_xarray_spatial_dims:
-#     xr_time_series.rio.set_spatial_dims(
-#         x_dim=xr_spatial_xdim,
-#         y_dim=xr_spatial_ydim,
-#         inplace=True,
-#     )
-# xr_time_series.rio.reproject(crs, inplace=True)
-# xr_time_series.rio.write_crs(crs, inplace=True)
-
-
 def crop_nc(
     xr_time_series: Dataset | PathLike,
     crop_geom: PathLike | GeoDataFrame,
@@ -501,27 +371,7 @@ def crop_nc(
     )
 
 
-# def resample_cpm(x: list | tuple) -> int:
-#     """Resample CRUK CPM data to match `UKHADs` spatially and temporally."""
-#     # due to the multiprocessing implementations inputs come as list
-#     file: Path = Path(x[0])
-#     x_grid: np.ndarray = x[1]
-#     y_grid: np.ndarray = x[2]
-#     output_dir: Path = Path(x[3])
-#     file_name: str = file.name
-#     output_name = f"{'_'.join(file_name.split('_')[:-1])}_2.2km_resampled_{file_name.split('_')[-1]}"
-#     if (output_dir / output_name).exists():
-#         print(f"File: {output_name} already exists in this directory. Skipping.")
-#         return 0
-#
-#     # files have the variable name as input (e.g. tasmax_hadukgrid_uk_1km_day_20211101-20211130.nc)
-#     variable = file_name.split("_")[0]
-#
-#     data = open_dataset(file, decode_coords="all")
-#     xr_360_to_365_datetime64: Dataset = convert_xr_calendar(xr_time_series=data)
-#     assert False
-#
-#
+# Previous approach, kept for reference
 # def resample_hadukgrid(x: list | tuple) -> int:
 #     """Resample UKHADs data spatially.
 #
@@ -681,7 +531,6 @@ def apply_geo_func(
     source_path: PathLike,
     func: Callable[[Dataset], Dataset],
     export_folder: PathLike,
-    # path_name_replace_tuple: tuple[str, str] | None = None,
     new_path_name_func: Callable[[Path], Path] | None = None,
     to_netcdf: bool = True,
     include_geo_warp_output_path: bool = False,
@@ -698,14 +547,14 @@ def apply_geo_func(
     export_folder
         Where to save results.
     path_name_replace_tuple
-        Optional replacement `str` to apply to `netcdf_source_path.name` when exporting
+        Optional replacement `str` to apply to `source_path.name` when exporting
     to_netcdf
         Whether to call `to_netcdf` method on `results` `Dataset`.
     """
     export_path: Path = Path(source_path)
     if new_path_name_func:
         export_path = new_path_name_func(export_path)
-    export_path = Path(export_folder) / export_path
+    export_path = Path(export_folder) / export_path.name
     if include_geo_warp_output_path:
         kwargs["output_path"] = export_path
     results: Dataset | Path = func(source_path, **kwargs)
@@ -775,12 +624,9 @@ class HADsResampler:
 
     input_path: PathLike | None = RAW_HADS_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH
-    # grid_data_path: PathLike | None = GLASGOW_GEOM_ABSOLUTE_PATH
     grid: PathLike | Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
-    # grid: GeoDataFrame | None = None
     input_files: Iterable[PathLike] | None = None
     cpus: int | None = None
-    # resampling_func: ResamplingCallable = resample_hadukgrid
     crop: PathLike | GeoDataFrame | None = None
     final_crs: str = UK_SPATIAL_PROJECTION
     grid_x_column_name: str = HADS_XDIM
@@ -797,9 +643,6 @@ class HADsResampler:
                 f"'input_path' or 'input_file' are None; at least one must be set."
             )
         self.set_grid_x_y()
-        # if isinstance(self.grid, PathLike):
-        #     self.grid = read_file(self.grid)
-        # assert isinstance(self.grid, GeoDataFrame)
         self.set_input_files()
         Path(self.output_path).mkdir(parents=True, exist_ok=True)
         self.total_cpus: int | None = os.cpu_count()
@@ -858,28 +701,6 @@ class HADsResampler:
             self.grid = open_dataset(self.grid)
         assert isinstance(self.grid, Dataset)
 
-    #     if new_grid_data_path:
-    #         self.grid_data_path = new_grid_data_path
-    #     if not self.grid_data_path and not self.grid:
-    #         raise ValueError(f"'grid' or a valid 'grid_data_path' are required.")
-    #     if self.grid is None:
-    #         self.grid = read_file(self.grid_data_path)
-    #     assert isinstance(self.grid, GeoDataFrame)
-    #
-    # def resample_to_cpm_resolution(
-    #     self, index: int, force_export_path: Path | None = None
-    # ) -> Path:
-    #     path: PathLike = (
-    #         force_export_path
-    #         or Path(self.output_path) / self.cpm_resolution_relative_path
-    #     )
-    #     path.mkdir(exist_ok=True, parents=True)
-    #     return apply_geo_func(
-    #         self[index],
-    #         reproject_hads_xarray,
-    #         path,
-    #         ("_day", "_day_2.2km"),
-    #     )
     def _output_path(
         self, relative_output_path: Path, override_export_path: Path | None
     ) -> Path:
@@ -895,13 +716,8 @@ class HADsResampler:
         path: PathLike = self._output_path(
             self.cpm_resolution_relative_path, override_export_path
         )
-        # path: PathLike = (
-        #     force_export_path
-        #     or Path(self.output_path) / self.cpm_resolution_relative_path
-        # )
-        # path.mkdir(exist_ok=True, parents=True)
         return apply_geo_func(
-            netcdf_source_path=self[index],
+            source_path=self[index],
             func=gdal_warp_wrapper,
             export_folder=path,
             path_name_replace_tuple=(NETCDF_EXTENSION_STR, TIF_EXTENSION_STR),
@@ -969,32 +785,6 @@ class HADsResampler:
         # except Exception as e:
         #     print(f"Grid file: {self.grid_data_path} produced errors: {e}")
 
-    #     x = grid["projection_x_coordinate"][:].values
-    #     y = grid["projection_y_coordinate"][:].values
-    #
-    # @property
-    # def resample_args(self) -> Iterator[ResamplingArgs]:
-    #     """Return args to pass to `self.resample`."""
-    #     if not self.input_files:
-    #         self.set_input_files()
-    #     # if not self.x or not self.y:
-    #     #     self.set_grid_x_y()
-    #     assert self.input_files
-    #     for f in self.input_files:
-    #         yield f, self.x, self.x, self.output_path
-    #
-    # def resample_multiprocessing(self) -> list[int]:
-    #     """Run `self.resampling_func` via `multiprocessing`."""
-    #
-    #     with multiprocessing.Pool(processes=self.cpus) as pool:
-    #         self.results = list(
-    #             tqdm(
-    #                 pool.imap_unordered(self.resampling_func, self.resample_args),
-    #                 total=len(self),
-    #             )
-    #         )
-    #     return self.results
-
 
 @dataclass(kw_only=True, repr=False)
 class CPMResampler(HADsResampler):
@@ -1050,9 +840,7 @@ class CPMResampler(HADsResampler):
 
     input_path: PathLike | None = RAW_CPM_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_LOCAL_PATH
-    # resampling_func: ResamplingCallable = resample_cpm
     standard_calendar_relative_path: Path = STANDARD_CALENDAR_PATH
-    # input_file_extension: NETCDF_OR_TIF = TIF_EXTENSION_STR
 
     def to_standard_calendar(
         self, index: int = 0, override_export_path: Path | None = None
@@ -1086,57 +874,6 @@ class CPMResampler(HADsResampler):
     def run(self, **kwargs) -> list[Path]:
         """Run all steps for processing"""
         return self.range_to_standard_calendar(**kwargs)
-        # export_paths: list[Path] = []
-        # if stop is None:
-        #     stop = len(self)
-        # for index in trange(start, stop, step):
-        #     export_paths.append(
-        #         self.to_standard_calendar(
-        #             index=index, override_export_path=override_export_path
-        #         )
-        #     )
-        # return export_paths
-
-    # @property
-    # def resample_args(self) -> Iterator[ResamplingArgs]:
-    #     """Return args to pass to `self.resample`."""
-    #     if not self.input_files:
-    #         self.set_input_files()
-    #     # if not self.x or not self.y:
-    #     #     self.set_grid_x_y()
-    #     assert self.input_files
-    #     for f in self:
-    #         yield f, self.x, self.x, self.output_path
-
-    # if not os.path.exists(parser_args.output):
-    #     os.makedirs(parser_args.output)
-
-    # def process_grid_data(self) -> None:
-    #     """Process `grid_data` attribute."""
-    #     self.grid = xr.open_dataset(self.grid_data)
-
-    #
-    # grid = xr.open_dataset(parser_args.grid_data)
-    #
-    # try:
-    #     # must have dimensions named projection_x_coordinate and projection_y_coordinate
-    #     x = grid["projection_x_coordinate"][:].values
-    #     y = grid["projection_y_coordinate"][:].values
-    # except Exception as e:
-    #     print(f"Grid file: {parser_args.grid_data} produced errors: {e}")
-    #
-    # # If output file do not exist create it
-    # if not os.path.exists(parser_args.output):
-    #     os.makedirs(parser_args.output)
-    #
-    # # find all nc files in input directory
-    # files = glob.glob(f"{parser_args.input}/*.nc", recursive=True)
-    # N = len(files)
-    #
-    # args = [[f, x, y, parser_args.output] for f in files]
-    #
-    # with multiprocessing.Pool(processes=os.cpu_count() - 1) as pool:
-    #     res = list(tqdm(pool.imap_unordered(resample_hadukgrid, args), total=N))
 
 
 @dataclass(kw_only=True)
@@ -1331,63 +1068,64 @@ class CPMResamplerManager(HADsResamplerManager):
                 yield Path(path) / var / run_type / self.sub_path
 
 
-if __name__ == "__main__":
-    """
-    Script to resample UKHADs data from the command line
-    """
-    # Initialize parser
-    parser = argparse.ArgumentParser()
-
-    # Adding arguments
-    parser.add_argument(
-        "--input-path",
-        help="Path where the .nc files to resample is located",
-        required=True,
-        type=str,
-    )
-    parser.add_argument(
-        "--grid-data-path",
-        help="Path where the .nc file with the grid to resample is located",
-        required=False,
-        type=str,
-        default="../../data/rcp85_land-cpm_uk_2.2km_grid.nc",
-    )
-    parser.add_argument(
-        "--output-path",
-        help="Path to save the resampled data data",
-        required=False,
-        default=".",
-        type=str,
-    )
-    parser_args = parser.parse_args()
-    hads_run_manager = HADsResampler(
-        input_path=parser_args.input_path,
-        grid_data_path=parser_args.grid_data_path,
-        output_path=parser_args.output,
-    )
-    res = hads_run_manager.resample_multiprocessing()
-
-    # parser_args = parser.parse_args()
-    #
-    # # reading baseline grid to resample files to
-    # grid = xr.open_dataset(parser_args.grid_data)
-    #
-    # try:
-    #     # must have dimensions named projection_x_coordinate and projection_y_coordinate
-    #     x = grid["projection_x_coordinate"][:].values
-    #     y = grid["projection_y_coordinate"][:].values
-    # except Exception as e:
-    #     print(f"Grid file: {parser_args.grid_data} produced errors: {e}")
-    #
-    # # If output file do not exist create it
-    # if not os.path.exists(parser_args.output):
-    #     os.makedirs(parser_args.output)
-    #
-    # # find all nc files in input directory
-    # files = glob.glob(f"{parser_args.input}/*.nc", recursive=True)
-    # N = len(files)
-    #
-    # args = [[f, x, y, parser_args.output] for f in files]
-    #
-    # with multiprocessing.Pool(processes=os.cpu_count() - 1) as pool:
-    #     res = list(tqdm(pool.imap_unordered(resample_hadukgrid, args), total=N))
+# Kept from previous structure for reference
+# if __name__ == "__main__":
+#     """
+#     Script to resample UKHADs data from the command line
+#     """
+#     # Initialize parser
+#     parser = argparse.ArgumentParser()
+#
+#     # Adding arguments
+#     parser.add_argument(
+#         "--input-path",
+#         help="Path where the .nc files to resample is located",
+#         required=True,
+#         type=str,
+#     )
+#     parser.add_argument(
+#         "--grid-data-path",
+#         help="Path where the .nc file with the grid to resample is located",
+#         required=False,
+#         type=str,
+#         default="../../data/rcp85_land-cpm_uk_2.2km_grid.nc",
+#     )
+#     parser.add_argument(
+#         "--output-path",
+#         help="Path to save the resampled data data",
+#         required=False,
+#         default=".",
+#         type=str,
+#     )
+#     parser_args = parser.parse_args()
+#     hads_run_manager = HADsResampler(
+#         input_path=parser_args.input_path,
+#         grid_data_path=parser_args.grid_data_path,
+#         output_path=parser_args.output,
+#     )
+#     res = hads_run_manager.resample_multiprocessing()
+#
+#     parser_args = parser.parse_args()
+#
+#     # reading baseline grid to resample files to
+#     grid = xr.open_dataset(parser_args.grid_data)
+#
+#     try:
+#         # must have dimensions named projection_x_coordinate and projection_y_coordinate
+#         x = grid["projection_x_coordinate"][:].values
+#         y = grid["projection_y_coordinate"][:].values
+#     except Exception as e:
+#         print(f"Grid file: {parser_args.grid_data} produced errors: {e}")
+#
+#     # If output file do not exist create it
+#     if not os.path.exists(parser_args.output):
+#         os.makedirs(parser_args.output)
+#
+#     # find all nc files in input directory
+#     files = glob.glob(f"{parser_args.input}/*.nc", recursive=True)
+#     N = len(files)
+#
+#     args = [[f, x, y, parser_args.output] for f in files]
+#
+#     with multiprocessing.Pool(processes=os.cpu_count() - 1) as pool:
+#         res = list(tqdm(pool.imap_unordered(resample_hadukgrid, args), total=N))

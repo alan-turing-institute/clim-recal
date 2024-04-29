@@ -84,7 +84,7 @@ addopts = """
     -m "not server"
     -m "not mount"
     --pdbcls=IPython.terminal.debugger:TerminalPdb
-    --cov=.
+    --cov=clim_recal
     --cov-report=term:skip-covered
 """
 doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS",]

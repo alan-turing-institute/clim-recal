@@ -20,7 +20,20 @@ def test_climate_data_mount_path() -> None:
         assert climate_data_mount_path() == DEBIAN_MOUNT_PATH / CLIMATE_DATA_PATH
 
 
-@pytest.mark.parametrize("execute", (False, False))
+@pytest.mark.parametrize(
+    "execute",
+    (
+        False,
+        pytest.param(
+            True,
+            marks=(
+                pytest.mark.mount,
+                pytest.mark.slow,
+                pytest.mark.skip("currently too slow"),
+            ),
+        ),
+    ),
+)
 @pytest.mark.parametrize("variables", (("rainfall",), ("rainfall", "tasmax")))
 def test_main(
     execute: bool, variables: tuple[str], resample_test_runs_output_path: Path, capsys
