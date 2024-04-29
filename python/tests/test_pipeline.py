@@ -1,3 +1,8 @@
+from pathlib import Path
+
+import pytest
+
+from clim_recal.pipeline import main
 from clim_recal.utils.core import (
     CLIMATE_DATA_PATH,
     DARWIN_MOUNT_PATH,
@@ -13,3 +18,16 @@ def test_climate_data_mount_path() -> None:
         assert climate_data_mount_path() == DARWIN_MOUNT_PATH / CLIMATE_DATA_PATH
     else:
         assert climate_data_mount_path() == DEBIAN_MOUNT_PATH / CLIMATE_DATA_PATH
+
+
+@pytest.mark.parametrize("execute", (False, False))
+@pytest.mark.parametrize("variables", (("rainfall",), ("rainfall", "tasmax")))
+def test_main(
+    execute: bool, variables: tuple[str], resample_test_runs_output_path: Path, capsys
+) -> None:
+    """Test running pipeline configurations."""
+    results = main(
+        execute=execute, variables=variables, output_path=resample_test_runs_output_path
+    )
+    captured = capsys.readouterr()
+    assert f"variables_count={len(variables)}" in captured.out

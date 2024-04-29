@@ -9,4 +9,5 @@ def test_pipeline_cli() -> None:
     """Test basic cli"""
     result = runner.invoke(clim_recal, ["--help"])
     assert result.exit_code == 0
-    assert "[Glasgow|Manchester|Lon" in result.stdout
+    for text in ("[Glasgow|Manc", "Lon", "--execute"):
+        assert text in result.stdout

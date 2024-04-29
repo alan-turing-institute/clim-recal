@@ -223,14 +223,14 @@ def conda_lock_file_manager() -> CondaLockFileManager:
 
 
 @pytest.fixture
-def data_fixtures_path(tmp_path) -> Iterator[Path]:
+def data_fixtures_path(tmp_path: Path) -> Iterator[Path]:
     yield copytree(TEST_DATA_PATH, tmp_path / TEST_DATA_PATH.name)
     rmtree(tmp_path / TEST_DATA_PATH.name)
 
 
 @pytest.mark.mount
 @pytest.fixture
-def glasgow_shape_file_path(data_fixtures_path) -> Path:
+def glasgow_shape_file_path(data_fixtures_path: Path) -> Path:
     return data_fixtures_path / Path(*GLASGOW_GEOM_LOCAL_PATH.parts[-2:])
 
 
