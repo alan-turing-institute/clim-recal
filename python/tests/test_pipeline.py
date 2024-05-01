@@ -29,7 +29,6 @@ def test_climate_data_mount_path() -> None:
             marks=(
                 pytest.mark.mount,
                 pytest.mark.slow,
-                pytest.mark.skip("currently too slow"),
             ),
         ),
     ),
@@ -40,7 +39,13 @@ def test_main(
 ) -> None:
     """Test running pipeline configurations."""
     results = main(
-        execute=execute, variables=variables, output_path=resample_test_runs_output_path
+        execute=execute,
+        variables=variables,
+        output_path=resample_test_runs_output_path,
+        skip_hads_spatial_2k_projection=True,
+        skip_cpm_standard_calendar_projection=False,
+        stop_index=1,
     )
     captured = capsys.readouterr()
     assert f"variables_count={len(variables)}" in captured.out
+    assert results == None

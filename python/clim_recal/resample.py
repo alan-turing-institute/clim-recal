@@ -23,6 +23,7 @@ from geopandas import GeoDataFrame, read_file
 from numpy.typing import NDArray
 from osgeo.gdal import Dataset as GDALDataset
 from osgeo.gdal import GDALWarpAppOptions, GRA_NearestNeighbour, Warp, WarpOptions
+from rich import print
 from tqdm.rich import tqdm, trange
 from xarray import DataArray, Dataset, cftime_range, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
@@ -75,16 +76,17 @@ CPRUK_RESOLUTION: Final[int] = 2200
 CPRUK_RESAMPLING_METHOD: Final[str] = GRA_NearestNeighbour
 ResamplingArgs = tuple[PathLike, np.ndarray, np.ndarray, PathLike]
 ResamplingCallable = Callable[[list | tuple], int]
-STANDARD_CALENDAR_PATH: Final[Path] = Path("cpm-standard-calendar")
-HADS_TO_CPM_RESOLUTION_PATH: Final[Path] = Path("hads-to-cpm-resolution")
+CPM_STANDARD_CALENDAR_PATH: Final[Path] = Path("cpm-standard-calendar")
+CPM_SPATIAL_COORDS_PATH: Final[Path] = Path("cpm-to-27700-spatial")
+HADS_2_2K_RESOLUTION_PATH: Final[Path] = Path("hads-to-27700-spatial-2.2km")
 CPRUK_XDIM: Final[str] = "grid_longitude"
 CPRUK_YDIM: Final[str] = "grid_latitude"
 
 HADS_XDIM: Final[str] = "projection_x_coordinate"
 HADS_YDIM: Final[str] = "projection_y_coordinate"
 
-DEFAULT_RELATIVE_GRID_DATA_PATH: Final[Path] = Path(
-    "../data/rcp85_land-cpm_uk_2.2km_grid.nc"
+DEFAULT_RELATIVE_GRID_DATA_PATH: Final[Path] = (
+    Path().absolute() / "../data/rcp85_land-cpm_uk_2.2km_grid.nc"
 )
 
 CPM_START_DATE: Final[date] = date(1980, 12, 1)
@@ -259,13 +261,9 @@ def reproject_coords(
     variable_name: str,
     x_grid: NDArray,
     y_grid: NDArray,
-    # crs: str | None = None,
+    xr_time_series_x_column_name: str,
+    xr_time_series_y_column_name: str,
     method: str = "linear",
-    # enforce_xarray_spatial_dims: bool = True,
-    # xr_spatial_xdim: str = CPRUK_XDIM,
-    # xr_spatial_ydim: str = CPRUK_YDIM,
-    # x_resolution: int = CPRUK_RESOLUTION,
-    # y_resolution: int = CPRUK_RESOLUTION,
     engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
     **kwargs,
 ) -> Dataset:
@@ -288,11 +286,9 @@ def reproject_coords(
     # if x_resolution and y_resolution:
     #     kwargs['resolution'] = (x_resolution, y_resolution)
     # return xr_time_series.rio.reproject(dst_crs=crs, **kwargs)
-    return xr_time_series[[variable_name]].interp(
-        projection_x_coordinate=x_grid,
-        projection_y_coordinate=y_grid,
-        method=method,
-    )
+    kwargs[xr_time_series_x_column_name] = x_grid
+    kwargs[xr_time_series_y_column_name] = y_grid
+    return xr_time_series[[variable_name]].interp(method=method, **kwargs)
 
 
 def crop_nc(
@@ -451,6 +447,11 @@ def reproject_standard_calendar_filename(path: Path) -> Path:
     return path.parent / path.name.replace("_day", "_day_std_year")
 
 
+def reproject_2_2km_filename(path: Path) -> Path:
+    """Return tweaked `path` to indicate standard day projection."""
+    return path.parent / path.name.replace("_1km", "_2_2km")
+
+
 def gdal_warp_wrapper(
     input_path: PathLike,
     output_path: PathLike,
@@ -534,8 +535,9 @@ def apply_geo_func(
     new_path_name_func: Callable[[Path], Path] | None = None,
     to_netcdf: bool = True,
     include_geo_warp_output_path: bool = False,
+    return_results: bool = False,
     **kwargs,
-) -> Path:
+) -> Path | Dataset | GDALDataset:
     """Apply a `Callable` to `netcdf_source` file and export via `to_netcdf`.
 
     Parameters
@@ -557,13 +559,20 @@ def apply_geo_func(
     export_path = Path(export_folder) / export_path.name
     if include_geo_warp_output_path:
         kwargs["output_path"] = export_path
-    results: Dataset | Path = func(source_path, **kwargs)
+    results: Dataset | Path | GDALDataset = func(source_path, **kwargs)
     if to_netcdf:
         if isinstance(results, Path):
             results = open_dataset(results)
+        if isinstance(results, GDALDataset):
+            raise TypeError(
+                f"Restuls from 'gdal_warp_wrapper' can't directly export to NetCDF form, only return a Path or GDALDataset"
+            )
         assert isinstance(results, Dataset)
         results.to_netcdf(export_path)
-    return export_path
+    if return_results:
+        return results
+    else:
+        return export_path
 
 
 @dataclass(kw_only=True)
@@ -599,10 +608,9 @@ class HADsResampler:
 
     Notes
     -----
-    - Try time projection first
-    - Then space
+    - [x] Try time projection first
+    - [x] Then space
     - then crop
-
 
     Examples
     --------
@@ -624,6 +632,7 @@ class HADsResampler:
 
     input_path: PathLike | None = RAW_HADS_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH
+    variable_name: VariableOptions = VariableOptions.default()
     grid: PathLike | Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
     input_files: Iterable[PathLike] | None = None
     cpus: int | None = None
@@ -632,7 +641,12 @@ class HADsResampler:
     grid_x_column_name: str = HADS_XDIM
     grid_y_column_name: str = HADS_YDIM
     input_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
-    cpm_resolution_relative_path: Path = HADS_TO_CPM_RESOLUTION_PATH
+    export_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
+    cpm_resolution_relative_path: Path = HADS_2_2K_RESOLUTION_PATH
+    input_file_x_column_name: str = HADS_XDIM
+    input_file_y_column_name: str = HADS_YDIM
+    start_index: int = 0
+    stop_index: int | None = None
 
     def __post_init__(self) -> None:
         """Generate related attributes."""
@@ -651,11 +665,20 @@ class HADsResampler:
 
     def __len__(self) -> int:
         """Return the length of `self.input_files`."""
-        return len(self.input_files) if self.input_files else 0
+        return (
+            len(self.input_files[self.start_index : self.stop_index])
+            if isinstance(self.input_files, Sequence)
+            else 0
+        )
+
+    @property
+    def max_count(self) -> int:
+        """Maximum length of `self.input_files` ignoring `start_index` and `start_index`."""
+        return len(self.input_files) if isinstance(self.input_files, Sequence) else 0
 
     def __iter__(self) -> Iterator[Path] | None:
-        if self.input_files:
-            for file_path in self.input_files:
+        if self.input_files and isinstance(self.input_files, Sequence):
+            for file_path in self.input_files[self.start_index : self.stop_index]:
                 yield Path(file_path)
         else:
             return None
@@ -684,7 +707,13 @@ class HADsResampler:
 
     def __repr__(self) -> str:
         """Summary of `self` configuration as a `str`."""
-        return f"<{self.__class__.__name__}(count={len(self)}, input_path='{self.input_path}', output_path='{self.output_path}')>"
+        return (
+            f"<{self.__class__.__name__}("
+            f"count={len(self)}, "
+            f"max_count={self.max_count}, "
+            f"input_path='{self.input_path}', "
+            f"output_path='{self.output_path}')>"
+        )
 
     def set_grid(self, new_grid_data_path: PathLike | None = None) -> None:
         """Set check and set (if necessary) `grid` attribute of `self`.
@@ -701,6 +730,17 @@ class HADsResampler:
             self.grid = open_dataset(self.grid)
         assert isinstance(self.grid, Dataset)
 
+    def _get_source_path(
+        self, index: int, source_to_index: Sequence | None = None
+    ) -> Path:
+        """Return a path indexed from `source_to_index` or `self`."""
+        if source_to_index is None:
+            return self[index]
+        elif isinstance(source_to_index, str):
+            return getattr(self, source_to_index)[index]
+        else:
+            return source_to_index[index]
+
     def _output_path(
         self, relative_output_path: Path, override_export_path: Path | None
     ) -> Path:
@@ -710,19 +750,34 @@ class HADsResampler:
         path.mkdir(exist_ok=True, parents=True)
         return path
 
-    def to_reprojected_tif(
-        self, index: int = 0, override_export_path: Path | None = None
-    ) -> Path:
+    def to_reprojection(
+        self,
+        index: int = 0,
+        override_export_path: Path | None = None,
+        return_results: bool = False,
+        source_to_index: Sequence | None = None,
+    ) -> Path | Dataset:
+        source_path: Path = self._get_source_path(
+            index=index, source_to_index=source_to_index
+        )
         path: PathLike = self._output_path(
             self.cpm_resolution_relative_path, override_export_path
         )
         return apply_geo_func(
-            source_path=self[index],
-            func=gdal_warp_wrapper,
+            source_path=source_path,
+            func=reproject_coords,
             export_folder=path,
-            path_name_replace_tuple=(NETCDF_EXTENSION_STR, TIF_EXTENSION_STR),
-            include_geo_warp_output_path=True,
-            to_netcdf=False,
+            # Leaving in case we return to using warp
+            # include_geo_warp_output_path=True,
+            # to_netcdf=False,
+            to_netcdf=True,
+            variable_name=self.variable_name,
+            x_grid=self.x,
+            y_grid=self.y,
+            xr_time_series_x_column_name=self.input_file_x_column_name,
+            xr_time_series_y_column_name=self.input_file_y_column_name,
+            new_path_name_func=reproject_2_2km_filename,
+            return_results=return_results,
         )
 
     def _range_call(
@@ -732,29 +787,38 @@ class HADsResampler:
         stop: int | None,
         step: int,
         override_export_path: Path | None = None,
-    ) -> list[Path]:
+        source_to_index: Iterable | None = None,
+    ) -> list[Path | Dataset]:
         export_paths: list[Path] = []
         if stop is None:
             stop = len(self)
         for index in trange(start, stop, step):
             export_paths.append(
-                method(index=index, override_export_path=override_export_path)
+                method(
+                    index=index,
+                    override_export_path=override_export_path,
+                    source_to_index=source_to_index,
+                )
             )
         return export_paths
 
-    def range_to_reprojected_tif(
+    def range_to_reprojection(
         self,
-        start: int = 0,
+        start: int | None = None,
         stop: int | None = None,
         step: int = 1,
         override_export_path: Path | None = None,
+        source_to_index: Sequence | None = None,
     ) -> list[Path]:
+        start = start or self.start_index
+        stop = stop or self.stop_index
         return self._range_call(
-            method=self.to_reprojected_tif,
+            method=self.to_reprojection,
             start=start,
             stop=stop,
             step=step,
             override_export_path=override_export_path,
+            source_to_index=source_to_index,
         )
 
     def set_grid_x_y(
@@ -778,12 +842,12 @@ class HADsResampler:
         assert isinstance(self.grid, Dataset)
         self.grid_x_column_name = grid_x_column_name or self.grid_x_column_name
         self.grid_y_column_name = grid_y_column_name or self.grid_y_column_name
-        # try:
-        #     # must have dimensions named projection_x_coordinate and projection_y_coordinate
         self.x: NDArray = self.grid[self.grid_x_column_name][:].values
         self.y: NDArray = self.grid[self.grid_y_column_name][:].values
-        # except Exception as e:
-        #     print(f"Grid file: {self.grid_data_path} produced errors: {e}")
+
+    def execute(self, skip_spatial: bool = False, **kwargs) -> list[Path] | None:
+        """Run all steps for processing"""
+        return self.range_to_reprojection(**kwargs) if not skip_spatial else None
 
 
 @dataclass(kw_only=True, repr=False)
@@ -840,17 +904,30 @@ class CPMResampler(HADsResampler):
 
     input_path: PathLike | None = RAW_CPM_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_LOCAL_PATH
-    standard_calendar_relative_path: Path = STANDARD_CALENDAR_PATH
+    standard_calendar_relative_path: Path = CPM_STANDARD_CALENDAR_PATH
+    input_file_x_column_name: str = CPRUK_XDIM
+    input_file_y_column_name: str = CPRUK_YDIM
+    cpm_resolution_relative_path: Path = CPM_SPATIAL_COORDS_PATH
+
+    @property
+    def cpm_variable_name(self) -> str:
+        return VariableOptions.cpm_value(self.variable_name)
 
     def to_standard_calendar(
-        self, index: int = 0, override_export_path: Path | None = None
+        self,
+        index: int = 0,
+        override_export_path: Path | None = None,
+        source_to_index: Sequence | None = None,
     ) -> Path:
+        source_path: Path = self._get_source_path(
+            index=index, source_to_index=source_to_index
+        )
         path: PathLike = self._output_path(
             self.standard_calendar_relative_path, override_export_path
         )
         path.mkdir(exist_ok=True, parents=True)
         return apply_geo_func(
-            source_path=self[index],
+            source_path=source_path,
             func=cpm_xarray_to_standard_calendar,
             export_folder=path,
             new_path_name_func=reproject_standard_calendar_filename,
@@ -858,22 +935,65 @@ class CPMResampler(HADsResampler):
 
     def range_to_standard_calendar(
         self,
-        start: int = 0,
+        start: int | None = None,
         stop: int | None = None,
         step: int = 1,
         override_export_path: Path | None = None,
+        source_to_index: Sequence | None = None,
     ) -> list[Path]:
+        start = start or self.start_index
+        stop = stop or self.stop_index
         return self._range_call(
             method=self.to_standard_calendar,
             start=start,
             stop=stop,
             step=step,
             override_export_path=override_export_path,
+            source_to_index=source_to_index,
         )
 
-    def run(self, **kwargs) -> list[Path]:
+    def to_reprojection(
+        self,
+        index: int = 0,
+        override_export_path: Path | None = None,
+        return_results: bool = False,
+        source_to_index: Sequence | None = None,
+    ) -> Path | Dataset:
+        source_path: Path = self._get_source_path(
+            index=index, source_to_index=source_to_index
+        )
+        path: PathLike = self._output_path(
+            self.cpm_resolution_relative_path, override_export_path
+        )
+        return apply_geo_func(
+            source_path=source_path,
+            func=reproject_coords,
+            export_folder=path,
+            # Leaving in case we return to using warp
+            # include_geo_warp_output_path=True,
+            # to_netcdf=False,
+            to_netcdf=True,
+            variable_name=self.cpm_variable_name,
+            x_grid=self.x,
+            y_grid=self.y,
+            xr_time_series_x_column_name=self.input_file_x_column_name,
+            xr_time_series_y_column_name=self.input_file_y_column_name,
+            return_results=return_results,
+        )
+
+    def execute(
+        self, skip_temporal: bool = False, skip_spatial: bool = False, **kwargs
+    ) -> list[Path] | None:
         """Run all steps for processing"""
-        return self.range_to_standard_calendar(**kwargs)
+        temporal_reprojected_data: list[Path] | None = None
+        spatial_reprojected_data: list[Path] | None = None
+        if not skip_temporal:
+            temporal_reprojected_data = self.range_to_standard_calendar(**kwargs)
+        if not skip_spatial:
+            spatial_reprojected_data: list[Path] = self.range_to_reprojection(
+                source_to_index=temporal_reprojected_data, **kwargs
+            )
+        return spatial_reprojected_data
 
 
 @dataclass(kw_only=True)
@@ -897,16 +1017,38 @@ class HADsResamplerManager:
     output_paths: PathLike | Sequence[PathLike] = (
         RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH
     )
-    variables: Sequence[VariableOptions] = (VariableOptions.default(),)
+    variables: Sequence[VariableOptions | str] = (VariableOptions.default(),)
     sub_path: Path = Path("day")
+    start_index: int = 0
+    stop_index: int | None = None
     start_date: date = HADS_START_DATE
     end_date: date = HADS_END_DATE
     configs: list[HADsResampler] = field(default_factory=list)
     config_default_kwargs: dict[str, Any] = field(default_factory=dict)
+    resampler_class: type[HADsResampler] = HADsResampler
+    _var_path_dict: dict[VariableOptions | str, Sequence[Path]] = field(
+        default_factory=dict
+    )
 
     def __post_init__(self) -> None:
         """Populate config attributes."""
         self.check_paths()
+
+    @property
+    def input_folder(self) -> Path | None:
+        """Return `self._input_path` set by `set_input_paths()`."""
+        if hasattr(self, "_input_path"):
+            return Path(self._input_path)
+        else:
+            return None
+
+    @property
+    def output_folder(self) -> Path | None:
+        """Return `self._output_path` set by `set_output_paths()`."""
+        if hasattr(self, "_input_path"):
+            return Path(self._input_path)
+        else:
+            return None
 
     def __repr__(self) -> str:
         """Summary of `self` configuration as a `str`."""
@@ -916,10 +1058,15 @@ class HADsResamplerManager:
             f"input_paths_count={len(self.input_paths) if isinstance(self.input_paths, Sequence) else 1})>"
         )
 
-    def _gen_input_folder_paths(self, path: PathLike) -> Iterator[Path]:
+    def _gen_folder_paths(
+        self, path: PathLike, append_var_path_dict: bool = False
+    ) -> Iterator[Path]:
         """Return a Generator of paths of `self.variables` and `self.runs`."""
         for var in self.variables:
-            yield Path(path) / var / self.sub_path
+            var_path: Path = Path(path) / var / self.sub_path
+            if append_var_path_dict:
+                self._var_path_dict[var_path] = var
+            yield var_path
 
     def check_paths(self, run_set_data_paths: bool = True):
         """Check if all `self.input_paths` exist."""
@@ -930,44 +1077,69 @@ class HADsResamplerManager:
         assert isinstance(self.output_paths, Iterable)
         assert len(self.input_paths) == len(self.output_paths)
         for path in self.input_paths:
-            assert Path(path).exists()
-            assert Path(path).is_dir()
+            try:
+                assert Path(path).exists()
+                assert Path(path).is_dir()
+            except AssertionError:
+                raise FileExistsError(f"Need existing file path: '{path}'")
+            try:
+                assert path in self._var_path_dict
+            except:
+                NotImplemented(
+                    f"Syncing `self._var_path_dict` with changes to `self.input_paths`."
+                )
 
     def set_input_paths(self):
         """Propagate `self.input_paths` if needed."""
         if isinstance(self.input_paths, PathLike):
-            self.input_paths = tuple(self._gen_input_folder_paths(self.input_paths))
+            self._input_path = self.input_paths
+            self.input_paths = tuple(
+                self._gen_folder_paths(self.input_paths, append_var_path_dict=True)
+            )
 
     def set_output_paths(self):
-        """Propagate `self.input_paths` if needed."""
+        """Propagate `self.output_paths` if needed."""
         if isinstance(self.output_paths, PathLike):
-            self.output_paths = tuple(self._gen_input_folder_paths(self.output_paths))
+            self._output_path = self.output_paths
+            self.output_paths = tuple(self._gen_folder_paths(self.output_paths))
 
-    def yield_configs(self) -> Iterable[CPMResampler]:
+    def yield_configs(self) -> Iterable[HADsResampler]:
         """Generate a `CPMResampler` or `HADsResampler` for `self.input_paths`."""
         self.check_paths()
         assert isinstance(self.input_paths, Iterable)
         assert isinstance(self.output_paths, Iterable)
-        for index, path in enumerate(self.input_paths):
-            yield CPMResampler(
-                input_path=path,
+        for index, var_path in enumerate(self._var_path_dict.items()):
+            yield self.resampler_class(
+                input_path=var_path[0],
                 output_path=self.output_paths[index],
+                variable_name=var_path[1],
+                start_index=self.start_index,
+                stop_index=self.stop_index,
                 **self.config_default_kwargs,
             )
 
     def __len__(self) -> int:
         """Return the length of `self.input_files`."""
-        return len(self.input_paths) if self.input_paths else 0
+        return (
+            len(self.input_paths[self.start_index : self.stop_index])
+            if isinstance(self.input_paths, Sequence)
+            else 0
+        )
+
+    @property
+    def max_count(self) -> int:
+        """Maximum length of `self.input_files` ignoring `start_index` and `start_index`."""
+        return len(self.input_paths) if isinstance(self.input_paths, Sequence) else 0
 
     def __iter__(self) -> Iterator[Path] | None:
-        if self.input_paths:
-            for file_path in self.input_paths:
+        if isinstance(self.input_paths, Sequence):
+            for file_path in self.input_paths[self.start_index : self.stop_index]:
                 yield Path(file_path)
         else:
             return None
 
-    def __getitem__(self, key: int | slice) -> Path | tuple[Path] | None:
-        if not self.input_paths:
+    def __getitem__(self, key: int | slice) -> Path | tuple[Path, ...] | None:
+        if not self.input_paths or not isinstance(self.input_paths, Sequence):
             return None
         elif isinstance(key, int):
             return Path(self.input_paths[key])
@@ -976,7 +1148,7 @@ class HADsResamplerManager:
         else:
             raise IndexError(f"Can only index with 'int', not: '{key}'")
 
-    def run_resample_configs(
+    def execute_resample_configs(
         self, multiprocess: bool = False, cpus: int | None = 1
     ) -> tuple[CPMResampler | HADsResampler, ...]:
         """Run all resampler configurations
@@ -998,7 +1170,7 @@ class HADsResamplerManager:
                 results: list = list(
                     tqdm(
                         pool.imap_unordered(
-                            lambda resampler: resampler.run(), resamplers
+                            lambda resampler: resampler.execute(), resamplers
                         ),
                         total=len(self),
                     )
@@ -1007,7 +1179,8 @@ class HADsResamplerManager:
             return resamplers
         else:
             for resampler in resamplers:
-                resampler.run()
+                print(resampler)
+                resampler.execute()
 
 
 @dataclass(kw_only=True, repr=False)
@@ -1020,6 +1193,7 @@ class CPMResamplerManager(HADsResamplerManager):
     >>> if not is_data_mounted:
     ...     pytest.skip(mount_doctest_skip_message)
     >>> cpm_resampler_manager: CPMResamplerManager = CPMResamplerManager(
+    ...     stop_index=10,
     ...     output_paths=resample_test_cpm_output_path,
     ...     )
     >>> cpm_resampler_manager
@@ -1028,13 +1202,17 @@ class CPMResamplerManager(HADsResamplerManager):
     >>> configs: tuple[CPMResampler, ...] = tuple(
     ...     cpm_resampler_manager.yield_configs())
     >>> pprint(configs)
-    (<CPMResampler(count=100, input_path='.../tasmax/05/latest',
+    (<CPMResampler(count=10, max_count=100,
+                   input_path='.../tasmax/05/latest',
                    output_path='.../tasmax/05/latest')>,
-     <CPMResampler(count=100, input_path='.../tasmax/06/latest',
+     <CPMResampler(count=10, max_count=100,
+                   input_path='.../tasmax/06/latest',
                    output_path='.../tasmax/06/latest')>,
-     <CPMResampler(count=100, input_path='.../tasmax/07/latest',
+     <CPMResampler(count=10, max_count=100,
+                   input_path='.../tasmax/07/latest',
                    output_path='.../tasmax/07/latest')>,
-     <CPMResampler(count=100, input_path='.../tasmax/08/latest',
+     <CPMResampler(count=10, max_count=100,
+                   input_path='.../tasmax/08/latest',
                    output_path='.../tasmax/08/latest')>)
     """
 
@@ -1046,11 +1224,13 @@ class CPMResamplerManager(HADsResamplerManager):
     start_date: date = CPM_START_DATE
     end_date: date = CPM_END_DATE
     configs: list[CPMResampler] = field(default_factory=list)
+    resampler_class: type[CPMResampler] = CPMResampler
     runs: Sequence[RunOptions] = RunOptions.preferred()
 
-    def __post_init__(self) -> None:
-        """Populate config attributes."""
-        self.check_paths()
+    # @property
+    # def cpm_vars(self) -> tuple[str, ...]:
+    #     """Ensure variable paths match `CPM` path names."""
+    #     return VariableOptions.cpm_values(self.variables)
 
     def __repr__(self) -> str:
         """Summary of `self` configuration as a `str`."""
@@ -1061,11 +1241,25 @@ class CPMResamplerManager(HADsResamplerManager):
             f"input_files_count={len(self.input_paths) if isinstance(self.input_paths, Sequence) else 1})>"
         )
 
-    def _gen_input_folder_paths(self, path: PathLike) -> Iterator[Path]:
+    def _gen_folder_paths(
+        self, path: PathLike, append_var_path_dict: bool = False, cpm_paths: bool = True
+    ) -> Iterator[Path]:
         """Return a Generator of paths of `self.variables` and `self.runs`."""
+        var_path: Path
         for var in self.variables:
             for run_type in self.runs:
-                yield Path(path) / var / run_type / self.sub_path
+                if cpm_paths:
+                    var_path: Path = (
+                        Path(path)
+                        / VariableOptions.cpm_value(var)
+                        / run_type
+                        / self.sub_path
+                    )
+                else:
+                    var_path: Path = Path(path) / var / run_type / self.sub_path
+                if append_var_path_dict:
+                    self._var_path_dict[var_path] = var
+                yield var_path
 
 
 # Kept from previous structure for reference

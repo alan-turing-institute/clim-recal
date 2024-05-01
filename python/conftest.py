@@ -57,6 +57,7 @@ CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateD
 
 TEST_PATH: Final[Path] = Path().absolute()
 TEST_DATA_PATH: Final[Path] = TEST_PATH / "tests/data"
+TEST_RESULTS_PATH: Final[Path] = TEST_PATH / "results"
 PYTHON_DIR_NAME: Final[Path] = Path("python")
 
 CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str, ...]] = (
@@ -237,7 +238,7 @@ def glasgow_shape_file_path(data_fixtures_path: Path) -> Path:
 
 @pytest.fixture
 def resample_test_runs_output_path(
-    path=TEST_DATA_PATH / "resample" / "runs",
+    path=TEST_RESULTS_PATH / "resample" / "runs",
 ) -> Iterator[Path]:
     path.mkdir(exist_ok=True, parents=True)
     yield path

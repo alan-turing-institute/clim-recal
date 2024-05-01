@@ -1,6 +1,6 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Final, Literal
+from typing import Any, Final, Literal
 
 import numpy as np
 import pytest
@@ -10,6 +10,11 @@ from osgeo.gdal import Dataset as GDALDataset
 from xarray import DataArray, Dataset, open_dataset
 
 from clim_recal.resample import (
+    CPRUK_XDIM,
+    CPRUK_YDIM,
+    DEFAULT_RELATIVE_GRID_DATA_PATH,
+    HADS_XDIM,
+    HADS_YDIM,
     RAW_CPM_TASMAX_PATH,
     RAW_HADS_TASMAX_PATH,
     UK_SPATIAL_PROJECTION,
@@ -19,6 +24,7 @@ from clim_recal.resample import (
     convert_xr_calendar,
     crop_nc,
     gdal_warp_wrapper,
+    reproject_coords,
 )
 from clim_recal.utils.core import (
     CLI_DATE_FORMAT_STR,
@@ -67,6 +73,27 @@ UKCP_TASMAX_LOCAL_TEST_PATH: Final[Path] = (
 UKCP_RAW_TASMAX_EXAMPLE_PATH: Final[Path] = (
     RAW_CPM_TASMAX_PATH / UKCP_RAW_TASMAX_1980_FILE
 )
+
+HADS_RAW_TASMAX_EXAMPLE_PATH: Final[Path] = (
+    RAW_HADS_TASMAX_PATH / HADS_RAW_TASMAX_1980_FILE
+)
+
+
+@pytest.mark.mount
+@pytest.fixture(scope="session")
+def tasmax_cpm_1980_raw() -> Dataset:
+    return open_dataset(UKCP_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
+
+
+@pytest.mark.mount
+@pytest.fixture(scope="session")
+def tasmax_hads_1980_raw() -> Dataset:
+    return open_dataset(HADS_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
+
+
+@pytest.fixture(scope="session")
+def reference_final_coord_grid() -> Dataset:
+    return open_dataset(DEFAULT_RELATIVE_GRID_DATA_PATH, decode_coords="all")
 
 
 @pytest.fixture
@@ -554,10 +581,12 @@ def test_crop_nc(
 
 @pytest.mark.slow
 @pytest.mark.mount
-@pytest.mark.parametrize("range", (False, True))
-def test_ukcp_manager(resample_test_cpm_output_path, range: bool) -> None:
+@pytest.mark.parametrize(
+    "config", ("direct", "range", "direct_provided", "range_provided")
+)
+def test_ukcp_manager(resample_test_cpm_output_path, config: str) -> None:
     """Test running default CPM calendar fix."""
-    CORRECT_FIRST_DATES: np.array = np.array(
+    CPM_FIRST_DATES: np.array = np.array(
         ["19801201", "19801202", "19801203", "19801204", "19801205"]
     )
     test_config = CPMResampler(
@@ -565,33 +594,44 @@ def test_ukcp_manager(resample_test_cpm_output_path, range: bool) -> None:
         output_path=resample_test_cpm_output_path,
     )
     paths: list[Path]
-    if range:
-        paths = test_config.range_to_standard_calendar(stop=1)
-    else:
-        paths = [test_config.to_standard_calendar()]
+    match config:
+        case "direct":
+            paths = [test_config.to_standard_calendar()]
+        case "range":
+            paths = test_config.range_to_standard_calendar(stop=1)
+        case "direct_provided":
+            paths = [
+                test_config.to_standard_calendar(
+                    index=1, source_to_index=tuple(test_config)
+                )
+            ]
+        case "range_provided":
+            paths = test_config.range_to_standard_calendar(
+                stop=1, source_to_index=tuple(test_config)
+            )
     export: Dataset = open_dataset(paths[0])
-    assert len(export.time) == 365
-    assert len(export.time_bnds) == 365
+    assert export.dims["time"] == 365
+    assert export.dims[CPRUK_XDIM] == 484
+    assert export.dims[CPRUK_YDIM] == 606
     assert not np.isnan(export.tasmax.head()[0][0][0].values).all()
     assert (
-        CORRECT_FIRST_DATES
-        == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
+        CPM_FIRST_DATES == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
     ).all()
     assert (
-        CORRECT_FIRST_DATES
+        CPM_FIRST_DATES
         == export.time_bnds.dt.strftime(CLI_DATE_FORMAT_STR).head().values
     ).all()
-    assert (CORRECT_FIRST_DATES == export.yyyymmdd.head().values).all()
+    assert (CPM_FIRST_DATES == export.yyyymmdd.head().values).all()
 
 
-@pytest.mark.xfail("checking `export.tasmax` vlues currently yields `nan`")
+# @pytest.mark.xfail("checking `export.tasmax` vlues currently yields `nan`")
 @pytest.mark.slow
 @pytest.mark.mount
 @pytest.mark.parametrize("range", (False, True))
 def test_hads_manager(resample_test_hads_output_path, range: bool) -> None:
-    """Test running default CPM calendar fix."""
-    CORRECT_FIRST_DATES: np.array = np.array(
-        ["19801201", "19801202", "19801203", "19801204", "19801205"]
+    """Test running default HADs spatial projection."""
+    HADS_FIRST_DATES: np.array = np.array(
+        ["19800101", "19800102", "19800103", "19800104", "19800105"]
     )
     test_config = HADsResampler(
         input_path=RAW_HADS_TASMAX_PATH,
@@ -599,21 +639,54 @@ def test_hads_manager(resample_test_hads_output_path, range: bool) -> None:
     )
     paths: list[Path]
     if range:
-        paths = test_config.range_to_reprojected_tif(stop=1)
+        paths = test_config.range_to_reprojection(stop=1)
     else:
-        paths = [test_config.to_reprojected_tif()]
+        paths = [test_config.to_reprojection()]
     export: Dataset = open_dataset(paths[0])
     assert len(export.time) == 31
-    assert not np.isnan(export.tasmax.head()[0][0][0].values).all()
+    assert not np.isnan(export.tasmax[0][200:300].values).all()
     assert (
-        CORRECT_FIRST_DATES
+        HADS_FIRST_DATES.astype(object)
         == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
     ).all()
-    assert (
-        CORRECT_FIRST_DATES
-        == export.time_bnds.dt.strftime(CLI_DATE_FORMAT_STR).head().values
-    ).all()
-    assert (CORRECT_FIRST_DATES == export.yyyymmdd.head().values).all()
+
+
+@pytest.mark.parametrize("data_type", ("hads", "cpm"))
+@pytest.mark.mount
+def test_reproject_coords(
+    data_type: str,
+    reference_final_coord_grid: Dataset,
+    tasmax_cpm_1980_raw: Dataset,
+    tasmax_hads_1980_raw: Dataset,
+) -> None:
+    """Test reprojecting raw spatial files."""
+    reprojected_xr_time_series: Dataset
+    kwargs: dict[str, Any] = dict(
+        variable_name="tasmax",
+        x_grid=reference_final_coord_grid.projection_x_coordinate,
+        y_grid=reference_final_coord_grid.projection_y_coordinate,
+    )
+    if data_type == "hads":
+        reprojected_xr_time_series = reproject_coords(
+            tasmax_hads_1980_raw,
+            xr_time_series_x_column_name=HADS_XDIM,
+            xr_time_series_y_column_name=HADS_YDIM,
+            **kwargs,
+        )
+        assert reprojected_xr_time_series.dims["time"] == 31
+        # assert reprojected_xr_time_series.dims[HADS_XDIM] == 528
+        # assert reprojected_xr_time_series.dims[HADS_YDIM] == 651
+    else:
+        reprojected_xr_time_series = reproject_coords(
+            tasmax_cpm_1980_raw,
+            xr_time_series_x_column_name=CPRUK_XDIM,
+            xr_time_series_y_column_name=CPRUK_YDIM,
+            **kwargs,
+        )
+        # Note: this test is to a raw file without 365 day projection
+        assert reprojected_xr_time_series.dims["time"] == 360
+    assert reprojected_xr_time_series.dims[HADS_XDIM] == 528
+    assert reprojected_xr_time_series.dims[HADS_YDIM] == 651
 
 
 # @pytest.mark.xfail("test still in development")

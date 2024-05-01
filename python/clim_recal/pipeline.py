@@ -118,6 +118,8 @@ def main(
     runs: Sequence[RunOptions] = (RunOptions.default(),),
     methods: Sequence[MethodOptions] = (MethodOptions.default(),),
     output_path: PathLike = DEFAULT_OUTPUT_PATH,
+    skip_cpm_standard_calendar_projection: bool = False,
+    skip_hads_spatial_2k_projection: bool = False,
     cpus: int | None = None,
     **kwargs,
 ) -> ClimRecalRunResultsType:
@@ -155,10 +157,12 @@ def main(
     <ClimRecalConfig(variables_count=2, runs_count=1,
                      cities_count=1, methods_count=1,
                      cpm_folders_count=2, hads_folders_count=2,
+                     start_index=0, stop_index=None,
                      cpus=...)>
     <CPMResamplerManager(variables_count=2, runs_count=1,
                          input_files_count=2)>
     <HADsResamplerManager(variables_count=2, input_paths_count=2)>
+    No steps run. Add '--execute' to run steps.
     """
     config: ClimRecalConfig = ClimRecalConfig(
         output_path=output_path,
@@ -171,9 +175,20 @@ def main(
     )
     print("clim-recal pipeline configurations:")
     print(config)
-    print(config.cpm_manger)
-    print(config.hads_manger)
+    print(config.cpm_manager)
+    print(config.hads_manager)
     if execute:
-        print("Running CPM Manager process...")
-        config.cpm_manger.run_resample_configs()
+        if skip_cpm_standard_calendar_projection:
+            print("Skipping CPM Strandard Calendar projection.")
+        else:
+            print("Running CPM Standard Calendar projection...")
+            config.cpm_manager.execute_resample_configs()
+        if skip_hads_spatial_2k_projection:
+            print("Skipping HADs aggregation to 2.2km spatial units.")
+        else:
+            print("Running HADs aggregation to 2.2km spatial units...")
+            config.hads_manager.execute_resample_configs()
+    else:
+        print("No steps run. Add '--execute' to run steps.")
+
     # config.cpm.resample_multiprocessing()

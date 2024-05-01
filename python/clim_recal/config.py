@@ -90,7 +90,8 @@ class ClimRecalConfig(BaseRunConfig):
     >>> run_config
     <ClimRecalConfig(variables_count=1, runs_count=1, cities_count=2,
                      methods_count=1, cpm_folders_count=1,
-                     hads_folders_count=1, cpus=1)>
+                     hads_folders_count=1, start_index=0,
+                     stop_index=None, cpus=1)>
     """
 
     variables: Sequence[VariableOptions] = (VariableOptions.default(),)
@@ -105,6 +106,8 @@ class ClimRecalConfig(BaseRunConfig):
     cpm_folder: PathLike = CPM_OUTPUT_LOCAL_PATH
     cpm_kwargs: dict = field(default_factory=dict)
     hads_kwargs: dict = field(default_factory=dict)
+    start_index: int = 0
+    stop_index: int | None = None
 
     @property
     def resample_path(self) -> Path:
@@ -122,16 +125,27 @@ class ClimRecalConfig(BaseRunConfig):
         return self.resample_path / self.cpm_folder
 
     def __post_init__(self) -> None:
-        """Initiate related `HADs` and `CPM` Mangers."""
-        self.cpm_manger = CPMResamplerManager(
-            variables=VariableOptions.cpm_values(self.variables),
+        """Initiate related `HADs` and `CPM` managers.
+
+        Notes
+        -----
+        The variagles passed to `CPMResamplerManager` do not apply
+        `VariableOptions.cpm_values()`, that occurs within `CPMResamplerManager`
+        for ease of coparability with HADs.
+        """
+        self.cpm_manager = CPMResamplerManager(
+            variables=self.variables,
             runs=self.runs,
             output_paths=self.resample_cpm_path,
+            start_index=self.start_index,
+            stop_index=self.stop_index,
             **self.cpm_kwargs,
         )
-        self.hads_manger = HADsResamplerManager(
+        self.hads_manager = HADsResamplerManager(
             variables=self.variables,
             output_paths=self.resample_hads_path,
+            start_index=self.start_index,
+            stop_index=self.stop_index,
             **self.hads_kwargs,
         )
         self.total_cpus: int | None = cpu_count()
@@ -146,8 +160,10 @@ class ClimRecalConfig(BaseRunConfig):
             f"runs_count={len(self.runs)}, "
             f"cities_count={len(self.cities) if self.cities else None}, "
             f"methods_count={len(self.methods)}, "
-            f"cpm_folders_count={len(self.cpm_manger)}, "
-            f"hads_folders_count={len(self.hads_manger)}, "
+            f"cpm_folders_count={len(self.cpm_manager)}, "
+            f"hads_folders_count={len(self.hads_manager)}, "
+            f"start_index={self.start_index}, "
+            f"stop_index={self.stop_index if self.stop_index else 'None'}, "
             f"cpus={self.cpus})>"
         )
 
