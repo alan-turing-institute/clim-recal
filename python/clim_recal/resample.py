@@ -7,13 +7,12 @@
 
 """
 
-import multiprocessing
-import os
 from dataclasses import dataclass, field
 from datetime import date
 from glob import glob
 from logging import getLogger
-from os import PathLike
+from multiprocessing import Pool
+from os import PathLike, cpu_count
 from pathlib import Path
 from typing import Any, Callable, Final, Iterable, Iterator, Literal, Sequence
 
@@ -35,6 +34,7 @@ from .utils.core import (
     CLI_DATE_FORMAT_STR,
     ISO_DATE_FORMAT_STR,
     climate_data_mount_path,
+    run_callable_attr,
 )
 from .utils.data import RunOptions, VariableOptions
 from .utils.xarray import (
@@ -591,8 +591,6 @@ class HADsResampler:
         `Dataset` of grid (either passed via `grid_data_path` or as a parameter).
     input_files
         NCF or TIF files to process with `self.grid` etc.
-    cpus
-        Number of `cpu` cores to use during multiprocessing.
     resampling_func
         Function to call on `self.input_files` with `self.grid`
     crop
@@ -659,7 +657,7 @@ class HADsResampler:
         self.set_grid_x_y()
         self.set_input_files()
         Path(self.output_path).mkdir(parents=True, exist_ok=True)
-        self.total_cpus: int | None = os.cpu_count()
+        self.total_cpus: int | None = cpu_count()
         if not self.cpus:
             self.cpus = 1 if not self.total_cpus else self.total_cpus
 
@@ -1001,6 +999,19 @@ class HADsResamplerManager:
 
     """Class to manage processing HADs resampling.
 
+    Attributes
+    ----------
+    input_paths
+        `Path` or `Paths` to `CPM` files to process. If `Path`, will be propegated with files matching
+    output_paths
+        `Path` or `Paths` to to save processed `CPM` files to. If `Path` will be propagated to match `input_paths`.
+    variables
+        Which `VariableOptions` to include.
+    sub_path
+        `Path` to include at the stem of generating `input_paths`.
+    cpus
+        Number of `cpu` cores to use during multiprocessing.
+
     Examples
     --------
     >>> if not is_data_mounted:
@@ -1026,13 +1037,23 @@ class HADsResamplerManager:
     configs: list[HADsResampler] = field(default_factory=list)
     config_default_kwargs: dict[str, Any] = field(default_factory=dict)
     resampler_class: type[HADsResampler] = HADsResampler
+    cpus: int | None = None
     _var_path_dict: dict[VariableOptions | str, Sequence[Path]] = field(
         default_factory=dict
     )
+    _strict_fail_if_var_in_input_path: bool = True
+
+    class VarirableInBaseImportPathError(Exception):
+        """Checking import path validity for `self.variables`."""
+
+        pass
 
     def __post_init__(self) -> None:
         """Populate config attributes."""
         self.check_paths()
+        self.total_cpus: int | None = cpu_count()
+        if not self.cpus:
+            self.cpus = 1 if not self.total_cpus else self.total_cpus
 
     @property
     def input_folder(self) -> Path | None:
@@ -1062,14 +1083,16 @@ class HADsResamplerManager:
         self, path: PathLike, append_var_path_dict: bool = False
     ) -> Iterator[Path]:
         """Return a Generator of paths of `self.variables` and `self.runs`."""
+        var_path: Path
         for var in self.variables:
-            var_path: Path = Path(path) / var / self.sub_path
+            var_path = Path(path) / var / self.sub_path
             if append_var_path_dict:
                 self._var_path_dict[var_path] = var
             yield var_path
 
     def check_paths(self, run_set_data_paths: bool = True):
         """Check if all `self.input_paths` exist."""
+
         if run_set_data_paths:
             self.set_input_paths()
             self.set_output_paths()
@@ -1081,7 +1104,9 @@ class HADsResamplerManager:
                 assert Path(path).exists()
                 assert Path(path).is_dir()
             except AssertionError:
-                raise FileExistsError(f"Need existing file path: '{path}'")
+                raise FileExistsError(
+                    f"One of 'self.input_paths' in {self} not valid: '{path}'"
+                )
             try:
                 assert path in self._var_path_dict
             except:
@@ -1096,6 +1121,16 @@ class HADsResamplerManager:
             self.input_paths = tuple(
                 self._gen_folder_paths(self.input_paths, append_var_path_dict=True)
             )
+            if self._strict_fail_if_var_in_input_path:
+                for var in self.variables:
+                    try:
+                        assert var not in str(self._input_path)
+                    except AssertionError:
+                        raise self.VarirableInBaseImportPathError(
+                            f"Folder named '{var}' in self._input_path: "
+                            f"'{self._input_path}'. Try passing a parent path or "
+                            f"set '_strict_fail_if_var_in_input_path' to 'False'."
+                        )
 
     def set_output_paths(self):
         """Propagate `self.output_paths` if needed."""
@@ -1149,7 +1184,7 @@ class HADsResamplerManager:
             raise IndexError(f"Can only index with 'int', not: '{key}'")
 
     def execute_resample_configs(
-        self, multiprocess: bool = False, cpus: int | None = 1
+        self, multiprocess: bool = False, cpus: int | None = None
     ) -> tuple[CPMResampler | HADsResampler, ...]:
         """Run all resampler configurations
 
@@ -1162,25 +1197,26 @@ class HADsResamplerManager:
         resamplers: tuple[CPMResampler | HADsResampler, ...] = tuple(
             self.yield_configs()
         )
+        results: list[list[Path] | None] = []
         if multiprocess:
-            cpu_count: int | None = os.cpu_count()
-            if not cpus:
-                cpu_count = cpu_count - 1 if cpu_count else 1
-            with multiprocessing.Pool(processes=cpus) as pool:
-                results: list = list(
+            cpus = cpus or self.cpus
+            if self.total_cpus and cpus:
+                assert cpus <= self.total_cpus
+            with Pool(processes=cpus) as pool:
+                results = list(
                     tqdm(
-                        pool.imap_unordered(
-                            lambda resampler: resampler.execute(), resamplers
-                        ),
+                        pool.imap_unordered(run_callable_attr, resamplers),
                         total=len(self),
                     )
                 )
-            assert len(results) == len(self)
-            return resamplers
+            # This currently fails if two tasks are involved
+            # , ideally reneamble to support a multiplicative of tasks
+            # assert len(results) == len(self)
         else:
             for resampler in resamplers:
                 print(resampler)
-                resampler.execute()
+                results.append(resampler.execute())
+        return resamplers
 
 
 @dataclass(kw_only=True, repr=False)

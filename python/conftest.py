@@ -32,6 +32,7 @@ from clim_recal.utils.core import (
     is_climate_data_mounted,
     is_platform_darwin,
     iter_to_tuple_strs,
+    results_path,
 )
 from clim_recal.utils.server import CondaLockFileManager
 from clim_recal.utils.xarray import (
@@ -57,7 +58,9 @@ CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateD
 
 TEST_PATH: Final[Path] = Path().absolute()
 TEST_DATA_PATH: Final[Path] = TEST_PATH / "tests/data"
-TEST_RESULTS_PATH: Final[Path] = TEST_PATH / "results"
+TEST_RESULTS_PATH: Final[Path] = results_path(
+    name="run-results", path=TEST_PATH, mkdir=True
+)
 PYTHON_DIR_NAME: Final[Path] = Path("python")
 
 CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str, ...]] = (
@@ -148,6 +151,7 @@ def cli_preprocess_default_command_str_correct() -> str:
     return CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
 
 
+@pytest.mark.mount
 @pytest.fixture
 def data_mount_path() -> Path:
     """Return likely climate data mount path based on operating system.

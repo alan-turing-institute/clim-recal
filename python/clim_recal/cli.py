@@ -56,6 +56,7 @@ def pipeline(
     cpus: Annotated[
         int, typer.Option("--cpus", "-p", min=1, max=MAX_CPUS)
     ] = DEFAULT_CPUS,
+    multiprocess: Annotated[bool, typer.Option("--use-multiprocessing")] = False,
 ) -> ClimRecalRunResultsType:
     """Run all or portions of UK climate projection debiasing methods."""
     stop_index: int | None = None if total == 0 else start_index + total
@@ -93,6 +94,7 @@ def pipeline(
         skip_hads_spatial_2k_projection=skip_hads_projection,
         start_index=start_index,
         stop_index=stop_index,
+        multiprocess=multiprocess,
     )
     # print(results)
     return results

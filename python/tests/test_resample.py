@@ -16,11 +16,14 @@ from clim_recal.resample import (
     HADS_XDIM,
     HADS_YDIM,
     RAW_CPM_TASMAX_PATH,
+    RAW_HADS_PATH,
     RAW_HADS_TASMAX_PATH,
     UK_SPATIAL_PROJECTION,
     ConvertCalendarAlignOptions,
     CPMResampler,
+    CPMResamplerManager,
     HADsResampler,
+    HADsResamplerManager,
     convert_xr_calendar,
     crop_nc,
     gdal_warp_wrapper,
@@ -34,7 +37,7 @@ from clim_recal.utils.core import (
     DateType,
     annual_data_path,
     annual_data_paths_generator,
-    run_path,
+    results_path,
 )
 from clim_recal.utils.data import CEDADataSources, HadUKGrid, UKCPLocalProjections
 from clim_recal.utils.xarray import (
@@ -76,6 +79,10 @@ UKCP_RAW_TASMAX_EXAMPLE_PATH: Final[Path] = (
 
 HADS_RAW_TASMAX_EXAMPLE_PATH: Final[Path] = (
     RAW_HADS_TASMAX_PATH / HADS_RAW_TASMAX_1980_FILE
+)
+
+HADS_FIRST_DATES: np.array = np.array(
+    ["19800101", "19800102", "19800103", "19800104", "19800105"]
 )
 
 
@@ -449,24 +456,24 @@ def test_geo_warp_format_type_crop(
     datetime_now = datetime.now()
     warp_path: Path = resample_test_runs_output_path / "geo_warp"
     if glasgow_crop:
-        glasgow_test_fig_path = run_path(
+        glasgow_test_fig_path = results_path(
             name="glasgow",
             path=warp_path,
             time=datetime_now,
             extension="png",
             mkdir=True,
         )
-    pre_warp_test_fig_path = run_path(
+    pre_warp_test_fig_path = results_path(
         name="pre_warp", path=warp_path, time=datetime_now, extension="png", mkdir=True
     )
-    warp_test_file_path = run_path(
+    warp_test_file_path = results_path(
         name="test_warp_file",
         path=warp_path,
         time=datetime_now,
         extension=GDALFormatExtensions[output_format],
         mkdir=False,
     )
-    warp_test_fig_path = run_path(
+    warp_test_fig_path = results_path(
         name="test_warp", path=warp_path, time=datetime_now, extension="png", mkdir=True
     )
 
@@ -630,9 +637,6 @@ def test_ukcp_manager(resample_test_cpm_output_path, config: str) -> None:
 @pytest.mark.parametrize("range", (False, True))
 def test_hads_manager(resample_test_hads_output_path, range: bool) -> None:
     """Test running default HADs spatial projection."""
-    HADS_FIRST_DATES: np.array = np.array(
-        ["19800101", "19800102", "19800103", "19800104", "19800105"]
-    )
     test_config = HADsResampler(
         input_path=RAW_HADS_TASMAX_PATH,
         output_path=resample_test_hads_output_path,
@@ -687,6 +691,49 @@ def test_reproject_coords(
         assert reprojected_xr_time_series.dims["time"] == 360
     assert reprojected_xr_time_series.dims[HADS_XDIM] == 528
     assert reprojected_xr_time_series.dims[HADS_YDIM] == 651
+
+
+@pytest.mark.mount
+@pytest.mark.parametrize("strict_fail_bool", (True, False))
+@pytest.mark.parametrize("manager", (HADsResamplerManager, CPMResamplerManager))
+def test_variable_in_base_import_path_error(
+    strict_fail_bool: bool, manager: HADsResamplerManager | CPMResamplerManager
+) -> None:
+    """Test checking import path validity for a given variable."""
+    with pytest.raises(manager.VarirableInBaseImportPathError):
+        HADsResamplerManager(
+            input_paths=RAW_HADS_TASMAX_PATH,
+            stop_index=1,
+        )
+    if strict_fail_bool:
+        with pytest.raises(FileExistsError):
+            HADsResamplerManager(
+                input_paths=RAW_HADS_TASMAX_PATH,
+                stop_index=1,
+                _strict_fail_if_var_in_input_path=False,
+            )
+
+
+@pytest.mark.slow
+@pytest.mark.mount
+@pytest.mark.parametrize("multiprocess", (False, True))
+def test_execute_resample_configs(multiprocess: bool, tmp_path) -> None:
+    """Test running default HADs spatial projection."""
+    test_config = HADsResamplerManager(
+        input_paths=RAW_HADS_PATH,
+        output_paths=tmp_path,
+        stop_index=1,
+    )
+    resamplers: tuple[
+        HADsResampler | CPMResampler, ...
+    ] = test_config.execute_resample_configs(multiprocess=multiprocess)
+    export: Dataset = open_dataset(resamplers[0][0])
+    assert len(export.time) == 31
+    assert not np.isnan(export.tasmax[0][200:300].values).all()
+    assert (
+        HADS_FIRST_DATES.astype(object)
+        == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
+    ).all()
 
 
 # @pytest.mark.xfail("test still in development")

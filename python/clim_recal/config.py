@@ -62,8 +62,8 @@ class ClimRecalConfig(BaseRunConfig):
         Which cities to crop data to. Future plans facilitate skipping to run for entire UK.
     methods
         Which debiasing methods to apply.
-    multiprocessing
-        Whether to use `multiprocessing` where available
+    multiprocess
+        Whether to use `multiprocess` where available
     cpus
         Number of cpus to use if multiprocessing
     output_path
@@ -98,7 +98,7 @@ class ClimRecalConfig(BaseRunConfig):
     runs: Sequence[RunOptions] = (RunOptions.default(),)
     cities: Sequence[CityOptions] | None = (CityOptions.default(),)
     methods: Sequence[MethodOptions] = (MethodOptions.default(),)
-    multiprocessing: bool = False
+    multiprocess: bool = False
     cpus: int | None = DEFAULT_CPUS
     output_path: PathLike = DEFAULT_OUTPUT_PATH
     resample_folder: PathLike = DEFAULT_RESAMPLE_FOLDER

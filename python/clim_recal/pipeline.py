@@ -106,6 +106,7 @@ from .config import (
     RunOptions,
     VariableOptions,
 )
+from .resample import CPMResampler, HADsResampler
 
 REPROJECTION_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_one.sh")
 REPROJECTION_WRAPPER_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_all.sh")
@@ -121,6 +122,8 @@ def main(
     skip_cpm_standard_calendar_projection: bool = False,
     skip_hads_spatial_2k_projection: bool = False,
     cpus: int | None = None,
+    multiprocess: bool = False,
+    print_range_length: int | None = 5,
     **kwargs,
 ) -> ClimRecalRunResultsType:
     """Run all elements of the pipeline.
@@ -139,7 +142,9 @@ def main(
     output_path
         `Path` to save intermediate and final results to.
     cpus
-        Number of cpus to use when parallelising.
+        Number of cpus to use when multiprocessing.
+    multiprocess
+        Whether to use multiprocessing.
     **kwargs
         Additional parameters to pass to a `ClimRecalConfig`.
 
@@ -171,6 +176,7 @@ def main(
         methods=methods,
         runs=runs,
         cpus=cpus,
+        multiprocess=multiprocess,
         **kwargs,
     )
     print("clim-recal pipeline configurations:")
@@ -182,12 +188,18 @@ def main(
             print("Skipping CPM Strandard Calendar projection.")
         else:
             print("Running CPM Standard Calendar projection...")
-            config.cpm_manager.execute_resample_configs()
+            cpm_resamplers: tuple[
+                CPMResampler, ...
+            ] = config.cpm_manager.execute_resample_configs(multiprocess=multiprocess)
+            print(cpm_resamplers[:print_range_length])
         if skip_hads_spatial_2k_projection:
             print("Skipping HADs aggregation to 2.2km spatial units.")
         else:
             print("Running HADs aggregation to 2.2km spatial units...")
-            config.hads_manager.execute_resample_configs()
+            hads_resamplers: tuple[
+                HADsResampler, ...
+            ] = config.hads_manager.execute_resample_configs(multiprocess=multiprocess)
+            print(hads_resamplers[:print_range_length])
     else:
         print("No steps run. Add '--execute' to run steps.")
 

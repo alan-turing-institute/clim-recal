@@ -127,6 +127,20 @@ class MonthDay:
 DEFAULT_START_MONTH_DAY: Final[MonthDay] = MonthDay(month=12, day=1)
 
 
+def run_callable_attr(
+    instance: object, method_name: str = "execute", *args, **kwargs
+) -> Any:
+    """Extract `method_name` from `instance` to call.
+
+    Notes
+    -----
+    This is primarily meant to address issues with `pickle`, particularly
+    when using `multiprocessing` and `lambda` functions yield `pickle` errors.
+    """
+    method: Callable = getattr(instance, method_name)
+    return method(*args, **kwargs)
+
+
 def product_dict(**kwargs) -> Iterator[dict[Hashable, Any]]:
     """Return product combinatorics of `kwargs`.
 
@@ -644,7 +658,7 @@ def time_str(
     return time.strftime(format)
 
 
-def run_path(
+def results_path(
     name: str,
     path: PathLike | None = None,
     time: datetime | None = None,
@@ -655,7 +669,7 @@ def run_path(
 
     Examples
     --------
-    >>> str(run_path('hads', 'test_example/folder', extension='cat'))
+    >>> str(results_path('hads', 'test_example/folder', extension='cat'))
     'test_example/folder/hads_..._...-....cat'
     """
     path = Path() if path is None else Path(path)
