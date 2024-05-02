@@ -59,42 +59,24 @@ def pipeline(
     multiprocess: Annotated[bool, typer.Option("--use-multiprocessing")] = False,
 ) -> ClimRecalRunResultsType:
     """Run all or portions of UK climate projection debiasing methods."""
-    stop_index: int | None = None if total == 0 else start_index + total
-    variables: tuple[VariableOptions | str, ...] = (
-        VariableOptions.all() if all_variables else tuple(variable)
-    )
-    cities: tuple[CityOptions | str, ...] = (
-        CityOptions.all() if all_cities else tuple(city)
-    )
-    methods: tuple[MethodOptions | str, ...] = (
-        MethodOptions.all() if all_methods else tuple(method)
-    )
-    runs: tuple[RunOptions | str, ...]
-
-    print("vars:", variables)
-
-    if all_runs:
-        runs = RunOptions.all()
-    elif default_runs:
-        runs = RunOptions.preferred()
-    else:
-        runs = tuple(run)
-
-    print("vars after conditional:", variables)
-
     results: ClimRecalRunResultsType = main(
-        variables=variables,
-        runs=runs,
-        cities=cities,
-        methods=methods,
+        variables=variable,
+        runs=run,
+        cities=city,
+        methods=method,
         output_path=output_path,
         cpus=cpus,
         execute=execute,
         skip_cpm_standard_calendar_projection=skip_cpm_projection,
         skip_hads_spatial_2k_projection=skip_hads_projection,
         start_index=start_index,
-        stop_index=stop_index,
+        total=total,
         multiprocess=multiprocess,
+        all_variables=all_variables,
+        all_cities=all_cities,
+        all_runs=all_runs,
+        default_runs=default_runs,
+        all_methods=all_methods,
     )
     # print(results)
     return results

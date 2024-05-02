@@ -114,15 +114,23 @@ REPROJECTION_WRAPPER_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_all.sh"
 
 def main(
     execute: bool = False,
-    variables: Sequence[VariableOptions] = (VariableOptions.default(),),
-    cities: Sequence[CityOptions] | None = (CityOptions.default(),),
-    runs: Sequence[RunOptions] = (RunOptions.default(),),
-    methods: Sequence[MethodOptions] = (MethodOptions.default(),),
     output_path: PathLike = DEFAULT_OUTPUT_PATH,
+    variables: Sequence[VariableOptions | str] = (VariableOptions.default(),),
+    cities: Sequence[CityOptions | str] | None = (CityOptions.default(),),
+    runs: Sequence[RunOptions | str] = (RunOptions.default(),),
+    methods: Sequence[MethodOptions | str] = (MethodOptions.default(),),
+    all_variables: bool = False,
+    all_cities: bool = False,
+    default_runs: bool = False,
+    all_runs: bool = False,
+    all_methods: bool = False,
     skip_cpm_standard_calendar_projection: bool = False,
     skip_hads_spatial_2k_projection: bool = False,
     cpus: int | None = None,
     multiprocess: bool = False,
+    start_index: int = 0,
+    stop_index: int | None = None,
+    total: int | None = None,
     print_range_length: int | None = 5,
     **kwargs,
 ) -> ClimRecalRunResultsType:
@@ -145,6 +153,11 @@ def main(
         Number of cpus to use when multiprocessing.
     multiprocess
         Whether to use multiprocessing.
+    start_index
+        Index to start all iterations from.
+    total
+        Total number of records to iterate over. 0 and
+        `None` indicate all values from `start_index`.
     **kwargs
         Additional parameters to pass to a `ClimRecalConfig`.
 
@@ -169,6 +182,26 @@ def main(
     <HADsResamplerManager(variables_count=2, input_paths_count=2)>
     No steps run. Add '--execute' to run steps.
     """
+    if stop_index and total:
+        print(
+            f"Both 'stop_index': {stop_index} and 'total': {total} provided, skipping 'total'."
+        )
+    elif total:
+        stop_index = None if total == 0 or total == None else start_index + total
+        print(
+            f"'stop_index': {stop_index} set from 'total': {total} and 'start_index': {start_index}."
+        )
+    variables = VariableOptions.all() if all_variables else tuple(variables)
+    assert cities  # In future there will be support for skipping city cropping
+    cities = CityOptions.all() if all_cities else tuple(cities)
+    methods = MethodOptions.all() if all_methods else tuple(methods)
+    if all_runs:
+        runs = RunOptions.all()
+    elif default_runs:
+        runs = RunOptions.preferred()
+    else:
+        runs = tuple(runs)
+
     config: ClimRecalConfig = ClimRecalConfig(
         output_path=output_path,
         variables=variables,
@@ -177,6 +210,8 @@ def main(
         runs=runs,
         cpus=cpus,
         multiprocess=multiprocess,
+        start_index=start_index,
+        stop_index=stop_index,
         **kwargs,
     )
     print("clim-recal pipeline configurations:")
