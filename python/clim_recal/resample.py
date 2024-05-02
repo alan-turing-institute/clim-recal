@@ -1266,6 +1266,7 @@ class CPMResamplerManager(HADsResamplerManager):
     resampler_class: type[CPMResampler] = CPMResampler
     runs: Sequence[RunOptions] = RunOptions.preferred()
 
+    # Uncomment if those paths are needed at the manager level
     # @property
     # def cpm_vars(self) -> tuple[str, ...]:
     #     """Ensure variable paths match `CPM` path names."""
@@ -1277,7 +1278,7 @@ class CPMResamplerManager(HADsResamplerManager):
             f"<{self.__class__.__name__}("
             f"variables_count={len(self.variables)}, "
             f"runs_count={len(self.runs)}, "
-            f"input_files_count={len(self.input_paths) if isinstance(self.input_paths, Sequence) else 1})>"
+            f"input_paths_count={len(self.input_paths) if isinstance(self.input_paths, Sequence) else 1})>"
         )
 
     def _gen_folder_paths(
