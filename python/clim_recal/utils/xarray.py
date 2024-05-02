@@ -1,11 +1,13 @@
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Final, Iterable, Literal
 
+import numpy as np
 import rioxarray  # nopycln: import
 from numpy import array, random
+from numpy.typing import NDArray
 from pandas import to_datetime
-from xarray import DataArray, Dataset
+from xarray import CFTimeIndex, DataArray, Dataset, cftime_range
 from xarray.backends.api import ENGINES
 
 from .core import (
@@ -169,6 +171,16 @@ def xarray_example(
         return da.to_dataset()
     else:
         return da
+
+
+def time_band_index(time_band: DataArray) -> NDArray:
+    """Convert a banded time index a banded standard (Gregorian)."""
+    time_bnds_fix_range_start: CFTimeIndex = cftime_range(
+        time_band.time.dt.strftime(ISO_DATE_FORMAT_STR).values[0],
+        time_band.time.dt.strftime(ISO_DATE_FORMAT_STR).values[-1],
+    )
+    time_bnds_fix_range_end: CFTimeIndex = time_bnds_fix_range_start + timedelta(days=1)
+    return np.array((time_bnds_fix_range_start, time_bnds_fix_range_end)).T
 
 
 GDALFormatsType = Literal[

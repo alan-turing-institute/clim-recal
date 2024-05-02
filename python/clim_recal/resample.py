@@ -24,18 +24,13 @@ from osgeo.gdal import Dataset as GDALDataset
 from osgeo.gdal import GDALWarpAppOptions, GRA_NearestNeighbour, Warp, WarpOptions
 from rich import print
 from tqdm.rich import tqdm, trange
-from xarray import DataArray, Dataset, cftime_range, open_dataset
+from xarray import DataArray, Dataset, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import CFCalendar, InterpOptions
 
 from clim_recal.debiasing.debias_wrapper import VariableOptions
 
-from .utils.core import (
-    CLI_DATE_FORMAT_STR,
-    ISO_DATE_FORMAT_STR,
-    climate_data_mount_path,
-    run_callable_attr,
-)
+from .utils.core import CLI_DATE_FORMAT_STR, climate_data_mount_path, run_callable_attr
 from .utils.data import RunOptions, VariableOptions
 from .utils.xarray import (
     NETCDF4_XARRAY_ENGINE,
@@ -45,6 +40,7 @@ from .utils.xarray import (
     GDALGeoTiffFormatStr,
     XArrayEngineType,
     ensure_xr_dataset,
+    time_band_index,
 )
 
 logger = getLogger(__name__)
@@ -111,6 +107,7 @@ def convert_xr_calendar(
     interpolate_na: bool = False,
     ensure_output_type_is_dataset: bool = False,
     interpolate_method: InterpOptions = DEFAULT_INTERPOLATION_METHOD,
+    keep_crs: bool = True,
     keep_attrs: bool = True,
     limit: int = 1,
     engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
@@ -136,6 +133,8 @@ def convert_xr_calendar(
         Whether to enforce `cftime` vs `datetime64` `time` format.
     missing_value
         Missing value to populate missing date interpolations with.
+    keep_crs
+        Reapply initial Coordinate Reference System (CRS) after time projection.
     interpolate_na
         Whether to apply temporal interpolation for missing values.
     interpolate_method
@@ -216,17 +215,24 @@ def convert_xr_calendar(
         use_cftime=use_cftime,
     )
     if not interpolate_na:
-        return calendar_converted_ts
+        if keep_crs and xr_time_series.rio.crs:
+            return calendar_converted_ts.rio.set_crs(xr_time_series.rio.crs)
+        else:
+            return calendar_converted_ts
     else:
         if extrapolate_fill_value:
             kwargs["fill_value"] = "extrapolate"
-        return calendar_converted_ts.interpolate_na(
+        interpolated_ts: Dataset | DataArray = calendar_converted_ts.interpolate_na(
             dim="time",
             method=interpolate_method,
             keep_attrs=keep_attrs,
             limit=limit,
             **kwargs,
         )
+        if keep_crs and xr_time_series.rio.crs:
+            return interpolated_ts.rio.set_crs(xr_time_series.rio.crs)
+        else:
+            return interpolated_ts
 
 
 def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> Dataset:
@@ -240,11 +246,8 @@ def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> D
     xr_std_calendar: Dataset = convert_xr_calendar(
         cpm_xr_time_series, interpolate_na=True
     )
-    time_bnds_fix: DataArray = cftime_range(
-        xr_std_calendar.time.dt.strftime(ISO_DATE_FORMAT_STR).values[0],
-        xr_std_calendar.time.dt.strftime(ISO_DATE_FORMAT_STR).values[-1],
-    )
-    xr_std_calendar["time_bnds"] = time_bnds_fix
+    time_bands_fix: NDArray = time_band_index(xr_std_calendar.time_bnds)
+    xr_std_calendar["time_bnds"] = xr_std_calendar.time_bnds.dims, time_bands_fix
     xr_std_calendar["month_number"] = xr_std_calendar.month_number.interpolate_na(
         "time", fill_value="extrapolate"
     )

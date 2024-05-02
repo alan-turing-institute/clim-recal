@@ -25,6 +25,7 @@ from clim_recal.resample import (
     HADsResampler,
     HADsResamplerManager,
     convert_xr_calendar,
+    cpm_xarray_to_standard_calendar,
     crop_nc,
     gdal_warp_wrapper,
     reproject_coords,
@@ -84,6 +85,8 @@ HADS_RAW_TASMAX_EXAMPLE_PATH: Final[Path] = (
 HADS_FIRST_DATES: np.array = np.array(
     ["19800101", "19800102", "19800103", "19800104", "19800105"]
 )
+FINAL_CONVERTED_CPM_WIDTH: Final[int] = 484
+FINAL_CONVERTED_CPM_HEIGHT: Final[int] = 606
 
 
 @pytest.mark.mount
@@ -526,6 +529,20 @@ def test_geo_warp_format_type_crop(
     assert str(read_exported.rio.crs) == UK_SPATIAL_PROJECTION
     if glasgow_crop:
         assert read_exported.rio.bounds() == glasgow_epsg_27700_bounds
+
+
+@pytest.mark.slow
+def test_cpm_xarray_to_standard_calendar(
+    tasmax_cpm_1980_raw: Dataset,
+) -> None:
+    CORRECT_PROJ4: Final[
+        str
+    ] = "+proj=ob_tran +o_proj=longlat +o_lon_p=0 +o_lat_p=37.5 +lon_0=357.5 +R=6371229 +no_defs=True"
+    test_converted = cpm_xarray_to_standard_calendar(tasmax_cpm_1980_raw)
+    assert test_converted.rio.width == FINAL_CONVERTED_CPM_WIDTH
+    assert test_converted.rio.height == FINAL_CONVERTED_CPM_HEIGHT
+    assert test_converted.rio.crs is not None
+    assert test_converted.rio.crs.to_proj4() == CORRECT_PROJ4
 
 
 @pytest.mark.xfail
