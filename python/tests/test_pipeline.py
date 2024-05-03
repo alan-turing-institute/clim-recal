@@ -50,6 +50,7 @@ def test_main(
         skip_hads_spatial_2k_projection=True,
         skip_cpm_standard_calendar_projection=False,
         stop_index=1,
+        cpus=2,
         multiprocess=multiprocess,
     )
     captured = capsys.readouterr()

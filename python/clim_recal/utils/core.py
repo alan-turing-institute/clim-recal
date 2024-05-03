@@ -1,5 +1,6 @@
 """Utility functions."""
 import sys
+import warnings
 from collections.abc import KeysView
 from copy import deepcopy
 from csv import DictReader
@@ -8,7 +9,8 @@ from datetime import date, datetime, timedelta
 from enum import StrEnum
 from itertools import product
 from logging import getLogger
-from os import PathLike, chdir
+from multiprocessing import Pool
+from os import PathLike, chdir, cpu_count
 from pathlib import Path
 from typing import (
     Any,
@@ -19,10 +21,15 @@ from typing import (
     Iterable,
     Iterator,
     Optional,
+    Sequence,
     Union,
 )
 
+from tqdm import TqdmExperimentalWarning, tqdm
+
 logger = getLogger(__name__)
+
+warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 
 DateType = Union[date, str]
 DateRange = tuple[DateType, DateType]
@@ -132,13 +139,68 @@ def run_callable_attr(
 ) -> Any:
     """Extract `method_name` from `instance` to call.
 
+    Parameters
+    ----------
+    instance
+        `object` to call `method_name` from.
+    method_name
+        Name of method on `object` to call.
+    *args
+        Parameters passed to `method_name` from `instance`.
+    **kwargs
+        Parameters passed to `method_name` from `instance`.
+
     Notes
     -----
     This is primarily meant to address issues with `pickle`, particularly
     when using `multiprocessing` and `lambda` functions yield `pickle` errors.
+
+    Examples
+    --------
+    >>> jan_1: MonthDay = MonthDay()
+    >>> run_callable_attr(jan_1, 'from_year', 1984)
+    datetime.date(1984, 1, 1)
     """
     method: Callable = getattr(instance, method_name)
     return method(*args, **kwargs)
+
+
+def multiprocess_execute(
+    iter: Sequence, method_name: str | None = None, cpus: int | None = None
+) -> list:
+    """Run `method_name` as from `iter` via `multiprocessing`.
+
+    Parameters
+    ----------
+    iter
+        `Sequence` of instances to iterate over calling `method_name` from.
+    method_name
+        What to call from objects in `inter`.
+    cpus
+        Number of cpus to pass to `Pool` for multiprocessing.
+
+    Examples
+    --------
+    >>> if not is_data_mounted:
+    ...     pytest.skip(mount_doctest_skip_message)
+    >>> from clim_recal.resample import CPMResampler
+    >>> cpm_resampler: CPMResampler = CPMResampler(
+    ...     stop_index=3,
+    ...     output_path=resample_test_cpm_output_path,
+    ... )
+    >>> multiprocess_execute(cpm_resampler, method_name="exists")
+    [True, True, True]
+    """
+    total_cpus: int | None = cpu_count()
+    cpus = cpus or 1
+    if isinstance(total_cpus, int) and cpus is not None:
+        assert cpus <= total_cpus - 1
+    params_tuples: list[tuple[Any, str]] = [(item, method_name) for item in iter]
+    with Pool(processes=cpus) as pool:
+        results = list(
+            tqdm(pool.starmap(run_callable_attr, params_tuples), total=len(iter))
+        )
+    return results
 
 
 def product_dict(**kwargs) -> Iterator[dict[Hashable, Any]]:
@@ -649,7 +711,7 @@ def time_str(
     '24-10-10_10-10'
     """
     time = time if time else datetime.now()
-    # `isinstance` would faile because `date` is a
+    # `isinstance` would fail because `date` is a
     # subclass of `datetime`
     if type(time) is date:
         time = datetime.combine(time, datetime.now().time())

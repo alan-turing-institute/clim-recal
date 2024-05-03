@@ -50,20 +50,58 @@ New approach:
 - [x] Add function for UKCP
 - [x] Check `convert_xr_calendar` `doctest` examples
 
-```python
-from clim_recal.resample import CPMResampleManager
+To run this step in the pipeline the following should work
+for the default combindations of `variables`: `tasmax`,
+`tasmin`, and `rainfall` and the default set of runs: `05`,
+`06`, `07` and `08`, assuming the necessary data is mounted.
 
-# Below assumes running with data mounted to `/mnt/vmfileshare/` following the `linux` config
-for measure in ("tasmax", "tasmin"):
-    # Assuming indexing doesn't go above 10
-    for i in range(5, 9):
-        # Create instance specifying paths
-        cpm_resampler= CPMResampleManager(
-            input_path=f'/mnt/vmfileshare/ClimateData/Raw/UKCP2.2/{measure}/0{i}/latest',
-            standard_calendar_path=f"cpm-standard-calendar/{measure}/0{i}"
-        )
-        # Indicate running the standard calandar projection over all elements in `cpm_resampler`
-        cpm_resampler_tasmin.to_standard_calendar(slice(0, len(cpm_resampler)))
+If installed via `pipx`/`pip` etc. on your local path (or within `Docker`)
+clim-recal should be a command line function
+```console
+$ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written
+clim-recal pipeline configurations:
+<ClimRecalConfig(variables_count=3, runs_count=4, cities_count=1, methods_count=1,
+                 cpm_folders_count=12, hads_folders_count=3, start_index=0,
+                 stop_index=None, cpus=2)>
+<CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)>
+<HADsResamplerManager(variables_count=3, input_paths_count=3)>
+```
+Otherwise, you can install locally and either run via
+`pdm` from the `python` folder
+
+```console
+$ cd clim-recal/python
+$ pdm run clim-recal --all-variables --default-runs --output-path /where/results/should/be/written
+# Skipping output for brevity
+```
+
+Or within an `ipython` or `jupyter` instance
+
+```console
+>>> from clim_recal.pipeline import main
+>>> main(all_variables=True, default_runs=True)
+# Skipping output for brevity
+```
+
+Regardless of your route, once you're confident with the
+configuration, add the `--execute` parameter to run. For example,
+assuming a local install:
+
+```console
+$ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written --execute
+clim-recal pipeline configurations:
+<ClimRecalConfig(variables_count=3, runs_count=4, cities_count=1, methods_count=1,
+                 cpm_folders_count=12, hads_folders_count=3, start_index=0,
+                 stop_index=None, cpus=2)>
+<CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)>
+<HADsResamplerManager(variables_count=3, input_paths_count=3)>
+Running CPM Standard Calendar projection...
+<CPMResampler(count=100, max_count=100,
+              input_path='/mnt/vmfileshare/ClimateData/Raw/UKCP2.2/tasmax/05/latest',
+              output_path='/mnt/vmfileshare/ClimateData/CPM-365/test-run-3-may/resample/
+              cpm/tasmax/05/latest')>
+ 100% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100/100  [ 0:38:27 < 0:00:00 , 0 it/s ]
+  87% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 87/100  [ 0:17:42 < 0:03:07 , 0 it/s ]
 ```
 
 # Cropping
@@ -178,7 +216,7 @@ def main(
                      start_index=0, stop_index=None,
                      cpus=...)>
     <CPMResamplerManager(variables_count=2, runs_count=1,
-                         input_files_count=2)>
+                         input_paths_count=2)>
     <HADsResamplerManager(variables_count=2, input_paths_count=2)>
     No steps run. Add '--execute' to run steps.
     """
@@ -225,7 +263,9 @@ def main(
             print("Running CPM Standard Calendar projection...")
             cpm_resamplers: tuple[
                 CPMResampler, ...
-            ] = config.cpm_manager.execute_resample_configs(multiprocess=multiprocess)
+            ] = config.cpm_manager.execute_resample_configs(
+                multiprocess=multiprocess, cpus=cpus
+            )
             print(cpm_resamplers[:print_range_length])
         if skip_hads_spatial_2k_projection:
             print("Skipping HADs aggregation to 2.2km spatial units.")
@@ -233,7 +273,9 @@ def main(
             print("Running HADs aggregation to 2.2km spatial units...")
             hads_resamplers: tuple[
                 HADsResampler, ...
-            ] = config.hads_manager.execute_resample_configs(multiprocess=multiprocess)
+            ] = config.hads_manager.execute_resample_configs(
+                multiprocess=multiprocess, cpus=cpus
+            )
             print(hads_resamplers[:print_range_length])
     else:
         print("No steps run. Add '--execute' to run steps.")

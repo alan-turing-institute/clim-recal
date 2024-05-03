@@ -7,11 +7,11 @@
 
 """
 
+import pickle
 from dataclasses import dataclass, field
 from datetime import date
 from glob import glob
 from logging import getLogger
-from multiprocessing import Pool
 from os import PathLike, cpu_count
 from pathlib import Path
 from typing import Any, Callable, Final, Iterable, Iterator, Literal, Sequence
@@ -23,14 +23,18 @@ from numpy.typing import NDArray
 from osgeo.gdal import Dataset as GDALDataset
 from osgeo.gdal import GDALWarpAppOptions, GRA_NearestNeighbour, Warp, WarpOptions
 from rich import print
-from tqdm.rich import tqdm, trange
+from tqdm.rich import trange
 from xarray import DataArray, Dataset, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import CFCalendar, InterpOptions
 
 from clim_recal.debiasing.debias_wrapper import VariableOptions
 
-from .utils.core import CLI_DATE_FORMAT_STR, climate_data_mount_path, run_callable_attr
+from .utils.core import (
+    CLI_DATE_FORMAT_STR,
+    climate_data_mount_path,
+    multiprocess_execute,
+)
 from .utils.data import RunOptions, VariableOptions
 from .utils.xarray import (
     NETCDF4_XARRAY_ENGINE,
@@ -790,7 +794,7 @@ class HADsResampler:
         override_export_path: Path | None = None,
         source_to_index: Iterable | None = None,
     ) -> list[Path | Dataset]:
-        export_paths: list[Path] = []
+        export_paths: list[Path | Dataset] = []
         if stop is None:
             stop = len(self)
         for index in trange(start, stop, step):
@@ -996,6 +1000,23 @@ class CPMResampler(HADsResampler):
             )
         return spatial_reprojected_data
 
+    def __getstate__(self):
+        """Meanse of testing what aspects of instance have issues multiprocessing.
+
+        Notes
+        -----
+        As of 2 May 2023, picking is not an error on macOS but *is*
+        on the server configured Linux architecture. This may relate
+        to differences between Linux using `fork` while `win` and `macOS`
+        use `spawn`. This `method` helps test that on instances of this
+        `class`.
+        """
+        for variable_name, value in vars(self).items():
+            try:
+                pickle.dumps(value)
+            except pickle.PicklingError:
+                print(f"{variable_name} with value {value} is not pickable")
+
 
 @dataclass(kw_only=True)
 class HADsResamplerManager:
@@ -1194,8 +1215,9 @@ class HADsResamplerManager:
         Parameters
         ----------
         multiprocess
-            If `True` multiprocess running `resample_configs`.
-
+            If `True` run parameters in `resample_configs` with `multiprocess_execute`.
+        cpus
+            Number of `cpus` to pass to `multiprocess_execute`.
         """
         resamplers: tuple[CPMResampler | HADsResampler, ...] = tuple(
             self.yield_configs()
@@ -1205,16 +1227,7 @@ class HADsResamplerManager:
             cpus = cpus or self.cpus
             if self.total_cpus and cpus:
                 assert cpus <= self.total_cpus
-            with Pool(processes=cpus) as pool:
-                results = list(
-                    tqdm(
-                        pool.imap_unordered(run_callable_attr, resamplers),
-                        total=len(self),
-                    )
-                )
-            # This currently fails if two tasks are involved
-            # , ideally reneamble to support a multiplicative of tasks
-            # assert len(results) == len(self)
+            results = multiprocess_execute(resamplers, method_name="execute", cpus=cpus)
         else:
             for resampler in resamplers:
                 print(resampler)
@@ -1237,7 +1250,7 @@ class CPMResamplerManager(HADsResamplerManager):
     ...     )
     >>> cpm_resampler_manager
     <CPMResamplerManager(variables_count=1, runs_count=4,
-                         input_files_count=4)>
+                         input_paths_count=4)>
     >>> configs: tuple[CPMResampler, ...] = tuple(
     ...     cpm_resampler_manager.yield_configs())
     >>> pprint(configs)
@@ -1266,7 +1279,8 @@ class CPMResamplerManager(HADsResamplerManager):
     resampler_class: type[CPMResampler] = CPMResampler
     runs: Sequence[RunOptions] = RunOptions.preferred()
 
-    # Uncomment if those paths are needed at the manager level
+    # Uncomment if cpm specific paths like 'pr' for 'rainbow'
+    # are needed at the manager level.
     # @property
     # def cpm_vars(self) -> tuple[str, ...]:
     #     """Ensure variable paths match `CPM` path names."""
