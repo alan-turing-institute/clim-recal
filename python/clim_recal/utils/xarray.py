@@ -173,11 +173,13 @@ def xarray_example(
         return da
 
 
-def time_band_index(time_band: DataArray) -> NDArray:
+def cftime_range_gen(time_data_array: DataArray, **kwargs) -> NDArray:
     """Convert a banded time index a banded standard (Gregorian)."""
+    assert hasattr(time_data_array, "time")
     time_bnds_fix_range_start: CFTimeIndex = cftime_range(
-        time_band.time.dt.strftime(ISO_DATE_FORMAT_STR).values[0],
-        time_band.time.dt.strftime(ISO_DATE_FORMAT_STR).values[-1],
+        time_data_array.time.dt.strftime(ISO_DATE_FORMAT_STR).values[0],
+        time_data_array.time.dt.strftime(ISO_DATE_FORMAT_STR).values[-1],
+        **kwargs,
     )
     time_bnds_fix_range_end: CFTimeIndex = time_bnds_fix_range_start + timedelta(days=1)
     return np.array((time_bnds_fix_range_start, time_bnds_fix_range_end)).T

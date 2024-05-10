@@ -43,8 +43,8 @@ from .utils.xarray import (
     GDALFormatsType,
     GDALGeoTiffFormatStr,
     XArrayEngineType,
+    cftime_range_gen,
     ensure_xr_dataset,
-    time_band_index,
 )
 
 logger = getLogger(__name__)
@@ -116,9 +116,11 @@ def convert_xr_calendar(
     limit: int = 1,
     engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
     extrapolate_fill_value: bool = True,
+    check_cftime_cols: tuple[str] | None = None,
+    cftime_range_gen_kwargs: dict[str, Any] | None = None,
     **kwargs,
 ) -> Dataset | DataArray:
-    """Convert cpm 360 day time series to HADs 365 day time series.
+    """Convert cpm 360 day time series to a standard 365/366 day time series.
 
     Notes
     -----
@@ -153,6 +155,10 @@ def convert_xr_calendar(
         If `True`, then pass `fill_value=extrapolate`. See:
          * https://docs.xarray.dev/en/stable/generated/xarray.Dataset.interpolate_na.html
          * https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html#scipy.interpolate.interp1d
+    check_cftime_cols
+        Columns to check `cftime` format on
+    cftime_range_gen_kwargs
+        Any `kwargs` to pass to `cftime_range_gen`
     **kwargs
         Any additional parameters to pass to `interpolate_na`.
 
@@ -202,6 +208,10 @@ def convert_xr_calendar(
        ...
     ValueError: `date_range_like` was unable to generate a range as the source frequency was not inferable.
     """
+    if check_cftime_cols is None:
+        check_cftime_cols = tuple()
+    if cftime_range_gen_kwargs is None:
+        cftime_range_gen_kwargs = dict()
     if isinstance(xr_time_series, PathLike):
         if Path(xr_time_series).suffix.endswith(NETCDF_EXTENSION_STR):
             xr_time_series = open_dataset(
@@ -220,6 +230,7 @@ def convert_xr_calendar(
     )
     if not interpolate_na:
         if keep_crs and xr_time_series.rio.crs:
+            assert xr_time_series.rio.crs
             return calendar_converted_ts.rio.set_crs(xr_time_series.rio.crs)
         else:
             return calendar_converted_ts
@@ -233,6 +244,15 @@ def convert_xr_calendar(
             limit=limit,
             **kwargs,
         )
+        for cftime_col in check_cftime_cols:
+            if cftime_col in interpolated_ts:
+                cftime_fix: NDArray = cftime_range_gen(
+                    interpolated_ts[cftime_col], **cftime_range_gen_kwargs
+                )
+                interpolated_ts[cftime_col] = (
+                    interpolated_ts[cftime_col].dims,
+                    cftime_fix,
+                )
         if keep_crs and xr_time_series.rio.crs:
             return interpolated_ts.rio.set_crs(xr_time_series.rio.crs)
         else:
@@ -246,21 +266,33 @@ def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> D
     ----------
     cpm_xr_time_series
         A raw `xarray` of the form provided by CPM.
+
+    Returns
+    -------
+    `Dataset` calendar converted to standard (Gregorian).
     """
-    xr_std_calendar: Dataset = convert_xr_calendar(
-        cpm_xr_time_series, interpolate_na=True
+    cpm_to_std_calendar: Dataset = convert_xr_calendar(
+        cpm_xr_time_series, interpolate_na=True, check_cftime_cols=("time_bnds",)
     )
-    time_bands_fix: NDArray = time_band_index(xr_std_calendar.time_bnds)
-    xr_std_calendar["time_bnds"] = xr_std_calendar.time_bnds.dims, time_bands_fix
-    xr_std_calendar["month_number"] = xr_std_calendar.month_number.interpolate_na(
+    cpm_to_std_calendar[
+        "month_number"
+    ] = cpm_to_std_calendar.month_number.interpolate_na(
         "time", fill_value="extrapolate"
     )
-    xr_std_calendar["year"] = xr_std_calendar.year.interpolate_na(
+    cpm_to_std_calendar["year"] = cpm_to_std_calendar.year.interpolate_na(
         "time", fill_value="extrapolate"
     )
-    yyyymmdd_fix: DataArray = xr_std_calendar.time.dt.strftime(CLI_DATE_FORMAT_STR)
-    xr_std_calendar["yyyymmdd"] = yyyymmdd_fix
-    return xr_std_calendar
+    yyyymmdd_fix: DataArray = cpm_to_std_calendar.time.dt.strftime(CLI_DATE_FORMAT_STR)
+    cpm_to_std_calendar["yyyymmdd"] = yyyymmdd_fix
+    assert cpm_xr_time_series.rio.crs == cpm_to_std_calendar.rio.crs
+    for var_name in cpm_xr_time_series.data_vars:
+        if not cpm_to_std_calendar[var_name].rio.crs:
+            # Try to enforce the coordinates for each variable
+            var_data: DataArray = cpm_to_std_calendar[var_name]
+            var_data.rio.set_crs(cpm_xr_time_series[var_name].rio.crs, inplace=True)
+            assert var_data.rio.crs
+            cpm_to_std_calendar[var_name] = var_data
+    return cpm_to_std_calendar
 
 
 def reproject_coords(
@@ -362,16 +394,16 @@ def crop_nc(
         crop_geom = read_file(crop_geom)
     assert isinstance(crop_geom, GeoDataFrame)
     crop_geom.set_crs(crs=final_crs, inplace=True)
-    if initial_clip_box:
-        xr_time_series = xr_time_series.rio.clip_box(
-            minx=crop_geom.bounds.minx,
-            miny=crop_geom.bounds.miny,
-            maxx=crop_geom.bounds.maxx,
-            maxy=crop_geom.bounds.maxy,
-        )
-    return xr_time_series.rio.clip(
-        crop_geom.geometry.values, drop=True, invert=invert, **kwargs
+    # if initial_clip_box:
+    return xr_time_series.rio.clip_box(
+        minx=crop_geom.bounds.minx,
+        miny=crop_geom.bounds.miny,
+        maxx=crop_geom.bounds.maxx,
+        maxy=crop_geom.bounds.maxy,
     )
+    # return xr_time_series.rio.clip(
+    #     crop_geom.geometry.values, drop=True, invert=invert, **kwargs
+    # )
 
 
 # Previous approach, kept for reference
@@ -541,6 +573,7 @@ def apply_geo_func(
     export_folder: PathLike,
     new_path_name_func: Callable[[Path], Path] | None = None,
     to_netcdf: bool = True,
+    to_raster: bool = False,
     include_geo_warp_output_path: bool = False,
     return_results: bool = False,
     **kwargs,
@@ -567,7 +600,7 @@ def apply_geo_func(
     if include_geo_warp_output_path:
         kwargs["output_path"] = export_path
     results: Dataset | Path | GDALDataset = func(source_path, **kwargs)
-    if to_netcdf:
+    if to_netcdf or to_raster:
         if isinstance(results, Path):
             results = open_dataset(results)
         if isinstance(results, GDALDataset):
@@ -575,7 +608,10 @@ def apply_geo_func(
                 f"Restuls from 'gdal_warp_wrapper' can't directly export to NetCDF form, only return a Path or GDALDataset"
             )
         assert isinstance(results, Dataset)
-        results.to_netcdf(export_path)
+        if to_netcdf:
+            results.to_netcdf(export_path)
+        if to_raster:
+            results.rio.to_raster(export_path)
     if return_results:
         return results
     else:
@@ -647,7 +683,7 @@ class HADsResampler:
     grid_y_column_name: str = HADS_YDIM
     input_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
     export_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
-    cpm_resolution_relative_path: Path = HADS_2_2K_RESOLUTION_PATH
+    resolution_relative_path: Path = HADS_2_2K_RESOLUTION_PATH
     input_file_x_column_name: str = HADS_XDIM
     input_file_y_column_name: str = HADS_YDIM
     start_index: int = 0
@@ -766,7 +802,7 @@ class HADsResampler:
             index=index, source_to_index=source_to_index
         )
         path: PathLike = self._output_path(
-            self.cpm_resolution_relative_path, override_export_path
+            self.resolution_relative_path, override_export_path
         )
         return apply_geo_func(
             source_path=source_path,
@@ -912,7 +948,7 @@ class CPMResampler(HADsResampler):
     standard_calendar_relative_path: Path = CPM_STANDARD_CALENDAR_PATH
     input_file_x_column_name: str = CPRUK_XDIM
     input_file_y_column_name: str = CPRUK_YDIM
-    cpm_resolution_relative_path: Path = CPM_SPATIAL_COORDS_PATH
+    resolution_relative_path: Path = CPM_SPATIAL_COORDS_PATH
 
     @property
     def cpm_variable_name(self) -> str:
@@ -968,16 +1004,16 @@ class CPMResampler(HADsResampler):
             index=index, source_to_index=source_to_index
         )
         path: PathLike = self._output_path(
-            self.cpm_resolution_relative_path, override_export_path
+            self.resolution_relative_path, override_export_path
         )
         return apply_geo_func(
             source_path=source_path,
-            func=reproject_coords,
-            export_folder=path,
+            # func=,
+            export_folder=gdal_warp_wrapper,
             # Leaving in case we return to using warp
-            # include_geo_warp_output_path=True,
-            # to_netcdf=False,
-            to_netcdf=True,
+            include_geo_warp_output_path=True,
+            to_netcdf=False,
+            # to_netcdf=True,
             variable_name=self.cpm_variable_name,
             x_grid=self.x,
             y_grid=self.y,
@@ -992,13 +1028,20 @@ class CPMResampler(HADsResampler):
         """Run all steps for processing"""
         temporal_reprojected_data: list[Path] | None = None
         spatial_reprojected_data: list[Path] | None = None
-        if not skip_temporal:
-            temporal_reprojected_data = self.range_to_standard_calendar(**kwargs)
         if not skip_spatial:
-            spatial_reprojected_data: list[Path] = self.range_to_reprojection(
-                source_to_index=temporal_reprojected_data, **kwargs
+            # spatial_reprojected_data: list[Path] = self.range_to_reprojection(
+            #     source_to_index=temporal_reprojected_data, **kwargs
+            # )
+            spatial_reprojected_data = self.range_to_reprojection(**kwargs)
+        if not skip_temporal:
+            temporal_reprojected_data = self.range_to_standard_calendar(
+                source_to_index=spatial_reprojected_data, **kwargs
             )
-        return spatial_reprojected_data
+        # if not skip_spatial:
+        #     spatial_reprojected_data: list[Path] = self.range_to_reprojection(
+        #         source_to_index=temporal_reprojected_data, **kwargs
+        #     )
+        return temporal_reprojected_data
 
     def __getstate__(self):
         """Meanse of testing what aspects of instance have issues multiprocessing.

@@ -46,9 +46,10 @@ New approach:
 - [x] Remove out of date elements
 - [x] Hardcode the process below
 - [x] Refactor to facilitate testing
-- [ ] Ensure HADs still works
+- [x] Ensure HADs still works
 - [x] Add function for UKCP
 - [x] Check `convert_xr_calendar` `doctest` examples
+- [ ] Fix order of UKCP changes
 
 To run this step in the pipeline the following should work
 for the default combindations of `variables`: `tasmax`,
@@ -75,12 +76,13 @@ $ pdm run clim-recal --all-variables --default-runs --output-path /where/results
 # Skipping output for brevity
 ```
 
-Or within an `ipython` or `jupyter` instance
+Or within an `ipython` or `jupyter` instance (truncated below for brevity)
 
-```console
+```python
 >>> from clim_recal.pipeline import main
->>> main(all_variables=True, default_runs=True)
-# Skipping output for brevity
+>>> main(all_variables=True, default_runs=True)  # doctest: +SKIP
+clim-recal pipeline configurations:
+<ClimRecalConfig(variables_count=3, runs_count=4, ...>
 ```
 
 Regardless of your route, once you're confident with the

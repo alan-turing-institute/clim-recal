@@ -541,7 +541,6 @@ def test_cpm_xarray_to_standard_calendar(
     test_converted = cpm_xarray_to_standard_calendar(tasmax_cpm_1980_raw)
     assert test_converted.rio.width == FINAL_CONVERTED_CPM_WIDTH
     assert test_converted.rio.height == FINAL_CONVERTED_CPM_HEIGHT
-    assert test_converted.rio.crs is not None
     assert test_converted.rio.crs.to_proj4() == CORRECT_PROJ4
 
 

@@ -56,3 +56,5 @@ def test_main(
     captured = capsys.readouterr()
     assert f"variables_count={len(variables)}" in captured.out
     assert results == None
+    # if execute:
+    #     assert False
