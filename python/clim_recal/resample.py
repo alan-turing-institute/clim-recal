@@ -25,8 +25,6 @@ from osgeo.gdal import GDALWarpAppOptions, GRA_NearestNeighbour, Warp, WarpOptio
 from rich import print
 from tqdm.rich import trange
 from xarray import DataArray, Dataset, open_dataset
-from xarray.coding.calendar_ops import convert_calendar
-from xarray.core.types import CFCalendar, InterpOptions
 
 from clim_recal.debiasing.debias_wrapper import VariableOptions
 
@@ -43,8 +41,7 @@ from .utils.xarray import (
     GDALFormatsType,
     GDALGeoTiffFormatStr,
     XArrayEngineType,
-    cftime_range_gen,
-    ensure_xr_dataset,
+    convert_xr_calendar,
 )
 
 logger = getLogger(__name__)
@@ -58,7 +55,6 @@ DEFAULT_INTERPOLATION_METHOD: str = "linear"
 
 CFCalendarSTANDARD: Final[str] = "standard"
 ConvertCalendarAlignOptions = Literal["date", "year", None]
-DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
 
 RESAMPLING_OUTPUT_PATH: Final[PathLike] = (
     CLIMATE_DATA_MOUNT_PATH / "Raw/python_refactor/"
@@ -102,163 +98,6 @@ HADS_OUTPUT_LOCAL_PATH: Final[Path] = Path("hads")
 NETCDF_OR_TIF = Literal[TIF_EXTENSION_STR, NETCDF_EXTENSION_STR]
 
 
-def convert_xr_calendar(
-    xr_time_series: DataArray | Dataset | PathLike,
-    align_on: ConvertCalendarAlignOptions = DEFAULT_CALENDAR_ALIGN,
-    calendar: CFCalendar = CFCalendarSTANDARD,
-    use_cftime: bool = False,
-    missing_value: Any | None = np.nan,
-    interpolate_na: bool = False,
-    ensure_output_type_is_dataset: bool = False,
-    interpolate_method: InterpOptions = DEFAULT_INTERPOLATION_METHOD,
-    keep_crs: bool = True,
-    keep_attrs: bool = True,
-    limit: int = 1,
-    engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
-    extrapolate_fill_value: bool = True,
-    check_cftime_cols: tuple[str] | None = None,
-    cftime_range_gen_kwargs: dict[str, Any] | None = None,
-    **kwargs,
-) -> Dataset | DataArray:
-    """Convert cpm 360 day time series to a standard 365/366 day time series.
-
-    Notes
-    -----
-    Short time examples (like 2 skipped out of 8 days) raises:
-    `ValueError("date_range_like was unable to generate a range as the source frequency was not inferable."`)
-
-    Parameters
-    ----------
-    xr_time_series
-        A `DataArray` or `Dataset` to convert to `calendar` time.
-    align_on
-        Whether and how to align `calendar` types.
-    calendar
-        Type of calendar to convert `xr_time_series` to.
-    use_cftime
-        Whether to enforce `cftime` vs `datetime64` `time` format.
-    missing_value
-        Missing value to populate missing date interpolations with.
-    keep_crs
-        Reapply initial Coordinate Reference System (CRS) after time projection.
-    interpolate_na
-        Whether to apply temporal interpolation for missing values.
-    interpolate_method
-        Which `InterpOptions` method to apply if `interpolate_na` is `True`.
-    keep_attrs
-        Whether to keep all attributes on after `interpolate_na`
-    limit
-        Limit of number of continuous missing day values allowed in `interpolate_na`.
-    engine
-        Which `XArrayEngineType` to use in parsing files and operations.
-    extrapolate_fill_value
-        If `True`, then pass `fill_value=extrapolate`. See:
-         * https://docs.xarray.dev/en/stable/generated/xarray.Dataset.interpolate_na.html
-         * https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html#scipy.interpolate.interp1d
-    check_cftime_cols
-        Columns to check `cftime` format on
-    cftime_range_gen_kwargs
-        Any `kwargs` to pass to `cftime_range_gen`
-    **kwargs
-        Any additional parameters to pass to `interpolate_na`.
-
-    Raises
-    ------
-    ValueError
-        Likely from `xarray` calling `date_range_like`.
-
-    Returns
-    -------
-    :
-        Converted `xr_time_series` to specified `calendar`
-        with optional interpolation.
-
-    Notes
-    -------
-    Certain values may fail to interpolate in cases of 360 -> 365/366
-    (Gregorian) calendar. Examples include projecting CPM data, which is
-    able to fill in measurement values (e.g. `tasmax`) but the `year`
-    and `month_number` variables have `nan` values
-
-    Examples
-    --------
-    # Note a new doctest needs to be written to deal
-    # with default `year` vs `date` parameters
-    >>> xr_360_to_365_datetime64: Dataset = convert_xr_calendar(
-    ...     xarray_spatial_4_years_360_day, align_on="date")
-    >>> xr_360_to_365_datetime64.sel(
-    ...     time=slice("1981-01-30", "1981-02-01"),
-    ...     space="Glasgow").day_360
-    <xarray.DataArray 'day_360' (time: 3)>...
-    Coordinates:
-      * time     (time) datetime64[ns] ...1981-01-30 1981-01-31 1981-02-01
-        space    <U10 ...'Glasgow'
-    >>> xr_360_to_365_datetime64_interp: Dataset = convert_xr_calendar(
-    ...     xarray_spatial_4_years_360_day, interpolate_na=True)
-    >>> xr_360_to_365_datetime64_interp.sel(
-    ...     time=slice("1981-01-30", "1981-02-01"),
-    ...     space="Glasgow").day_360
-    <xarray.DataArray 'day_360' (time: 3)>...
-    array([0.23789282, 0.5356328 , 0.311945  ])
-    Coordinates:
-      * time     (time) datetime64[ns] ...1981-01-30 1981-01-31 1981-02-01
-        space    <U10 ...'Glasgow'
-    >>> convert_xr_calendar(xarray_spatial_6_days_2_skipped)
-    Traceback (most recent call last):
-       ...
-    ValueError: `date_range_like` was unable to generate a range as the source frequency was not inferable.
-    """
-    if check_cftime_cols is None:
-        check_cftime_cols = tuple()
-    if cftime_range_gen_kwargs is None:
-        cftime_range_gen_kwargs = dict()
-    if isinstance(xr_time_series, PathLike):
-        if Path(xr_time_series).suffix.endswith(NETCDF_EXTENSION_STR):
-            xr_time_series = open_dataset(
-                xr_time_series, decode_coords="all", engine=engine
-            )
-        else:
-            xr_time_series = open_dataset(xr_time_series, engine=engine)
-    if ensure_output_type_is_dataset:
-        xr_time_series = ensure_xr_dataset(xr_time_series)
-    calendar_converted_ts: Dataset | DataArray = convert_calendar(
-        xr_time_series,
-        calendar,
-        align_on=align_on,
-        missing=missing_value,
-        use_cftime=use_cftime,
-    )
-    if not interpolate_na:
-        if keep_crs and xr_time_series.rio.crs:
-            assert xr_time_series.rio.crs
-            return calendar_converted_ts.rio.set_crs(xr_time_series.rio.crs)
-        else:
-            return calendar_converted_ts
-    else:
-        if extrapolate_fill_value:
-            kwargs["fill_value"] = "extrapolate"
-        interpolated_ts: Dataset | DataArray = calendar_converted_ts.interpolate_na(
-            dim="time",
-            method=interpolate_method,
-            keep_attrs=keep_attrs,
-            limit=limit,
-            **kwargs,
-        )
-        for cftime_col in check_cftime_cols:
-            if cftime_col in interpolated_ts:
-                cftime_fix: NDArray = cftime_range_gen(
-                    interpolated_ts[cftime_col], **cftime_range_gen_kwargs
-                )
-                interpolated_ts[cftime_col] = (
-                    interpolated_ts[cftime_col].dims,
-                    cftime_fix,
-                )
-        if keep_crs and xr_time_series.rio.crs:
-            return interpolated_ts.rio.set_crs(xr_time_series.rio.crs)
-        else:
-            return interpolated_ts
-
-
 def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> Dataset:
     """Convert a CPM `nc` file of 360 day calendars to standard calendar.
 
@@ -271,6 +110,13 @@ def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> D
     -------
     `Dataset` calendar converted to standard (Gregorian).
     """
+    if isinstance(cpm_xr_time_series, PathLike):
+        cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
+    # assert isinstance(cpm_xr_time_series, Dataset)
+    # std_calendar_drop_bnds = cpm_xr_time_series.drop_dims('bnds')
+    # cpm_to_std_calendar_fixed_bnds = std_calendar_drop_bnds.expand_dims(
+    #     dim={'bnds': cpm_xr_time_series.bnds}
+    # )
     cpm_to_std_calendar: Dataset = convert_xr_calendar(
         cpm_xr_time_series, interpolate_na=True, check_cftime_cols=("time_bnds",)
     )
@@ -285,14 +131,20 @@ def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> D
     yyyymmdd_fix: DataArray = cpm_to_std_calendar.time.dt.strftime(CLI_DATE_FORMAT_STR)
     cpm_to_std_calendar["yyyymmdd"] = yyyymmdd_fix
     assert cpm_xr_time_series.rio.crs == cpm_to_std_calendar.rio.crs
-    for var_name in cpm_xr_time_series.data_vars:
-        if not cpm_to_std_calendar[var_name].rio.crs:
-            # Try to enforce the coordinates for each variable
-            var_data: DataArray = cpm_to_std_calendar[var_name]
-            var_data.rio.set_crs(cpm_xr_time_series[var_name].rio.crs, inplace=True)
-            assert var_data.rio.crs
-            cpm_to_std_calendar[var_name] = var_data
-    return cpm_to_std_calendar
+    std_calendar_drop_bnds = cpm_to_std_calendar.drop_dims("bnds")
+    cpm_to_std_calendar_fixed_bnds = std_calendar_drop_bnds.expand_dims(
+        dim={"bnds": cpm_xr_time_series.bnds}
+    )
+    # for var_name in cpm_xr_time_series.data_vars:
+    #     if not cpm_to_std_calendar[var_name].rio.crs:
+    #         # Try to enforce the coordinates for each variable
+    #         var_data: DataArray = cpm_to_std_calendar[var_name]
+    #         var_data.rio.write_crs(cpm_xr_time_series[var_name].rio.crs, inplace=True)
+    #         assert var_data.rio.crs
+    #         cpm_to_std_calendar[var_name] = var_data
+    # assert False
+    # return cpm_to_std_calendar
+    return cpm_to_std_calendar_fixed_bnds
 
 
 def reproject_coords(
@@ -1109,6 +961,7 @@ class HADsResamplerManager:
         default_factory=dict
     )
     _strict_fail_if_var_in_input_path: bool = True
+    _allow_check_fail: bool = False
 
     class VarirableInBaseImportPathError(Exception):
         """Checking import path validity for `self.variables`."""
@@ -1171,9 +1024,13 @@ class HADsResamplerManager:
                 assert Path(path).exists()
                 assert Path(path).is_dir()
             except AssertionError:
-                raise FileExistsError(
+                message: str = (
                     f"One of 'self.input_paths' in {self} not valid: '{path}'"
                 )
+                if self._allow_check_fail:
+                    logger.error(message)
+                else:
+                    raise FileExistsError(message)
             try:
                 assert path in self._var_path_dict
             except:

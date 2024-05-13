@@ -1,21 +1,56 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+from os import PathLike
 from pathlib import Path
-from typing import Final, Iterable, Literal
+from typing import Any, Final, Iterable, Literal
 
 import numpy as np
 import rioxarray  # nopycln: import
 from numpy import array, random
 from numpy.typing import NDArray
-from pandas import to_datetime
-from xarray import CFTimeIndex, DataArray, Dataset, cftime_range
+from pandas import DatetimeIndex, date_range, to_datetime
+from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
 from xarray.backends.api import ENGINES
+from xarray.coding.calendar_ops import convert_calendar
+from xarray.core.types import CFCalendar, InterpOptions
 
 from .core import (
+    CLI_DATE_FORMAT_STR,
     ISO_DATE_FORMAT_STR,
     DateType,
     climate_data_mount_path,
     date_range_generator,
 )
+
+DropDayType = set[tuple[int, int]]
+ChangeDayType = set[tuple[int, int]]
+
+# MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
+"""A `set` of tuples of month and day numbers for `enforce_date_changes`."""
+
+MONTH_DAY_XARRAY_LEAP_YEAR_DROP: DropDayType = {
+    (1, 31),
+    (4, 1),
+    (6, 1),
+    (8, 1),
+    (9, 31),
+    (12, 1),
+}
+"""A `set` of month and day tuples dropped for `xarray.day_360` leap years."""
+
+MONTH_DAY_XARRAY_NO_LEAP_YEAR_DROP: DropDayType = {
+    (2, 6),
+    (4, 20),
+    (7, 2),
+    (9, 13),
+    (11, 25),
+}
+"""A `set` of month and day tuples dropped for `xarray.day_360` non leap years."""
+
+DEFAULT_INTERPOLATION_METHOD: str = "linear"
+"""Default method to infer missing estimates in a time series."""
+
+CFCalendarSTANDARD: Final[str] = "standard"
+ConvertCalendarAlignOptions = Literal["date", "year", None]
 
 GLASGOW_COORDS: Final[tuple[float, float]] = (55.86279, -4.25424)
 MANCHESTER_COORDS: Final[tuple[float, float]] = (53.48095, -2.23743)
@@ -46,6 +81,7 @@ BoundsTupleType = tuple[float, float, float, float]
 XArrayEngineType = Literal[*tuple(ENGINES)]
 """Engine types supported by `xarray` as `str`."""
 
+DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
 NETCDF4_XARRAY_ENGINE: Final[str] = "netcdf4"
 
 
@@ -82,6 +118,213 @@ def ensure_xr_dataset(
         return xr_time_series.to_dataset(name=array_name)
     else:
         return xr_time_series
+
+
+def convert_xr_calendar(
+    xr_time_series: DataArray | Dataset | PathLike,
+    align_on: ConvertCalendarAlignOptions = DEFAULT_CALENDAR_ALIGN,
+    calendar: CFCalendar = CFCalendarSTANDARD,
+    use_cftime: bool = False,
+    missing_value: Any | None = np.nan,
+    interpolate_na: bool = False,
+    ensure_output_type_is_dataset: bool = False,
+    interpolate_method: InterpOptions = DEFAULT_INTERPOLATION_METHOD,
+    keep_crs: bool = True,
+    keep_attrs: bool = True,
+    limit: int = 1,
+    engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
+    extrapolate_fill_value: bool = True,
+    check_cftime_cols: tuple[str] | None = None,
+    cftime_range_gen_kwargs: dict[str, Any] | None = None,
+    **kwargs,
+) -> Dataset | DataArray:
+    """Convert cpm 360 day time series to a standard 365/366 day time series.
+
+    Notes
+    -----
+    Short time examples (like 2 skipped out of 8 days) raises:
+    `ValueError("date_range_like was unable to generate a range as the source frequency was not inferable."`)
+
+    Parameters
+    ----------
+    xr_time_series
+        A `DataArray` or `Dataset` to convert to `calendar` time.
+    align_on
+        Whether and how to align `calendar` types.
+    calendar
+        Type of calendar to convert `xr_time_series` to.
+    use_cftime
+        Whether to enforce `cftime` vs `datetime64` `time` format.
+    missing_value
+        Missing value to populate missing date interpolations with.
+    keep_crs
+        Reapply initial Coordinate Reference System (CRS) after time projection.
+    interpolate_na
+        Whether to apply temporal interpolation for missing values.
+    interpolate_method
+        Which `InterpOptions` method to apply if `interpolate_na` is `True`.
+    keep_attrs
+        Whether to keep all attributes on after `interpolate_na`
+    limit
+        Limit of number of continuous missing day values allowed in `interpolate_na`.
+    engine
+        Which `XArrayEngineType` to use in parsing files and operations.
+    extrapolate_fill_value
+        If `True`, then pass `fill_value=extrapolate`. See:
+         * https://docs.xarray.dev/en/stable/generated/xarray.Dataset.interpolate_na.html
+         * https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html#scipy.interpolate.interp1d
+    check_cftime_cols
+        Columns to check `cftime` format on
+    cftime_range_gen_kwargs
+        Any `kwargs` to pass to `cftime_range_gen`
+    **kwargs
+        Any additional parameters to pass to `interpolate_na`.
+
+    Raises
+    ------
+    ValueError
+        Likely from `xarray` calling `date_range_like`.
+
+    Returns
+    -------
+    :
+        Converted `xr_time_series` to specified `calendar`
+        with optional interpolation.
+
+    Notes
+    -------
+    Certain values may fail to interpolate in cases of 360 -> 365/366
+    (Gregorian) calendar. Examples include projecting CPM data, which is
+    able to fill in measurement values (e.g. `tasmax`) but the `year`
+    and `month_number` variables have `nan` values
+
+    Examples
+    --------
+    # Note a new doctest needs to be written to deal
+    # with default `year` vs `date` parameters
+    >>> xr_360_to_365_datetime64: Dataset = convert_xr_calendar(
+    ...     xarray_spatial_4_years_360_day, align_on="date")
+    >>> xr_360_to_365_datetime64.sel(
+    ...     time=slice("1981-01-30", "1981-02-01"),
+    ...     space="Glasgow").day_360
+    <xarray.DataArray 'day_360' (time: 3)>...
+    Coordinates:
+      * time     (time) datetime64[ns] ...1981-01-30 1981-01-31 1981-02-01
+        space    <U10 ...'Glasgow'
+    >>> xr_360_to_365_datetime64_interp: Dataset = convert_xr_calendar(
+    ...     xarray_spatial_4_years_360_day, interpolate_na=True)
+    >>> xr_360_to_365_datetime64_interp.sel(
+    ...     time=slice("1981-01-30", "1981-02-01"),
+    ...     space="Glasgow").day_360
+    <xarray.DataArray 'day_360' (time: 3)>...
+    array([0.23789282, 0.5356328 , 0.311945  ])
+    Coordinates:
+      * time     (time) datetime64[ns] ...1981-01-30 1981-01-31 1981-02-01
+        space    <U10 ...'Glasgow'
+    >>> convert_xr_calendar(xarray_spatial_6_days_2_skipped)
+    Traceback (most recent call last):
+       ...
+    ValueError: `date_range_like` was unable to generate a range as the source frequency was not inferable.
+    """
+    if isinstance(xr_time_series, PathLike):
+        if Path(xr_time_series).suffix.endswith(NETCDF_EXTENSION_STR):
+            xr_time_series = open_dataset(
+                xr_time_series, decode_coords="all", engine=engine
+            )
+        else:
+            xr_time_series = open_dataset(xr_time_series, engine=engine)
+    if ensure_output_type_is_dataset:
+        xr_time_series = ensure_xr_dataset(xr_time_series)
+    calendar_converted_ts: Dataset | DataArray = convert_calendar(
+        xr_time_series,
+        calendar,
+        align_on=align_on,
+        missing=missing_value,
+        use_cftime=use_cftime,
+    )
+    if not interpolate_na:
+        if keep_crs and xr_time_series.rio.crs:
+            assert xr_time_series.rio.crs
+            return calendar_converted_ts.rio.write_crs(xr_time_series.rio.crs)
+        else:
+            return calendar_converted_ts
+    else:
+        return interpolate_xr_ts(
+            xr_ts=calendar_converted_ts,
+            original_xr_ts=xr_time_series,
+            check_cftime_cols=check_cftime_cols,
+            interpolate_method=interpolate_method,
+            keep_crs=keep_crs,
+            keep_attrs=keep_attrs,
+            limit=limit,
+            cftime_range_gen_kwargs=cftime_range_gen_kwargs,
+        )
+        if extrapolate_fill_value:
+            kwargs["fill_value"] = "extrapolate"
+        interpolated_ts: Dataset | DataArray = calendar_converted_ts.interpolate_na(
+            dim="time",
+            method=interpolate_method,
+            keep_attrs=keep_attrs,
+            limit=limit,
+            **kwargs,
+        )
+        for cftime_col in check_cftime_cols:
+            if cftime_col in interpolated_ts:
+                cftime_fix: NDArray = cftime_range_gen(
+                    interpolated_ts[cftime_col], **cftime_range_gen_kwargs
+                )
+                interpolated_ts[cftime_col] = (
+                    interpolated_ts[cftime_col].dims,
+                    cftime_fix,
+                )
+        if keep_crs and xr_time_series.rio.crs:
+            return interpolated_ts.rio.write_crs(xr_time_series.rio.crs)
+        else:
+            return interpolated_ts
+
+
+def interpolate_xr_ts(
+    xr_ts: Dataset,
+    original_xr_ts: Dataset | None = None,
+    check_cftime_cols: tuple[str] | None = None,
+    interpolate_method: InterpOptions = DEFAULT_INTERPOLATION_METHOD,
+    keep_crs: bool = True,
+    keep_attrs: bool = True,
+    limit: int = 1,
+    cftime_range_gen_kwargs: dict[str, Any] | None = None,
+    **kwargs,
+) -> Dataset:
+    if check_cftime_cols is None:
+        check_cftime_cols = tuple()
+    if cftime_range_gen_kwargs is None:
+        cftime_range_gen_kwargs = dict()
+    original_xr_ts = original_xr_ts if original_xr_ts else xr_ts
+    # Preveent a kwargs overwrite conflict
+    kwargs["fill_value"] = "extrapolate"
+
+    # if extrapolate_fill_value:
+    #     kwargs["fill_value"] = "extrapolate"
+    interpolated_ts: Dataset = xr_ts.interpolate_na(
+        dim="time",
+        method=interpolate_method,
+        keep_attrs=keep_attrs,
+        limit=limit,
+        # fill_value="extrapolate",
+        **kwargs,
+    )
+    for cftime_col in check_cftime_cols:
+        if cftime_col in interpolated_ts:
+            cftime_fix: NDArray = cftime_range_gen(
+                interpolated_ts[cftime_col], **cftime_range_gen_kwargs
+            )
+            interpolated_ts[cftime_col] = (
+                interpolated_ts[cftime_col].dims,
+                cftime_fix,
+            )
+    if keep_crs and original_xr_ts.rio.crs:
+        return interpolated_ts.rio.write_crs(xr_ts.rio.crs)
+    else:
+        return interpolated_ts
 
 
 # Below requires packages outside python standard library
@@ -171,6 +414,128 @@ def xarray_example(
         return da.to_dataset()
     else:
         return da
+
+
+def file_name_to_start_end_dates(
+    path: PathLike, date_format: str = CLI_DATE_FORMAT_STR
+) -> tuple[datetime, datetime]:
+    """Return dates of file name with `date_format`-`date_format` structure.
+
+    Parameters
+    ----------
+    path
+        Path to file
+    date_format
+        Format of date for `strptime`
+
+    Examples
+    --------
+    The examples below are meant to demonstrate usage, and
+    the significance of when the last date is included or
+    not by default.
+
+    >>> from .core import date_range_generator
+    >>> tif_365_path: Path = (Path('some') /
+    ...     'folder' /
+    ...     'pr_rcp85_land-cpm_uk_2.2km_06_day_20761201-20771130.tif')
+    >>> start_date, end_date = file_name_to_start_end_dates(tif_365_path)
+    >>> start_date
+    datetime.datetime(2076, 12, 1, 0, 0)
+    >>> end_date
+    datetime.datetime(2077, 11, 30, 0, 0)
+    >>> dates: tuple[date, ...] =  tuple(
+    ...     date_range_generator(start_date=start_date,
+    ...                          end_date=end_date,
+    ...                          inclusive=True))
+    >>> dates[:3]
+    (datetime.datetime(2076, 12, 1, 0, 0),
+     datetime.datetime(2076, 12, 2, 0, 0),
+     datetime.datetime(2076, 12, 3, 0, 0))
+    >>> len(dates)
+    365
+    >>> tif_366_path: Path = (Path('some') /
+    ...     'folder' /
+    ...     'pr_rcp85_land-cpm_uk_2.2km_06_day_20791201-20801130.tif')
+    >>> dates = date_range(*file_name_to_start_end_dates(tif_366_path))
+    >>> len(dates)
+    366
+    """
+    date_range_path: Path = Path(Path(path).name.split("_")[-1])
+    date_strs: list[str] = date_range_path.stem.split("-")
+    try:
+        assert len(date_strs) == 2
+    except AssertionError:
+        raise ValueError(
+            f"Maximum of 2 date strs in YYYMMDD form allowed from: '{date_range_path}'"
+        )
+    start_date: date = datetime.strptime(date_strs[0], date_format)
+    end_date: date = datetime.strptime(date_strs[1], date_format)
+    return start_date, end_date
+
+
+def generate_360_to_standard(array_to_expand: DataArray) -> DataArray:
+    """Return `array_to_expand` 360 days expanded to 365 or 366 days.
+
+    Examples
+    --------
+    >>>
+    """
+    initial_days: int = len(array_to_expand)
+    assert initial_days == 360
+    extra_days: int = 5
+    index_block_length: int = int(initial_days / extra_days)  # 72
+    expanded_index: list[int] = []
+    for i in range(extra_days):
+        start_index: int = i * index_block_length
+        stop_index: int = (i + 1) * index_block_length
+        slice_to_append: list[int] = array_to_expand[start_index:stop_index]
+        expanded_index.append(slice_to_append)
+        if i < extra_days - 1:
+            expanded_index.append(np.nan)
+    return DataArray(expanded_index)
+
+
+def correct_int_time_datafile(
+    xr_dataset_path: Path,
+    new_index_name: str = "time",
+    replace_index: str | None = "band",
+    data_attribute_name: str = "band_data",
+) -> Dataset:
+    """Load a `Dataset` from path and generate `time` index.
+
+    Examples
+    --------
+    >>> pytest.xfail(reason="Not finished implementing")
+    >>> rainfall_dataset = correct_int_time_datafile(
+    ...     glasgow_example_cropped_cpm_rainfall_path)
+    >>> assert False
+    """
+    xr_dataset: Dataset = open_dataset(xr_dataset_path)
+    metric_name: str = str(xr_dataset_path).split("_")[0]
+    start_date, end_date = file_name_to_start_end_dates(xr_dataset_path)
+    dates_index: DatetimeIndex = date_range(start_date, end_date)
+    intermediate_new_index: str = new_index_name + "_standard"
+    # xr_intermediate_date = xr_dataset.assign_coords({intermediate_new_index: dates_index})
+    xr_dataset[intermediate_new_index]: Dataset = dates_index
+    xr_360_datetime = xr_dataset[intermediate_new_index].convert_calendar(
+        "360_day", align_on="year", dim=intermediate_new_index
+    )
+    if len(xr_360_datetime[intermediate_new_index]) == 361:
+        # If the range overlaps a leap and non leap year,
+        # it is possible to have 361 days
+        # See https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html
+        # Assuming first date is a December 1
+        xr_360_datetime = xr_360_datetime[intermediate_new_index][1:]
+    assert len(xr_360_datetime[intermediate_new_index]) == 360
+    # xr_with_datetime['time'] = xr_360_datetime
+    assert False
+    xr_bands_time_indexed: DataArray = xr_intermediate_date[
+        data_attribute_name
+    ].expand_dims(dim={new_index_name: xr_intermediate_date[new_index_name]})
+    # xr_365_data_array: DataArray = convert_xr_calendar(xr_bands_time_indexed)
+    xr_365_dataset: Dataset = Dataset({metric_name: xr_bands_time_indexed})
+    partial_fix_365_dataset: Dataset = convert_xr_calendar(xr_365_dataset.time)
+    assert False
 
 
 def cftime_range_gen(time_data_array: DataArray, **kwargs) -> NDArray:

@@ -281,10 +281,18 @@ def uk_epsg_27700_bounds() -> BoundsTupleType:
 @pytest.fixture
 def clim_runner(tmp_path) -> ClimRecalConfig:
     """Return default `ClimRecalConfig`."""
-    return ClimRecalConfig(
-        preprocess_out_folder=tmp_path,
-        cities=(CityOptions.GLASGOW, CityOptions.MANCHESTER),
-    )
+    try:
+        return ClimRecalConfig(
+            preprocess_out_folder=tmp_path,
+            cities=(CityOptions.GLASGOW, CityOptions.MANCHESTER),
+        )
+    except FileExistsError:
+        return ClimRecalConfig(
+            preprocess_out_folder=tmp_path,
+            cities=(CityOptions.GLASGOW, CityOptions.MANCHESTER),
+            cpm_kwargs=dict(_allow_check_fail=True),
+            hads_kwargs=dict(_allow_check_fail=True),
+        )
 
 
 @pytest.fixture
@@ -299,6 +307,14 @@ def resample_test_hads_output_path(
     resample_test_runs_output_path: Path,
 ) -> Path:
     return resample_test_runs_output_path / HADS_OUTPUT_LOCAL_PATH
+
+
+@pytest.fixture
+def glasgow_example_cropped_cpm_rainfall_path(data_fixtures_path: Path) -> Path:
+    return (
+        data_fixtures_path
+        / "Glasgow/cropped-tif/cpr_rcp85_land-cpm_uk_2.2km_06_day_20791201-20801130.tif"
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -320,6 +336,7 @@ def doctest_auto_fixtures(
     resample_test_runs_output_path: Path,
     resample_test_cpm_output_path: Path,
     resample_test_hads_output_path: Path,
+    glasgow_example_cropped_cpm_rainfall_path: Path,
     clim_runner: ClimRecalConfig,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
@@ -368,6 +385,9 @@ def doctest_auto_fixtures(
     doctest_namespace["resample_test_hads_output_path"] = resample_test_hads_output_path
     doctest_namespace["resample_test_cpm_output_path"] = resample_test_cpm_output_path
     doctest_namespace["mount_doctest_skip_message"] = MOUNT_DOCTEST_SKIP_MESSAGE
+    doctest_namespace[
+        "glasgow_example_cropped_cpm_rainfall_path"
+    ] = glasgow_example_cropped_cpm_rainfall_path
     doctest_namespace["clim_runner"] = clim_runner
 
 

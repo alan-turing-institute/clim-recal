@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Final, Literal
 
@@ -38,6 +38,7 @@ from clim_recal.utils.core import (
     DateType,
     annual_data_path,
     annual_data_paths_generator,
+    date_range_generator,
     results_path,
 )
 from clim_recal.utils.data import CEDADataSources, HadUKGrid, UKCPLocalProjections
@@ -48,6 +49,8 @@ from clim_recal.utils.xarray import (
     GDALFormatsType,
     GDALGeoTiffFormatStr,
     GDALNetCDFFormatStr,
+    convert_xr_calendar,
+    file_name_to_start_end_dates,
     xarray_example,
 )
 
@@ -87,6 +90,12 @@ HADS_FIRST_DATES: np.array = np.array(
 )
 FINAL_CONVERTED_CPM_WIDTH: Final[int] = 484
 FINAL_CONVERTED_CPM_HEIGHT: Final[int] = 606
+PROJECTED_CPM_TASMAX_1980_FIRST_5: np.array = np.array(
+    [13.406641, 13.376368, 13.361719, 13.354639, 13.334864], dtype="float32"
+)
+PROJECTED_CPM_TASMAX_1980_DEC_31_FIRST_5: np.array = np.array(
+    [10.645899, 10.508448, 10.546778, 10.547998, 10.553614], dtype="float32"
+)
 
 
 @pytest.mark.mount
@@ -542,9 +551,37 @@ def test_cpm_xarray_to_standard_calendar(
     assert test_converted.rio.width == FINAL_CONVERTED_CPM_WIDTH
     assert test_converted.rio.height == FINAL_CONVERTED_CPM_HEIGHT
     assert test_converted.rio.crs.to_proj4() == CORRECT_PROJ4
+    assert test_converted.tasmax.rio.crs.to_proj4() == CORRECT_PROJ4
+    assert len(test_converted.time) == 365
+    assert len(test_converted.tasmax.data[0][0]) == 365  # first band
+    assert len(test_converted.tasmax.data[1][0]) == 365  # second band
+    # By default December 1 in a 360 to 365 projection would
+    # be null. The values matching below should indicate the
+    # projection has interpolated null values on the first date
+    assert (
+        test_converted.tasmax.data[0][0][0][0][:5] == PROJECTED_CPM_TASMAX_1980_FIRST_5
+    ).all()
+    # Check December 31 1980, which wouldn't be included in 360 day calendar
+    assert (
+        test_converted.tasmax.data[0][0][31][0][:5]
+        == PROJECTED_CPM_TASMAX_1980_DEC_31_FIRST_5
+    ).all()
 
 
-@pytest.mark.xfail
+@pytest.mark.xfail(reason="test not complete")
+def test_cpm_tif_to_standard_calendar(
+    glasgow_example_cropped_cpm_rainfall_path: Path,
+) -> None:
+    test_converted: tuple[date, ...] = tuple(
+        date_range_generator(
+            *file_name_to_start_end_dates(glasgow_example_cropped_cpm_rainfall_path)
+        )
+    )
+    assert len(test_converted) == 366
+    assert False
+
+
+@pytest.mark.xfail(reason="not finished writing, will need refactor")
 def test_crop_nc(
     # align_on: ConvertCalendarAlignOptions,
     # ukcp_tasmax_raw_path
@@ -647,7 +684,7 @@ def test_ukcp_manager(resample_test_cpm_output_path, config: str) -> None:
     assert (CPM_FIRST_DATES == export.yyyymmdd.head().values).all()
 
 
-# @pytest.mark.xfail("checking `export.tasmax` vlues currently yields `nan`")
+# @pytest.mark.xfail(reason="checking `export.tasmax` vlues currently yields `nan`")
 @pytest.mark.slow
 @pytest.mark.mount
 @pytest.mark.parametrize("range", (False, True))
@@ -752,7 +789,7 @@ def test_execute_resample_configs(multiprocess: bool, tmp_path) -> None:
     ).all()
 
 
-# @pytest.mark.xfail("test still in development")
+# @pytest.mark.xfail(reason="test still in development")
 # @pytest.mark.slow
 # @pytest.mark.mount
 # def test_crop_merged_nc(
