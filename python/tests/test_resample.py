@@ -10,6 +10,7 @@ from osgeo.gdal import Dataset as GDALDataset
 from xarray import DataArray, Dataset, open_dataset
 
 from clim_recal.resample import (
+    BRITISH_NATIONAL_GRID_EPSG,
     CPRUK_XDIM,
     CPRUK_YDIM,
     DEFAULT_RELATIVE_GRID_DATA_PATH,
@@ -18,7 +19,6 @@ from clim_recal.resample import (
     RAW_CPM_TASMAX_PATH,
     RAW_HADS_PATH,
     RAW_HADS_TASMAX_PATH,
-    UK_SPATIAL_PROJECTION,
     ConvertCalendarAlignOptions,
     CPMResampler,
     CPMResamplerManager,
@@ -28,7 +28,7 @@ from clim_recal.resample import (
     cpm_xarray_to_standard_calendar,
     crop_nc,
     gdal_warp_wrapper,
-    reproject_coords,
+    interpolate_coords,
 )
 from clim_recal.utils.core import (
     CLI_DATE_FORMAT_STR,
@@ -90,6 +90,14 @@ HADS_FIRST_DATES: np.array = np.array(
 )
 FINAL_CONVERTED_CPM_WIDTH: Final[int] = 484
 FINAL_CONVERTED_CPM_HEIGHT: Final[int] = 606
+
+RAW_CPM_TASMAX_1980_FIRST_5: np.array = np.array(
+    [12.654932, 12.63711, 12.616358, 12.594385, 12.565821], dtype="float32"
+)
+RAW_CPM_TASMAX_1980_DEC_30_FIRST_5: np.array = np.array(
+    [13.832666, 13.802149, 13.788477, 13.777491, 13.768946], dtype="float32"
+)
+
 PROJECTED_CPM_TASMAX_1980_FIRST_5: np.array = np.array(
     [13.406641, 13.376368, 13.361719, 13.354639, 13.334864], dtype="float32"
 )
@@ -493,7 +501,7 @@ def test_geo_warp_format_type_crop(
         glasgow_geo_df: GeoDataFrame = read_file(glasgow_shape_file_path)
         glasgow_geo_df.plot()
         plt.savefig(glasgow_test_fig_path)
-        assert glasgow_geo_df.crs == UK_SPATIAL_PROJECTION
+        assert glasgow_geo_df.crs == BRITISH_NATIONAL_GRID_EPSG
         assert (
             tuple(glasgow_geo_df.bounds.values.tolist()[0]) == glasgow_epsg_27700_bounds
         )
@@ -512,7 +520,7 @@ def test_geo_warp_format_type_crop(
     xarray_pre_warp.isel(time=0).tasmax.plot()
     plt.savefig(pre_warp_test_fig_path)
 
-    assert str(xarray_pre_warp.rio.crs) != UK_SPATIAL_PROJECTION
+    assert str(xarray_pre_warp.rio.crs) != BRITISH_NATIONAL_GRID_EPSG
     assert xarray_pre_warp.rio.bounds() == uk_epsg_27700_bounds
     # output_path: Path = warp_path / (max_temp_data_path.stem + ".tif" if output_format == GDALGeoTiffFormatStr else ".nc")
     xarray_warped: GDALDataset
@@ -535,7 +543,7 @@ def test_geo_warp_format_type_crop(
     read_exported.Band1.plot()
     plt.savefig(warp_test_fig_path)
 
-    assert str(read_exported.rio.crs) == UK_SPATIAL_PROJECTION
+    assert str(read_exported.rio.crs) == BRITISH_NATIONAL_GRID_EPSG
     if glasgow_crop:
         assert read_exported.rio.bounds() == glasgow_epsg_27700_bounds
 
@@ -566,6 +574,64 @@ def test_cpm_xarray_to_standard_calendar(
         test_converted.tasmax.data[0][0][31][0][:5]
         == PROJECTED_CPM_TASMAX_1980_DEC_31_FIRST_5
     ).all()
+
+
+@pytest.mark.mount
+@pytest.mark.slow
+def test_cpm_warp_steps(
+    tasmax_cpm_1980_raw: Dataset,
+) -> None:
+    intermediate_nc_path: Path = Path("1980-cpm-tasxmax-365-or-366.nc")
+    simplified_nc_path: Path = Path("1980-cpm-tasxmax-365-or-366-simplified.nc")
+    intermediate_warp_path: Path = Path("1980-cpm-tasxmax-365-or-366-warped.tif")
+    final_nc_path: Path = Path("1980-cpm-tasmax-365-or-366-flipped.nc")
+
+    # tasmax_drop_bnds = tasmax_cpm_1980_raw.drop_dims('bnds')
+    # # tasmax_drop_bnds = tasmax_cpm_1980_raw.drop_dims('ensemble_member')
+    # tasmax_fixed_bnds = tasmax_drop_bnds.expand_dims(
+    #     dim={'bnds': tasmax_cpm_1980_raw.bnds}
+    # )
+    # If failure check adding this line
+    # tasmax_cpm_1980_raw.drop_dims('ensemble_member')
+    expanded_calendar: Dataset = cpm_xarray_to_standard_calendar(tasmax_cpm_1980_raw)
+    # subset_within_ensemble: DataArray = tasmax_cpm_1980_raw.tasmax[0]
+    subset_within_ensemble: DataArray = expanded_calendar.tasmax[0]
+    # assert (subset_within_ensemble.data[0][0][:5] == RAW_CPM_TASMAX_1980_FIRST_5).all()
+    # assert (subset_within_ensemble.data[29][0][:5] == RAW_CPM_TASMAX_1980_DEC_30_FIRST_5).all()
+    subset_within_ensemble.to_netcdf(intermediate_nc_path)
+    # tasmax_cpm_1980_raw.tasmax.to_netcdf(intermediate_nc_path)
+    # tasmax_fixed_bnds.to_netcdf(intermediate_nc_path)
+    # tasmax_drop_bnds.to_netcdf(intermediate_nc_path)
+    test_intermediate_netcdf: Dataset = open_dataset(
+        intermediate_nc_path, decode_coords="all"
+    )
+    test_intermediate_netcdf.tasmax.to_netcdf(simplified_nc_path)
+    test_simplified: Dataset = open_dataset(simplified_nc_path, decode_coords="all")
+
+    # assert (test_intermediate_netcdf.tasmax.data[0][0][:5] == RAW_CPM_TASMAX_1980_FIRST_5).all()
+    # assert (test_intermediate_netcdf.tasmax.data[29][0][:5] == RAW_CPM_TASMAX_1980_DEC_30_FIRST_5).all()
+    results = gdal_warp_wrapper(
+        input_path=simplified_nc_path,
+        output_path=intermediate_warp_path,
+        copy_metadata=True,
+        format=None,
+    )
+
+    # results = gdal_warp_wrapper(
+    #     input_path=intermediate_nc_path,
+    #     output_path=intermediate_warp_path,
+    #     copy_metadata=True,
+    #     format=None,
+    # )
+    assert results == intermediate_warp_path
+    test_projected = open_dataset(intermediate_warp_path)
+    assert test_projected.rio.crs == BRITISH_NATIONAL_GRID_EPSG
+    assert len(test_projected.time) == len(expanded_calendar.time)
+    # assert len(test_projected.x) == len(tasmax_cpm_1980_raw.grid_longitude)
+    # assert len(test_projected.y) == len(tasmax_cpm_1980_raw.grid_latitude)
+    test_projected.to_netcdf(final_nc_path)
+    final_results = open_dataset(final_nc_path, decode_coords="all")
+    assert (final_results.time == expanded_calendar.time).all()
 
 
 @pytest.mark.xfail(reason="test not complete")
@@ -609,7 +675,7 @@ def test_crop_nc(
     glasgow_geo_df: GeoDataFrame = read_file(glasgow_shape_file_path)
     glasgow_geo_df.plot()
     plt.savefig(glasgow_test_fig_path)
-    assert glasgow_geo_df.crs == UK_SPATIAL_PROJECTION
+    assert glasgow_geo_df.crs == BRITISH_NATIONAL_GRID_EPSG
     assert tuple(glasgow_geo_df.bounds.values.tolist()[0]) == glasgow_epsg_27700_bounds
 
     max_temp_1981_path: Path = annual_data_path(
@@ -620,7 +686,7 @@ def test_crop_nc(
     xarray_pre_crop.isel(time=0).tasmax.plot()
     plt.savefig(pre_crop_test_fig_path)
 
-    assert str(xarray_pre_crop.rio.crs) != UK_SPATIAL_PROJECTION
+    assert str(xarray_pre_crop.rio.crs) != BRITISH_NATIONAL_GRID_EPSG
     assert xarray_pre_crop.rio.bounds() == uk_epsg_27700_bounds
 
     cropped: Dataset = crop_nc(
@@ -634,7 +700,7 @@ def test_crop_nc(
     cropped.isel(time=0).tasmax.plot()
     plt.savefig(crop_test_fig_path)
 
-    assert str(cropped.rio.crs) == UK_SPATIAL_PROJECTION
+    assert str(cropped.rio.crs) == BRITISH_NATIONAL_GRID_EPSG
     assert cropped.rio.bounds() == glasgow_epsg_27700_bounds
     assert False
 
@@ -710,7 +776,7 @@ def test_hads_manager(resample_test_hads_output_path, range: bool) -> None:
 
 @pytest.mark.parametrize("data_type", ("hads", "cpm"))
 @pytest.mark.mount
-def test_reproject_coords(
+def test_interpolate_coords(
     data_type: str,
     reference_final_coord_grid: Dataset,
     tasmax_cpm_1980_raw: Dataset,
@@ -724,7 +790,7 @@ def test_reproject_coords(
         y_grid=reference_final_coord_grid.projection_y_coordinate,
     )
     if data_type == "hads":
-        reprojected_xr_time_series = reproject_coords(
+        reprojected_xr_time_series = interpolate_coords(
             tasmax_hads_1980_raw,
             xr_time_series_x_column_name=HADS_XDIM,
             xr_time_series_y_column_name=HADS_YDIM,
@@ -734,7 +800,8 @@ def test_reproject_coords(
         # assert reprojected_xr_time_series.dims[HADS_XDIM] == 528
         # assert reprojected_xr_time_series.dims[HADS_YDIM] == 651
     else:
-        reprojected_xr_time_series = reproject_coords(
+        # We are now using gdal_warp_wrapper. See test_cpm_warp_steps
+        reprojected_xr_time_series = interpolate_coords(
             tasmax_cpm_1980_raw,
             xr_time_series_x_column_name=CPRUK_XDIM,
             xr_time_series_y_column_name=CPRUK_YDIM,

@@ -21,7 +21,7 @@ maintainers = [
 license = {text = "MIT"}
 requires-python = "==3.11.*"
 dependencies = [
-    "tqdm<5.0.0,>=4.66.2",
+    "tqdm>=4.66.4",
     "scipy<2.0.0,>=1.12.0",
     "rioxarray<1.0.0,>=0.15.1",
     "rasterio<2.0.0,>=1.3.9",
@@ -48,10 +48,6 @@ known_first_party = ["clim_recal"]
 [tool.pycln]
 all = true
 
-[tool.pdm]
-plugins = [
-  "pdm-conda"
-]
 [tool.pdm.dev-dependencies]
 dev = [
     "pytest-cov<5.0.0,>=4.1.0",
@@ -93,9 +89,9 @@ testpaths = [
     "clim_recal",
 ]
 markers = [
-    "slow: slow tests (deselect with '-m \"not slow\"')",
-    "server: designed to only run on a server",
-    "mount: requires specifc data mounted",
-    "docker: requires running via docker jupyterlab",
-    "multiprocess: uses multiprocessing",
+    "slow: slow tests (deselect with '-m \"not slow\".')",
+    "server: designed to only run on a server.",
+    "mount: requires specifc data mounted.",
+    "docker: requires running via docker jupyterlab.",
+    "multiprocess: uses multiprocessing.",
 ]

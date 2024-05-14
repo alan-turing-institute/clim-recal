@@ -151,7 +151,6 @@ def cli_preprocess_default_command_str_correct() -> str:
     return CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
 
 
-@pytest.mark.mount
 @pytest.fixture
 def data_mount_path() -> Path:
     """Return likely climate data mount path based on operating system.

@@ -67,7 +67,7 @@ REPROJECTED_CPM_TASMAX_01_LATEST_INPUT_PATH: Final[PathLike] = (
     CLIMATE_DATA_MOUNT_PATH / "Reprojected_infill/UKCP2.2/tasmax/01/latest"
 )
 
-UK_SPATIAL_PROJECTION: Final[str] = "EPSG:27700"
+BRITISH_NATIONAL_GRID_EPSG: Final[str] = "EPSG:27700"
 CPRUK_RESOLUTION: Final[int] = 2200
 CPRUK_RESAMPLING_METHOD: Final[str] = GRA_NearestNeighbour
 ResamplingArgs = tuple[PathLike, np.ndarray, np.ndarray, PathLike]
@@ -131,10 +131,10 @@ def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> D
     yyyymmdd_fix: DataArray = cpm_to_std_calendar.time.dt.strftime(CLI_DATE_FORMAT_STR)
     cpm_to_std_calendar["yyyymmdd"] = yyyymmdd_fix
     assert cpm_xr_time_series.rio.crs == cpm_to_std_calendar.rio.crs
-    std_calendar_drop_bnds = cpm_to_std_calendar.drop_dims("bnds")
-    cpm_to_std_calendar_fixed_bnds = std_calendar_drop_bnds.expand_dims(
-        dim={"bnds": cpm_xr_time_series.bnds}
-    )
+    # std_calendar_drop_bnds = cpm_to_std_calendar.drop_dims("bnds")
+    # cpm_to_std_calendar_fixed_bnds = std_calendar_drop_bnds.expand_dims(
+    #     dim={"bnds": cpm_xr_time_series.bnds}
+    # )
     # for var_name in cpm_xr_time_series.data_vars:
     #     if not cpm_to_std_calendar[var_name].rio.crs:
     #         # Try to enforce the coordinates for each variable
@@ -143,11 +143,73 @@ def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> D
     #         assert var_data.rio.crs
     #         cpm_to_std_calendar[var_name] = var_data
     # assert False
-    # return cpm_to_std_calendar
-    return cpm_to_std_calendar_fixed_bnds
+    return cpm_to_std_calendar
+    # return cpm_to_std_calendar_fixed_bnds
 
 
-def reproject_coords(
+def cpm_reproject_with_standard_calendar(
+    cpm_xr_time_series: Dataset | PathLike,
+    output_folder: Path = Path(),
+    file_name_prefix: str = "1980-",
+) -> Dataset:
+    if isinstance(cpm_xr_time_series, PathLike):
+        cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
+
+    intermediate_nc_path: Path = output_folder / (
+        file_name_prefix + "cpm-tasxmax-365-or-366.nc"
+    )
+    simplified_nc_path: Path = output_folder / (
+        file_name_prefix + "cpm-tasxmax-365-or-366-simplified.nc"
+    )
+    intermediate_warp_path: Path = output_folder / (
+        file_name_prefix + "cpm-tasxmax-365-or-366-warped.tif"
+    )
+    final_nc_path: Path = output_folder / (
+        file_name_prefix + "cpm-tasmax-365-or-366-flipped.nc"
+    )
+
+    expanded_calendar: Dataset = cpm_xarray_to_standard_calendar(cpm_xr_time_series)
+    # subset_within_ensemble: DataArray = cpm_xr_time_series.tasmax[0]
+    subset_within_ensemble: DataArray = expanded_calendar.tasmax[0]
+    # assert (subset_within_ensemble.data[0][0][:5] == RAW_CPM_TASMAX_1980_FIRST_5).all()
+    # assert (subset_within_ensemble.data[29][0][:5] == RAW_CPM_TASMAX_1980_DEC_30_FIRST_5).all()
+    subset_within_ensemble.to_netcdf(intermediate_nc_path)
+    # cpm_xr_time_series.tasmax.to_netcdf(intermediate_nc_path)
+    # tasmax_fixed_bnds.to_netcdf(intermediate_nc_path)
+    # tasmax_drop_bnds.to_netcdf(intermediate_nc_path)
+    test_intermediate_netcdf: Dataset = open_dataset(
+        intermediate_nc_path, decode_coords="all"
+    )
+    test_intermediate_netcdf.tasmax.to_netcdf(simplified_nc_path)
+    test_simplified: Dataset = open_dataset(simplified_nc_path, decode_coords="all")
+
+    # assert (test_intermediate_netcdf.tasmax.data[0][0][:5] == RAW_CPM_TASMAX_1980_FIRST_5).all()
+    # assert (test_intermediate_netcdf.tasmax.data[29][0][:5] == RAW_CPM_TASMAX_1980_DEC_30_FIRST_5).all()
+    results = gdal_warp_wrapper(
+        input_path=simplified_nc_path,
+        output_path=intermediate_warp_path,
+        copy_metadata=True,
+        format=None,
+    )
+
+    # results = gdal_warp_wrapper(
+    #     input_path=intermediate_nc_path,
+    #     output_path=intermediate_warp_path,
+    #     copy_metadata=True,
+    #     format=None,
+    # )
+    assert results == intermediate_warp_path
+    test_projected = open_dataset(intermediate_warp_path)
+    assert test_projected.rio.crs == BRITISH_NATIONAL_GRID_EPSG
+    assert len(test_projected.time) == len(expanded_calendar.time)
+    # assert len(test_projected.x) == len(cpm_xr_time_series.grid_longitude)
+    # assert len(test_projected.y) == len(cpm_xr_time_series.grid_latitude)
+    test_projected.to_netcdf(final_nc_path)
+    final_results = open_dataset(final_nc_path, decode_coords="all")
+    assert (final_results.time == expanded_calendar.time).all()
+
+
+def interpolate_coords(
     xr_time_series: Dataset,
     variable_name: str,
     x_grid: NDArray,
@@ -186,7 +248,7 @@ def crop_nc(
     xr_time_series: Dataset | PathLike,
     crop_geom: PathLike | GeoDataFrame,
     invert=False,
-    final_crs: str = UK_SPATIAL_PROJECTION,
+    final_crs: str = BRITISH_NATIONAL_GRID_EPSG,
     initial_clip_box: bool = False,
     enforce_xarray_spatial_dims: bool = True,
     xr_spatial_xdim: str = "grid_longitude",
@@ -346,9 +408,9 @@ def reproject_2_2km_filename(path: Path) -> Path:
 def gdal_warp_wrapper(
     input_path: PathLike,
     output_path: PathLike,
-    output_crs: str = UK_SPATIAL_PROJECTION,
-    output_x_resolution: int = CPRUK_RESOLUTION,
-    output_y_resolution: int = CPRUK_RESOLUTION,
+    output_crs: str = BRITISH_NATIONAL_GRID_EPSG,
+    output_x_resolution: int | None = None,
+    output_y_resolution: int | None = None,
     copy_metadata: bool = True,
     return_path: bool = True,
     format: GDALFormatsType | None = GDALGeoTiffFormatStr,
@@ -530,7 +592,7 @@ class HADsResampler:
     input_files: Iterable[PathLike] | None = None
     cpus: int | None = None
     crop: PathLike | GeoDataFrame | None = None
-    final_crs: str = UK_SPATIAL_PROJECTION
+    final_crs: str = BRITISH_NATIONAL_GRID_EPSG
     grid_x_column_name: str = HADS_XDIM
     grid_y_column_name: str = HADS_YDIM
     input_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
@@ -658,7 +720,7 @@ class HADsResampler:
         )
         return apply_geo_func(
             source_path=source_path,
-            func=reproject_coords,
+            func=interpolate_coords,
             export_folder=path,
             # Leaving in case we return to using warp
             # include_geo_warp_output_path=True,
