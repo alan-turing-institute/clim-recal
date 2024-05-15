@@ -2,7 +2,6 @@
 import sys
 import warnings
 from collections.abc import KeysView
-from copy import deepcopy
 from csv import DictReader
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
@@ -560,74 +559,6 @@ def path_iterdir(
             raise error
         else:
             return
-
-
-def kwargs_to_cli_str(space_prefix: bool = True, **kwargs) -> str:
-    """Convert `kwargs` into a `cli` `str`.
-
-    Parameters
-    ----------
-    kwargs
-        `key=val` parameters to concatenate as `str`.
-
-    Returns
-    -------
-    :
-        A final `str` of concatenated `**kwargs` in
-        command line form.
-
-    Examples
-    --------
-    >>> kwargs_to_cli_str(cat=4, in_a="hat", fun=False)
-    ' --cat 4 --in-a hat --not-fun'
-    >>> kwargs_to_cli_str(space_prefix=False, cat=4, fun=True)
-    '--cat 4 --fun'
-    >>> kwargs_to_cli_str()
-    ''
-    """
-    if kwargs:
-        cmd_str: str = " ".join(
-            f"{'--' + key.replace('_', '-')} {val}"
-            if type(val) != bool
-            else f"{'--' + key if val else '--not-' + key}"
-            for key, val in kwargs.items()
-        )
-        return cmd_str if not space_prefix else " " + cmd_str
-    else:
-        return ""
-
-
-def set_and_pop_attr_kwargs(instance: Any, **kwargs) -> dict[str, Any]:
-    """Extract any `key: val` pairs from `kwargs` to modify `instance`.
-
-    Parameters
-    ----------
-    instance
-        An object to modify.
-    kwargs
-        `key`: `val` parameters to potentially modify `instance` attributes.
-
-    Returns
-    -------
-    :
-        Any remaining `kwargs` not used to modify `instance`.
-
-    Examples
-    --------
-    >>> kwrgs = set_and_pop_attr_kwargs(
-    ...    conda_lock_file_manager, env_paths=['pyproject.toml'], cat=4)
-    >>> conda_lock_file_manager.env_paths
-    ['pyproject.toml']
-    >>> kwrgs
-    {'cat': 4}
-    """
-    kwargs_copy = deepcopy(kwargs)
-    for key, val in kwargs.items():
-        if hasattr(instance, key):
-            logger.debug(f"Changing '{key}' to '{val}'")
-            setattr(instance, key, val)
-            kwargs_copy.pop(key)  # This should eliminate all `kwargs` for `instance`
-    return kwargs_copy
 
 
 def annual_data_paths_generator(

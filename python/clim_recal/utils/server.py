@@ -1,13 +1,12 @@
 """Utility functions."""
 import subprocess
+from copy import deepcopy
 from dataclasses import dataclass, field
 from logging import getLogger
 from os import PathLike, chdir
 from pathlib import Path
 from shutil import rmtree
 from typing import Any, Callable, Final, Iterator, Sequence
-
-from .core import kwargs_to_cli_str, set_and_pop_attr_kwargs
 
 logger = getLogger(__name__)
 
@@ -26,6 +25,74 @@ DEFAULT_CONDA_LOCK_KWARGS: Final[dict[str, str | float | bool]] = {
 
 CONDA_LEGACY_PREFIX: Final[PathLike] = "."
 GITHUB_ACTIONS_ARCHITECTURE: Final[str] = "linux-64"
+
+
+def kwargs_to_cli_str(space_prefix: bool = True, **kwargs) -> str:
+    """Convert `kwargs` into a `cli` `str`.
+
+    Parameters
+    ----------
+    kwargs
+        `key=val` parameters to concatenate as `str`.
+
+    Returns
+    -------
+    :
+        A final `str` of concatenated `**kwargs` in
+        command line form.
+
+    Examples
+    --------
+    >>> kwargs_to_cli_str(cat=4, in_a="hat", fun=False)
+    ' --cat 4 --in-a hat --not-fun'
+    >>> kwargs_to_cli_str(space_prefix=False, cat=4, fun=True)
+    '--cat 4 --fun'
+    >>> kwargs_to_cli_str()
+    ''
+    """
+    if kwargs:
+        cmd_str: str = " ".join(
+            f"{'--' + key.replace('_', '-')} {val}"
+            if type(val) != bool
+            else f"{'--' + key if val else '--not-' + key}"
+            for key, val in kwargs.items()
+        )
+        return cmd_str if not space_prefix else " " + cmd_str
+    else:
+        return ""
+
+
+def set_and_pop_attr_kwargs(instance: Any, **kwargs) -> dict[str, Any]:
+    """Extract any `key: val` pairs from `kwargs` to modify `instance`.
+
+    Parameters
+    ----------
+    instance
+        An object to modify.
+    kwargs
+        `key`: `val` parameters to potentially modify `instance` attributes.
+
+    Returns
+    -------
+    :
+        Any remaining `kwargs` not used to modify `instance`.
+
+    Examples
+    --------
+    >>> kwrgs = set_and_pop_attr_kwargs(
+    ...    conda_lock_file_manager, env_paths=['pyproject.toml'], cat=4)
+    >>> conda_lock_file_manager.env_paths
+    ['pyproject.toml']
+    >>> kwrgs
+    {'cat': 4}
+    """
+    kwargs_copy = deepcopy(kwargs)
+    for key, val in kwargs.items():
+        if hasattr(instance, key):
+            logger.debug(f"Changing '{key}' to '{val}'")
+            setattr(instance, key, val)
+            kwargs_copy.pop(key)  # This should eliminate all `kwargs` for `instance`
+    return kwargs_copy
 
 
 @dataclass

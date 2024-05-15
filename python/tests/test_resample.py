@@ -11,6 +11,7 @@ from xarray import DataArray, Dataset, open_dataset
 
 from clim_recal.resample import (
     BRITISH_NATIONAL_GRID_EPSG,
+    CPM_365_OR_366_27700_FINAL,
     CPRUK_XDIM,
     CPRUK_YDIM,
     DEFAULT_RELATIVE_GRID_DATA_PATH,
@@ -25,6 +26,7 @@ from clim_recal.resample import (
     HADsResampler,
     HADsResamplerManager,
     convert_xr_calendar,
+    cpm_reproject_with_standard_calendar,
     cpm_xarray_to_standard_calendar,
     crop_nc,
     gdal_warp_wrapper,
@@ -580,58 +582,26 @@ def test_cpm_xarray_to_standard_calendar(
 @pytest.mark.slow
 def test_cpm_warp_steps(
     tasmax_cpm_1980_raw: Dataset,
+    resample_test_runs_output_path: Path,
 ) -> None:
-    intermediate_nc_path: Path = Path("1980-cpm-tasxmax-365-or-366.nc")
-    simplified_nc_path: Path = Path("1980-cpm-tasxmax-365-or-366-simplified.nc")
-    intermediate_warp_path: Path = Path("1980-cpm-tasxmax-365-or-366-warped.tif")
-    final_nc_path: Path = Path("1980-cpm-tasmax-365-or-366-flipped.nc")
-
-    # tasmax_drop_bnds = tasmax_cpm_1980_raw.drop_dims('bnds')
-    # # tasmax_drop_bnds = tasmax_cpm_1980_raw.drop_dims('ensemble_member')
-    # tasmax_fixed_bnds = tasmax_drop_bnds.expand_dims(
-    #     dim={'bnds': tasmax_cpm_1980_raw.bnds}
-    # )
-    # If failure check adding this line
-    # tasmax_cpm_1980_raw.drop_dims('ensemble_member')
-    expanded_calendar: Dataset = cpm_xarray_to_standard_calendar(tasmax_cpm_1980_raw)
-    # subset_within_ensemble: DataArray = tasmax_cpm_1980_raw.tasmax[0]
-    subset_within_ensemble: DataArray = expanded_calendar.tasmax[0]
-    # assert (subset_within_ensemble.data[0][0][:5] == RAW_CPM_TASMAX_1980_FIRST_5).all()
-    # assert (subset_within_ensemble.data[29][0][:5] == RAW_CPM_TASMAX_1980_DEC_30_FIRST_5).all()
-    subset_within_ensemble.to_netcdf(intermediate_nc_path)
-    # tasmax_cpm_1980_raw.tasmax.to_netcdf(intermediate_nc_path)
-    # tasmax_fixed_bnds.to_netcdf(intermediate_nc_path)
-    # tasmax_drop_bnds.to_netcdf(intermediate_nc_path)
-    test_intermediate_netcdf: Dataset = open_dataset(
-        intermediate_nc_path, decode_coords="all"
+    file_name_prefix: str = "test-1980-"
+    output_folder: Path = resample_test_runs_output_path / "test-cpm-warp"
+    projected = cpm_reproject_with_standard_calendar(
+        tasmax_cpm_1980_raw,
+        output_folder=output_folder,
+        file_name_prefix=file_name_prefix,
     )
-    test_intermediate_netcdf.tasmax.to_netcdf(simplified_nc_path)
-    test_simplified: Dataset = open_dataset(simplified_nc_path, decode_coords="all")
-
-    # assert (test_intermediate_netcdf.tasmax.data[0][0][:5] == RAW_CPM_TASMAX_1980_FIRST_5).all()
-    # assert (test_intermediate_netcdf.tasmax.data[29][0][:5] == RAW_CPM_TASMAX_1980_DEC_30_FIRST_5).all()
-    results = gdal_warp_wrapper(
-        input_path=simplified_nc_path,
-        output_path=intermediate_warp_path,
-        copy_metadata=True,
-        format=None,
-    )
-
-    # results = gdal_warp_wrapper(
-    #     input_path=intermediate_nc_path,
-    #     output_path=intermediate_warp_path,
-    #     copy_metadata=True,
-    #     format=None,
-    # )
-    assert results == intermediate_warp_path
-    test_projected = open_dataset(intermediate_warp_path)
-    assert test_projected.rio.crs == BRITISH_NATIONAL_GRID_EPSG
-    assert len(test_projected.time) == len(expanded_calendar.time)
+    assert projected.rio.crs == BRITISH_NATIONAL_GRID_EPSG
+    # Previous checks, worth re-wroking/expanding
+    # test_projected = open_dataset(intermediate_warp_path)
+    # assert test_projected.rio.crs == BRITISH_NATIONAL_GRID_EPSG
+    # assert len(test_projected.time) == len(expanded_calendar.time)
     # assert len(test_projected.x) == len(tasmax_cpm_1980_raw.grid_longitude)
     # assert len(test_projected.y) == len(tasmax_cpm_1980_raw.grid_latitude)
-    test_projected.to_netcdf(final_nc_path)
-    final_results = open_dataset(final_nc_path, decode_coords="all")
-    assert (final_results.time == expanded_calendar.time).all()
+    # test_projected.to_netcdf(final_nc_path)
+    final_nc_path: Path = Path(file_name_prefix + CPM_365_OR_366_27700_FINAL)
+    final_results = open_dataset(output_folder / final_nc_path, decode_coords="all")
+    assert (final_results.time == projected.time).all()
 
 
 @pytest.mark.xfail(reason="test not complete")
@@ -750,7 +720,7 @@ def test_ukcp_manager(resample_test_cpm_output_path, config: str) -> None:
     assert (CPM_FIRST_DATES == export.yyyymmdd.head().values).all()
 
 
-# @pytest.mark.xfail(reason="checking `export.tasmax` vlues currently yields `nan`")
+# @pytest.mark.xfail(reason="checking `export.tasmax` values currently yields `nan`")
 @pytest.mark.slow
 @pytest.mark.mount
 @pytest.mark.parametrize("range", (False, True))

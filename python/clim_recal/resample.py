@@ -97,6 +97,11 @@ HADS_OUTPUT_LOCAL_PATH: Final[Path] = Path("hads")
 
 NETCDF_OR_TIF = Literal[TIF_EXTENSION_STR, NETCDF_EXTENSION_STR]
 
+CPM_365_OR_366_INTERMEDIATE_NC: Final[str] = "cpm-365-or-366.nc"
+CPM_365_OR_366_SIMPLIFIED_NC: Final[str] = "cpm-365-or-366-simplified.nc"
+CPM_365_OR_366_27700_TIF: Final[str] = "cpm-365-or-366-27700.tif"
+CPM_365_OR_366_27700_FINAL: Final[str] = "cpm-365-or-366-27700-final.nc"
+
 
 def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> Dataset:
     """Convert a CPM `nc` file of 360 day calendars to standard calendar.
@@ -112,11 +117,6 @@ def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> D
     """
     if isinstance(cpm_xr_time_series, PathLike):
         cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
-    # assert isinstance(cpm_xr_time_series, Dataset)
-    # std_calendar_drop_bnds = cpm_xr_time_series.drop_dims('bnds')
-    # cpm_to_std_calendar_fixed_bnds = std_calendar_drop_bnds.expand_dims(
-    #     dim={'bnds': cpm_xr_time_series.bnds}
-    # )
     cpm_to_std_calendar: Dataset = convert_xr_calendar(
         cpm_xr_time_series, interpolate_na=True, check_cftime_cols=("time_bnds",)
     )
@@ -131,82 +131,78 @@ def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> D
     yyyymmdd_fix: DataArray = cpm_to_std_calendar.time.dt.strftime(CLI_DATE_FORMAT_STR)
     cpm_to_std_calendar["yyyymmdd"] = yyyymmdd_fix
     assert cpm_xr_time_series.rio.crs == cpm_to_std_calendar.rio.crs
-    # std_calendar_drop_bnds = cpm_to_std_calendar.drop_dims("bnds")
-    # cpm_to_std_calendar_fixed_bnds = std_calendar_drop_bnds.expand_dims(
-    #     dim={"bnds": cpm_xr_time_series.bnds}
-    # )
-    # for var_name in cpm_xr_time_series.data_vars:
-    #     if not cpm_to_std_calendar[var_name].rio.crs:
-    #         # Try to enforce the coordinates for each variable
-    #         var_data: DataArray = cpm_to_std_calendar[var_name]
-    #         var_data.rio.write_crs(cpm_xr_time_series[var_name].rio.crs, inplace=True)
-    #         assert var_data.rio.crs
-    #         cpm_to_std_calendar[var_name] = var_data
-    # assert False
     return cpm_to_std_calendar
-    # return cpm_to_std_calendar_fixed_bnds
 
 
 def cpm_reproject_with_standard_calendar(
     cpm_xr_time_series: Dataset | PathLike,
-    output_folder: Path = Path(),
-    file_name_prefix: str = "1980-",
+    output_folder: PathLike | None = None,
+    file_name_prefix: str = "",
 ) -> Dataset:
+    """Convert raw `cpm_xr_time_series` to an 365/366 days and 27700 coords.
+
+    Parameters
+    ----------
+    cpm_xr_time_series
+        `Dataset` (or path to load as `Dataset`) expected to be in raw UKCPM
+        format, with 360 day years and a rotated coordinate system.
+    output_folder
+        Path to store all intermediary and final projection.
+    file_name_prefix
+        `str` to prefix all written files with.
+
+    Returns
+    -------
+    Final `xarray` `Dataset` after spatial and temporal changes.
+    """
     if isinstance(cpm_xr_time_series, PathLike):
         cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
+    output_folder = Path(output_folder) if output_folder else Path()
 
     intermediate_nc_path: Path = output_folder / (
-        file_name_prefix + "cpm-tasxmax-365-or-366.nc"
+        file_name_prefix + CPM_365_OR_366_INTERMEDIATE_NC
     )
     simplified_nc_path: Path = output_folder / (
-        file_name_prefix + "cpm-tasxmax-365-or-366-simplified.nc"
+        file_name_prefix + CPM_365_OR_366_SIMPLIFIED_NC
     )
     intermediate_warp_path: Path = output_folder / (
-        file_name_prefix + "cpm-tasxmax-365-or-366-warped.tif"
+        file_name_prefix + CPM_365_OR_366_27700_TIF
     )
     final_nc_path: Path = output_folder / (
-        file_name_prefix + "cpm-tasmax-365-or-366-flipped.nc"
+        file_name_prefix + CPM_365_OR_366_27700_FINAL
     )
 
     expanded_calendar: Dataset = cpm_xarray_to_standard_calendar(cpm_xr_time_series)
-    # subset_within_ensemble: DataArray = cpm_xr_time_series.tasmax[0]
     subset_within_ensemble: DataArray = expanded_calendar.tasmax[0]
-    # assert (subset_within_ensemble.data[0][0][:5] == RAW_CPM_TASMAX_1980_FIRST_5).all()
-    # assert (subset_within_ensemble.data[29][0][:5] == RAW_CPM_TASMAX_1980_DEC_30_FIRST_5).all()
     subset_within_ensemble.to_netcdf(intermediate_nc_path)
-    # cpm_xr_time_series.tasmax.to_netcdf(intermediate_nc_path)
-    # tasmax_fixed_bnds.to_netcdf(intermediate_nc_path)
-    # tasmax_drop_bnds.to_netcdf(intermediate_nc_path)
     test_intermediate_netcdf: Dataset = open_dataset(
         intermediate_nc_path, decode_coords="all"
     )
     test_intermediate_netcdf.tasmax.to_netcdf(simplified_nc_path)
-    test_simplified: Dataset = open_dataset(simplified_nc_path, decode_coords="all")
 
-    # assert (test_intermediate_netcdf.tasmax.data[0][0][:5] == RAW_CPM_TASMAX_1980_FIRST_5).all()
-    # assert (test_intermediate_netcdf.tasmax.data[29][0][:5] == RAW_CPM_TASMAX_1980_DEC_30_FIRST_5).all()
-    results = gdal_warp_wrapper(
+    # Uncomment to test intermediate results in test_simplified
+    # test_simplified: Dataset = open_dataset(simplified_nc_path, decode_coords="all")
+
+    warped_to_22700_path = gdal_warp_wrapper(
         input_path=simplified_nc_path,
         output_path=intermediate_warp_path,
         copy_metadata=True,
         format=None,
     )
 
-    # results = gdal_warp_wrapper(
-    #     input_path=intermediate_nc_path,
-    #     output_path=intermediate_warp_path,
-    #     copy_metadata=True,
-    #     format=None,
-    # )
-    assert results == intermediate_warp_path
-    test_projected = open_dataset(intermediate_warp_path)
-    assert test_projected.rio.crs == BRITISH_NATIONAL_GRID_EPSG
-    assert len(test_projected.time) == len(expanded_calendar.time)
-    # assert len(test_projected.x) == len(cpm_xr_time_series.grid_longitude)
-    # assert len(test_projected.y) == len(cpm_xr_time_series.grid_latitude)
-    test_projected.to_netcdf(final_nc_path)
+    assert warped_to_22700_path == intermediate_warp_path
+    warped_to_22700 = open_dataset(intermediate_warp_path)
+    assert warped_to_22700.rio.crs == BRITISH_NATIONAL_GRID_EPSG
+    assert len(warped_to_22700.time) == len(expanded_calendar.time)
+
+    warped_to_22700_y_axis_inverted: Dataset = warped_to_22700.reindex(
+        y=list(reversed(warped_to_22700.y))
+    )
+
+    warped_to_22700_y_axis_inverted.to_netcdf(final_nc_path)
     final_results = open_dataset(final_nc_path, decode_coords="all")
     assert (final_results.time == expanded_calendar.time).all()
+    return final_results
 
 
 def interpolate_coords(
