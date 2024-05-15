@@ -209,8 +209,15 @@ def main(
 
     Examples
     --------
+
+    Note the `_allow_check_fail` parameters support running
+    the examples without data mounted from a server.
+
     >>> main(variables=("rainfall", "tasmin"),
-    ...      output_path=resample_test_output_path)
+    ...      output_path=resample_test_output_path,
+    ...      cpm_kwargs=dict(_allow_check_fail=True),
+    ...      hads_kwargs=dict(_allow_check_fail=True),
+    ... )
     clim-recal pipeline configurations:
     <ClimRecalConfig(variables_count=2, runs_count=1,
                      cities_count=1, methods_count=1,

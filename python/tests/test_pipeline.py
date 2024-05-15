@@ -52,6 +52,8 @@ def test_main(
         stop_index=1,
         cpus=2,
         multiprocess=multiprocess,
+        cpm_kwargs=dict(_allow_check_fail=True),
+        hads_kwargs=dict(_allow_check_fail=True),
     )
     captured = capsys.readouterr()
     assert f"variables_count={len(variables)}" in captured.out

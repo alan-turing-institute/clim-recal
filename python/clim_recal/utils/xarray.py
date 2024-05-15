@@ -1,12 +1,15 @@
 from datetime import date, datetime, timedelta
 from os import PathLike
 from pathlib import Path
-from typing import Any, Final, Iterable, Literal
+from typing import Any, Callable, Final, Iterable, Literal
 
 import numpy as np
 import rioxarray  # nopycln: import
+from geopandas import GeoDataFrame, read_file
 from numpy import array, random
 from numpy.typing import NDArray
+from osgeo.gdal import Dataset as GDALDataset
+from osgeo.gdal import GDALWarpAppOptions, Warp, WarpOptions
 from pandas import DatetimeIndex, date_range, to_datetime
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
 from xarray.backends.api import ENGINES
@@ -20,12 +23,15 @@ from .core import (
     climate_data_mount_path,
     date_range_generator,
 )
+from .gdal_formats import NETCDF_EXTENSION_STR, GDALFormatsType, GDALGeoTiffFormatStr
 
 DropDayType = set[tuple[int, int]]
 ChangeDayType = set[tuple[int, int]]
 
 # MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
 """A `set` of tuples of month and day numbers for `enforce_date_changes`."""
+
+BRITISH_NATIONAL_GRID_EPSG: Final[str] = "EPSG:27700"
 
 MONTH_DAY_XARRAY_LEAP_YEAR_DROP: DropDayType = {
     (1, 31),
@@ -83,6 +89,219 @@ XArrayEngineType = Literal[*tuple(ENGINES)]
 
 DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
 NETCDF4_XARRAY_ENGINE: Final[str] = "netcdf4"
+
+
+def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> Dataset:
+    """Convert a CPM `nc` file of 360 day calendars to standard calendar.
+
+    Parameters
+    ----------
+    cpm_xr_time_series
+        A raw `xarray` of the form provided by CPM.
+
+    Returns
+    -------
+    `Dataset` calendar converted to standard (Gregorian).
+    """
+    if isinstance(cpm_xr_time_series, PathLike):
+        cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
+    cpm_to_std_calendar: Dataset = convert_xr_calendar(
+        cpm_xr_time_series, interpolate_na=True, check_cftime_cols=("time_bnds",)
+    )
+    cpm_to_std_calendar[
+        "month_number"
+    ] = cpm_to_std_calendar.month_number.interpolate_na(
+        "time", fill_value="extrapolate"
+    )
+    cpm_to_std_calendar["year"] = cpm_to_std_calendar.year.interpolate_na(
+        "time", fill_value="extrapolate"
+    )
+    yyyymmdd_fix: DataArray = cpm_to_std_calendar.time.dt.strftime(CLI_DATE_FORMAT_STR)
+    cpm_to_std_calendar["yyyymmdd"] = yyyymmdd_fix
+    assert cpm_xr_time_series.rio.crs == cpm_to_std_calendar.rio.crs
+    return cpm_to_std_calendar
+
+
+def cpm_reproject_with_standard_calendar(
+    cpm_xr_time_series: Dataset | PathLike,
+    output_folder: PathLike | None = None,
+    file_name_prefix: str = "",
+) -> Dataset:
+    """Convert raw `cpm_xr_time_series` to an 365/366 days and 27700 coords.
+
+    Parameters
+    ----------
+    cpm_xr_time_series
+        `Dataset` (or path to load as `Dataset`) expected to be in raw UKCPM
+        format, with 360 day years and a rotated coordinate system.
+    output_folder
+        Path to store all intermediary and final projection.
+    file_name_prefix
+        `str` to prefix all written files with.
+
+    Returns
+    -------
+    Final `xarray` `Dataset` after spatial and temporal changes.
+    """
+    if isinstance(cpm_xr_time_series, PathLike):
+        cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
+    output_folder = Path(output_folder) if output_folder else Path()
+
+    intermediate_nc_path: Path = output_folder / (
+        file_name_prefix + CPM_365_OR_366_INTERMEDIATE_NC
+    )
+    simplified_nc_path: Path = output_folder / (
+        file_name_prefix + CPM_365_OR_366_SIMPLIFIED_NC
+    )
+    intermediate_warp_path: Path = output_folder / (
+        file_name_prefix + CPM_365_OR_366_27700_TIF
+    )
+    final_nc_path: Path = output_folder / (
+        file_name_prefix + CPM_365_OR_366_27700_FINAL
+    )
+
+    expanded_calendar: Dataset = cpm_xarray_to_standard_calendar(cpm_xr_time_series)
+    subset_within_ensemble: DataArray = expanded_calendar.tasmax[0]
+    subset_within_ensemble.to_netcdf(intermediate_nc_path)
+    test_intermediate_netcdf: Dataset = open_dataset(
+        intermediate_nc_path, decode_coords="all"
+    )
+    test_intermediate_netcdf.tasmax.to_netcdf(simplified_nc_path)
+
+    # Uncomment to test intermediate results in test_simplified
+    # test_simplified: Dataset = open_dataset(simplified_nc_path, decode_coords="all")
+
+    warped_to_22700_path = gdal_warp_wrapper(
+        input_path=simplified_nc_path,
+        output_path=intermediate_warp_path,
+        copy_metadata=True,
+        format=None,
+    )
+
+    assert warped_to_22700_path == intermediate_warp_path
+    warped_to_22700 = open_dataset(intermediate_warp_path)
+    assert warped_to_22700.rio.crs == BRITISH_NATIONAL_GRID_EPSG
+    assert len(warped_to_22700.time) == len(expanded_calendar.time)
+
+    warped_to_22700_y_axis_inverted: Dataset = warped_to_22700.reindex(
+        y=list(reversed(warped_to_22700.y))
+    )
+
+    warped_to_22700_y_axis_inverted.to_netcdf(final_nc_path)
+    final_results = open_dataset(final_nc_path, decode_coords="all")
+    assert (final_results.time == expanded_calendar.time).all()
+    return final_results
+
+
+def interpolate_coords(
+    xr_time_series: Dataset,
+    variable_name: str,
+    x_grid: NDArray,
+    y_grid: NDArray,
+    xr_time_series_x_column_name: str,
+    xr_time_series_y_column_name: str,
+    method: str = "linear",
+    engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
+    **kwargs,
+) -> Dataset:
+    """Reproject `xr_time_series` to `x_resolution`/`y_resolution`.
+
+    Notes
+    -----
+    The `rio.reproject` approach commented out below raises
+    `ValueError: IndexVariable objects must be 1-dimensional`
+    See https://github.com/corteva/rioxarray/discussions/762
+    """
+    if isinstance(xr_time_series, PathLike | str):
+        xr_time_series = open_dataset(
+            xr_time_series, decode_coords="all", engine=engine
+        )
+    assert isinstance(xr_time_series, Dataset)
+    # crs = crs if crs else xr_time_series.rio.crs
+    # Code commented out below relates to a method following this discussion:
+    # https://github.com/corteva/rioxarray/discussions/762
+    # if x_resolution and y_resolution:
+    #     kwargs['resolution'] = (x_resolution, y_resolution)
+    # return xr_time_series.rio.reproject(dst_crs=crs, **kwargs)
+    kwargs[xr_time_series_x_column_name] = x_grid
+    kwargs[xr_time_series_y_column_name] = y_grid
+    return xr_time_series[[variable_name]].interp(method=method, **kwargs)
+
+
+def crop_nc(
+    xr_time_series: Dataset | PathLike,
+    crop_geom: PathLike | GeoDataFrame,
+    invert=False,
+    final_crs: str = BRITISH_NATIONAL_GRID_EPSG,
+    initial_clip_box: bool = False,
+    enforce_xarray_spatial_dims: bool = True,
+    xr_spatial_xdim: str = "grid_longitude",
+    xr_spatial_ydim: str = "grid_latitude",
+    **kwargs,
+) -> Dataset:
+    """Crop `xr_time_series` with `crop_path` `shapefile`.
+
+    Parameters
+    ----------
+    xr_time_series
+        `Dataset` or path to `netcdf` file to load and crop.
+    crop_geom
+        `GeoDataFrame` or `Path` of file to crop with.
+    invert
+        Whether to invert the `crop_geom` coordinates.
+    final_crs
+        Final coordinate system to return cropped `xr_time_series` in.
+    initial_clip_box
+        Whether to initially clip `xr_time_series` via `crop_geom`
+        boundaries. For more details on chained clip approaches see
+        https://corteva.github.io/rioxarray/html/examples/clip_geom.html#Clipping-larger-rasters
+    enforce_xarray_spatial_dims
+        Whether to use `set_spatial_dims` on `xr_time_series` prior to `clip`.
+    xr_spatial_xdim
+        Column parameter to pass as `xdim` to `set_spatial_dims` if used.
+    xr_spatial_ydim
+        Column parameter to pass as `ydim` to `set_spatial_dims` if used.
+    kwargs
+        Any additional parameters to pass to `clip`
+
+    Returns
+    -------
+    :
+        Spatially cropped `xr_time_series` `Dataset` with `final_crs` spatial coords.
+
+    Examples
+    --------
+    >>> pytest.skip('Refactor needed, may be removed.')
+    >>> if not is_data_mounted:
+    ...     pytest.skip(mount_doctest_skip_message)
+    >>> cropped = crop_nc(
+    ...     RAW_CPM_TASMAX_PATH /
+    ...     'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
+    ...     crop_geom=glasgow_shape_file_path, invert=True)
+    >>> cropped.rio.bounds() == glasgow_epsg_27700_bounds
+    True
+    """
+    # xr_time_series = reproject_xarray_by_crs(
+    #     xr_time_series,
+    #     crs=final_crs,
+    #     enforce_xarray_spatial_dims=enforce_xarray_spatial_dims,
+    #     xr_spatial_xdim=xr_spatial_xdim,
+    #     xr_spatial_ydim=xr_spatial_ydim,
+    # )
+    if isinstance(crop_geom, PathLike):
+        crop_geom = read_file(crop_geom)
+    assert isinstance(crop_geom, GeoDataFrame)
+    crop_geom.set_crs(crs=final_crs, inplace=True)
+    # if initial_clip_box:
+    return xr_time_series.rio.clip_box(
+        minx=crop_geom.bounds.minx,
+        miny=crop_geom.bounds.miny,
+        maxx=crop_geom.bounds.maxx,
+        maxy=crop_geom.bounds.maxy,
+    )
+    # return xr_time_series.rio.clip(
+    #     crop_geom.geometry.values, drop=True, invert=invert, **kwargs
+    # )
 
 
 def ensure_xr_dataset(
@@ -327,6 +546,133 @@ def interpolate_xr_ts(
         return interpolated_ts
 
 
+def gdal_warp_wrapper(
+    input_path: PathLike,
+    output_path: PathLike,
+    output_crs: str = BRITISH_NATIONAL_GRID_EPSG,
+    output_x_resolution: int | None = None,
+    output_y_resolution: int | None = None,
+    copy_metadata: bool = True,
+    return_path: bool = True,
+    format: GDALFormatsType | None = GDALGeoTiffFormatStr,
+    multithread: bool = True,
+    **kwargs,
+) -> Path | GDALDataset:
+    """Execute the `gdalwrap` function within `python`.
+
+    This is following a script in the `bash/` folder that uses
+    this programme:
+
+    ```bash
+    f=$1 # The first argument is the file to reproject
+    fn=${f/Raw/Reprojected_infill} # Replace Raw with Reprojected_infill in the filename
+    folder=`dirname $fn` # Get the folder name
+    mkdir -p $folder # Create the folder if it doesn't exist
+    gdalwarp -t_srs 'EPSG:27700' -tr 2200 2200 -r near -overwrite $f "${fn%.nc}.tif" # Reproject the file
+    ```
+
+    Parameters
+    ----------
+    input_path
+        Path with `CPRUK` files to resample. `srcDSOrSrcDSTab` in
+        `Warp`.
+    output_path
+        Path to save resampled `input_path` file(s) to. If equal to
+        `input_path` then the `overwrite` parameter is called.
+        `destNameOrDestDS` in `Warp`.
+    output_crs
+        Coordinate system to convert `input_path` file(s) to.
+        `dstSRS` in `WarpOptions`.
+    format
+        Format to convert `input_path` to in `output_path`.
+    output_x_resolution
+        Resolution of `x` cordinates to convert `input_path` file(s) to.
+        `xRes` in `WarpOptions`.
+    output_y_resolution
+        Resolution of `y` cordinates to convert `input_path` file(s) to.
+        `yRes` in `WarpOptions`.
+    copy_metadata
+        Whether to copy metadata when possible.
+    return_path
+        Return the resulting path if `True`, else the new `GDALDataset`.
+    resampling_method
+        Sampling method. `resampleAlg` in `WarpOption`. See other options
+        in: `https://gdal.org/programs/gdalwarp.html#cmdoption-gdalwarp-r`.
+    """
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    try:
+        assert not Path(output_path).is_dir()
+    except AssertionError:
+        raise FileExistsError(f"Path exists as a directory: {output_path}")
+    if input_path == output_path:
+        kwargs["overwrite"] = True
+    warp_options: GDALWarpAppOptions = WarpOptions(
+        dstSRS=output_crs,
+        format=format,
+        xRes=output_x_resolution,
+        yRes=output_y_resolution,
+        copyMetadata=copy_metadata,
+        multithread=multithread,
+        **kwargs,
+    )
+    projection: GDALDataset = Warp(
+        destNameOrDestDS=output_path, srcDSOrSrcDSTab=input_path, options=warp_options
+    )
+    assert projection is not None
+    return output_path if return_path else projection
+
+
+def apply_geo_func(
+    source_path: PathLike,
+    func: Callable[[Dataset], Dataset],
+    export_folder: PathLike,
+    new_path_name_func: Callable[[Path], Path] | None = None,
+    to_netcdf: bool = True,
+    to_raster: bool = False,
+    include_geo_warp_output_path: bool = False,
+    return_results: bool = False,
+    **kwargs,
+) -> Path | Dataset | GDALDataset:
+    """Apply a `Callable` to `netcdf_source` file and export via `to_netcdf`.
+
+    Parameters
+    ----------
+    source_path
+        `netcdf` file to apply `func` to.
+    func
+        `Callable` to modify `netcdf`.
+    export_folder
+        Where to save results.
+    path_name_replace_tuple
+        Optional replacement `str` to apply to `source_path.name` when exporting
+    to_netcdf
+        Whether to call `to_netcdf` method on `results` `Dataset`.
+    """
+    export_path: Path = Path(source_path)
+    if new_path_name_func:
+        export_path = new_path_name_func(export_path)
+    export_path = Path(export_folder) / export_path.name
+    if include_geo_warp_output_path:
+        kwargs["output_path"] = export_path
+    results: Dataset | Path | GDALDataset = func(source_path, **kwargs)
+    if to_netcdf or to_raster:
+        if isinstance(results, Path):
+            results = open_dataset(results)
+        if isinstance(results, GDALDataset):
+            raise TypeError(
+                f"Restuls from 'gdal_warp_wrapper' can't directly export to NetCDF form, only return a Path or GDALDataset"
+            )
+        assert isinstance(results, Dataset)
+        if to_netcdf:
+            results.to_netcdf(export_path)
+        if to_raster:
+            results.rio.to_raster(export_path)
+    if return_results:
+        return results
+    else:
+        return export_path
+
+
 # Below requires packages outside python standard library
 # Note: `rioxarray` is imported to ensure GIS methods are included. See:
 # https://corteva.github.io/rioxarray/stable/getting_started/getting_started.html#rio-accessor
@@ -548,165 +894,3 @@ def cftime_range_gen(time_data_array: DataArray, **kwargs) -> NDArray:
     )
     time_bnds_fix_range_end: CFTimeIndex = time_bnds_fix_range_start + timedelta(days=1)
     return np.array((time_bnds_fix_range_start, time_bnds_fix_range_end)).T
-
-
-GDALFormatsType = Literal[
-    "VRT",
-    "DERIVED",
-    "GTiff",
-    "COG",
-    "NITF",
-    "RPFTOC",
-    "ECRGTOC",
-    "HFA",
-    "SAR_CEOS",
-    "CEOS",
-    "JAXAPALSAR",
-    "GFF",
-    "ELAS",
-    "ESRIC",
-    "AIG",
-    "AAIGrid",
-    "GRASSASCIIGrid",
-    "ISG",
-    "SDTS",
-    "DTED",
-    "PNG",
-    "JPEG",
-    "MEM",
-    "JDEM",
-    "GIF",
-    "BIGGIF",
-    "ESAT",
-    "FITS",
-    "BSB",
-    "XPM",
-    "BMP",
-    "DIMAP",
-    "AirSAR",
-    "RS2",
-    "SAFE",
-    "PCIDSK",
-    "PCRaster",
-    "ILWIS",
-    "SGI",
-    "SRTMHGT",
-    "Leveller",
-    "Terragen",
-    "netCDF",
-    "ISIS3",
-    "ISIS2",
-    "PDS",
-    "PDS4",
-    "VICAR",
-    "TIL",
-    "ERS",
-    "JP2OpenJPEG",
-    "L1B",
-    "FIT",
-    "GRIB",
-    "RMF",
-    "WCS",
-    "WMS",
-    "MSGN",
-    "RST",
-    "GSAG",
-    "GSBG",
-    "GS7BG",
-    "COSAR",
-    "TSX",
-    "COASP",
-    "R",
-    "MAP",
-    "KMLSUPEROVERLAY",
-    "WEBP",
-    "PDF",
-    "Rasterlite",
-    "MBTiles",
-    "PLMOSAIC",
-    "CALS",
-    "WMTS",
-    "SENTINEL2",
-    "MRF",
-    "PNM",
-    "DOQ1",
-    "DOQ2",
-    "PAux",
-    "MFF",
-    "MFF2",
-    "GSC",
-    "FAST",
-    "BT",
-    "LAN",
-    "CPG",
-    "NDF",
-    "EIR",
-    "DIPEx",
-    "LCP",
-    "GTX",
-    "LOSLAS",
-    "NTv2",
-    "CTable2",
-    "ACE2",
-    "SNODAS",
-    "KRO",
-    "ROI_PAC",
-    "RRASTER",
-    "BYN",
-    "NOAA_B",
-    "NSIDCbin",
-    "ARG",
-    "RIK",
-    "USGSDEM",
-    "GXF",
-    "BAG",
-    "S102",
-    "HDF5",
-    "HDF5Image",
-    "NWT_GRD",
-    "NWT_GRC",
-    "ADRG",
-    "SRP",
-    "BLX",
-    "PostGISRaster",
-    "SAGA",
-    "XYZ",
-    "HF2",
-    "OZI",
-    "CTG",
-    "ZMap",
-    "NGSGEOID",
-    "IRIS",
-    "PRF",
-    "EEDAI",
-    "DAAS",
-    "SIGDEM",
-    "EXR",
-    "HEIF",
-    "TGA",
-    "OGCAPI",
-    "STACTA",
-    "STACIT",
-    "JPEGXL",
-    "GPKG",
-    "OpenFileGDB",
-    "CAD",
-    "PLSCENES",
-    "NGW",
-    "GenBin",
-    "ENVI",
-    "EHdr",
-    "ISCE",
-    "Zarr",
-    "HTTP",
-]
-GDALGeoTiffFormatStr: Final[str] = "GTiff"
-GDALNetCDFFormatStr: Final[str] = "netCDF"
-
-TIF_EXTENSION_STR: Final[str] = "tif"
-NETCDF_EXTENSION_STR: Final[str] = "nc"
-
-GDALFormatExtensions: Final[dict[str, str]] = {
-    GDALGeoTiffFormatStr: TIF_EXTENSION_STR,
-    GDALNetCDFFormatStr: NETCDF_EXTENSION_STR,
-}

@@ -18,30 +18,24 @@ from typing import Any, Callable, Final, Iterable, Iterator, Literal, Sequence
 
 import numpy as np
 import rioxarray  # nopycln: import
-from geopandas import GeoDataFrame, read_file
+from geopandas import GeoDataFrame
 from numpy.typing import NDArray
-from osgeo.gdal import Dataset as GDALDataset
-from osgeo.gdal import GDALWarpAppOptions, GRA_NearestNeighbour, Warp, WarpOptions
+from osgeo.gdal import GRA_NearestNeighbour
 from rich import print
 from tqdm.rich import trange
-from xarray import DataArray, Dataset, open_dataset
+from xarray import Dataset, open_dataset
 
 from clim_recal.debiasing.debias_wrapper import VariableOptions
 
-from .utils.core import (
-    CLI_DATE_FORMAT_STR,
-    climate_data_mount_path,
-    multiprocess_execute,
-)
+from .utils.core import climate_data_mount_path, multiprocess_execute
 from .utils.data import RunOptions, VariableOptions
 from .utils.xarray import (
-    NETCDF4_XARRAY_ENGINE,
+    BRITISH_NATIONAL_GRID_EPSG,
     NETCDF_EXTENSION_STR,
     TIF_EXTENSION_STR,
-    GDALFormatsType,
-    GDALGeoTiffFormatStr,
-    XArrayEngineType,
-    convert_xr_calendar,
+    apply_geo_func,
+    cpm_reproject_with_standard_calendar,
+    interpolate_coords,
 )
 
 logger = getLogger(__name__)
@@ -67,7 +61,6 @@ REPROJECTED_CPM_TASMAX_01_LATEST_INPUT_PATH: Final[PathLike] = (
     CLIMATE_DATA_MOUNT_PATH / "Reprojected_infill/UKCP2.2/tasmax/01/latest"
 )
 
-BRITISH_NATIONAL_GRID_EPSG: Final[str] = "EPSG:27700"
 CPRUK_RESOLUTION: Final[int] = 2200
 CPRUK_RESAMPLING_METHOD: Final[str] = GRA_NearestNeighbour
 ResamplingArgs = tuple[PathLike, np.ndarray, np.ndarray, PathLike]
@@ -103,294 +96,6 @@ CPM_365_OR_366_27700_TIF: Final[str] = "cpm-365-or-366-27700.tif"
 CPM_365_OR_366_27700_FINAL: Final[str] = "cpm-365-or-366-27700-final.nc"
 
 
-def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> Dataset:
-    """Convert a CPM `nc` file of 360 day calendars to standard calendar.
-
-    Parameters
-    ----------
-    cpm_xr_time_series
-        A raw `xarray` of the form provided by CPM.
-
-    Returns
-    -------
-    `Dataset` calendar converted to standard (Gregorian).
-    """
-    if isinstance(cpm_xr_time_series, PathLike):
-        cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
-    cpm_to_std_calendar: Dataset = convert_xr_calendar(
-        cpm_xr_time_series, interpolate_na=True, check_cftime_cols=("time_bnds",)
-    )
-    cpm_to_std_calendar[
-        "month_number"
-    ] = cpm_to_std_calendar.month_number.interpolate_na(
-        "time", fill_value="extrapolate"
-    )
-    cpm_to_std_calendar["year"] = cpm_to_std_calendar.year.interpolate_na(
-        "time", fill_value="extrapolate"
-    )
-    yyyymmdd_fix: DataArray = cpm_to_std_calendar.time.dt.strftime(CLI_DATE_FORMAT_STR)
-    cpm_to_std_calendar["yyyymmdd"] = yyyymmdd_fix
-    assert cpm_xr_time_series.rio.crs == cpm_to_std_calendar.rio.crs
-    return cpm_to_std_calendar
-
-
-def cpm_reproject_with_standard_calendar(
-    cpm_xr_time_series: Dataset | PathLike,
-    output_folder: PathLike | None = None,
-    file_name_prefix: str = "",
-) -> Dataset:
-    """Convert raw `cpm_xr_time_series` to an 365/366 days and 27700 coords.
-
-    Parameters
-    ----------
-    cpm_xr_time_series
-        `Dataset` (or path to load as `Dataset`) expected to be in raw UKCPM
-        format, with 360 day years and a rotated coordinate system.
-    output_folder
-        Path to store all intermediary and final projection.
-    file_name_prefix
-        `str` to prefix all written files with.
-
-    Returns
-    -------
-    Final `xarray` `Dataset` after spatial and temporal changes.
-    """
-    if isinstance(cpm_xr_time_series, PathLike):
-        cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
-    output_folder = Path(output_folder) if output_folder else Path()
-
-    intermediate_nc_path: Path = output_folder / (
-        file_name_prefix + CPM_365_OR_366_INTERMEDIATE_NC
-    )
-    simplified_nc_path: Path = output_folder / (
-        file_name_prefix + CPM_365_OR_366_SIMPLIFIED_NC
-    )
-    intermediate_warp_path: Path = output_folder / (
-        file_name_prefix + CPM_365_OR_366_27700_TIF
-    )
-    final_nc_path: Path = output_folder / (
-        file_name_prefix + CPM_365_OR_366_27700_FINAL
-    )
-
-    expanded_calendar: Dataset = cpm_xarray_to_standard_calendar(cpm_xr_time_series)
-    subset_within_ensemble: DataArray = expanded_calendar.tasmax[0]
-    subset_within_ensemble.to_netcdf(intermediate_nc_path)
-    test_intermediate_netcdf: Dataset = open_dataset(
-        intermediate_nc_path, decode_coords="all"
-    )
-    test_intermediate_netcdf.tasmax.to_netcdf(simplified_nc_path)
-
-    # Uncomment to test intermediate results in test_simplified
-    # test_simplified: Dataset = open_dataset(simplified_nc_path, decode_coords="all")
-
-    warped_to_22700_path = gdal_warp_wrapper(
-        input_path=simplified_nc_path,
-        output_path=intermediate_warp_path,
-        copy_metadata=True,
-        format=None,
-    )
-
-    assert warped_to_22700_path == intermediate_warp_path
-    warped_to_22700 = open_dataset(intermediate_warp_path)
-    assert warped_to_22700.rio.crs == BRITISH_NATIONAL_GRID_EPSG
-    assert len(warped_to_22700.time) == len(expanded_calendar.time)
-
-    warped_to_22700_y_axis_inverted: Dataset = warped_to_22700.reindex(
-        y=list(reversed(warped_to_22700.y))
-    )
-
-    warped_to_22700_y_axis_inverted.to_netcdf(final_nc_path)
-    final_results = open_dataset(final_nc_path, decode_coords="all")
-    assert (final_results.time == expanded_calendar.time).all()
-    return final_results
-
-
-def interpolate_coords(
-    xr_time_series: Dataset,
-    variable_name: str,
-    x_grid: NDArray,
-    y_grid: NDArray,
-    xr_time_series_x_column_name: str,
-    xr_time_series_y_column_name: str,
-    method: str = "linear",
-    engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
-    **kwargs,
-) -> Dataset:
-    """Reproject `xr_time_series` to `x_resolution`/`y_resolution`.
-
-    Notes
-    -----
-    The `rio.reproject` approach commented out below raises
-    `ValueError: IndexVariable objects must be 1-dimensional`
-    See https://github.com/corteva/rioxarray/discussions/762
-    """
-    if isinstance(xr_time_series, PathLike | str):
-        xr_time_series = open_dataset(
-            xr_time_series, decode_coords="all", engine=engine
-        )
-    assert isinstance(xr_time_series, Dataset)
-    # crs = crs if crs else xr_time_series.rio.crs
-    # Code commented out below relates to a method following this discussion:
-    # https://github.com/corteva/rioxarray/discussions/762
-    # if x_resolution and y_resolution:
-    #     kwargs['resolution'] = (x_resolution, y_resolution)
-    # return xr_time_series.rio.reproject(dst_crs=crs, **kwargs)
-    kwargs[xr_time_series_x_column_name] = x_grid
-    kwargs[xr_time_series_y_column_name] = y_grid
-    return xr_time_series[[variable_name]].interp(method=method, **kwargs)
-
-
-def crop_nc(
-    xr_time_series: Dataset | PathLike,
-    crop_geom: PathLike | GeoDataFrame,
-    invert=False,
-    final_crs: str = BRITISH_NATIONAL_GRID_EPSG,
-    initial_clip_box: bool = False,
-    enforce_xarray_spatial_dims: bool = True,
-    xr_spatial_xdim: str = "grid_longitude",
-    xr_spatial_ydim: str = "grid_latitude",
-    **kwargs,
-) -> Dataset:
-    """Crop `xr_time_series` with `crop_path` `shapefile`.
-
-    Parameters
-    ----------
-    xr_time_series
-        `Dataset` or path to `netcdf` file to load and crop.
-    crop_geom
-        `GeoDataFrame` or `Path` of file to crop with.
-    invert
-        Whether to invert the `crop_geom` coordinates.
-    final_crs
-        Final coordinate system to return cropped `xr_time_series` in.
-    initial_clip_box
-        Whether to initially clip `xr_time_series` via `crop_geom`
-        boundaries. For more details on chained clip approaches see
-        https://corteva.github.io/rioxarray/html/examples/clip_geom.html#Clipping-larger-rasters
-    enforce_xarray_spatial_dims
-        Whether to use `set_spatial_dims` on `xr_time_series` prior to `clip`.
-    xr_spatial_xdim
-        Column parameter to pass as `xdim` to `set_spatial_dims` if used.
-    xr_spatial_ydim
-        Column parameter to pass as `ydim` to `set_spatial_dims` if used.
-    kwargs
-        Any additional parameters to pass to `clip`
-
-    Returns
-    -------
-    :
-        Spatially cropped `xr_time_series` `Dataset` with `final_crs` spatial coords.
-
-    Examples
-    --------
-    >>> pytest.skip('Refactor needed, may be removed.')
-    >>> if not is_data_mounted:
-    ...     pytest.skip(mount_doctest_skip_message)
-    >>> cropped = crop_nc(
-    ...     RAW_CPM_TASMAX_PATH /
-    ...     'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
-    ...     crop_geom=glasgow_shape_file_path, invert=True)
-    >>> cropped.rio.bounds() == glasgow_epsg_27700_bounds
-    True
-    """
-    # xr_time_series = reproject_xarray_by_crs(
-    #     xr_time_series,
-    #     crs=final_crs,
-    #     enforce_xarray_spatial_dims=enforce_xarray_spatial_dims,
-    #     xr_spatial_xdim=xr_spatial_xdim,
-    #     xr_spatial_ydim=xr_spatial_ydim,
-    # )
-    if isinstance(crop_geom, PathLike):
-        crop_geom = read_file(crop_geom)
-    assert isinstance(crop_geom, GeoDataFrame)
-    crop_geom.set_crs(crs=final_crs, inplace=True)
-    # if initial_clip_box:
-    return xr_time_series.rio.clip_box(
-        minx=crop_geom.bounds.minx,
-        miny=crop_geom.bounds.miny,
-        maxx=crop_geom.bounds.maxx,
-        maxy=crop_geom.bounds.maxy,
-    )
-    # return xr_time_series.rio.clip(
-    #     crop_geom.geometry.values, drop=True, invert=invert, **kwargs
-    # )
-
-
-# Previous approach, kept for reference
-# def resample_hadukgrid(x: list | tuple) -> int:
-#     """Resample UKHADs data spatially.
-#
-#     Results are saved to the output directory.
-#
-#     Parameters
-#     ----------
-#     x
-#         x[0]: file to be resampled
-#         x[1]: x_grid
-#         x[2]: y_grid
-#         x[3]: output_dir
-#
-#     Returns
-#     -------
-#     `0` if resampling is a success `1` if not.
-#
-#     Raises
-#     ------
-#     Exception
-#         Generic execption for any errors raised.
-#     """
-#     try:
-#         # due to the multiprocessing implementations inputs come as list
-#         file = x[0]
-#         x_grid = x[1]
-#         y_grid = x[2]
-#         output_dir = x[3]
-#
-#         name = os.path.basename(file)
-#         output_name = (
-#             f"{'_'.join(name.split('_')[:-1])}_2.2km_resampled_{name.split('_')[-1]}"
-#         )
-#         if os.path.exists(os.path.join(output_dir, output_name)):
-#             print(f"File: {output_name} already exists in this directory. Skipping.")
-#             return 0
-#
-#         # files have the variable name as input (e.g. tasmax_hadukgrid_uk_1km_day_20211101-20211130.nc)
-#         variable = os.path.basename(file).split("_")[0]
-#
-#         data = open_dataset(file, decode_coords="all")
-#
-#         # # convert to 360 day calendar.
-#         # data_360 = data.convert_calendar(
-#         #     dim="time", calendar="360_day", align_on="year"
-#         # )
-#         # # apply correction if leap year
-#         # if data.time.dt.is_leap_year.any():
-#         #     data_360 = enforce_date_changes(data, data_360)
-#
-#         # the dataset to be resample must have dimensions named projection_x_coordinate and projection_y_coordinate .
-#         # resampled = data_360[[variable]].interp(
-#         #     projection_x_coordinate=x_grid,
-#         #     projection_y_coordinate=y_grid,
-#         #     method="linear",
-#         # )
-#         resampled = data[[variable]].interp(
-#             projection_x_coordinate=x_grid,
-#             projection_y_coordinate=y_grid,
-#             method="linear",
-#         )
-#
-#         # make sure we keep the original CRS
-#         # resampled.rio.write_crs(data_360.rio.crs, inplace=True)
-#         resampled.rio.write_crs(data.rio.crs, inplace=True)
-#
-#         # save resampled file
-#         resampled.to_netcdf(os.path.join(output_dir, output_name))
-#
-#     except Exception as e:
-#         print(f"File: {file} produced errors: {e}")
-#     return 0
-
-
 def reproject_standard_calendar_filename(path: Path) -> Path:
     """Return tweaked `path` to indicate standard day projection."""
     return path.parent / path.name.replace("_day", "_day_std_year")
@@ -401,185 +106,10 @@ def reproject_2_2km_filename(path: Path) -> Path:
     return path.parent / path.name.replace("_1km", "_2_2km")
 
 
-def gdal_warp_wrapper(
-    input_path: PathLike,
-    output_path: PathLike,
-    output_crs: str = BRITISH_NATIONAL_GRID_EPSG,
-    output_x_resolution: int | None = None,
-    output_y_resolution: int | None = None,
-    copy_metadata: bool = True,
-    return_path: bool = True,
-    format: GDALFormatsType | None = GDALGeoTiffFormatStr,
-    multithread: bool = True,
-    **kwargs,
-) -> Path | GDALDataset:
-    """Execute the `gdalwrap` function within `python`.
-
-    This is following a script in the `bash/` folder that uses
-    this programme:
-
-    ```bash
-    f=$1 # The first argument is the file to reproject
-    fn=${f/Raw/Reprojected_infill} # Replace Raw with Reprojected_infill in the filename
-    folder=`dirname $fn` # Get the folder name
-    mkdir -p $folder # Create the folder if it doesn't exist
-    gdalwarp -t_srs 'EPSG:27700' -tr 2200 2200 -r near -overwrite $f "${fn%.nc}.tif" # Reproject the file
-    ```
-
-    Parameters
-    ----------
-    input_path
-        Path with `CPRUK` files to resample. `srcDSOrSrcDSTab` in
-        `Warp`.
-    output_path
-        Path to save resampled `input_path` file(s) to. If equal to
-        `input_path` then the `overwrite` parameter is called.
-        `destNameOrDestDS` in `Warp`.
-    output_crs
-        Coordinate system to convert `input_path` file(s) to.
-        `dstSRS` in `WarpOptions`.
-    format
-        Format to convert `input_path` to in `output_path`.
-    output_x_resolution
-        Resolution of `x` cordinates to convert `input_path` file(s) to.
-        `xRes` in `WarpOptions`.
-    output_y_resolution
-        Resolution of `y` cordinates to convert `input_path` file(s) to.
-        `yRes` in `WarpOptions`.
-    copy_metadata
-        Whether to copy metadata when possible.
-    return_path
-        Return the resulting path if `True`, else the new `GDALDataset`.
-    resampling_method
-        Sampling method. `resampleAlg` in `WarpOption`. See other options
-        in: `https://gdal.org/programs/gdalwarp.html#cmdoption-gdalwarp-r`.
-    """
-    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-    try:
-        assert not Path(output_path).is_dir()
-    except AssertionError:
-        raise FileExistsError(f"Path exists as a directory: {output_path}")
-    if input_path == output_path:
-        kwargs["overwrite"] = True
-    warp_options: GDALWarpAppOptions = WarpOptions(
-        dstSRS=output_crs,
-        format=format,
-        xRes=output_x_resolution,
-        yRes=output_y_resolution,
-        copyMetadata=copy_metadata,
-        multithread=multithread,
-        **kwargs,
-    )
-    projection: GDALDataset = Warp(
-        destNameOrDestDS=output_path, srcDSOrSrcDSTab=input_path, options=warp_options
-    )
-    assert projection is not None
-    return output_path if return_path else projection
-
-
-def apply_geo_func(
-    source_path: PathLike,
-    func: Callable[[Dataset], Dataset],
-    export_folder: PathLike,
-    new_path_name_func: Callable[[Path], Path] | None = None,
-    to_netcdf: bool = True,
-    to_raster: bool = False,
-    include_geo_warp_output_path: bool = False,
-    return_results: bool = False,
-    **kwargs,
-) -> Path | Dataset | GDALDataset:
-    """Apply a `Callable` to `netcdf_source` file and export via `to_netcdf`.
-
-    Parameters
-    ----------
-    source_path
-        `netcdf` file to apply `func` to.
-    func
-        `Callable` to modify `netcdf`.
-    export_folder
-        Where to save results.
-    path_name_replace_tuple
-        Optional replacement `str` to apply to `source_path.name` when exporting
-    to_netcdf
-        Whether to call `to_netcdf` method on `results` `Dataset`.
-    """
-    export_path: Path = Path(source_path)
-    if new_path_name_func:
-        export_path = new_path_name_func(export_path)
-    export_path = Path(export_folder) / export_path.name
-    if include_geo_warp_output_path:
-        kwargs["output_path"] = export_path
-    results: Dataset | Path | GDALDataset = func(source_path, **kwargs)
-    if to_netcdf or to_raster:
-        if isinstance(results, Path):
-            results = open_dataset(results)
-        if isinstance(results, GDALDataset):
-            raise TypeError(
-                f"Restuls from 'gdal_warp_wrapper' can't directly export to NetCDF form, only return a Path or GDALDataset"
-            )
-        assert isinstance(results, Dataset)
-        if to_netcdf:
-            results.to_netcdf(export_path)
-        if to_raster:
-            results.rio.to_raster(export_path)
-    if return_results:
-        return results
-    else:
-        return export_path
-
-
 @dataclass(kw_only=True)
-class HADsResampler:
-    """Manage resampling HADs datafiles for modelling.
+class ResamblerBase:
 
-    Attributes
-    ----------
-    input_path
-        `Path` to `HADs` files to process.
-    output
-        `Path` to save processed `HADS` files.
-    grid_data_path
-        `Path` to load to `self.grid`.
-    grid
-        `Dataset` of grid (either passed via `grid_data_path` or as a parameter).
-    input_files
-        NCF or TIF files to process with `self.grid` etc.
-    resampling_func
-        Function to call on `self.input_files` with `self.grid`
-    crop
-        Path or file to spatially crop `input_files` with.
-    final_crs
-        Coordinate Reference System (CRS) to return final format in.
-    grid_x_column_name
-        Column name in `input_files` or `input` for `x` coordinates.
-    grid_y_column_name
-        Column name in `input_files` or `input` for `y` coordinates.
-    input_file_extension
-        File extensions to glob `input_files` with.
-
-    Notes
-    -----
-    - [x] Try time projection first
-    - [x] Then space
-    - then crop
-
-    Examples
-    --------
-    >>> if not is_data_mounted:
-    ...     pytest.skip(mount_doctest_skip_message)
-    >>> hads_resampler: HADsResampler = HADsResampler(
-    ...     output_path=resample_test_hads_output_path,
-    ... )
-    >>> hads_resampler
-    <HADsResampler(...count=504,...
-        ...input_path='.../tasmax/day',...
-        ...output_path='.../resample/runs/hads')>
-    >>> pprint(hads_resampler.input_files)
-    (...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc'),
-     ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800201-19800229.nc'),
-     ...,
-     ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_20211201-20211231.nc'))
-    """
+    """Base class to inherit for `HADs` and `CPM`."""
 
     input_path: PathLike | None = RAW_HADS_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH
@@ -701,36 +231,6 @@ class HADsResampler:
         path.mkdir(exist_ok=True, parents=True)
         return path
 
-    def to_reprojection(
-        self,
-        index: int = 0,
-        override_export_path: Path | None = None,
-        return_results: bool = False,
-        source_to_index: Sequence | None = None,
-    ) -> Path | Dataset:
-        source_path: Path = self._get_source_path(
-            index=index, source_to_index=source_to_index
-        )
-        path: PathLike = self._output_path(
-            self.resolution_relative_path, override_export_path
-        )
-        return apply_geo_func(
-            source_path=source_path,
-            func=interpolate_coords,
-            export_folder=path,
-            # Leaving in case we return to using warp
-            # include_geo_warp_output_path=True,
-            # to_netcdf=False,
-            to_netcdf=True,
-            variable_name=self.variable_name,
-            x_grid=self.x,
-            y_grid=self.y,
-            xr_time_series_x_column_name=self.input_file_x_column_name,
-            xr_time_series_y_column_name=self.input_file_y_column_name,
-            new_path_name_func=reproject_2_2km_filename,
-            return_results=return_results,
-        )
-
     def _range_call(
         self,
         method: Callable,
@@ -802,6 +302,106 @@ class HADsResampler:
 
 
 @dataclass(kw_only=True, repr=False)
+class HADsResampler:
+    """Manage resampling HADs datafiles for modelling.
+
+    Attributes
+    ----------
+    input_path
+        `Path` to `HADs` files to process.
+    output
+        `Path` to save processed `HADS` files.
+    grid_data_path
+        `Path` to load to `self.grid`.
+    grid
+        `Dataset` of grid (either passed via `grid_data_path` or as a parameter).
+    input_files
+        NCF or TIF files to process with `self.grid` etc.
+    resampling_func
+        Function to call on `self.input_files` with `self.grid`
+    crop
+        Path or file to spatially crop `input_files` with.
+    final_crs
+        Coordinate Reference System (CRS) to return final format in.
+    grid_x_column_name
+        Column name in `input_files` or `input` for `x` coordinates.
+    grid_y_column_name
+        Column name in `input_files` or `input` for `y` coordinates.
+    input_file_extension
+        File extensions to glob `input_files` with.
+
+    Notes
+    -----
+    - [x] Try time projection first
+    - [x] Then space
+    - then crop
+
+    Examples
+    --------
+    >>> if not is_data_mounted:
+    ...     pytest.skip(mount_doctest_skip_message)
+    >>> hads_resampler: HADsResampler = HADsResampler(
+    ...     output_path=resample_test_hads_output_path,
+    ... )
+    >>> hads_resampler
+    <HADsResampler(...count=504,...
+        ...input_path='.../tasmax/day',...
+        ...output_path='.../resample/runs/hads')>
+    >>> pprint(hads_resampler.input_files)
+    (...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc'),
+     ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800201-19800229.nc'),
+     ...,
+     ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_20211201-20211231.nc'))
+    """
+
+    input_path: PathLike | None = RAW_HADS_TASMAX_PATH
+    output_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH
+    variable_name: VariableOptions = VariableOptions.default()
+    grid: PathLike | Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
+    input_files: Iterable[PathLike] | None = None
+    cpus: int | None = None
+    crop: PathLike | GeoDataFrame | None = None
+    final_crs: str = BRITISH_NATIONAL_GRID_EPSG
+    grid_x_column_name: str = HADS_XDIM
+    grid_y_column_name: str = HADS_YDIM
+    input_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
+    export_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
+    resolution_relative_path: Path = HADS_2_2K_RESOLUTION_PATH
+    input_file_x_column_name: str = HADS_XDIM
+    input_file_y_column_name: str = HADS_YDIM
+
+    def to_reprojection(
+        self,
+        index: int = 0,
+        override_export_path: Path | None = None,
+        return_results: bool = False,
+        source_to_index: Sequence | None = None,
+    ) -> Path | Dataset:
+        source_path: Path = self._get_source_path(
+            index=index, source_to_index=source_to_index
+        )
+        path: PathLike = self._output_path(
+            self.resolution_relative_path, override_export_path
+        )
+        return apply_geo_func(
+            source_path=source_path,
+            func=interpolate_coords,
+            export_folder=path,
+            # Leaving in case we return to using warp
+            # include_geo_warp_output_path=True,
+            # to_netcdf=False,
+            to_netcdf=True,
+            variable_name=self.variable_name,
+            x_grid=self.x,
+            y_grid=self.y,
+            xr_time_series_x_column_name=self.input_file_x_column_name,
+            xr_time_series_y_column_name=self.input_file_y_column_name,
+            new_path_name_func=reproject_2_2km_filename,
+            return_results=return_results,
+        )
+
+
+@dataclass(kw_only=True, repr=False)
 class CPMResampler(HADsResampler):
     """CPM specific changes to HADsResampler.
 
@@ -864,45 +464,6 @@ class CPMResampler(HADsResampler):
     def cpm_variable_name(self) -> str:
         return VariableOptions.cpm_value(self.variable_name)
 
-    def to_standard_calendar(
-        self,
-        index: int = 0,
-        override_export_path: Path | None = None,
-        source_to_index: Sequence | None = None,
-    ) -> Path:
-        source_path: Path = self._get_source_path(
-            index=index, source_to_index=source_to_index
-        )
-        path: PathLike = self._output_path(
-            self.standard_calendar_relative_path, override_export_path
-        )
-        path.mkdir(exist_ok=True, parents=True)
-        return apply_geo_func(
-            source_path=source_path,
-            func=cpm_xarray_to_standard_calendar,
-            export_folder=path,
-            new_path_name_func=reproject_standard_calendar_filename,
-        )
-
-    def range_to_standard_calendar(
-        self,
-        start: int | None = None,
-        stop: int | None = None,
-        step: int = 1,
-        override_export_path: Path | None = None,
-        source_to_index: Sequence | None = None,
-    ) -> list[Path]:
-        start = start or self.start_index
-        stop = stop or self.stop_index
-        return self._range_call(
-            method=self.to_standard_calendar,
-            start=start,
-            stop=stop,
-            step=step,
-            override_export_path=override_export_path,
-            source_to_index=source_to_index,
-        )
-
     def to_reprojection(
         self,
         index: int = 0,
@@ -918,40 +479,21 @@ class CPMResampler(HADsResampler):
         )
         return apply_geo_func(
             source_path=source_path,
+            func=cpm_reproject_with_standard_calendar,
+            new_path_name_func=reproject_standard_calendar_filename,
             # func=,
-            export_folder=gdal_warp_wrapper,
+            # export_folder=gdal_warp_wrapper,
             # Leaving in case we return to using warp
-            include_geo_warp_output_path=True,
+            # include_geo_warp_output_path=True,
             to_netcdf=False,
             # to_netcdf=True,
             variable_name=self.cpm_variable_name,
-            x_grid=self.x,
-            y_grid=self.y,
-            xr_time_series_x_column_name=self.input_file_x_column_name,
-            xr_time_series_y_column_name=self.input_file_y_column_name,
+            # x_grid=self.x,
+            # y_grid=self.y,
+            # xr_time_series_x_column_name=self.input_file_x_column_name,
+            # xr_time_series_y_column_name=self.input_file_y_column_name,
             return_results=return_results,
         )
-
-    def execute(
-        self, skip_temporal: bool = False, skip_spatial: bool = False, **kwargs
-    ) -> list[Path] | None:
-        """Run all steps for processing"""
-        temporal_reprojected_data: list[Path] | None = None
-        spatial_reprojected_data: list[Path] | None = None
-        if not skip_spatial:
-            # spatial_reprojected_data: list[Path] = self.range_to_reprojection(
-            #     source_to_index=temporal_reprojected_data, **kwargs
-            # )
-            spatial_reprojected_data = self.range_to_reprojection(**kwargs)
-        if not skip_temporal:
-            temporal_reprojected_data = self.range_to_standard_calendar(
-                source_to_index=spatial_reprojected_data, **kwargs
-            )
-        # if not skip_spatial:
-        #     spatial_reprojected_data: list[Path] = self.range_to_reprojection(
-        #         source_to_index=temporal_reprojected_data, **kwargs
-        #     )
-        return temporal_reprojected_data
 
     def __getstate__(self):
         """Meanse of testing what aspects of instance have issues multiprocessing.

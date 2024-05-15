@@ -27,9 +27,6 @@ from clim_recal.resample import (
     HADsResamplerManager,
     convert_xr_calendar,
     cpm_reproject_with_standard_calendar,
-    cpm_xarray_to_standard_calendar,
-    crop_nc,
-    gdal_warp_wrapper,
     interpolate_coords,
 )
 from clim_recal.utils.core import (
@@ -44,15 +41,20 @@ from clim_recal.utils.core import (
     results_path,
 )
 from clim_recal.utils.data import CEDADataSources, HadUKGrid, UKCPLocalProjections
-from clim_recal.utils.xarray import (
-    NETCDF4_XARRAY_ENGINE,
-    BoundsTupleType,
+from clim_recal.utils.gdal_formats import (
     GDALFormatExtensions,
     GDALFormatsType,
     GDALGeoTiffFormatStr,
     GDALNetCDFFormatStr,
+)
+from clim_recal.utils.xarray import (
+    NETCDF4_XARRAY_ENGINE,
+    BoundsTupleType,
     convert_xr_calendar,
+    cpm_xarray_to_standard_calendar,
+    crop_nc,
     file_name_to_start_end_dates,
+    gdal_warp_wrapper,
     xarray_example,
 )
 
@@ -550,6 +552,7 @@ def test_geo_warp_format_type_crop(
         assert read_exported.rio.bounds() == glasgow_epsg_27700_bounds
 
 
+@pytest.mark.mount
 @pytest.mark.slow
 def test_cpm_xarray_to_standard_calendar(
     tasmax_cpm_1980_raw: Dataset,
