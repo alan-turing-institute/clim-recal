@@ -29,10 +29,10 @@ from clim_recal.debiasing.debias_wrapper import VariableOptions
 
 from .utils.core import climate_data_mount_path, multiprocess_execute
 from .utils.data import RunOptions, VariableOptions
+from .utils.gdal_formats import TIF_EXTENSION_STR
 from .utils.xarray import (
     BRITISH_NATIONAL_GRID_EPSG,
     NETCDF_EXTENSION_STR,
-    TIF_EXTENSION_STR,
     apply_geo_func,
     cpm_reproject_with_standard_calendar,
     interpolate_coords,
@@ -89,11 +89,6 @@ HADS_OUTPUT_LOCAL_PATH: Final[Path] = Path("hads")
 
 
 NETCDF_OR_TIF = Literal[TIF_EXTENSION_STR, NETCDF_EXTENSION_STR]
-
-CPM_365_OR_366_INTERMEDIATE_NC: Final[str] = "cpm-365-or-366.nc"
-CPM_365_OR_366_SIMPLIFIED_NC: Final[str] = "cpm-365-or-366-simplified.nc"
-CPM_365_OR_366_27700_TIF: Final[str] = "cpm-365-or-366-27700.tif"
-CPM_365_OR_366_27700_FINAL: Final[str] = "cpm-365-or-366-27700-final.nc"
 
 
 def reproject_standard_calendar_filename(path: Path) -> Path:
@@ -177,6 +172,7 @@ class ResamblerBase:
     def set_input_files(self, new_input_path: PathLike | None = None) -> None:
         """Replace `self.input` and process `self.input_files`."""
         if new_input_path:
+            assert Path(new_input_path).exists()
             self.input = new_input_path
         if not self.input_files or new_input_path:
             self.input_files = tuple(
@@ -302,7 +298,7 @@ class ResamblerBase:
 
 
 @dataclass(kw_only=True, repr=False)
-class HADsResampler:
+class HADsResampler(ResamblerBase):
     """Manage resampling HADs datafiles for modelling.
 
     Attributes
@@ -333,8 +329,8 @@ class HADsResampler:
     Notes
     -----
     - [x] Try time projection first
-    - [x] Then space
-    - then crop
+    - [x] Combine with space (this worked)
+    - [ ] Add crop step
 
     Examples
     --------
@@ -346,7 +342,7 @@ class HADsResampler:
     >>> hads_resampler
     <HADsResampler(...count=504,...
         ...input_path='.../tasmax/day',...
-        ...output_path='.../resample/runs/hads')>
+        ...output_path='...run-results_..._.../hads')>
     >>> pprint(hads_resampler.input_files)
     (...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc'),
      ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800201-19800229.nc'),
@@ -402,7 +398,7 @@ class HADsResampler:
 
 
 @dataclass(kw_only=True, repr=False)
-class CPMResampler(HADsResampler):
+class CPMResampler(ResamblerBase):
     """CPM specific changes to HADsResampler.
 
     Attributes
@@ -444,7 +440,7 @@ class CPMResampler(HADsResampler):
     >>> cpm_resampler
     <CPMResampler(...count=100,...
         ...input_path='.../tasmax/01/latest',...
-        ...output_path='.../resample/runs/cpm')>
+        ...output_path='.../run-results_..._.../cpm')>
     >>> pprint(cpm_resampler.input_files)
     (...Path('.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_19801201-19811130.tif'),
      ...Path('.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_19811201-19821130.tif'),
@@ -481,11 +477,11 @@ class CPMResampler(HADsResampler):
             source_path=source_path,
             func=cpm_reproject_with_standard_calendar,
             new_path_name_func=reproject_standard_calendar_filename,
-            # func=,
+            export_folder=path,
             # export_folder=gdal_warp_wrapper,
             # Leaving in case we return to using warp
             # include_geo_warp_output_path=True,
-            to_netcdf=False,
+            to_netcdf=True,
             # to_netcdf=True,
             variable_name=self.cpm_variable_name,
             # x_grid=self.x,
@@ -726,7 +722,7 @@ class HADsResamplerManager:
         if multiprocess:
             cpus = cpus or self.cpus
             if self.total_cpus and cpus:
-                assert cpus <= self.total_cpus
+                cpus = min(cpus, self.total_cpus - 1)
             results = multiprocess_execute(resamplers, method_name="execute", cpus=cpus)
         else:
             for resampler in resamplers:

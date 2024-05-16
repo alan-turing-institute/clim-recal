@@ -214,7 +214,7 @@ def main(
     the examples without data mounted from a server.
 
     >>> main(variables=("rainfall", "tasmin"),
-    ...      output_path=resample_test_output_path,
+    ...      output_path=test_runs_output_path,
     ...      cpm_kwargs=dict(_allow_check_fail=True),
     ...      hads_kwargs=dict(_allow_check_fail=True),
     ... )

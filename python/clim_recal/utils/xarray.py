@@ -58,15 +58,15 @@ DEFAULT_INTERPOLATION_METHOD: str = "linear"
 CFCalendarSTANDARD: Final[str] = "standard"
 ConvertCalendarAlignOptions = Literal["date", "year", None]
 
-GLASGOW_COORDS: Final[tuple[float, float]] = (55.86279, -4.25424)
-MANCHESTER_COORDS: Final[tuple[float, float]] = (53.48095, -2.23743)
-LONDON_COORDS: Final[tuple[float, float]] = (51.509865, -0.118092)
-THREE_CITY_COORDS: Final[dict[str, tuple[float, float]]] = {
-    "Glasgow": GLASGOW_COORDS,
-    "Manchester": MANCHESTER_COORDS,
-    "London": LONDON_COORDS,
+GLASGOW_CENTRE_COORDS: Final[tuple[float, float]] = (55.86279, -4.25424)
+MANCHESTER_CENTRE_COORDS: Final[tuple[float, float]] = (53.48095, -2.23743)
+LONDON_CENTRE_COORDS: Final[tuple[float, float]] = (51.509865, -0.118092)
+THREE_CITY_CENTRE_COORDS: Final[dict[str, tuple[float, float]]] = {
+    "Glasgow": GLASGOW_CENTRE_COORDS,
+    "Manchester": MANCHESTER_CENTRE_COORDS,
+    "London": LONDON_CENTRE_COORDS,
 }
-"""Coordinates of Glasgow, Manchester and London as `(lon, lat)` `tuples`."""
+"""City centre `(lon, lat)` `tuple` coords of `Glasgow`, `Manchester` and `London`."""
 
 XARRAY_EXAMPLE_RANDOM_SEED: Final[int] = 0
 # Default 4 year start and end date covering leap year
@@ -91,13 +91,23 @@ DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
 NETCDF4_XARRAY_ENGINE: Final[str] = "netcdf4"
 
 
-def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> Dataset:
+CPM_365_OR_366_INTERMEDIATE_NC: Final[str] = "cpm-365-or-366.nc"
+CPM_365_OR_366_SIMPLIFIED_NC: Final[str] = "cpm-365-or-366-simplified.nc"
+CPM_365_OR_366_27700_TIF: Final[str] = "cpm-365-or-366-27700.tif"
+CPM_365_OR_366_27700_FINAL: Final[str] = "cpm-365-or-366-27700-final.nc"
+
+
+def cpm_xarray_to_standard_calendar(
+    cpm_xr_time_series: Dataset | PathLike, include_bnds_index: bool = False
+) -> Dataset:
     """Convert a CPM `nc` file of 360 day calendars to standard calendar.
 
     Parameters
     ----------
     cpm_xr_time_series
         A raw `xarray` of the form provided by CPM.
+    include_bnds_index
+        Whether to fix `bnds` indexing in returned `Dataset`.
 
     Returns
     -------
@@ -119,11 +129,19 @@ def cpm_xarray_to_standard_calendar(cpm_xr_time_series: Dataset | PathLike) -> D
     yyyymmdd_fix: DataArray = cpm_to_std_calendar.time.dt.strftime(CLI_DATE_FORMAT_STR)
     cpm_to_std_calendar["yyyymmdd"] = yyyymmdd_fix
     assert cpm_xr_time_series.rio.crs == cpm_to_std_calendar.rio.crs
-    return cpm_to_std_calendar
+    if include_bnds_index:
+        std_calendar_drop_bnds = cpm_to_std_calendar.drop_dims("bnds")
+        cpm_to_std_calendar_fixed_bnds = std_calendar_drop_bnds.expand_dims(
+            dim={"bnds": cpm_xr_time_series.bnds}
+        )
+        return cpm_to_std_calendar_fixed_bnds
+    else:
+        return cpm_to_std_calendar
 
 
 def cpm_reproject_with_standard_calendar(
     cpm_xr_time_series: Dataset | PathLike,
+    variable_name: str,
     output_folder: PathLike | None = None,
     file_name_prefix: str = "",
 ) -> Dataset:
@@ -146,27 +164,27 @@ def cpm_reproject_with_standard_calendar(
     if isinstance(cpm_xr_time_series, PathLike):
         cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
     output_folder = Path(output_folder) if output_folder else Path()
+    output_folder.mkdir(exist_ok=True, parents=True)
+    prefix_and_var_name: str = file_name_prefix + variable_name + "-"
 
     intermediate_nc_path: Path = output_folder / (
-        file_name_prefix + CPM_365_OR_366_INTERMEDIATE_NC
+        prefix_and_var_name + CPM_365_OR_366_INTERMEDIATE_NC
     )
     simplified_nc_path: Path = output_folder / (
-        file_name_prefix + CPM_365_OR_366_SIMPLIFIED_NC
+        prefix_and_var_name + CPM_365_OR_366_SIMPLIFIED_NC
     )
     intermediate_warp_path: Path = output_folder / (
-        file_name_prefix + CPM_365_OR_366_27700_TIF
+        prefix_and_var_name + CPM_365_OR_366_27700_TIF
     )
     final_nc_path: Path = output_folder / (
-        file_name_prefix + CPM_365_OR_366_27700_FINAL
+        prefix_and_var_name + CPM_365_OR_366_27700_FINAL
     )
 
     expanded_calendar: Dataset = cpm_xarray_to_standard_calendar(cpm_xr_time_series)
-    subset_within_ensemble: DataArray = expanded_calendar.tasmax[0]
+    subset_within_ensemble: DataArray = expanded_calendar[variable_name][0]
     subset_within_ensemble.to_netcdf(intermediate_nc_path)
-    test_intermediate_netcdf: Dataset = open_dataset(
-        intermediate_nc_path, decode_coords="all"
-    )
-    test_intermediate_netcdf.tasmax.to_netcdf(simplified_nc_path)
+    simplified_netcdf: Dataset = open_dataset(intermediate_nc_path, decode_coords="all")
+    simplified_netcdf[variable_name].to_netcdf(simplified_nc_path)
 
     # Uncomment to test intermediate results in test_simplified
     # test_simplified: Dataset = open_dataset(simplified_nc_path, decode_coords="all")
@@ -468,7 +486,7 @@ def convert_xr_calendar(
         else:
             return calendar_converted_ts
     else:
-        return interpolate_xr_ts(
+        return interpolate_xr_ts_nans(
             xr_ts=calendar_converted_ts,
             original_xr_ts=xr_time_series,
             check_cftime_cols=check_cftime_cols,
@@ -478,31 +496,9 @@ def convert_xr_calendar(
             limit=limit,
             cftime_range_gen_kwargs=cftime_range_gen_kwargs,
         )
-        if extrapolate_fill_value:
-            kwargs["fill_value"] = "extrapolate"
-        interpolated_ts: Dataset | DataArray = calendar_converted_ts.interpolate_na(
-            dim="time",
-            method=interpolate_method,
-            keep_attrs=keep_attrs,
-            limit=limit,
-            **kwargs,
-        )
-        for cftime_col in check_cftime_cols:
-            if cftime_col in interpolated_ts:
-                cftime_fix: NDArray = cftime_range_gen(
-                    interpolated_ts[cftime_col], **cftime_range_gen_kwargs
-                )
-                interpolated_ts[cftime_col] = (
-                    interpolated_ts[cftime_col].dims,
-                    cftime_fix,
-                )
-        if keep_crs and xr_time_series.rio.crs:
-            return interpolated_ts.rio.write_crs(xr_time_series.rio.crs)
-        else:
-            return interpolated_ts
 
 
-def interpolate_xr_ts(
+def interpolate_xr_ts_nans(
     xr_ts: Dataset,
     original_xr_ts: Dataset | None = None,
     check_cftime_cols: tuple[str] | None = None,
@@ -513,22 +509,52 @@ def interpolate_xr_ts(
     cftime_range_gen_kwargs: dict[str, Any] | None = None,
     **kwargs,
 ) -> Dataset:
+    """Interpolate `nan` values in a `Dataset` time series.
+
+    Notes
+    -----
+    For details and details of `keep_attrs`, `limit` and `**kwargs` parameters see:
+    https://docs.xarray.dev/en/stable/generated/xarray.DataArray.interpolate_na.html
+
+    Parameters
+    ----------
+    xr_ts
+        `Dataset` to interpolate via `interpolate_na`. Requires a `time` coordinate.
+    original_xr_ts
+        A `Dataset` to compare the conversion process with. If
+        not provided, set to the original `xr_ts` as a reference.
+    check_cftime_cols
+        `tuple` of column names in a `cftime` format to check.
+    interpolate_method
+        Which of the `xarray` interpolation methods to use.
+    keep_crs
+        Whether to ensure the original `crs` is kept via `rio.write_crs`.
+    keep_attrs
+        Passed to `keep_attrs` in `interpolate_na`. See Notes.
+    limit
+        How many `nan` are allowed either side of data point to interpolate. See Notes.
+    cftime_range_gen_kwargs
+        Any `cftime_range_gen` arguments to use with `check_cftime_cols` calls.
+
+    Returns
+    -------
+    `Dataset` where `xr_ts` `nan` values are iterpolated with respect to the `time` coordinate.
+    """
     if check_cftime_cols is None:
         check_cftime_cols = tuple()
     if cftime_range_gen_kwargs is None:
         cftime_range_gen_kwargs = dict()
     original_xr_ts = original_xr_ts if original_xr_ts else xr_ts
-    # Preveent a kwargs overwrite conflict
+
+    # Ensure `fill_value` is set to `extrapolate`
+    # Without this the `nan` values don't get filled
     kwargs["fill_value"] = "extrapolate"
 
-    # if extrapolate_fill_value:
-    #     kwargs["fill_value"] = "extrapolate"
     interpolated_ts: Dataset = xr_ts.interpolate_na(
         dim="time",
         method=interpolate_method,
         keep_attrs=keep_attrs,
         limit=limit,
-        # fill_value="extrapolate",
         **kwargs,
     )
     for cftime_col in check_cftime_cols:
@@ -673,13 +699,12 @@ def apply_geo_func(
         return export_path
 
 
-# Below requires packages outside python standard library
 # Note: `rioxarray` is imported to ensure GIS methods are included. See:
 # https://corteva.github.io/rioxarray/stable/getting_started/getting_started.html#rio-accessor
 def xarray_example(
     start_date: DateType = XARRAY_EXAMPLE_START_DATE_STR,
     end_date: DateType = XARRAY_EXAMPLE_END_DATE_4_YEARS,
-    coordinates: dict[str, tuple[float, float]] = THREE_CITY_COORDS,
+    coordinates: dict[str, tuple[float, float]] = THREE_CITY_CENTRE_COORDS,
     skip_dates: Iterable[date] | None = None,
     random_seed_int: int | None = XARRAY_EXAMPLE_RANDOM_SEED,
     name: str | None = None,
@@ -822,9 +847,10 @@ def file_name_to_start_end_dates(
 def generate_360_to_standard(array_to_expand: DataArray) -> DataArray:
     """Return `array_to_expand` 360 days expanded to 365 or 366 days.
 
+    This may be dropped if `cpm_reproject_with_standard_calendar` is successful.
+
     Examples
     --------
-    >>>
     """
     initial_days: int = len(array_to_expand)
     assert initial_days == 360
@@ -849,9 +875,13 @@ def correct_int_time_datafile(
 ) -> Dataset:
     """Load a `Dataset` from path and generate `time` index.
 
+    Notes
+    -----
+    This is not finished and may be removed in future.
+
     Examples
     --------
-    >>> pytest.xfail(reason="Not finished implementing")
+    >>> pytest.skip(reason="Not finished implementing")
     >>> rainfall_dataset = correct_int_time_datafile(
     ...     glasgow_example_cropped_cpm_rainfall_path)
     >>> assert False

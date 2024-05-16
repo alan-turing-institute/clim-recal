@@ -85,7 +85,7 @@ class ClimRecalConfig(BaseRunConfig):
     ...     pytest.skip(mount_doctest_skip_message)
     >>> run_config: ClimRecalConfig = ClimRecalConfig(
     ...     cities=('Manchester', 'Glasgow'),
-    ...     output_path=resample_test_output_path,
+    ...     output_path=test_runs_output_path,
     ...     cpus=1)
     >>> run_config
     <ClimRecalConfig(variables_count=1, runs_count=1, cities_count=2,

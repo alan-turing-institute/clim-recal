@@ -189,11 +189,18 @@ def multiprocess_execute(
     ... )
     >>> multiprocess_execute(cpm_resampler, method_name="exists")
     [True, True, True]
+
+    Notes
+    -----
+    Failed asserting cpus <= total - 1
     """
     total_cpus: int | None = cpu_count()
     cpus = cpus or 1
-    if isinstance(total_cpus, int) and cpus is not None:
-        assert cpus <= total_cpus - 1
+    # if isinstance(total_cpus, int) and cpus is not None:
+    if isinstance(total_cpus, int):
+        cpus = min(cpus, total_cpus - 1)
+    else:
+        logger.warning(f"'total_cpus' not checkable, running with 'cpus': {cpus}")
     params_tuples: list[tuple[Any, str]] = [(item, method_name) for item in iter]
     with Pool(processes=cpus) as pool:
         results = list(

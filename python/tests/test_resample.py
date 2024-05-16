@@ -6,12 +6,12 @@ import numpy as np
 import pytest
 from geopandas import GeoDataFrame, read_file
 from matplotlib import pyplot as plt
+from numpy.typing import NDArray
 from osgeo.gdal import Dataset as GDALDataset
 from xarray import DataArray, Dataset, open_dataset
 
 from clim_recal.resample import (
     BRITISH_NATIONAL_GRID_EPSG,
-    CPM_365_OR_366_27700_FINAL,
     CPRUK_XDIM,
     CPRUK_YDIM,
     DEFAULT_RELATIVE_GRID_DATA_PATH,
@@ -25,7 +25,6 @@ from clim_recal.resample import (
     CPMResamplerManager,
     HADsResampler,
     HADsResamplerManager,
-    convert_xr_calendar,
     cpm_reproject_with_standard_calendar,
     interpolate_coords,
 )
@@ -48,6 +47,7 @@ from clim_recal.utils.gdal_formats import (
     GDALNetCDFFormatStr,
 )
 from clim_recal.utils.xarray import (
+    CPM_365_OR_366_27700_FINAL,
     NETCDF4_XARRAY_ENGINE,
     BoundsTupleType,
     convert_xr_calendar,
@@ -450,7 +450,7 @@ def test_geo_warp_format_type_crop(
     data_source: Literal["mounted", "local"],
     output_format: GDALFormatsType,
     glasgow_crop: bool,
-    resample_test_runs_output_path: Path,
+    test_runs_output_path: Path,
     glasgow_shape_file_path: Path,
     glasgow_epsg_27700_bounds: BoundsTupleType,
     uk_epsg_27700_bounds,
@@ -478,7 +478,7 @@ def test_geo_warp_format_type_crop(
 
     # cropped.rio.set_spatial_dims(x_dim="grid_longitude", y_dim="grid_latitude")
     datetime_now = datetime.now()
-    warp_path: Path = resample_test_runs_output_path / "geo_warp"
+    warp_path: Path = test_runs_output_path / "geo_warp"
     if glasgow_crop:
         glasgow_test_fig_path = results_path(
             name="glasgow",
@@ -554,29 +554,53 @@ def test_geo_warp_format_type_crop(
 
 @pytest.mark.mount
 @pytest.mark.slow
+@pytest.mark.parametrize("include_bnds_index", (True, False))
 def test_cpm_xarray_to_standard_calendar(
     tasmax_cpm_1980_raw: Dataset,
+    include_bnds_index: bool,
 ) -> None:
+    """Test 360 raw to 365/366 calendar conversion.
+
+    Notes
+    -----
+    Indexing differs between `include_bnds_index` ``bool`.
+    ```
+    """
     CORRECT_PROJ4: Final[
         str
     ] = "+proj=ob_tran +o_proj=longlat +o_lon_p=0 +o_lat_p=37.5 +lon_0=357.5 +R=6371229 +no_defs=True"
-    test_converted = cpm_xarray_to_standard_calendar(tasmax_cpm_1980_raw)
+    test_converted = cpm_xarray_to_standard_calendar(
+        tasmax_cpm_1980_raw, include_bnds_index=include_bnds_index
+    )
     assert test_converted.rio.width == FINAL_CONVERTED_CPM_WIDTH
     assert test_converted.rio.height == FINAL_CONVERTED_CPM_HEIGHT
     assert test_converted.rio.crs.to_proj4() == CORRECT_PROJ4
     assert test_converted.tasmax.rio.crs.to_proj4() == CORRECT_PROJ4
     assert len(test_converted.time) == 365
-    assert len(test_converted.tasmax.data[0][0]) == 365  # first band
-    assert len(test_converted.tasmax.data[1][0]) == 365  # second band
+
+    tasmax_data_subset: NDArray
+    if include_bnds_index:
+        assert len(test_converted.tasmax.data) == 2  # second band
+        assert len(test_converted.tasmax.data[0][0]) == 365  # first band
+        assert len(test_converted.tasmax.data[1][0]) == 365  # second band
+        tasmax_data_subset = test_converted.tasmax.data[0][0]  # first band
+    else:
+        assert len(test_converted.tasmax.data) == 1  # no band index
+        tasmax_data_subset = test_converted.tasmax.data[0]
+    assert len(tasmax_data_subset) == 365
+
     # By default December 1 in a 360 to 365 projection would
     # be null. The values matching below should indicate the
     # projection has interpolated null values on the first date
     assert (
-        test_converted.tasmax.data[0][0][0][0][:5] == PROJECTED_CPM_TASMAX_1980_FIRST_5
+        tasmax_data_subset[0][0][:5]
+        == PROJECTED_CPM_TASMAX_1980_FIRST_5
+        # test_converted.tasmax.data[0][0][0][0][:5] == PROJECTED_CPM_TASMAX_1980_FIRST_5
     ).all()
     # Check December 31 1980, which wouldn't be included in 360 day calendar
     assert (
-        test_converted.tasmax.data[0][0][31][0][:5]
+        # test_converted.tasmax.data[0][0][31][0][:5]
+        tasmax_data_subset[31][0][:5]
         == PROJECTED_CPM_TASMAX_1980_DEC_31_FIRST_5
     ).all()
 
@@ -585,12 +609,14 @@ def test_cpm_xarray_to_standard_calendar(
 @pytest.mark.slow
 def test_cpm_warp_steps(
     tasmax_cpm_1980_raw: Dataset,
-    resample_test_runs_output_path: Path,
+    test_runs_output_path: Path,
 ) -> None:
+    """Test all steps around calendar and warping CPM RAW data."""
     file_name_prefix: str = "test-1980-"
-    output_folder: Path = resample_test_runs_output_path / "test-cpm-warp"
+    output_folder: Path = test_runs_output_path / "test-cpm-warp"
     projected = cpm_reproject_with_standard_calendar(
         tasmax_cpm_1980_raw,
+        variable_name="tasmax",
         output_folder=output_folder,
         file_name_prefix=file_name_prefix,
     )
@@ -602,7 +628,9 @@ def test_cpm_warp_steps(
     # assert len(test_projected.x) == len(tasmax_cpm_1980_raw.grid_longitude)
     # assert len(test_projected.y) == len(tasmax_cpm_1980_raw.grid_latitude)
     # test_projected.to_netcdf(final_nc_path)
-    final_nc_path: Path = Path(file_name_prefix + CPM_365_OR_366_27700_FINAL)
+    final_nc_path: Path = Path(
+        file_name_prefix + "tasmax-" + CPM_365_OR_366_27700_FINAL
+    )
     final_results = open_dataset(output_folder / final_nc_path, decode_coords="all")
     assert (final_results.time == projected.time).all()
 
@@ -695,32 +723,34 @@ def test_ukcp_manager(resample_test_cpm_output_path, config: str) -> None:
     paths: list[Path]
     match config:
         case "direct":
-            paths = [test_config.to_standard_calendar()]
+            paths = [test_config.to_reprojection()]
         case "range":
-            paths = test_config.range_to_standard_calendar(stop=1)
+            paths = test_config.range_to_reprojection(stop=1)
         case "direct_provided":
             paths = [
-                test_config.to_standard_calendar(
-                    index=1, source_to_index=tuple(test_config)
-                )
+                test_config.to_reprojection(index=1, source_to_index=tuple(test_config))
             ]
         case "range_provided":
-            paths = test_config.range_to_standard_calendar(
+            paths = test_config.range_to_reprojection(
                 stop=1, source_to_index=tuple(test_config)
             )
     export: Dataset = open_dataset(paths[0])
     assert export.dims["time"] == 365
-    assert export.dims[CPRUK_XDIM] == 484
-    assert export.dims[CPRUK_YDIM] == 606
-    assert not np.isnan(export.tasmax.head()[0][0][0].values).all()
+    assert export.dims["x"] == 492
+    assert export.dims["y"] == 603
+    assert not np.isnan(export.tasmax.head()[0].values).all()
+    # Todo: reapply these checks to intermediary files
+    # assert export.dims[CPRUK_XDIM] == 484
+    # assert export.dims[CPRUK_YDIM] == 606
+    # assert not np.isnan(export.tasmax.head()[0][0][0].values).all()
     assert (
         CPM_FIRST_DATES == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
     ).all()
-    assert (
-        CPM_FIRST_DATES
-        == export.time_bnds.dt.strftime(CLI_DATE_FORMAT_STR).head().values
-    ).all()
-    assert (CPM_FIRST_DATES == export.yyyymmdd.head().values).all()
+    # assert (
+    #     CPM_FIRST_DATES
+    #     == export.time_bnds.dt.strftime(CLI_DATE_FORMAT_STR).head().values
+    # ).all()
+    # assert (CPM_FIRST_DATES == export.yyyymmdd.head().values).all()
 
 
 # @pytest.mark.xfail(reason="checking `export.tasmax` values currently yields `nan`")

@@ -38,7 +38,7 @@ def test_climate_data_mount_path() -> None:
 def test_main(
     execute: bool,
     variables: tuple[str],
-    resample_test_runs_output_path: Path,
+    test_runs_output_path: Path,
     multiprocess: bool,
     capsys,
 ) -> None:
@@ -46,7 +46,7 @@ def test_main(
     results = main(
         execute=execute,
         variables=variables,
-        output_path=resample_test_runs_output_path,
+        output_path=test_runs_output_path,
         skip_hads_spatial_2k_projection=True,
         skip_cpm_standard_calendar_projection=False,
         stop_index=1,

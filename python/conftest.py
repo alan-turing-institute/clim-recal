@@ -240,11 +240,11 @@ def glasgow_shape_file_path(data_fixtures_path: Path) -> Path:
 
 
 @pytest.fixture
-def resample_test_runs_output_path(
-    path=TEST_RESULTS_PATH / "resample" / "runs",
-) -> Iterator[Path]:
+def test_runs_output_path(path=TEST_RESULTS_PATH) -> Iterator[Path]:
     path.mkdir(exist_ok=True, parents=True)
     yield path
+    # Uncomment below to automatically remove tests on teardown.
+    # Currently leaveing to ease checking test runs
     # rmtree(path, ignore_errors=True)
 
 
@@ -276,6 +276,7 @@ def uk_epsg_27700_bounds() -> BoundsTupleType:
     )
 
 
+# Note: it may be worth setting this to cache for session runs
 @pytest.mark.mount
 @pytest.fixture
 def clim_runner(tmp_path) -> ClimRecalConfig:
@@ -296,16 +297,16 @@ def clim_runner(tmp_path) -> ClimRecalConfig:
 
 @pytest.fixture
 def resample_test_cpm_output_path(
-    resample_test_runs_output_path: Path,
+    test_runs_output_path: Path,
 ) -> Path:
-    return resample_test_runs_output_path / CPM_OUTPUT_LOCAL_PATH
+    return test_runs_output_path / CPM_OUTPUT_LOCAL_PATH
 
 
 @pytest.fixture
 def resample_test_hads_output_path(
-    resample_test_runs_output_path: Path,
+    test_runs_output_path: Path,
 ) -> Path:
-    return resample_test_runs_output_path / HADS_OUTPUT_LOCAL_PATH
+    return test_runs_output_path / HADS_OUTPUT_LOCAL_PATH
 
 
 @pytest.fixture
@@ -332,7 +333,7 @@ def doctest_auto_fixtures(
     uk_epsg_27700_bounds: BoundsTupleType,
     glasgow_epsg_27700_bounds: BoundsTupleType,
     glasgow_shape_file_path: Path,
-    resample_test_runs_output_path: Path,
+    test_runs_output_path: Path,
     resample_test_cpm_output_path: Path,
     resample_test_hads_output_path: Path,
     glasgow_example_cropped_cpm_rainfall_path: Path,
@@ -380,7 +381,7 @@ def doctest_auto_fixtures(
     doctest_namespace["uk_epsg_27700_bounds"] = uk_epsg_27700_bounds
     doctest_namespace["glasgow_epsg_27700_bounds"] = glasgow_epsg_27700_bounds
     doctest_namespace["glasgow_shape_file_path"] = glasgow_shape_file_path
-    doctest_namespace["resample_test_output_path"] = resample_test_runs_output_path
+    doctest_namespace["test_runs_output_path"] = test_runs_output_path
     doctest_namespace["resample_test_hads_output_path"] = resample_test_hads_output_path
     doctest_namespace["resample_test_cpm_output_path"] = resample_test_cpm_output_path
     doctest_namespace["mount_doctest_skip_message"] = MOUNT_DOCTEST_SKIP_MESSAGE
