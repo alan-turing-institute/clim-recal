@@ -83,6 +83,7 @@ addopts = """
     --cov-report=term:skip-covered
     --strict-markers
     --durations=5
+    --failed-first
 """
 doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS",]
 testpaths = [
