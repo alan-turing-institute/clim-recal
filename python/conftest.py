@@ -241,12 +241,12 @@ def glasgow_shape_file_path(data_fixtures_path: Path) -> Path:
 
 @pytest.fixture
 # Leaving this in for in future auto-removing output_path
-# def test_runs_output_path(path=TEST_RESULTS_PATH) -> Iterator[Path]:
-def test_runs_output_path(path=TEST_RESULTS_PATH) -> Path:
+def test_runs_output_path(path=TEST_RESULTS_PATH) -> Iterator[Path]:
+    # def test_runs_output_path(path=TEST_RESULTS_PATH) -> Path:
     path.mkdir(exist_ok=True, parents=True)
-    return path
+    # return path
     # Prevent issues overwriting files
-    # yield path
+    yield path
     # Uncomment below to automatically remove tests on teardown.
     # Currently leaveing to ease checking test runs
     # rmtree(path, ignore_errors=True)

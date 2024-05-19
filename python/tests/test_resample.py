@@ -719,9 +719,10 @@ def test_ukcp_manager(resample_test_cpm_output_path, config: str) -> None:
     CPM_FIRST_DATES: np.array = np.array(
         ["19801201", "19801202", "19801203", "19801204", "19801205"]
     )
+    output_path: Path = resample_test_cpm_output_path / config
     test_config = CPMResampler(
         input_path=RAW_CPM_TASMAX_PATH,
-        output_path=resample_test_cpm_output_path,
+        output_path=output_path,
     )
     paths: list[Path]
     match config:
@@ -740,7 +741,7 @@ def test_ukcp_manager(resample_test_cpm_output_path, config: str) -> None:
     export: Dataset = open_dataset(paths[0])
     assert export.dims["time"] == 365
     assert export.dims["x"] == 492
-    assert export.dims["y"] == 603  # has shown up a 608 for config=direct
+    assert export.dims["y"] == 608  # previously 603
     assert not np.isnan(export.tasmax.head()[0].values).all()
     # Todo: reapply these checks to intermediary files
     # assert export.dims[CPRUK_XDIM] == 484
