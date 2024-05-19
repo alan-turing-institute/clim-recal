@@ -384,7 +384,7 @@ class HADsResampler(ResamblerBase):
             func=interpolate_coords,
             export_folder=path,
             # Leaving in case we return to using warp
-            # include_geo_warp_output_path=True,
+            # export_path_as_output_path_kwarg=True,
             # to_netcdf=False,
             to_netcdf=True,
             variable_name=self.variable_name,
@@ -440,7 +440,7 @@ class CPMResampler(ResamblerBase):
     >>> cpm_resampler
     <CPMResampler(...count=100,...
         ...input_path='.../tasmax/01/latest',...
-        ...output_path='.../run-results_..._.../cpm')>
+        ...output_path='.../test-run-results_..._.../cpm')>
     >>> pprint(cpm_resampler.input_files)
     (...Path('.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_19801201-19811130.tif'),
      ...Path('.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_19811201-19821130.tif'),
@@ -480,7 +480,7 @@ class CPMResampler(ResamblerBase):
             export_folder=path,
             # export_folder=gdal_warp_wrapper,
             # Leaving in case we return to using warp
-            # include_geo_warp_output_path=True,
+            export_path_as_output_path_kwarg=True,
             to_netcdf=True,
             # to_netcdf=True,
             variable_name=self.cpm_variable_name,

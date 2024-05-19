@@ -48,6 +48,7 @@ from clim_recal.utils.gdal_formats import (
 )
 from clim_recal.utils.xarray import (
     CPM_365_OR_366_27700_FINAL,
+    CPM_LOCAL_INTERMEDIATE_PATH,
     NETCDF4_XARRAY_ENGINE,
     BoundsTupleType,
     convert_xr_calendar,
@@ -613,11 +614,11 @@ def test_cpm_warp_steps(
 ) -> None:
     """Test all steps around calendar and warping CPM RAW data."""
     file_name_prefix: str = "test-1980-"
-    output_folder: Path = test_runs_output_path / "test-cpm-warp"
+    output_path: Path = test_runs_output_path / "test-cpm-warp"
     projected = cpm_reproject_with_standard_calendar(
         tasmax_cpm_1980_raw,
         variable_name="tasmax",
-        output_folder=output_folder,
+        output_path=output_path,
         file_name_prefix=file_name_prefix,
     )
     assert projected.rio.crs == BRITISH_NATIONAL_GRID_EPSG
@@ -629,9 +630,11 @@ def test_cpm_warp_steps(
     # assert len(test_projected.y) == len(tasmax_cpm_1980_raw.grid_latitude)
     # test_projected.to_netcdf(final_nc_path)
     final_nc_path: Path = Path(
-        file_name_prefix + "tasmax-" + CPM_365_OR_366_27700_FINAL
+        "3-" + file_name_prefix + "tasmax-" + CPM_365_OR_366_27700_FINAL
     )
-    final_results = open_dataset(output_folder / final_nc_path, decode_coords="all")
+    intermediate_dir = tuple(output_path.iterdir())[0]
+    assert intermediate_dir.name.startswith(CPM_LOCAL_INTERMEDIATE_PATH.name)
+    final_results = open_dataset(intermediate_dir / final_nc_path, decode_coords="all")
     assert (final_results.time == projected.time).all()
 
 
@@ -737,7 +740,7 @@ def test_ukcp_manager(resample_test_cpm_output_path, config: str) -> None:
     export: Dataset = open_dataset(paths[0])
     assert export.dims["time"] == 365
     assert export.dims["x"] == 492
-    assert export.dims["y"] == 603
+    assert export.dims["y"] == 603  # has shown up a 608 for config=direct
     assert not np.isnan(export.tasmax.head()[0].values).all()
     # Todo: reapply these checks to intermediary files
     # assert export.dims[CPRUK_XDIM] == 484
@@ -777,15 +780,21 @@ def test_hads_manager(resample_test_hads_output_path, range: bool) -> None:
     ).all()
 
 
-@pytest.mark.parametrize("data_type", ("hads", "cpm"))
 @pytest.mark.mount
+@pytest.mark.slow
+@pytest.mark.parametrize("data_type", ("hads", "cpm"))
 def test_interpolate_coords(
     data_type: str,
     reference_final_coord_grid: Dataset,
     tasmax_cpm_1980_raw: Dataset,
     tasmax_hads_1980_raw: Dataset,
 ) -> None:
-    """Test reprojecting raw spatial files."""
+    """Test reprojecting raw spatial files.
+
+    Notes
+    -----
+    Still seems to run even when `-m "not mount"` is specified.
+    """
     reprojected_xr_time_series: Dataset
     kwargs: dict[str, Any] = dict(
         variable_name="tasmax",

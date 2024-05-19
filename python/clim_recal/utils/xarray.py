@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta
+from logging import getLogger
 from os import PathLike
 from pathlib import Path
 from typing import Any, Callable, Final, Iterable, Literal
@@ -22,8 +23,16 @@ from .core import (
     DateType,
     climate_data_mount_path,
     date_range_generator,
+    time_str,
 )
-from .gdal_formats import NETCDF_EXTENSION_STR, GDALFormatsType, GDALGeoTiffFormatStr
+from .gdal_formats import (
+    NETCDF_EXTENSION_STR,
+    GDALFormatExtensions,
+    GDALFormatsType,
+    GDALGeoTiffFormatStr,
+)
+
+logger = getLogger(__name__)
 
 DropDayType = set[tuple[int, int]]
 ChangeDayType = set[tuple[int, int]]
@@ -95,6 +104,7 @@ CPM_365_OR_366_INTERMEDIATE_NC: Final[str] = "cpm-365-or-366.nc"
 CPM_365_OR_366_SIMPLIFIED_NC: Final[str] = "cpm-365-or-366-simplified.nc"
 CPM_365_OR_366_27700_TIF: Final[str] = "cpm-365-or-366-27700.tif"
 CPM_365_OR_366_27700_FINAL: Final[str] = "cpm-365-or-366-27700-final.nc"
+CPM_LOCAL_INTERMEDIATE_PATH: Final[Path] = Path("cpm-intermediate-files")
 
 
 def cpm_xarray_to_standard_calendar(
@@ -142,8 +152,10 @@ def cpm_xarray_to_standard_calendar(
 def cpm_reproject_with_standard_calendar(
     cpm_xr_time_series: Dataset | PathLike,
     variable_name: str,
-    output_folder: PathLike | None = None,
+    output_path: PathLike,
     file_name_prefix: str = "",
+    subfolder: PathLike = CPM_LOCAL_INTERMEDIATE_PATH,
+    subfolder_time_stamp: bool = True,
 ) -> Dataset:
     """Convert raw `cpm_xr_time_series` to an 365/366 days and 27700 coords.
 
@@ -163,21 +175,31 @@ def cpm_reproject_with_standard_calendar(
     """
     if isinstance(cpm_xr_time_series, PathLike):
         cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
-    output_folder = Path(output_folder) if output_folder else Path()
-    output_folder.mkdir(exist_ok=True, parents=True)
+    output_path = Path(output_path) if output_path else Path()
+    if output_path.suffix[1:] in GDALFormatExtensions.values():
+        logger.info(
+            f"Output path is: '{str(output_path)}'\n"
+            "Putting intermediate files in parent directory."
+        )
+        output_path = output_path.parent
     prefix_and_var_name: str = file_name_prefix + variable_name + "-"
+    if subfolder_time_stamp:
+        subfolder = Path(Path(subfolder).name + f"-{time_str()}")
+    intermediate_folder: Path = output_path / subfolder
+    intermediate_folder.mkdir(exist_ok=True, parents=True)
+    assert output_path.is_dir()
 
-    intermediate_nc_path: Path = output_folder / (
-        prefix_and_var_name + CPM_365_OR_366_INTERMEDIATE_NC
+    intermediate_nc_path: Path = intermediate_folder / (
+        "0-" + prefix_and_var_name + CPM_365_OR_366_INTERMEDIATE_NC
     )
-    simplified_nc_path: Path = output_folder / (
-        prefix_and_var_name + CPM_365_OR_366_SIMPLIFIED_NC
+    simplified_nc_path: Path = intermediate_folder / (
+        "1-" + prefix_and_var_name + CPM_365_OR_366_SIMPLIFIED_NC
     )
-    intermediate_warp_path: Path = output_folder / (
-        prefix_and_var_name + CPM_365_OR_366_27700_TIF
+    intermediate_warp_path: Path = intermediate_folder / (
+        "2-" + prefix_and_var_name + CPM_365_OR_366_27700_TIF
     )
-    final_nc_path: Path = output_folder / (
-        prefix_and_var_name + CPM_365_OR_366_27700_FINAL
+    final_nc_path: Path = intermediate_folder / (
+        "3-" + prefix_and_var_name + CPM_365_OR_366_27700_FINAL
     )
 
     expanded_calendar: Dataset = cpm_xarray_to_standard_calendar(cpm_xr_time_series)
@@ -306,20 +328,26 @@ def crop_nc(
     #     xr_spatial_xdim=xr_spatial_xdim,
     #     xr_spatial_ydim=xr_spatial_ydim,
     # )
+
     if isinstance(crop_geom, PathLike):
         crop_geom = read_file(crop_geom)
-    assert isinstance(crop_geom, GeoDataFrame)
-    crop_geom.set_crs(crs=final_crs, inplace=True)
+    # assert isinstance(crop_geom, GeoDataFrame)
+    # crop_geom.set_crs(crs=final_crs, inplace=True)
     # if initial_clip_box:
-    return xr_time_series.rio.clip_box(
-        minx=crop_geom.bounds.minx,
-        miny=crop_geom.bounds.miny,
-        maxx=crop_geom.bounds.maxx,
-        maxy=crop_geom.bounds.maxy,
-    )
+    # return xr_time_series.rio.clip_box(
+    #     minx=crop_geom.bounds.minx,
+    #     miny=crop_geom.bounds.miny,
+    #     maxx=crop_geom.bounds.maxx,
+    #     maxy=crop_geom.bounds.maxy,
+    # )
     # return xr_time_series.rio.clip(
     #     crop_geom.geometry.values, drop=True, invert=invert, **kwargs
     # )
+    assert False
+    gdal_warp_wrapper(
+        input_path=xr_time_series,
+        output_path=output_path,
+    )
 
 
 def ensure_xr_dataset(
@@ -655,7 +683,7 @@ def apply_geo_func(
     new_path_name_func: Callable[[Path], Path] | None = None,
     to_netcdf: bool = True,
     to_raster: bool = False,
-    include_geo_warp_output_path: bool = False,
+    export_path_as_output_path_kwarg: bool = False,
     return_results: bool = False,
     **kwargs,
 ) -> Path | Dataset | GDALDataset:
@@ -678,7 +706,7 @@ def apply_geo_func(
     if new_path_name_func:
         export_path = new_path_name_func(export_path)
     export_path = Path(export_folder) / export_path.name
-    if include_geo_warp_output_path:
+    if export_path_as_output_path_kwarg:
         kwargs["output_path"] = export_path
     results: Dataset | Path | GDALDataset = func(source_path, **kwargs)
     if to_netcdf or to_raster:
@@ -689,6 +717,13 @@ def apply_geo_func(
                 f"Restuls from 'gdal_warp_wrapper' can't directly export to NetCDF form, only return a Path or GDALDataset"
             )
         assert isinstance(results, Dataset)
+        if export_path.exists():
+            if export_path.is_dir():
+                raise FileExistsError(
+                    f"Dataset export path is a folder: '{export_path}'"
+                )
+            else:
+                raise FileExistsError(f"Cannot overwrite: '{export_path}'")
         if to_netcdf:
             results.to_netcdf(export_path)
         if to_raster:

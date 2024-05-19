@@ -59,7 +59,7 @@ CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateD
 TEST_PATH: Final[Path] = Path().absolute()
 TEST_DATA_PATH: Final[Path] = TEST_PATH / "tests/data"
 TEST_RESULTS_PATH: Final[Path] = results_path(
-    name="run-results", path=TEST_PATH, mkdir=True
+    name="test-run-results", path=TEST_DATA_PATH, mkdir=True
 )
 PYTHON_DIR_NAME: Final[Path] = Path("python")
 
@@ -240,9 +240,13 @@ def glasgow_shape_file_path(data_fixtures_path: Path) -> Path:
 
 
 @pytest.fixture
-def test_runs_output_path(path=TEST_RESULTS_PATH) -> Iterator[Path]:
+# Leaving this in for in future auto-removing output_path
+# def test_runs_output_path(path=TEST_RESULTS_PATH) -> Iterator[Path]:
+def test_runs_output_path(path=TEST_RESULTS_PATH) -> Path:
     path.mkdir(exist_ok=True, parents=True)
-    yield path
+    return path
+    # Prevent issues overwriting files
+    # yield path
     # Uncomment below to automatically remove tests on teardown.
     # Currently leaveing to ease checking test runs
     # rmtree(path, ignore_errors=True)

@@ -21,7 +21,7 @@ from .resample import (
     CPMResamplerManager,
     HADsResamplerManager,
 )
-from .utils.core import product_dict
+from .utils.core import product_dict, results_path
 from .utils.data import RunOptions, VariableOptions
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
@@ -108,11 +108,50 @@ class ClimRecalConfig(BaseRunConfig):
     hads_kwargs: dict = field(default_factory=dict)
     start_index: int = 0
     stop_index: int | None = None
+    add_local_dated_results_path: bool = True
+    local_dated_results_path_prefix: str = "run"
 
     @property
     def resample_path(self) -> Path:
         """The resample_path property."""
-        return Path(self.output_path) / self.resample_folder
+        return Path(self.exec_path) / self.resample_folder
+
+    @property
+    def exec_path(self) -> Path:
+        """Path to save preparation and intermediate files.
+
+        Examples
+        --------
+        >>> print(clim_runner.exec_path)
+        clim-recal-runs/run...
+        >>> clim_runner.add_local_dated_results_path = False
+        >>> print(clim_runner.exec_path)
+        clim-recal-runs
+        """
+        if self.add_local_dated_results_path:
+            assert self.dated_results_path
+            return self.dated_results_path
+        else:
+            return Path(self.output_path)
+
+    @property
+    def dated_results_path(self) -> Path | None:
+        """Return a time stamped path if `add_local_dated_results_path` is `True`.
+
+        Examples
+        --------
+        >>> print(clim_runner.dated_results_path)
+        clim-recal-runs/run...
+        >>> clim_runner.add_local_dated_results_path = False
+        >>> print(clim_runner.dated_results_path)
+        None
+        """
+        if self.add_local_dated_results_path:
+            return self.output_path / results_path(
+                self.local_dated_results_path_prefix, mkdir=True
+            )
+        else:
+            return None
 
     @property
     def resample_hads_path(self) -> Path:

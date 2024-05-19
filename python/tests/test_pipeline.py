@@ -54,6 +54,7 @@ def test_main(
         multiprocess=multiprocess,
         cpm_kwargs=dict(_allow_check_fail=True),
         hads_kwargs=dict(_allow_check_fail=True),
+        local_dated_results_path_prefix="-".join(variables),
     )
     captured = capsys.readouterr()
     assert f"variables_count={len(variables)}" in captured.out
