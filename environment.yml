@@ -5,8 +5,8 @@ channels:
   - conda-forge
 dependencies:
   # - r-quarto=1.4
-  - python=3.11
-  - gdal=3.8.3
+  - python=3.12
+  - gdal=3.8.5
   - parallel
 platforms:
   - osx-arm64
