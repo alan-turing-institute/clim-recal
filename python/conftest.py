@@ -155,11 +155,6 @@ def cli_preprocess_default_command_str_correct() -> str:
 def data_mount_path() -> Path:
     """Return likely climate data mount path based on operating system.
 
-    Parameters
-    ----------
-    is_platform_darwin
-        Calls fixture `is_platform_darwin`.
-
     Returns
     -------
     The `Path` climate data would likely be mounted to.
@@ -240,16 +235,11 @@ def glasgow_shape_file_path(data_fixtures_path: Path) -> Path:
 
 
 @pytest.fixture
-# Leaving this in for in future auto-removing output_path
 def test_runs_output_path(path=TEST_RESULTS_PATH) -> Iterator[Path]:
-    # def test_runs_output_path(path=TEST_RESULTS_PATH) -> Path:
     path.mkdir(exist_ok=True, parents=True)
-    # return path
-    # Prevent issues overwriting files
     yield path
-    # Uncomment below to automatically remove tests on teardown.
-    # Currently leaveing to ease checking test runs
-    # rmtree(path, ignore_errors=True)
+    # Comment below to ease checking test runs
+    rmtree(path, ignore_errors=True)
 
 
 @pytest.fixture

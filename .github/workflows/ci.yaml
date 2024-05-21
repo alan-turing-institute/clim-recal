@@ -6,7 +6,7 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   CONDA_ENV_NAME: clim-recal
   CONDA_ENV_PATH: .conda-linux-64.lock
-  MIN_PYTHON_VERSION: 3.11
+  MIN_PYTHON_VERSION: 3.12
   PYTHON_MODULE_FOLDER: python/
   COVERAGE_SVG_FOLDER: docs/assets/
   COVERAGE_SVG_FILE_NAME: coverage.svg
@@ -70,7 +70,7 @@ jobs:
 
       - name: Run Python Tests
         run: |
-          mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest
+          mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest -m "not darwin"
 
       - name: Copy test coverage results
         run: |

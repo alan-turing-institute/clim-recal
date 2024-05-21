@@ -96,4 +96,5 @@ markers = [
     "mount: requires specifc data mounted.",
     "docker: requires running via docker jupyterlab.",
     "multiprocess: uses multiprocessing.",
+    "darwin: requires darwin (macOS) operating system.",
 ]
