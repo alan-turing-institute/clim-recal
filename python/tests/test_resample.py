@@ -47,10 +47,12 @@ from clim_recal.utils.gdal_formats import (
     GDALNetCDFFormatStr,
 )
 from clim_recal.utils.xarray import (
-    CPM_365_OR_366_27700_FINAL,
     CPM_LOCAL_INTERMEDIATE_PATH,
+    FINAL_RESAMPLE_LAT_COL,
+    FINAL_RESAMPLE_LON_COL,
     NETCDF4_XARRAY_ENGINE,
     BoundsTupleType,
+    IntermediateCPMFilesManager,
     convert_xr_calendar,
     cpm_xarray_to_standard_calendar,
     crop_nc,
@@ -152,13 +154,6 @@ def hads_tasmax_local_test_path(data_fixtures_path: Path) -> Path:
 @pytest.fixture
 def ukcp_tasmax_local_test_path(data_fixtures_path: Path) -> Path:
     return data_fixtures_path / UKCP_TASMAX_LOCAL_TEST_PATH
-
-
-# May be replaced by `glasgow_shape_file_path` fixture
-# @pytest.mark.mount
-# @pytest.fixture
-# def glasgow_server_shape(data_mount_path) -> GeoDataFrame:
-#     yield read_file(data_mount_path / GLASGOW_GEOM_LOCAL_PATH)
 
 
 class StandardWith360DayError(Exception):
@@ -613,13 +608,19 @@ def test_cpm_warp_steps(
     test_runs_output_path: Path,
 ) -> None:
     """Test all steps around calendar and warping CPM RAW data."""
-    file_name_prefix: str = "test-1980-"
+    # file_name_prefix: str = "test-1980"
     output_path: Path = test_runs_output_path / "test-cpm-warp"
+    test_intermediate_files = IntermediateCPMFilesManager(
+        variable_name="tasmax",
+        output_path=output_path,
+        time_series_start=tasmax_cpm_1980_raw.time.values[0],
+        time_series_end=tasmax_cpm_1980_raw.time.values[-1],
+    )
     projected = cpm_reproject_with_standard_calendar(
         tasmax_cpm_1980_raw,
         variable_name="tasmax",
         output_path=output_path,
-        file_name_prefix=file_name_prefix,
+        # file_name_prefix=file_name_prefix,
     )
     assert projected.rio.crs == BRITISH_NATIONAL_GRID_EPSG
     # Previous checks, worth re-wroking/expanding
@@ -629,12 +630,12 @@ def test_cpm_warp_steps(
     # assert len(test_projected.x) == len(tasmax_cpm_1980_raw.grid_longitude)
     # assert len(test_projected.y) == len(tasmax_cpm_1980_raw.grid_latitude)
     # test_projected.to_netcdf(final_nc_path)
-    final_nc_path: Path = Path(
-        "3-" + file_name_prefix + "tasmax-" + CPM_365_OR_366_27700_FINAL
+    assert test_intermediate_files.intermediate_files_folder.name.startswith(
+        CPM_LOCAL_INTERMEDIATE_PATH.name
     )
-    intermediate_dir = tuple(output_path.iterdir())[0]
-    assert intermediate_dir.name.startswith(CPM_LOCAL_INTERMEDIATE_PATH.name)
-    final_results = open_dataset(intermediate_dir / final_nc_path, decode_coords="all")
+    final_results: Dataset = open_dataset(
+        test_intermediate_files.final_nc_path, decode_coords="all"
+    )
     assert (final_results.time == projected.time).all()
 
 
@@ -732,7 +733,7 @@ def test_ukcp_manager(resample_test_cpm_output_path, config: str) -> None:
             paths = test_config.range_to_reprojection(stop=1)
         case "direct_provided":
             paths = [
-                test_config.to_reprojection(index=1, source_to_index=tuple(test_config))
+                test_config.to_reprojection(index=0, source_to_index=tuple(test_config))
             ]
         case "range_provided":
             paths = test_config.range_to_reprojection(
@@ -740,8 +741,8 @@ def test_ukcp_manager(resample_test_cpm_output_path, config: str) -> None:
             )
     export: Dataset = open_dataset(paths[0])
     assert export.dims["time"] == 365
-    assert export.dims["x"] == 492
-    assert export.dims["y"] == 608  # previously 603
+    assert export.dims[FINAL_RESAMPLE_LON_COL] == 492
+    assert export.dims[FINAL_RESAMPLE_LAT_COL] == 608  # previously 603
     assert not np.isnan(export.tasmax.head()[0].values).all()
     # Todo: reapply these checks to intermediary files
     # assert export.dims[CPRUK_XDIM] == 484
@@ -765,7 +766,7 @@ def test_hads_manager(resample_test_hads_output_path, range: bool) -> None:
     """Test running default HADs spatial projection."""
     test_config = HADsResampler(
         input_path=RAW_HADS_TASMAX_PATH,
-        output_path=resample_test_hads_output_path,
+        output_path=resample_test_hads_output_path / f"range-{range}",
     )
     paths: list[Path]
     if range:

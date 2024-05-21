@@ -43,10 +43,14 @@ def test_main(
     capsys,
 ) -> None:
     """Test running pipeline configurations."""
+    output_path: Path = (
+        test_runs_output_path / f"{'-'.join(variables)}-multi-{multiprocess}"
+    )
+
     results = main(
         execute=execute,
         variables=variables,
-        output_path=test_runs_output_path,
+        output_path=output_path,
         skip_hads_spatial_2k_projection=True,
         skip_cpm_standard_calendar_projection=False,
         stop_index=1,

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from logging import getLogger
 from os import PathLike
@@ -6,6 +7,7 @@ from typing import Any, Callable, Final, Iterable, Literal
 
 import numpy as np
 import rioxarray  # nopycln: import
+from cftime._cftime import Datetime360Day
 from geopandas import GeoDataFrame, read_file
 from numpy import array, random
 from numpy.typing import NDArray
@@ -23,6 +25,7 @@ from .core import (
     DateType,
     climate_data_mount_path,
     date_range_generator,
+    date_range_to_str,
     time_str,
 )
 from .gdal_formats import (
@@ -106,6 +109,9 @@ CPM_365_OR_366_27700_TIF: Final[str] = "cpm-365-or-366-27700.tif"
 CPM_365_OR_366_27700_FINAL: Final[str] = "cpm-365-or-366-27700-final.nc"
 CPM_LOCAL_INTERMEDIATE_PATH: Final[Path] = Path("cpm-intermediate-files")
 
+FINAL_RESAMPLE_LAT_COL: Final[str] = "lat"
+FINAL_RESAMPLE_LON_COL: Final[str] = "lon"
+
 
 def cpm_xarray_to_standard_calendar(
     cpm_xr_time_series: Dataset | PathLike, include_bnds_index: bool = False
@@ -149,13 +155,149 @@ def cpm_xarray_to_standard_calendar(
         return cpm_to_std_calendar
 
 
+def cftime360_to_date(cf_360: Datetime360Day) -> date:
+    """Convert a `Datetime360Day` into a `date`.
+
+    Examples
+    --------
+    >>> cftime360_to_date(Datetime360Day(1980, 1, 1))
+    datetime.date(1980, 1, 1)
+    """
+    return date(cf_360.year, cf_360.month, cf_360.day)
+
+
+@dataclass
+class IntermediateCPMFilesManager:
+
+    """Manage intermediate files and paths for CPM calendar projection.
+
+    Parameters
+    ----------
+    variable_name
+        Name of variable (e.g. `tasmax`). Included in file names.
+    output_path
+        Folder to save results to.
+    subfolder_path
+        Path to place intermediate files relative to output_path.
+    time_series_start
+        Start of time series covered to include in file name.
+    time_series_end
+        End of time series covered to include in file name.
+    file_name_prefix
+        str to add at the start of the output file names (after integers).
+    subfolder_time_stamp
+        Whether to include a time stamp in the subfolder file name.
+
+    Examples
+    --------
+    >>> test_path = getfixture('tmp_path')
+    >>> intermedate_files_manager: IntermediateCPMFilesManager = IntermediateCPMFilesManager(
+    ...     file_name_prefix="test-1980",
+    ...     variable_name="tasmax",
+    ...     output_path=test_path / 'intermediate_test_folder',
+    ...     subfolder_path='test_subfolder',
+    ...     time_series_start=date(1980, 12, 1),
+    ...     time_series_end=date(1981, 11, 30),
+    ... )
+    >>> str(intermedate_files_manager.output_path)
+    '.../intermediate_test_folder'
+    >>> str(intermedate_files_manager.intermediate_files_folder)
+    '.../test_subfolder'
+    >>> str(intermedate_files_manager.final_nc_path)
+    '.../test_subfolder/3-test-1980-tasmax-19801201-19811130-cpm-365-or-366-27700-final.nc'
+    """
+
+    variable_name: str
+    output_path: Path | None
+    time_series_start: datetime | date | Datetime360Day
+    time_series_end: datetime | date | Datetime360Day
+    subfolder_path: Path = CPM_LOCAL_INTERMEDIATE_PATH
+    file_name_prefix: str = ""
+    subfolder_time_stamp: bool = False
+
+    def __post_init__(self) -> None:
+        """Ensure `output_path`, `time_series_start/end` are set correctly."""
+        self.output_path = Path(self.output_path) if self.output_path else Path()
+        if self.output_path.suffix[1:] in GDALFormatExtensions.values():
+            logger.info(
+                f"Output path is: '{str(self.output_path)}'\n"
+                "Putting intermediate files in parent directory."
+            )
+            self._passed_output_path = self.output_path
+            self.output_path = self.output_path.parent
+        if isinstance(self.time_series_start, Datetime360Day):
+            self.time_series_start = cftime360_to_date(self.time_series_start)
+        if isinstance(self.time_series_end, Datetime360Day):
+            self.time_series_end = cftime360_to_date(self.time_series_end)
+
+    def __repr__(self):
+        """Summary of config."""
+        return (
+            f"<IntermediateCPMFilesManager(output_path='{self.output_path}, "
+            f"intermediate_files_folder='{self.intermediate_files_folder})>"
+        )
+
+    @property
+    def date_range_to_str(self) -> str:
+        return date_range_to_str(self.time_series_start, self.time_series_end)
+
+    @property
+    def prefix_var_name_and_date(self) -> str:
+        prefix: str = f"{self.variable_name}-{self.date_range_to_str}-"
+        if self.file_name_prefix:
+            return f"{self.file_name_prefix}-{prefix}"
+        else:
+            return prefix
+
+    @property
+    def subfolder(self) -> Path:
+        if self.subfolder_time_stamp:
+            return Path(Path(self.subfolder_path).name + f"-{time_str()}")
+        else:
+            return self.subfolder_path
+
+    @property
+    def intermediate_files_folder(self) -> Path:
+        assert self.output_path
+        path: Path = self.output_path / self.subfolder
+        path.mkdir(exist_ok=True, parents=True)
+        assert path.is_dir()
+        return path
+
+    @property
+    def intermediate_nc_path(self) -> Path:
+        return self.intermediate_files_folder / (
+            "0-" + self.prefix_var_name_and_date + CPM_365_OR_366_INTERMEDIATE_NC
+        )
+
+    @property
+    def simplified_nc_path(self) -> Path:
+        return self.intermediate_files_folder / (
+            "1-" + self.prefix_var_name_and_date + CPM_365_OR_366_SIMPLIFIED_NC
+        )
+
+    @property
+    def intermediate_warp_path(self) -> Path:
+        return self.intermediate_files_folder / (
+            "2-" + self.prefix_var_name_and_date + CPM_365_OR_366_27700_TIF
+        )
+
+    @property
+    def final_nc_path(self) -> Path:
+        return self.intermediate_files_folder / (
+            "3-" + self.prefix_var_name_and_date + CPM_365_OR_366_27700_FINAL
+        )
+
+
 def cpm_reproject_with_standard_calendar(
     cpm_xr_time_series: Dataset | PathLike,
     variable_name: str,
     output_path: PathLike,
     file_name_prefix: str = "",
     subfolder: PathLike = CPM_LOCAL_INTERMEDIATE_PATH,
-    subfolder_time_stamp: bool = True,
+    subfolder_time_stamp: bool = False,
+    final_x_coord_label: str = FINAL_RESAMPLE_LON_COL,
+    final_y_coord_label: str = FINAL_RESAMPLE_LAT_COL,
 ) -> Dataset:
     """Convert raw `cpm_xr_time_series` to an 365/366 days and 27700 coords.
 
@@ -175,60 +317,46 @@ def cpm_reproject_with_standard_calendar(
     """
     if isinstance(cpm_xr_time_series, PathLike):
         cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
-    output_path = Path(output_path) if output_path else Path()
-    if output_path.suffix[1:] in GDALFormatExtensions.values():
-        logger.info(
-            f"Output path is: '{str(output_path)}'\n"
-            "Putting intermediate files in parent directory."
-        )
-        output_path = output_path.parent
-    prefix_and_var_name: str = file_name_prefix + variable_name + "-"
-    if subfolder_time_stamp:
-        subfolder = Path(Path(subfolder).name + f"-{time_str()}")
-    intermediate_folder: Path = output_path / subfolder
-    intermediate_folder.mkdir(exist_ok=True, parents=True)
-    assert output_path.is_dir()
 
-    intermediate_nc_path: Path = intermediate_folder / (
-        "0-" + prefix_and_var_name + CPM_365_OR_366_INTERMEDIATE_NC
-    )
-    simplified_nc_path: Path = intermediate_folder / (
-        "1-" + prefix_and_var_name + CPM_365_OR_366_SIMPLIFIED_NC
-    )
-    intermediate_warp_path: Path = intermediate_folder / (
-        "2-" + prefix_and_var_name + CPM_365_OR_366_27700_TIF
-    )
-    final_nc_path: Path = intermediate_folder / (
-        "3-" + prefix_and_var_name + CPM_365_OR_366_27700_FINAL
+    intermediate_files: IntermediateCPMFilesManager = IntermediateCPMFilesManager(
+        file_name_prefix=file_name_prefix,
+        variable_name=variable_name,
+        output_path=Path(output_path),
+        subfolder_path=Path(subfolder),
+        subfolder_time_stamp=subfolder_time_stamp,
+        time_series_start=cpm_xr_time_series.time.values[0],
+        time_series_end=cpm_xr_time_series.time.values[-1],
     )
 
     expanded_calendar: Dataset = cpm_xarray_to_standard_calendar(cpm_xr_time_series)
     subset_within_ensemble: DataArray = expanded_calendar[variable_name][0]
-    subset_within_ensemble.to_netcdf(intermediate_nc_path)
-    simplified_netcdf: Dataset = open_dataset(intermediate_nc_path, decode_coords="all")
-    simplified_netcdf[variable_name].to_netcdf(simplified_nc_path)
-
-    # Uncomment to test intermediate results in test_simplified
-    # test_simplified: Dataset = open_dataset(simplified_nc_path, decode_coords="all")
+    subset_within_ensemble.to_netcdf(intermediate_files.intermediate_nc_path)
+    simplified_netcdf: Dataset = open_dataset(
+        intermediate_files.intermediate_nc_path, decode_coords="all"
+    )
+    simplified_netcdf[variable_name].to_netcdf(intermediate_files.simplified_nc_path)
 
     warped_to_22700_path = gdal_warp_wrapper(
-        input_path=simplified_nc_path,
-        output_path=intermediate_warp_path,
+        input_path=intermediate_files.simplified_nc_path,
+        output_path=intermediate_files.intermediate_warp_path,
         copy_metadata=True,
         format=None,
     )
 
-    assert warped_to_22700_path == intermediate_warp_path
-    warped_to_22700 = open_dataset(intermediate_warp_path)
+    assert warped_to_22700_path == intermediate_files.intermediate_warp_path
+    warped_to_22700 = open_dataset(intermediate_files.intermediate_warp_path)
     assert warped_to_22700.rio.crs == BRITISH_NATIONAL_GRID_EPSG
     assert len(warped_to_22700.time) == len(expanded_calendar.time)
 
     warped_to_22700_y_axis_inverted: Dataset = warped_to_22700.reindex(
         y=list(reversed(warped_to_22700.y))
     )
+    warped_to_22700_y_axis_inverted = warped_to_22700_y_axis_inverted.rename(
+        {"x": final_x_coord_label, "y": final_y_coord_label}
+    )
 
-    warped_to_22700_y_axis_inverted.to_netcdf(final_nc_path)
-    final_results = open_dataset(final_nc_path, decode_coords="all")
+    warped_to_22700_y_axis_inverted.to_netcdf(intermediate_files.final_nc_path)
+    final_results = open_dataset(intermediate_files.final_nc_path, decode_coords="all")
     assert (final_results.time == expanded_calendar.time).all()
     return final_results
 

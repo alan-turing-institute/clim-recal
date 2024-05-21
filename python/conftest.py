@@ -57,7 +57,7 @@ CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData"
 CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateData")
 
 TEST_PATH: Final[Path] = Path().absolute()
-TEST_DATA_PATH: Final[Path] = TEST_PATH / "tests/data"
+TEST_DATA_PATH: Final[Path] = TEST_PATH / "tests"
 TEST_RESULTS_PATH: Final[Path] = results_path(
     name="test-run-results", path=TEST_DATA_PATH, mkdir=True
 )
