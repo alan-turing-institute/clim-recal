@@ -12,3 +12,4 @@ python/tests/data/test-run-results*
 **/*.nc
 **/*.tic
 **/*.aux.xml
+.**/*
