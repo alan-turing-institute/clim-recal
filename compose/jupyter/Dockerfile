@@ -32,10 +32,11 @@ RUN \
     echo conda activate "${env_name}" >> /usr/local/bin/before-notebook.d/10activate-conda-env.sh && \
     echo conda activate "${env_name}" >> /etc/skel/.bashrc
 # Above line makes the custom environment default in Jupyter Terminals for all users which might be created later
+COPY . .
+
+RUN chown -R ${NB_USER} /home/${NB_USER}
 
 USER ${NB_UID}
 
 # This makes the custom environment default in Jupyter Terminals for already existing NB_USER
 RUN echo conda activate "${env_name}" >> "/home/${NB_USER}/.bashrc"
-
-COPY . .
