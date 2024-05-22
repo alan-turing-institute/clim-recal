@@ -870,6 +870,7 @@ def test_execute_resample_configs(multiprocess: bool, tmp_path) -> None:
     ).all()
 
 
+# Todo: rearrange test below for crop testing or delete
 # @pytest.mark.xfail(reason="test still in development")
 # @pytest.mark.slow
 # @pytest.mark.mount
@@ -899,35 +900,3 @@ def test_execute_resample_configs(multiprocess: bool, tmp_path) -> None:
 #
 #     assert False
 #     test_crop = crop_nc()
-
-
-#
-#
-# @pytest.mark.server
-# def test_ukcp_raw(
-#         start_date: DateType = '1980-12-01',
-#     end_date: DateType = '1985-12-01',
-#     align_on: ConvertCalendarAlignOptions,
-# ):
-#     """Test `convert_xr_calendar` call of `360_day` `DataArray` to `standard` calendar."""
-#     # Potential paramaterized variables
-#     inclusive_date_range: bool = False  # includes the last day specified
-#     use_cftime: bool = True  # Whether to enforece using `cftime` over `datetime64`
-#     # align_on: ConvertCalendarAlignOptions = 'date'
-#
-#     # Create a base
-#     base: Dataset = xarray_example(
-#         start_date, end_date, as_dataset=True, inclusive=inclusive_date_range
-#     )
-#     assert False
-#
-#     # Ensure the generated date range matches for later checks
-#     # This occurs for a sigle leap year
-#     assert len(base.time) == gen_date_count
-#
-#     # Convert to `360_day` calendar example
-#     dates_360: Dataset = base.convert_calendar(
-#         calendar="360_day",
-#         align_on=align_on,
-#         use_cftime=use_cftime,
-#     )
