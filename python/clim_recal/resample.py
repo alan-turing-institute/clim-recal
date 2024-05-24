@@ -48,7 +48,6 @@ DEFAULT_INTERPOLATION_METHOD: str = "linear"
 """Default method to infer missing estimates in a time series."""
 
 CFCalendarSTANDARD: Final[str] = "standard"
-ConvertCalendarAlignOptions = Literal["date", "year", None]
 
 RESAMPLING_OUTPUT_PATH: Final[PathLike] = (
     CLIMATE_DATA_MOUNT_PATH / "Raw/python_refactor/"

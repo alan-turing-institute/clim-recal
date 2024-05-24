@@ -234,11 +234,11 @@ def glasgow_shape_file_path(data_fixtures_path: Path) -> Path:
     return data_fixtures_path / Path(*GLASGOW_GEOM_LOCAL_PATH.parts[-2:])
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def test_runs_output_path(path=TEST_RESULTS_PATH) -> Iterator[Path]:
     path.mkdir(exist_ok=True, parents=True)
     yield path
-    # Comment below to ease checking test runs
+    # Comment out rmtree line below to leave test files for checking after runs
     rmtree(path, ignore_errors=True)
 
 
@@ -257,7 +257,7 @@ def glasgow_epsg_27700_bounds() -> BoundsTupleType:
 
 
 @pytest.fixture
-def uk_epsg_27700_bounds() -> BoundsTupleType:
+def uk_rotated_grid_bounds() -> BoundsTupleType:
     """Boundaries of the UK in EPSG:27700 coords.
 
     The structure is (`minx`, `miny`, `maxx`, `maxy`)
@@ -324,7 +324,7 @@ def doctest_auto_fixtures(
     conda_lock_file_manager: CondaLockFileManager,
     data_fixtures_path: Path,
     data_mount_path: Path,
-    uk_epsg_27700_bounds: BoundsTupleType,
+    uk_rotated_grid_bounds: BoundsTupleType,
     glasgow_epsg_27700_bounds: BoundsTupleType,
     glasgow_shape_file_path: Path,
     test_runs_output_path: Path,
@@ -372,7 +372,7 @@ def doctest_auto_fixtures(
     doctest_namespace["xarray_spatial_4_years_360_day"] = xarray_spatial_4_years_360_day
     doctest_namespace["conda_lock_file_manager"] = conda_lock_file_manager
     doctest_namespace["data_fixtures_path"] = data_fixtures_path
-    doctest_namespace["uk_epsg_27700_bounds"] = uk_epsg_27700_bounds
+    doctest_namespace["uk_rotated_grid_bounds"] = uk_rotated_grid_bounds
     doctest_namespace["glasgow_epsg_27700_bounds"] = glasgow_epsg_27700_bounds
     doctest_namespace["glasgow_shape_file_path"] = glasgow_shape_file_path
     doctest_namespace["test_runs_output_path"] = test_runs_output_path

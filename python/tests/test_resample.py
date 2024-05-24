@@ -449,7 +449,7 @@ def test_geo_warp_format_type_crop(
     test_runs_output_path: Path,
     glasgow_shape_file_path: Path,
     glasgow_epsg_27700_bounds: BoundsTupleType,
-    uk_epsg_27700_bounds,
+    uk_rotated_grid_bounds,
     ukcp_tasmax_raw_mount_path: Path,
     hads_tasmax_raw_mount_path: Path,
     hads_tasmax_local_test_path: Path,
@@ -521,7 +521,7 @@ def test_geo_warp_format_type_crop(
     plt.savefig(pre_warp_test_fig_path)
 
     assert str(xarray_pre_warp.rio.crs) != BRITISH_NATIONAL_GRID_EPSG
-    assert xarray_pre_warp.rio.bounds() == uk_epsg_27700_bounds
+    assert xarray_pre_warp.rio.bounds() == uk_rotated_grid_bounds
     # output_path: Path = warp_path / (max_temp_data_path.stem + ".tif" if output_format == GDALGeoTiffFormatStr else ".nc")
     xarray_warped: GDALDataset
     if glasgow_crop:
@@ -535,7 +535,7 @@ def test_geo_warp_format_type_crop(
             input_path=max_temp_data_path,
             output_path=warp_test_file_path,
             format=output_format,
-            output_bounds=uk_epsg_27700_bounds,
+            output_bounds=uk_rotated_grid_bounds,
         )
     assert xarray_warped is not None
     read_exported: Dataset = open_dataset(warp_test_file_path, decode_coords="all")
@@ -659,7 +659,7 @@ def test_crop_nc(
     glasgow_shape_file_path,
     data_fixtures_path,
     glasgow_epsg_27700_bounds,
-    uk_epsg_27700_bounds,
+    uk_rotated_grid_bounds,
 ):
     """Test `cropping` `DataArray` to `standard` calendar."""
     # cropped.rio.set_spatial_dims(x_dim="grid_longitude", y_dim="grid_latitude")
@@ -692,7 +692,7 @@ def test_crop_nc(
     plt.savefig(pre_crop_test_fig_path)
 
     assert str(xarray_pre_crop.rio.crs) != BRITISH_NATIONAL_GRID_EPSG
-    assert xarray_pre_crop.rio.bounds() == uk_epsg_27700_bounds
+    assert xarray_pre_crop.rio.bounds() == uk_rotated_grid_bounds
 
     cropped: Dataset = crop_nc(
         xr_time_series=max_temp_1981_path,

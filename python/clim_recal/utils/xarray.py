@@ -109,8 +109,8 @@ CPM_365_OR_366_27700_TIF: Final[str] = "cpm-365-or-366-27700.tif"
 CPM_365_OR_366_27700_FINAL: Final[str] = "cpm-365-or-366-27700-final.nc"
 CPM_LOCAL_INTERMEDIATE_PATH: Final[Path] = Path("cpm-intermediate-files")
 
-FINAL_RESAMPLE_LAT_COL: Final[str] = "lat"
-FINAL_RESAMPLE_LON_COL: Final[str] = "lon"
+FINAL_RESAMPLE_LAT_COL: Final[str] = "x"
+FINAL_RESAMPLE_LON_COL: Final[str] = "y"
 
 
 def cpm_xarray_to_standard_calendar(
@@ -348,12 +348,15 @@ def cpm_reproject_with_standard_calendar(
     assert warped_to_22700.rio.crs == BRITISH_NATIONAL_GRID_EPSG
     assert len(warped_to_22700.time) == len(expanded_calendar.time)
 
-    warped_to_22700_y_axis_inverted: Dataset = warped_to_22700.reindex(
-        y=list(reversed(warped_to_22700.y))
-    )
-    warped_to_22700_y_axis_inverted = warped_to_22700_y_axis_inverted.rename(
-        {"x": final_x_coord_label, "y": final_y_coord_label}
-    )
+    # Commenting these out in prep for addressing
+    # https://github.com/alan-turing-institute/clim-recal/issues/151
+    # warped_to_22700_y_axis_inverted: Dataset = warped_to_22700.reindex(
+    #     y=list(reversed(warped_to_22700.y))
+    # )
+    #
+    # warped_to_22700_y_axis_inverted = warped_to_22700_y_axis_inverted.rename(
+    #     {"x": final_x_coord_label, "y": final_y_coord_label}
+    # )
 
     warped_to_22700_y_axis_inverted.to_netcdf(intermediate_files.final_nc_path)
     final_results = open_dataset(intermediate_files.final_nc_path, decode_coords="all")
@@ -366,8 +369,8 @@ def interpolate_coords(
     variable_name: str,
     x_grid: NDArray,
     y_grid: NDArray,
-    xr_time_series_x_column_name: str,
-    xr_time_series_y_column_name: str,
+    xr_time_series_x_column_name: str = FINAL_RESAMPLE_LON_COL,
+    xr_time_series_y_column_name: str = FINAL_RESAMPLE_LAT_COL,
     method: str = "linear",
     engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
     **kwargs,
