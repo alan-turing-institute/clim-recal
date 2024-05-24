@@ -33,9 +33,12 @@ RUN \
     echo conda activate "${env_name}" >> /etc/skel/.bashrc
 # Above line makes the custom environment default in Jupyter Terminals for all users which might be created later
 
+RUN chown -R ${NB_USER} /home/${NB_USER}
+
 USER ${NB_UID}
 
-# This makes the custom environment default in Jupyter Terminals for already existing NB_USER
-RUN echo conda activate "${env_name}" >> "/home/${NB_USER}/.bashrc"
-
 COPY . .
+
+# This makes the custom environment default in Jupyter Terminals for already existing NB_USER
+# Note this *doesn't* apply if simply using sh -c
+RUN echo conda activate "${env_name}" >> "/home/${NB_USER}/.bashrc"

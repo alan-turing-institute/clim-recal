@@ -4,3 +4,12 @@ _sidebar*
 _site*
 _extensions
 *.bak
+python/clim-recal-runs
+python/test-output
+python/tests/run*
+python/tests/test-run-results*
+python/tests/data/test-run-results*
+**/*.nc
+**/*.tic
+**/*.aux.xml
+.**/*

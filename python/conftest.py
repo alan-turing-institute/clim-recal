@@ -1,9 +1,13 @@
-from datetime import date
 from pathlib import Path
 from pprint import pprint
-from typing import Callable, Final, Iterable
+from shutil import copytree, rmtree
+from typing import Final, Iterator
 
 import pytest
+from coverage_badge.__main__ import main as gen_cov_badge
+from xarray import DataArray, Dataset
+
+from clim_recal.config import ClimRecalConfig
 from clim_recal.debiasing.debias_wrapper import (
     CALIB_DATES_STR_DEFAULT,
     CMETHODS_FILE_NAME,
@@ -20,35 +24,43 @@ from clim_recal.debiasing.debias_wrapper import (
     RunOptions,
     VariableOptions,
 )
-from clim_recal.pipeline import climate_data_mount_path, is_climate_data_mounted
-from clim_recal.resample import CITY_COORDS, xarray_example
-from clim_recal.utils import (
+from clim_recal.resample import CPM_OUTPUT_LOCAL_PATH, HADS_OUTPUT_LOCAL_PATH
+from clim_recal.utils.core import (
     ISO_DATE_FORMAT_STR,
-    CondaLockFileManager,
     check_package_path,
+    climate_data_mount_path,
+    is_climate_data_mounted,
     is_platform_darwin,
     iter_to_tuple_strs,
+    results_path,
 )
-from coverage_badge.__main__ import main as gen_cov_badge
-from osgeo.gdal import DataTypeUnion
-from pandas import to_datetime
-from xarray import DataArray, Dataset
+from clim_recal.utils.server import CondaLockFileManager
+from clim_recal.utils.xarray import (
+    GLASGOW_GEOM_LOCAL_PATH,
+    XARRAY_EXAMPLE_END_DATE_4_YEARS,
+    BoundsTupleType,
+    xarray_example,
+)
 
+MOUNT_DOCTEST_SKIP_MESSAGE: Final[str] = "requires external data mounted"
 # Date Range covering leap year
-XARRAY_START_DATE_STR: Final[str] = "1980-11-30"
 XARRAY_END_DATE_4_DAYS: Final[str] = "1980-12-5"
 XARRAY_END_DATE_8_DAYS: Final[str] = "1980-12-10"
 XARRAY_SKIP_2_FROM_8_DAYS: Final[tuple[str, str]] = (
     "1980-12-7",
     "1980-12-8",
 )
-XARRAY_END_DATE_4_YEARS: Final[str] = "1984-11-30"
-
+TEST_AUTH_CSV_FILE_NAME: Final[Path] = Path("test_auth.csv")
 
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
 CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData")
 CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateData")
-TEST_PATH = Path().absolute()
+
+TEST_PATH: Final[Path] = Path().absolute()
+TEST_DATA_PATH: Final[Path] = TEST_PATH / "tests"
+TEST_RESULTS_PATH: Final[Path] = results_path(
+    name="test-run-results", path=TEST_DATA_PATH, mkdir=True
+)
 PYTHON_DIR_NAME: Final[Path] = Path("python")
 
 CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str, ...]] = (
@@ -143,11 +155,6 @@ def cli_preprocess_default_command_str_correct() -> str:
 def data_mount_path() -> Path:
     """Return likely climate data mount path based on operating system.
 
-    Parameters
-    ----------
-    is_platform_darwin
-        Calls fixture `is_platform_darwin`.
-
     Returns
     -------
     The `Path` climate data would likely be mounted to.
@@ -157,7 +164,12 @@ def data_mount_path() -> Path:
 
 @pytest.fixture
 def is_data_mounted(data_mount_path) -> bool:
-    """Check if CLIMATE_DATA_MOUNT_PATH is mounted."""
+    """Check if CLIMATE_DATA_MOUNT_PATH is mounted.
+
+    Todo:
+        Remove if `climate_data_mount_path` can manage
+        condition by returning `None`.
+    """
     return is_climate_data_mounted(mount_path=data_mount_path)
 
 
@@ -169,89 +181,134 @@ def ensure_python_path() -> None:
 
 
 @pytest.fixture
-def xarray_spatial_temporal() -> (
-    Callable[[str, str, dict[str, tuple[float, float]]], DataArray]
-):
-    """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30.
-
-    See https://xarray-spatial.org/user_guide/local.html?highlight=time
-    """
-
-    def _xarray_spatial_temporal(
-        start_date_str: str = XARRAY_START_DATE_STR,
-        end_date_str: str = XARRAY_END_DATE_4_YEARS,
-        coordinates: dict[str, tuple[float, float]] = CITY_COORDS,
-        skip_dates: Iterable[date] | None = None,
-        **kwargs,
-    ) -> DataArray:
-        return xarray_example(
-            start_date=start_date_str,
-            end_date=end_date_str,
-            coordinates=coordinates,
-            skip_dates=skip_dates,
-            random_seed_int=0,
-            **kwargs,
-        )
-
-    return _xarray_spatial_temporal
-
-
-@pytest.fixture
-def xarray_spatial_4_days(
-    xarray_spatial_temporal: Callable,
-    end_date_str: str = XARRAY_END_DATE_4_DAYS,
-) -> DataArray:
+def xarray_spatial_4_days() -> DataArray:
     """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-05."""
-    return xarray_spatial_temporal(end_date_str=end_date_str)
+    return xarray_example(end_date=XARRAY_END_DATE_4_DAYS)
 
 
 @pytest.fixture
-def xarray_spatial_8_days(
-    xarray_spatial_temporal: Callable,
-    end_date_str: str = XARRAY_END_DATE_8_DAYS,
-) -> DataArray:
+def xarray_spatial_8_days() -> DataArray:
     """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-10."""
-    return xarray_spatial_temporal(end_date_str=end_date_str)
+    return xarray_example(end_date=XARRAY_END_DATE_8_DAYS)
 
 
 @pytest.fixture
-def xarray_spatial_6_days_2_skipped(
-    xarray_spatial_temporal: Callable,
-    end_date_str: str = XARRAY_END_DATE_8_DAYS,
-    skip_dates: tuple[str, ...] = XARRAY_SKIP_2_FROM_8_DAYS,
-) -> DataArray:
+def xarray_spatial_6_days_2_skipped() -> DataArray:
     """Generate a `xarray` spatial time series 1980-11-30 to 1980-12-05."""
-    return xarray_spatial_temporal(
-        end_date_str=end_date_str,
-        skip_dates=skip_dates,
+    return xarray_example(
+        end_date=XARRAY_END_DATE_8_DAYS,
+        skip_dates=XARRAY_SKIP_2_FROM_8_DAYS,
         skip_dates_format_str=ISO_DATE_FORMAT_STR,
     )
 
 
 @pytest.fixture
-def xarray_spatial_4_years(
-    xarray_spatial_temporal: Callable,
-    end_date_str: str = XARRAY_END_DATE_4_YEARS,
-) -> DataArray:
+def xarray_spatial_4_years() -> DataArray:
     """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30."""
-    return xarray_spatial_temporal(end_date_str=end_date_str)
+    return xarray_example(end_date=XARRAY_EXAMPLE_END_DATE_4_YEARS)
 
 
 @pytest.fixture
-def xarray_spatial_4_years_360_day(
-    xarray_spatial_temporal: Callable,
-    end_date_str: str = XARRAY_END_DATE_4_YEARS,
-) -> Dataset:
+def xarray_spatial_4_years_360_day() -> Dataset:
     """Generate a `xarray` spatial time series 1980-11-30 to 1984-11-30."""
-    four_normal_years: Dataset = xarray_spatial_temporal(
-        end_date_str=end_date_str, as_dataset=True, name="day_360"
+    four_normal_years: Dataset = xarray_example(
+        end_date=XARRAY_EXAMPLE_END_DATE_4_YEARS, as_dataset=True, name="day_360"
     )
-    return four_normal_years.convert_calendar("360_day", align_on="year")
+    return four_normal_years.convert_calendar("360_day", align_on="day")
 
 
 @pytest.fixture
 def conda_lock_file_manager() -> CondaLockFileManager:
     return CondaLockFileManager()
+
+
+@pytest.fixture
+def data_fixtures_path(tmp_path: Path) -> Iterator[Path]:
+    yield copytree(TEST_DATA_PATH, tmp_path / TEST_DATA_PATH.name)
+    rmtree(tmp_path / TEST_DATA_PATH.name)
+
+
+@pytest.mark.mount
+@pytest.fixture
+def glasgow_shape_file_path(data_fixtures_path: Path) -> Path:
+    return data_fixtures_path / Path(*GLASGOW_GEOM_LOCAL_PATH.parts[-2:])
+
+
+@pytest.fixture(scope="session")
+def test_runs_output_path(path=TEST_RESULTS_PATH) -> Iterator[Path]:
+    path.mkdir(exist_ok=True, parents=True)
+    yield path
+    # Comment out rmtree line below to leave test files for checking after runs
+    rmtree(path, ignore_errors=True)
+
+
+@pytest.fixture
+def glasgow_epsg_27700_bounds() -> BoundsTupleType:
+    """Boundaries of Glasgow in EPSG:27700 coords.
+
+    The structure is (`minx`, `miny`, `maxx`, `maxy`)
+    """
+    return (
+        249799.9996000016,
+        657761.4720000029,
+        269234.99959999975,
+        672330.6968000066,
+    )
+
+
+@pytest.fixture
+def uk_rotated_grid_bounds() -> BoundsTupleType:
+    """Boundaries of the UK in EPSG:27700 coords.
+
+    The structure is (`minx`, `miny`, `maxx`, `maxy`)
+    """
+    return (
+        353.92520902961434,
+        -4.693282346489016,
+        364.3162765660888,
+        8.073382596733156,
+    )
+
+
+# Note: it may be worth setting this to cache for session runs
+@pytest.mark.mount
+@pytest.fixture
+def clim_runner(tmp_path) -> ClimRecalConfig:
+    """Return default `ClimRecalConfig`."""
+    try:
+        return ClimRecalConfig(
+            preprocess_out_folder=tmp_path,
+            cities=(CityOptions.GLASGOW, CityOptions.MANCHESTER),
+        )
+    except FileExistsError:
+        return ClimRecalConfig(
+            preprocess_out_folder=tmp_path,
+            cities=(CityOptions.GLASGOW, CityOptions.MANCHESTER),
+            cpm_kwargs=dict(_allow_check_fail=True),
+            hads_kwargs=dict(_allow_check_fail=True),
+        )
+
+
+@pytest.fixture
+def resample_test_cpm_output_path(
+    test_runs_output_path: Path,
+) -> Path:
+    return test_runs_output_path / CPM_OUTPUT_LOCAL_PATH
+
+
+@pytest.fixture
+def resample_test_hads_output_path(
+    test_runs_output_path: Path,
+) -> Path:
+    return test_runs_output_path / HADS_OUTPUT_LOCAL_PATH
+
+
+@pytest.fixture
+def glasgow_example_cropped_cpm_rainfall_path(data_fixtures_path: Path) -> Path:
+    return (
+        data_fixtures_path
+        / "Glasgow/cropped-tif/cpr_rcp85_land-cpm_uk_2.2km_06_day_20791201-20801130.tif"
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -265,6 +322,16 @@ def doctest_auto_fixtures(
     xarray_spatial_4_years: DataArray,
     xarray_spatial_4_years_360_day: Dataset,
     conda_lock_file_manager: CondaLockFileManager,
+    data_fixtures_path: Path,
+    data_mount_path: Path,
+    uk_rotated_grid_bounds: BoundsTupleType,
+    glasgow_epsg_27700_bounds: BoundsTupleType,
+    glasgow_shape_file_path: Path,
+    test_runs_output_path: Path,
+    resample_test_cpm_output_path: Path,
+    resample_test_hads_output_path: Path,
+    glasgow_example_cropped_cpm_rainfall_path: Path,
+    clim_runner: ClimRecalConfig,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
     doctest_namespace[
@@ -290,8 +357,10 @@ def doctest_auto_fixtures(
     doctest_namespace[
         "CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT"
     ] = CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
+    doctest_namespace["TEST_AUTH_CSV_PATH"] = TEST_AUTH_CSV_FILE_NAME
     doctest_namespace["is_platform_darwin"] = is_platform_darwin()
     doctest_namespace["is_data_mounted"] = is_data_mounted
+    doctest_namespace["mount_path"] = data_mount_path
     doctest_namespace["pprint"] = pprint
     doctest_namespace["pytest"] = pytest
     doctest_namespace["xarray_spatial_4_days"] = xarray_spatial_4_days
@@ -302,10 +371,35 @@ def doctest_auto_fixtures(
     doctest_namespace["xarray_spatial_4_years"] = xarray_spatial_4_years
     doctest_namespace["xarray_spatial_4_years_360_day"] = xarray_spatial_4_years_360_day
     doctest_namespace["conda_lock_file_manager"] = conda_lock_file_manager
+    doctest_namespace["data_fixtures_path"] = data_fixtures_path
+    doctest_namespace["uk_rotated_grid_bounds"] = uk_rotated_grid_bounds
+    doctest_namespace["glasgow_epsg_27700_bounds"] = glasgow_epsg_27700_bounds
+    doctest_namespace["glasgow_shape_file_path"] = glasgow_shape_file_path
+    doctest_namespace["test_runs_output_path"] = test_runs_output_path
+    doctest_namespace["resample_test_hads_output_path"] = resample_test_hads_output_path
+    doctest_namespace["resample_test_cpm_output_path"] = resample_test_cpm_output_path
+    doctest_namespace["mount_doctest_skip_message"] = MOUNT_DOCTEST_SKIP_MESSAGE
+    doctest_namespace[
+        "glasgow_example_cropped_cpm_rainfall_path"
+    ] = glasgow_example_cropped_cpm_rainfall_path
+    doctest_namespace["clim_runner"] = clim_runner
 
 
 def pytest_sessionfinish(session, exitstatus):
-    """Generate badges for docs after tests finish."""
+    """Generate badges for docs after tests finish.
+
+    Note
+    ----
+    This example assumes the `doctest` for `utils.csv_reader` is written in
+    the `tests/` folder.
+    """
+    test_auth_csv_paths: tuple[Path, ...] = (
+        Path(TEST_AUTH_CSV_FILE_NAME),
+        Path("tests") / TEST_AUTH_CSV_FILE_NAME,
+    )
+    for test_auth_path in test_auth_csv_paths:
+        if test_auth_path.exists():
+            test_auth_path.unlink()
     if exitstatus == 0:
         BADGE_PATH.parent.mkdir(parents=True, exist_ok=True)
         gen_cov_badge(["-o", f"{BADGE_PATH}", "-f"])

@@ -5,12 +5,9 @@ channels:
   - conda-forge
 dependencies:
   # - r-quarto=1.4
-  - python=3.11
-  - gdal=3.8.3
-  # - tk=8.6.12
-  # - tzdata=2023c
-  # - wheel=0.41.2
-  # - xz=5.4.2
+  - python=3.12
+  - gdal=3.8.5
+  - parallel
 platforms:
   - osx-arm64
   - linux-64

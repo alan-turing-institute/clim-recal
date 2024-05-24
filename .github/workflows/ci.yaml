@@ -6,7 +6,7 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   CONDA_ENV_NAME: clim-recal
   CONDA_ENV_PATH: .conda-linux-64.lock
-  MIN_PYTHON_VERSION: 3.11
+  MIN_PYTHON_VERSION: 3.12
   PYTHON_MODULE_FOLDER: python/
   COVERAGE_SVG_FOLDER: docs/assets/
   COVERAGE_SVG_FILE_NAME: coverage.svg
@@ -16,11 +16,11 @@ env:
 
 on:
   pull_request:
-    branches: ['main', 'day-sampling', ]
+    branches: ['main', 'raw-data-resample', ]
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['main', 'day-sampling', ]
+    branches: ['main', 'raw-data-resample', ]
     paths-ignore: ['docs/**']
 
 concurrency:
@@ -70,7 +70,7 @@ jobs:
 
       - name: Run Python Tests
         run: |
-          mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest
+          mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest -m "not darwin and not mount"
 
       - name: Copy test coverage results
         run: |
@@ -107,23 +107,19 @@ jobs:
         run: |
           mamba run -n ${{ env.CONDA_ENV_NAME }} quartodoc build
 
-  # The below configuration is a WIP, while it builds
-  # and runs locally, sometimes it fails build *before*
-  # running tests on `GitHub`
+  # The below raises a code 137 error on `GitHub` Actions
 
   # docker:
   #   needs: [linter, pytest]
   #   runs-on: ubuntu-latest
   #   steps:
-  #   - uses: actions/checkout@v4
-  #   - uses: isbang/compose-action@v1.5.1
-  #     with:
-  #       compose-file: "./compose.yml"
-  #       services: |
-  #         jupyter
-  #   - name: Run `python` tests in `jupyter`
+  #   - uses: actions/checkout@main
+  #
+  #   - name: Build and Test with Root permission
   #     run: |
-  #       docker compose exec -u 0 jupyter bash -c "conda run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest"
-  #       # `compose-down` should be covered by `compose-action`
-  #       # leaving as a reminder to check in future
-  #       # docker compose down
+  #       docker compose build jupyter
+  #       docker compose up jupyter --detach
+  #       docker compose exec jupyter bash -c "conda run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest"
+  #
+  #   - name: Clean-up
+  #     run: docker compose down

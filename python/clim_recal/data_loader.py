@@ -1,11 +1,16 @@
 import glob
 import os
 from datetime import datetime
+from typing import Final
 
-import geopandas as gp
-import xarray as xr
+from geopandas import read_file
+from rioxarray import open_rasterio
+from xarray import DataArray, cftime_range, concat, open_dataset
 
-DateRange = tuple[datetime, datetime]
+from .utils.core import DateRange
+
+BritishNationalGridCoordsNum: Final[int] = 27700
+BritishNationalGridCoordinates: Final[str] = f'epsg:{BritishNationalGridCoordsNum}'
 
 
 def load_data(
@@ -18,7 +23,7 @@ def load_data(
     use_pr: bool = False,
     shapefile_path: str | None = None,
     extension: str = "nc",
-) -> xr.DataArray:
+) -> DataArray:
     """
     This function takes a date range and a variable and loads and merges
     xarrays based on those parameters.
@@ -57,7 +62,7 @@ def load_data(
 
     Returns
     -------
-    xr.DataArray 
+    DataArray 
         A DataArray containing all loaded and merged and clipped data
     """
 
@@ -109,7 +114,7 @@ def load_data(
     return xa
 
 
-def clip_dataset(xa: xr.DataArray, variable: str, shapefile: str) -> xr.DataArray:
+def clip_dataset(xa: DataArray, variable: str, shapefile: str) -> DataArray:
     """Spatially clip `xa` (a `DataArray`) variable via `shapefile`.
 
     Parameters
@@ -124,11 +129,14 @@ def clip_dataset(xa: xr.DataArray, variable: str, shapefile: str) -> xr.DataArra
 
     Returns
     -------
-    xr.DataArray 
+    DataArray 
         A clipped xarray dataset
 
+    Examples
+    --------
+
     """
-    geodf = gp.read_file(shapefile)
+    geodf = read_file(shapefile)
 
     # assign projection
     xa_mask = (
@@ -158,20 +166,25 @@ def clip_dataset(xa: xr.DataArray, variable: str, shapefile: str) -> xr.DataArra
     return xa
 
 
-def reformat_file(file: str, variable: str) -> xr.DataArray:
+def reformat_file(
+    file: str,
+    variable: str,
+    spatial_config: str = BritishNationalGridCoordinates
+) -> DataArray:
     """Load tif file and reformat xarray into expected format.
 
     Parameters
     ----------
-
     file
         Path as a `str` to `tiff` file.
     variable
-        A string representing the variable to be loaded
+        A string representing the variable to be loaded.
+    spatial_config
+        Spatial coordinate configuration for export.
 
     Returns
     -------
-    xr.DataArray 
+    DataArray 
         A formatted xarray
     """
     print(f"File: {file} needs rasterio library, trying...")
@@ -179,12 +192,12 @@ def reformat_file(file: str, variable: str) -> xr.DataArray:
 
     start = filename[-1].split("-")[0]
     stop = filename[-1].split("-")[1].split(".")[0]
-    time_index = xr.cftime_range(
+    time_index = cftime_range(
         start, stop, freq="D", calendar="360_day", inclusive="both"
     )
 
     try:
-        with xr.open_dataset(file, engine="rasterio") as x:
+        with open_dataset(file, engine="rasterio") as x:
             xa = x.rename(
                 {
                     "x": "projection_x_coordinate",
@@ -192,11 +205,11 @@ def reformat_file(file: str, variable: str) -> xr.DataArray:
                     "band": "time",
                     "band_data": variable,
                 }
-            ).rio.write_crs("epsg:27700")
+            ).rio.write_crs(spatial_config)
             xa.coords["time"] = time_index
 
     except Exception as e:
-        with xr.open_rasterio(file) as x:
+        with open_rasterio(file) as x:
             xa = x.rename(
                 {
                     "x": "projection_x_coordinate",
@@ -216,8 +229,9 @@ def reformat_file(file: str, variable: str) -> xr.DataArray:
 def load_and_merge(
     date_range: DateRange,
     files: list[str],
-    variable: str
-) -> xr.DataArray:
+    variable: str,
+    write_crs_format: str = BritishNationalGridCoordinates,
+) -> DataArray:
     """
     Load files into xarrays, select a time range and a variable and merge into a sigle xarray.
 
@@ -233,7 +247,7 @@ def load_and_merge(
 
     Returns
     -------
-    xr.DataArray
+    DataArray
         An xarray containing all loaded and merged data
     """
 
@@ -257,7 +271,7 @@ def load_and_merge(
         try:
             try:
                 print("Loading and selecting ", file)
-                with xr.open_dataset(file, engine="netcdf4") as ds:
+                with open_dataset(file, engine="netcdf4") as ds:
                     x = ds.load()
                     dv = list(x.data_vars)
                     if (
@@ -271,7 +285,7 @@ def load_and_merge(
                                 "easting": "projection_x_coordinate",
                                 os.path.basename(file)[:-3]: variable,
                             }
-                        ).rio.write_crs("epsg:27700")
+                        ).rio.write_crs(write_crs_format)
                         x = x.convert_calendar(
                             dim="time", calendar="360_day", align_on="year"
                         )
@@ -294,7 +308,7 @@ def load_and_merge(
         )
     else:
         print("Merging arrays from different files...")
-        merged_xarray = xr.concat(xarray_list, dim="time", coords="minimal").sortby(
+        merged_xarray = concat(xarray_list, dim="time", coords="minimal").sortby(
             "time"
         )
 

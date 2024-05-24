@@ -1,10 +1,15 @@
-from clim_recal.pipeline import (
+from pathlib import Path
+
+import pytest
+
+from clim_recal.pipeline import main
+from clim_recal.utils.core import (
     CLIMATE_DATA_PATH,
     DARWIN_MOUNT_PATH,
     DEBIAN_MOUNT_PATH,
     climate_data_mount_path,
+    is_platform_darwin,
 )
-from clim_recal.utils import is_platform_darwin
 
 
 def test_climate_data_mount_path() -> None:
@@ -13,3 +18,50 @@ def test_climate_data_mount_path() -> None:
         assert climate_data_mount_path() == DARWIN_MOUNT_PATH / CLIMATE_DATA_PATH
     else:
         assert climate_data_mount_path() == DEBIAN_MOUNT_PATH / CLIMATE_DATA_PATH
+
+
+@pytest.mark.parametrize(
+    "execute",
+    (
+        False,
+        pytest.param(
+            True,
+            marks=(
+                pytest.mark.mount,
+                pytest.mark.slow,
+            ),
+        ),
+    ),
+)
+@pytest.mark.parametrize("multiprocess", (True, False))
+@pytest.mark.parametrize("variables", (("rainfall",), ("rainfall", "tasmax")))
+def test_main(
+    execute: bool,
+    variables: tuple[str],
+    test_runs_output_path: Path,
+    multiprocess: bool,
+    capsys,
+) -> None:
+    """Test running pipeline configurations."""
+    output_path: Path = (
+        test_runs_output_path / f"{'-'.join(variables)}-multi-{multiprocess}"
+    )
+
+    results = main(
+        execute=execute,
+        variables=variables,
+        output_path=output_path,
+        skip_hads_spatial_2k_projection=True,
+        skip_cpm_standard_calendar_projection=False,
+        stop_index=1,
+        cpus=2,
+        multiprocess=multiprocess,
+        cpm_kwargs=dict(_allow_check_fail=True),
+        hads_kwargs=dict(_allow_check_fail=True),
+        local_dated_results_path_prefix="-".join(variables),
+    )
+    captured = capsys.readouterr()
+    assert f"variables_count={len(variables)}" in captured.out
+    assert results == None
+    # if execute:
+    #     assert False

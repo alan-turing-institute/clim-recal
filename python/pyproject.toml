@@ -19,9 +19,9 @@ maintainers = [
   {name="Dr Griffith Rees", email="grees@turing.ac.uk"},
 ]
 license = {text = "MIT"}
-requires-python = "==3.11.*"
+requires-python = "==3.12.*"
 dependencies = [
-    "tqdm<5.0.0,>=4.66.2",
+    "tqdm>=4.66.4",
     "scipy<2.0.0,>=1.12.0",
     "rioxarray<1.0.0,>=0.15.1",
     "rasterio<2.0.0,>=1.3.9",
@@ -30,13 +30,36 @@ dependencies = [
     "matplotlib>=3.8.3",
     "geopandas>=0.14.3",
     "openpyxl>=3.1.2",
-    "gdal==3.8.3",
+    "gdal==3.8.5",
     "conda-lock>=2.5.5",
     "rich>=13.7.1",
     "netcdf4>=1.6.5",
     "pdm>=2.12.4",
+    "typer>=0.12.3",
 ]
 
+[project.scripts]
+clim-recal = "clim_recal.cli:clim_recal"
+
+[tool.isort]
+profile = "black"
+known_first_party = ["clim_recal"]
+
+[tool.pycln]
+all = true
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest-cov<5.0.0,>=4.1.0",
+    "pytest-sugar<2.0.0,>=1.0.0",
+    "quartodoc<1.0.0,>=0.7.2",
+    "pre-commit<4.0.0,>=3.6.2",
+    "coverage-badge<2.0.0,>=1.1.0",
+    "pytest-xdist>=3.5.0",
+]
+
+[tool.pdm.build]
+includes = []
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
@@ -52,14 +75,15 @@ addopts = """
     -ra -q
     --doctest-modules
     --ignore=clim_recal/debiasing/python-cmethods
-    --ignore=python/clim_recal/debiasing/python-cmethods
     --ignore=clim_recal/debiasing/preprocess_data.py
     --ignore=clim_recal/debiasing/run_cmethods.py
-    -m "not server"
-    -m "not mount"
+    -m "not server and not mount"
     --pdbcls=IPython.terminal.debugger:TerminalPdb
-    --cov=.
+    --cov=clim_recal
     --cov-report=term:skip-covered
+    --strict-markers
+    --durations=5
+    --failed-first
 """
 doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS",]
 testpaths = [
@@ -67,24 +91,10 @@ testpaths = [
     "clim_recal",
 ]
 markers = [
-    "slow: slow tests (deselect with '-m \"not slow\"')",
-    "server: designed to only run on a server",
-    "mount: requires specifc data mounted",
-    "docker: requires running via docker jupyterlab",
+    "slow: slow tests (deselect with '-m \"not slow\".')",
+    "server: designed to only run on a server.",
+    "mount: requires specifc data mounted.",
+    "docker: requires running via docker jupyterlab.",
+    "multiprocess: uses multiprocessing.",
+    "darwin: requires darwin (macOS) operating system.",
 ]
-
-[tool.pdm]
-plugins = [
-  "pdm-conda"
-]
-[tool.pdm.dev-dependencies]
-dev = [
-    "pytest-cov<5.0.0,>=4.1.0",
-    "pytest-sugar<2.0.0,>=1.0.0",
-    "quartodoc<1.0.0,>=0.7.2",
-    "pre-commit<4.0.0,>=3.6.2",
-    "coverage-badge<2.0.0,>=1.1.0",
-]
-
-[tool.pdm.build]
-includes = []

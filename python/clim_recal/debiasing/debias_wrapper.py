@@ -1,20 +1,20 @@
 """Wrapper for running `preprocess_data.py` and `run_cmethods.py`"""
 from dataclasses import dataclass
 from datetime import date
-from enum import StrEnum, auto
 from os import PathLike
 from pathlib import Path
-from typing import Final, Generator, Optional, Union
+from typing import Final, Iterator, Optional, TypedDict, Union
 
-from ..pipeline import climate_data_mount_path
-from ..utils import (
+from ..utils.core import (
+    CLI_DATE_FORMAT_STR,
     DATE_FORMAT_SPLIT_STR,
-    DATE_FORMAT_STR,
     DateType,
+    climate_data_mount_path,
     date_range_to_str,
     iter_to_tuple_strs,
     path_iterdir,
 )
+from ..utils.data import CityOptions, MethodOptions, RunOptions, VariableOptions
 
 DATA_PATH_DEFAULT: Final[Path] = climate_data_mount_path()
 
@@ -22,78 +22,12 @@ COMMAND_DIR_DEFAULT: Final[Path] = Path("clim_recal/debiasing").resolve()
 PREPROCESS_FILE_NAME: Final[Path] = Path("preprocess_data.py")
 CMETHODS_FILE_NAME: Final[Path] = Path("run_cmethods.py")
 
-
-class VariableOptions(StrEnum):
-    """Supported options for variables"""
-
-    TASMAX = auto()
-    RAINFALL = auto()
-    TASMIN = auto()
-
-    @classmethod
-    def default(cls) -> str:
-        """Default option."""
-        return cls.TASMAX.value
-
-
-class RunOptions(StrEnum):
-    """Supported options for variables"""
-
-    ONE = "01"
-    TWO = "02"
-    THREE = "03"
-    FOUR = "04"
-    FIVE = "05"
-    SIX = "06"
-    SEVEN = "07"
-    EIGHT = "08"
-    NINE = "09"
-    TEN = "10"
-    ELEVEN = "11"
-    TWELVE = "12"
-    THIRTEEN = "13"
-    FOURTEEN = "14"
-    FIFTEEN = "15"
-
-    @classmethod
-    def default(cls) -> str:
-        """Default option."""
-        return cls.FIVE.value
-
-
-class CityOptions(StrEnum):
-    """Supported options for variables."""
-
-    GLASGOW = "Glasgow"
-    MANCHESTER = "Manchester"
-    LONDON = "London"
-
-    @classmethod
-    def default(cls) -> str:
-        """Default option."""
-        return cls.MANCHESTER.value
-
-
-class MethodOptions(StrEnum):
-    """Supported options for methods."""
-
-    QUANTILE_DELTA_MAPPING = auto()
-    QUANTILE_MAPPING = auto()
-    VARIANCE_SCALING = auto()
-    DELTA_METHOD = auto()
-
-    @classmethod
-    def default(cls) -> str:
-        """Default method option."""
-        return cls.QUANTILE_DELTA_MAPPING.value
-
-
 PROCESSESORS_DEFAULT: Final[int] = 2
 RUN_PREFIX_DEFAULT: Final[str] = "python"
 
-MOD_FOLDER_DEFAULT: Final[Path] = Path("CPM")
-OBS_FOLDER_DEFAULT: Final[Path] = Path("Hads.updated360")
-PREPROCESS_OUT_FOLDER_DEFAULT: Final[Path] = Path("Preprocessed")
+MOD_FOLDER_DEFAULT: Final[Path] = Path("Cropped/three.cities/CPM")
+OBS_FOLDER_DEFAULT: Final[Path] = Path("Cropped/three.cities/Hads.updated360")
+PREPROCESS_OUT_FOLDER_DEFAULT: Final[Path] = Path("Cropped/three.cities/Preprocessed")
 CMETHODS_OUT_FOLDER_DEFAULT: Final[Path] = Path("Debiased/three.cities.cropped")
 
 CALIB_DATE_START_DEFAULT: DateType = date(1981, 1, 1)
@@ -109,17 +43,30 @@ VALID_DATES_STR_DEFAULT: Final[str] = date_range_to_str(
     VALID_DATE_START_DEFAULT, VALID_DATE_END_DEFAULT
 )
 
+CALIB_DATE_START_DEFAULT: DateType = date(1981, 1, 1)
+CALIB_DATE_END_DEFAULT: DateType = date(1981, 12, 30)
+
+VALID_DATE_START_DEFAULT: DateType = date(2010, 1, 1)
+VALID_DATE_END_DEFAULT: DateType = date(2010, 12, 30)
+
+DEBIAS_DIR_DEFAULT: Final[Path] = (COMMAND_DIR_DEFAULT / "debiasing").resolve()
+
+
+class RunConfigType(TypedDict):
+    """Parameters needed for a model run."""
+
+    city: CityOptions | None
+    variable: VariableOptions
+    run: RunOptions
+    method: MethodOptions
+
 
 @dataclass
-class RunConfig:
+class BaseRunConfig:
 
     """Manage creating command line scripts to run `debiasing` `cli`."""
 
     command_dir: Path = COMMAND_DIR_DEFAULT
-    variable: str = VariableOptions.default()
-    run: str = RunOptions.default()
-    city: str = CityOptions.default()
-    method: str = MethodOptions.default()
     run_prefix: str = RUN_PREFIX_DEFAULT
     preprocess_data_file: PathLike = PREPROCESS_FILE_NAME
     run_cmethods_file: PathLike = CMETHODS_FILE_NAME
@@ -138,16 +85,27 @@ class RunConfig:
 
     processors: int = PROCESSESORS_DEFAULT
 
-    date_format_str: str = DATE_FORMAT_STR
+    date_format_str: str = CLI_DATE_FORMAT_STR
     date_split_str: str = DATE_FORMAT_SPLIT_STR
+
+
+@dataclass
+class RunConfig(BaseRunConfig):
+
+    """Manage creating command line scripts to run `debiasing` `cli`."""
+
+    variable: VariableOptions | str = VariableOptions.default()
+    run: RunOptions | str = RunOptions.default()
+    city: CityOptions | str | None = CityOptions.default()
+    method: MethodOptions | str = MethodOptions.default()
 
     def calib_dates_to_str(
         self,
         start_date: DateType,
         end_date: DateType,
-        in_format_str: Optional[str] = None,
-        out_format_str: Optional[str] = None,
-        split_str: Optional[str] = None,
+        in_format_str: str | None = None,
+        out_format_str: str | None = None,
+        split_str: str | None = None,
     ) -> str:
         """Return date range as `str` from `calib_date_start` to `calib_date_end`.
 
@@ -171,9 +129,9 @@ class RunConfig:
         self,
         start_date: DateType,
         end_date: DateType,
-        in_format_str: Optional[str] = None,
-        out_format_str: Optional[str] = None,
-        split_str: Optional[str] = None,
+        in_format_str: str | None = None,
+        out_format_str: str | None = None,
+        split_str: str | None = None,
     ) -> str:
         """Return date range as `str` from `valid_date_start` to `valid_date_end`.
 
@@ -197,9 +155,9 @@ class RunConfig:
         self,
         start_date: DateType,
         end_date: DateType,
-        in_format_str: Optional[str] = None,
-        out_format_str: Optional[str] = None,
-        split_str: Optional[str] = None,
+        in_format_str: str | None = None,
+        out_format_str: str | None = None,
+        split_str: str | None = None,
     ) -> str:
         """Return date range as `str` from `calib_date_start` to `calib_date_end`.
 
@@ -224,15 +182,14 @@ class RunConfig:
             split_str=split_str,
         )
 
-    def mod_path(self, city: Optional[str] = None) -> Path:
+    def mod_path(self, city: str | None = None) -> Path:
         """Return city estimates path.
 
         Examples
         --------
         >>> if not is_data_mounted:
-        ...     pytest.skip('requires linux server mount paths')
+        ...     pytest.skip('requires "vmfileshare/ClimateData" mounted')
         >>> config: RunConfig = RunConfig()
-        >>> assert False
         >>> config.mod_path()
         PosixPath('/.../ClimateData/Cropped/three.cities/CPM/Manchester')
         >>> config.mod_path('Glasgow')
@@ -241,13 +198,13 @@ class RunConfig:
         city = city if city else self.city
         return self.data_path / self.mod_folder / city
 
-    def obs_path(self, city: Optional[str] = None) -> Path:
+    def obs_path(self, city: str | None = None) -> Path:
         """Return city observations path.
 
         Examples
         --------
         >>> if not is_data_mounted:
-        ...     pytest.skip('requires linux server mount paths')
+        ...     pytest.skip('requires "vmfileshare/ClimateData" mounted')
         >>> config: RunConfig = RunConfig()
         >>> config.obs_path()
         PosixPath('/.../ClimateData/Cropped/three.cities/Hads.updated360/Manchester')
@@ -259,16 +216,16 @@ class RunConfig:
 
     def preprocess_out_path(
         self,
-        city: Optional[str] = None,
-        run: Optional[str] = None,
-        variable: Optional[str] = None,
+        city: str | None = None,
+        run: str | None = None,
+        variable: str | None = None,
     ) -> Path:
         """Return path to save results.
 
         Examples
         --------
         >>> if not is_data_mounted:
-        ...     pytest.skip('requires linux server mount paths')
+        ...     pytest.skip('requires "vmfileshare/ClimateData" mounted')
         >>> config: RunConfig = RunConfig()
         >>> config.preprocess_out_path()
         PosixPath('.../ClimateData/Cropped/three.cities/Preprocessed/Manchester/05/tasmax')
@@ -284,8 +241,8 @@ class RunConfig:
 
     def cmethods_out_path(
         self,
-        city: Optional[str] = None,
-        run: Optional[str] = None,
+        city: str | None = None,
+        run: str | None = None,
     ) -> Path:
         """Return path to save cmethods results.
 
@@ -315,9 +272,9 @@ class RunConfig:
 
     def to_cli_preprocess_tuple(
         self,
-        variable: Optional[str] = None,
-        run: Optional[str] = None,
-        city: Optional[str] = None,
+        variable: str | None = None,
+        run: str | None = None,
+        city: str | None = None,
         calib_start: Optional[DateType] = None,
         calib_end: Optional[DateType] = None,
         valid_start: Optional[DateType] = None,
@@ -371,9 +328,9 @@ class RunConfig:
 
     def to_cli_preprocess_tuple_strs(
         self,
-        variable: Optional[str] = None,
-        run: Optional[str] = None,
-        city: Optional[str] = None,
+        variable: str | None = None,
+        run: str | None = None,
+        city: str | None = None,
         calib_start: Optional[DateType] = None,
         calib_end: Optional[DateType] = None,
         valid_start: Optional[DateType] = None,
@@ -401,9 +358,9 @@ class RunConfig:
 
     def to_cli_preprocess_str(
         self,
-        variable: Optional[str] = None,
-        run: Optional[str] = None,
-        city: Optional[str] = None,
+        variable: str | None = None,
+        run: str | None = None,
+        city: str | None = None,
         calib_start: Optional[DateType] = None,
         calib_end: Optional[DateType] = None,
         valid_start: Optional[DateType] = None,
@@ -431,15 +388,13 @@ class RunConfig:
             )
         )
 
-    def yield_mod_folder(
-        self, city: Optional[str] = None
-    ) -> Generator[Path, None, None]:
+    def yield_mod_folder(self, city: str | None = None) -> Iterator[Path]:
         """`Iterable` of all `Path`s in `self.mod_folder`.
 
         Examples
         --------
         >>> if not is_data_mounted:
-        ...     pytest.skip('requires linux server mount paths')
+        ...     pytest.skip('requires "vmfileshare/ClimateData" mounted')
         >>> config: RunConfig = RunConfig()
         >>> len(tuple(config.yield_mod_folder())) == MOD_FOLDER_FILES_COUNT_CORRECT
         True
@@ -447,15 +402,13 @@ class RunConfig:
         city = city if city else self.city
         return path_iterdir(self.obs_path(city=city))
 
-    def yield_obs_folder(
-        self, city: Optional[str] = None
-    ) -> Generator[Path, None, None]:
+    def yield_obs_folder(self, city: str | None = None) -> Iterator[Path]:
         """`Iterable` of all `Path`s in `self.obs_folder`.
 
         Examples
         --------
         >>> if not is_data_mounted:
-        ...     pytest.skip('requires linux server mount paths')
+        ...     pytest.skip('requires "vmfileshare/ClimateData" mounted')
         >>> config: RunConfig = RunConfig()
         >>> len(tuple(config.yield_obs_folder())) == OBS_FOLDER_FILES_COUNT_CORRECT
         True
@@ -465,16 +418,16 @@ class RunConfig:
 
     def yield_preprocess_out_folder(
         self,
-        city: Optional[str] = None,
-        run: Optional[str] = None,
-        variable: Optional[str] = None,
-    ) -> Generator[Path, None, None]:
+        city: str | None = None,
+        run: str | None = None,
+        variable: str | None = None,
+    ) -> Iterator[Path]:
         """`Iterable` of all `Path`s in `self.preprocess_out_folder`.
 
         Examples
         --------
         >>> if not is_data_mounted:
-        ...     pytest.skip('requires linux server mount paths')
+        ...     pytest.skip('requires "vmfileshare/ClimateData" mounted')
         >>> config: RunConfig = RunConfig()
         >>> (len(tuple(config.yield_preprocess_out_folder())) ==
         ...  PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT)
@@ -494,10 +447,10 @@ class RunConfig:
 
     def to_cli_run_cmethods_tuple(
         self,
-        city: Optional[str] = None,
-        run: Optional[str] = None,
-        variable: Optional[str] = None,
-        method: Optional[str] = None,
+        city: str | None = None,
+        run: str | None = None,
+        variable: str | None = None,
+        method: str | None = None,
         input_data_path: Optional[PathLike] = None,
         cmethods_out_path: Optional[PathLike] = None,
         processors: Optional[int] = None,
@@ -548,10 +501,10 @@ class RunConfig:
 
     def to_cli_run_cmethods_tuple_strs(
         self,
-        city: Optional[str] = None,
-        run: Optional[str] = None,
-        variable: Optional[str] = None,
-        method: Optional[str] = None,
+        city: str | None = None,
+        run: str | None = None,
+        variable: str | None = None,
+        method: str | None = None,
         input_data_path: Optional[PathLike] = None,
         cmethods_out_path: Optional[PathLike] = None,
         processors: Optional[int] = None,
@@ -578,10 +531,10 @@ class RunConfig:
 
     def to_cli_run_cmethods_str(
         self,
-        city: Optional[str] = None,
-        run: Optional[str] = None,
-        variable: Optional[str] = None,
-        method: Optional[str] = None,
+        city: str | None = None,
+        run: str | None = None,
+        variable: str | None = None,
+        method: str | None = None,
         input_data_path: Optional[PathLike] = None,
         cmethods_out_path: Optional[PathLike] = None,
         processors: Optional[int] = None,

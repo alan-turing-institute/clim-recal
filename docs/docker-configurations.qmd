@@ -82,6 +82,7 @@ which should instantiate a `bash` terminal in the `Docker` environment for the d
 ```python
 >>> from pathlib import Path
 >>> import csv
+>>>
 >>> csv_path: Path = 'test_auth.csv'
 >>> auth_dict: dict[str, str] = {
 ...    'sally': 'fig*new£kid',
@@ -98,7 +99,7 @@ which should instantiate a `bash` terminal in the `Docker` environment for the d
 and then with that file generate users and their home folders from `test_auth.csv`:
 
 ```python
->>> from utils import make_users, csv_reader
+>>> from utils.server import JUPYTER_DOCKER_USER_PATH, csv_reader, make_users,
 >>> from pathlib import Path
 >>>
 >>> user_paths: tuple[Path, ...] = tuple(make_users(
