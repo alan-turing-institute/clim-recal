@@ -24,6 +24,7 @@ from osgeo.gdal import GRA_NearestNeighbour
 from rich import print
 from tqdm.rich import trange
 from xarray import Dataset, open_dataset
+from xarray.core.types import T_Dataset
 
 from clim_recal.debiasing.debias_wrapper import VariableOptions
 
@@ -32,10 +33,13 @@ from .utils.data import RunOptions, VariableOptions
 from .utils.gdal_formats import TIF_EXTENSION_STR
 from .utils.xarray import (
     BRITISH_NATIONAL_GRID_EPSG,
+    DEFAULT_RELATIVE_GRID_DATA_PATH,
+    HADS_RAW_X_COLUMN_NAME,
+    HADS_RAW_Y_COLUMN_NAME,
     NETCDF_EXTENSION_STR,
     apply_geo_func,
     cpm_reproject_with_standard_calendar,
-    interpolate_coords,
+    hads_resample_and_reproject,
 )
 
 logger = getLogger(__name__)
@@ -56,8 +60,8 @@ RAW_HADS_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/HadsUKgrid"
 RAW_CPM_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/UKCP2.2"
 RAW_HADS_TASMAX_PATH: Final[PathLike] = RAW_HADS_PATH / "tasmax/day"
 RAW_CPM_TASMAX_PATH: Final[PathLike] = RAW_CPM_PATH / "tasmax/01/latest"
-REPROJECTED_CPM_TASMAX_01_LATEST_INPUT_PATH: Final[PathLike] = (
-    CLIMATE_DATA_MOUNT_PATH / "Reprojected_infill/UKCP2.2/tasmax/01/latest"
+REPROJECTED_CPM_TASMAX_05_LATEST_INPUT_PATH: Final[PathLike] = (
+    CLIMATE_DATA_MOUNT_PATH / "Reprojected_infill/UKCP2.2/tasmax/05/latest"
 )
 
 CPRUK_RESOLUTION: Final[int] = 2200
@@ -70,12 +74,9 @@ HADS_2_2K_RESOLUTION_PATH: Final[Path] = Path("hads-to-27700-spatial-2.2km")
 CPRUK_XDIM: Final[str] = "grid_longitude"
 CPRUK_YDIM: Final[str] = "grid_latitude"
 
-HADS_XDIM: Final[str] = "projection_x_coordinate"
-HADS_YDIM: Final[str] = "projection_y_coordinate"
+HADS_XDIM: Final[str] = HADS_RAW_X_COLUMN_NAME
+HADS_YDIM: Final[str] = HADS_RAW_Y_COLUMN_NAME
 
-DEFAULT_RELATIVE_GRID_DATA_PATH: Final[Path] = (
-    Path().absolute() / "../data/rcp85_land-cpm_uk_2.2km_grid.nc"
-)
 
 CPM_START_DATE: Final[date] = date(1980, 12, 1)
 CPM_END_DATE: Final[date] = date(2060, 11, 30)
@@ -108,7 +109,7 @@ class ResamblerBase:
     input_path: PathLike | None = RAW_HADS_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH
     variable_name: VariableOptions = VariableOptions.default()
-    grid: PathLike | Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
+    grid: PathLike | T_Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
     input_files: Iterable[PathLike] | None = None
     cpus: int | None = None
     crop: PathLike | GeoDataFrame | None = None
@@ -234,8 +235,8 @@ class ResamblerBase:
         step: int,
         override_export_path: Path | None = None,
         source_to_index: Iterable | None = None,
-    ) -> list[Path | Dataset]:
-        export_paths: list[Path | Dataset] = []
+    ) -> list[Path | T_Dataset]:
+        export_paths: list[Path | T_Dataset] = []
         if stop is None:
             stop = len(self)
         for index in trange(start, stop, step):
@@ -352,7 +353,7 @@ class HADsResampler(ResamblerBase):
     input_path: PathLike | None = RAW_HADS_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH
     variable_name: VariableOptions = VariableOptions.default()
-    grid: PathLike | Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
+    grid: PathLike | T_Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
     input_files: Iterable[PathLike] | None = None
     cpus: int | None = None
     crop: PathLike | GeoDataFrame | None = None
@@ -371,7 +372,7 @@ class HADsResampler(ResamblerBase):
         override_export_path: Path | None = None,
         return_results: bool = False,
         source_to_index: Sequence | None = None,
-    ) -> Path | Dataset:
+    ) -> Path | T_Dataset:
         source_path: Path = self._get_source_path(
             index=index, source_to_index=source_to_index
         )
@@ -380,7 +381,8 @@ class HADsResampler(ResamblerBase):
         )
         return apply_geo_func(
             source_path=source_path,
-            func=interpolate_coords,
+            # func=interpolate_coords,
+            func=hads_resample_and_reproject,
             export_folder=path,
             # Leaving in case we return to using warp
             # export_path_as_output_path_kwarg=True,
@@ -432,19 +434,19 @@ class CPMResampler(ResamblerBase):
     >>> if not is_data_mounted:
     ...     pytest.skip(mount_doctest_skip_message)
     >>> cpm_resampler: CPMResampler = CPMResampler(
-    ...     input_path=REPROJECTED_CPM_TASMAX_01_LATEST_INPUT_PATH,
+    ...     input_path=REPROJECTED_CPM_TASMAX_05_LATEST_INPUT_PATH,
     ...     output_path=resample_test_cpm_output_path,
     ...     input_file_extension=TIF_EXTENSION_STR,
     ... )
     >>> cpm_resampler
     <CPMResampler(...count=100,...
-        ...input_path='.../tasmax/01/latest',...
+        ...input_path='.../tasmax/05/latest',...
         ...output_path='.../test-run-results_..._.../cpm')>
     >>> pprint(cpm_resampler.input_files)
-    (...Path('.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_19801201-19811130.tif'),
-     ...Path('.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_19811201-19821130.tif'),
-     ...,
-     ...Path('.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_20791201-20801130.tif'))
+    (...Path('.../tasmax/05/latest/tasmax_...-cpm_uk_2.2km_05_day_19801201-19811130.tif'),
+     ...Path('.../tasmax/05/latest/tasmax_...-cpm_uk_2.2km_05_day_19811201-19821130.tif'),
+     ...
+     ...Path('.../tasmax/05/latest/tasmax_...-cpm_uk_2.2km_05_day_20791201-20801130.tif'))
 
     """
 
@@ -465,7 +467,7 @@ class CPMResampler(ResamblerBase):
         override_export_path: Path | None = None,
         return_results: bool = False,
         source_to_index: Sequence | None = None,
-    ) -> Path | Dataset:
+    ) -> Path | T_Dataset:
         source_path: Path = self._get_source_path(
             index=index, source_to_index=source_to_index
         )

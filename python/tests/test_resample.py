@@ -6,9 +6,11 @@ import numpy as np
 import pytest
 from geopandas import GeoDataFrame, read_file
 from matplotlib import pyplot as plt
+from numpy.testing import assert_allclose
 from numpy.typing import NDArray
 from osgeo.gdal import Dataset as GDALDataset
-from xarray import DataArray, Dataset, open_dataset
+from xarray import open_dataset
+from xarray.core.types import T_DataArray, T_Dataset
 
 from clim_recal.resample import (
     BRITISH_NATIONAL_GRID_EPSG,
@@ -58,6 +60,8 @@ from clim_recal.utils.xarray import (
     crop_nc,
     file_name_to_start_end_dates,
     gdal_warp_wrapper,
+    hads_resample_and_reproject,
+    plot_xarray,
     xarray_example,
 )
 
@@ -112,21 +116,57 @@ PROJECTED_CPM_TASMAX_1980_DEC_31_FIRST_5: np.array = np.array(
     [10.645899, 10.508448, 10.546778, 10.547998, 10.553614], dtype="float32"
 )
 
+# Initial HADS projection test results matched this, leaving to
+# double check before merge to main
+# FINAL_HADS_JAN_10_430_X_370_390_Y: Final[NDArray] = np.array(
+# (        np.nan,     np.nan,     np.nan,    np.nan,      np.nan,
+#          np.nan,     np.nan,     np.nan,    np.nan,  4.99268164,
+#      4.82281839, 4.55366184, 4.45834185, 4.27357187, 4.1575218,
+#      4.07316193, 3.97350405, 3.84286826, 3.81615739, 3.84426594),
+# )
+
+FINAL_HADS_JAN_10_430_X_230_250_Y: Final[NDArray] = np.array(
+    (
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        3.39634549,
+        2.97574018,
+        2.63433646,
+        2.62451613,
+        2.53676574,
+        2.42130933,
+        2.66667496,
+        2.60239203,
+        2.5052739,
+    )
+)
+
 
 @pytest.mark.mount
 @pytest.fixture(scope="session")
-def tasmax_cpm_1980_raw() -> Dataset:
+def tasmax_cpm_1980_raw() -> T_Dataset:
+    # Backup path if furture rehydration issues
+    # return open_dataset("/Volumes/vmfileshare/ClimateData/Raw/UKCP2.2/tasmin/05/latest/tasmin_rcp85_land-cpm_uk_2.2km_05_day_19801201-19811130.nc", decode_coords="all")
     return open_dataset(UKCP_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
 
 
 @pytest.mark.mount
 @pytest.fixture(scope="session")
-def tasmax_hads_1980_raw() -> Dataset:
+def tasmax_hads_1980_raw() -> T_Dataset:
     return open_dataset(HADS_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
 
 
 @pytest.fixture(scope="session")
-def reference_final_coord_grid() -> Dataset:
+def reference_final_coord_grid() -> T_Dataset:
     return open_dataset(DEFAULT_RELATIVE_GRID_DATA_PATH, decode_coords="all")
 
 
@@ -214,7 +254,7 @@ def test_leap_year_days() -> None:
     """Test covering a leap year of 366 days."""
     start_date_str: str = "2024-03-01"
     end_date_str: str = "2025-03-01"
-    xarray_2024_2025: DataArray = xarray_example(
+    xarray_2024_2025: T_DataArray = xarray_example(
         start_date=start_date_str,
         end_date=end_date_str,
         inclusive=True,
@@ -376,7 +416,7 @@ def test_time_gaps_360_to_standard_calendar(
     # align_on: ConvertCalendarAlignOptions = 'date'
 
     # Create a base
-    base: Dataset = xarray_example(
+    base: T_Dataset = xarray_example(
         start_date, end_date, as_dataset=True, inclusive=inclusive_date_range
     )
 
@@ -385,7 +425,7 @@ def test_time_gaps_360_to_standard_calendar(
     assert len(base.time) == gen_date_count
 
     # Convert to `360_day` calendar example
-    dates_360: Dataset = base.convert_calendar(
+    dates_360: T_Dataset = base.convert_calendar(
         calendar="360_day",
         align_on=align_on,
         use_cftime=use_cftime,
@@ -398,7 +438,7 @@ def test_time_gaps_360_to_standard_calendar(
         with pytest.raises(ValueError):
             convert_xr_calendar(dates_360, align_on=align_on, use_cftime=use_cftime)
     else:
-        dates_converted: Dataset = convert_xr_calendar(
+        dates_converted: T_Dataset = convert_xr_calendar(
             dates_360, align_on=align_on, use_cftime=use_cftime
         )
         assert len(dates_converted.time) == converted_days
@@ -421,12 +461,12 @@ def test_convert_cpm_calendar(interpolate_na: bool) -> None:
     creating the `na_values` `bool` as the inverse of `interpolate_na`.
     """
     any_na_values_in_tasmax: bool = not interpolate_na
-    raw_nc: Dataset = open_dataset(
+    raw_nc: T_Dataset = open_dataset(
         UKCP_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all", engine=NETCDF4_XARRAY_ENGINE
     )
     assert len(raw_nc.time) == 360
     assert len(raw_nc.time_bnds) == 360
-    converted: Dataset = convert_xr_calendar(raw_nc, interpolate_na=interpolate_na)
+    converted: T_Dataset = convert_xr_calendar(raw_nc, interpolate_na=interpolate_na)
     assert len(converted.time) == 365
     assert len(converted.time_bnds) == 365
     assert (
@@ -514,7 +554,7 @@ def test_geo_warp_format_type_crop(
             parent_path=data_path,
         )
     )
-    xarray_pre_warp: Dataset = open_dataset(
+    xarray_pre_warp: T_Dataset = open_dataset(
         max_temp_data_path, decode_coords="all", engine=NETCDF4_XARRAY_ENGINE
     )
     xarray_pre_warp.isel(time=0).tasmax.plot()
@@ -538,7 +578,7 @@ def test_geo_warp_format_type_crop(
             output_bounds=uk_rotated_grid_bounds,
         )
     assert xarray_warped is not None
-    read_exported: Dataset = open_dataset(warp_test_file_path, decode_coords="all")
+    read_exported: T_Dataset = open_dataset(warp_test_file_path, decode_coords="all")
 
     read_exported.Band1.plot()
     plt.savefig(warp_test_fig_path)
@@ -552,7 +592,7 @@ def test_geo_warp_format_type_crop(
 @pytest.mark.slow
 @pytest.mark.parametrize("include_bnds_index", (True, False))
 def test_cpm_xarray_to_standard_calendar(
-    tasmax_cpm_1980_raw: Dataset,
+    tasmax_cpm_1980_raw: T_Dataset,
     include_bnds_index: bool,
 ) -> None:
     """Test 360 raw to 365/366 calendar conversion.
@@ -604,21 +644,23 @@ def test_cpm_xarray_to_standard_calendar(
 @pytest.mark.mount
 @pytest.mark.slow
 def test_cpm_warp_steps(
-    tasmax_cpm_1980_raw: Dataset,
+    tasmax_cpm_1980_raw: T_Dataset,
     test_runs_output_path: Path,
+    caplog: pytest.LogCaptureFixture,
+    variable_name: str = "tasmax",
 ) -> None:
     """Test all steps around calendar and warping CPM RAW data."""
     # file_name_prefix: str = "test-1980"
     output_path: Path = test_runs_output_path / "test-cpm-warp"
     test_intermediate_files = IntermediateCPMFilesManager(
-        variable_name="tasmax",
+        variable_name=variable_name,
         output_path=output_path,
         time_series_start=tasmax_cpm_1980_raw.time.values[0],
         time_series_end=tasmax_cpm_1980_raw.time.values[-1],
     )
     projected = cpm_reproject_with_standard_calendar(
         tasmax_cpm_1980_raw,
-        variable_name="tasmax",
+        variable_name=variable_name,
         output_path=output_path,
         # file_name_prefix=file_name_prefix,
     )
@@ -633,10 +675,11 @@ def test_cpm_warp_steps(
     assert test_intermediate_files.intermediate_files_folder.name.startswith(
         CPM_LOCAL_INTERMEDIATE_PATH.name
     )
-    final_results: Dataset = open_dataset(
+    final_results: T_Dataset = open_dataset(
         test_intermediate_files.final_nc_path, decode_coords="all"
     )
     assert (final_results.time == projected.time).all()
+    assert False
 
 
 @pytest.mark.xfail(reason="test not complete")
@@ -687,14 +730,14 @@ def test_crop_nc(
         end_year=1981,
         parent_path=data_fixtures_path,
     )
-    xarray_pre_crop: Dataset = open_dataset(max_temp_1981_path, decode_coords="all")
+    xarray_pre_crop: T_Dataset = open_dataset(max_temp_1981_path, decode_coords="all")
     xarray_pre_crop.isel(time=0).tasmax.plot()
     plt.savefig(pre_crop_test_fig_path)
 
     assert str(xarray_pre_crop.rio.crs) != BRITISH_NATIONAL_GRID_EPSG
     assert xarray_pre_crop.rio.bounds() == uk_rotated_grid_bounds
 
-    cropped: Dataset = crop_nc(
+    cropped: T_Dataset = crop_nc(
         xr_time_series=max_temp_1981_path,
         crop_geom=glasgow_shape_file_path,
         enforce_xarray_spatial_dims=True,
@@ -739,7 +782,7 @@ def test_ukcp_manager(resample_test_cpm_output_path, config: str) -> None:
             paths = test_config.range_to_reprojection(
                 stop=1, source_to_index=tuple(test_config)
             )
-    export: Dataset = open_dataset(paths[0])
+    export: T_Dataset = open_dataset(paths[0])
     assert export.dims["time"] == 365
     assert export.dims[FINAL_RESAMPLE_LON_COL] == 492
     assert export.dims[FINAL_RESAMPLE_LAT_COL] == 608  # previously 603
@@ -773,7 +816,7 @@ def test_hads_manager(resample_test_hads_output_path, range: bool) -> None:
         paths = test_config.range_to_reprojection(stop=1)
     else:
         paths = [test_config.to_reprojection()]
-    export: Dataset = open_dataset(paths[0])
+    export: T_Dataset = open_dataset(paths[0])
     assert len(export.time) == 31
     assert not np.isnan(export.tasmax[0][200:300].values).all()
     assert (
@@ -787,9 +830,9 @@ def test_hads_manager(resample_test_hads_output_path, range: bool) -> None:
 @pytest.mark.parametrize("data_type", ("hads", "cpm"))
 def test_interpolate_coords(
     data_type: str,
-    reference_final_coord_grid: Dataset,
-    tasmax_cpm_1980_raw: Dataset,
-    tasmax_hads_1980_raw: Dataset,
+    reference_final_coord_grid: T_Dataset,
+    tasmax_cpm_1980_raw: T_Dataset,
+    tasmax_hads_1980_raw: T_Dataset,
 ) -> None:
     """Test reprojecting raw spatial files.
 
@@ -797,7 +840,7 @@ def test_interpolate_coords(
     -----
     Still seems to run even when `-m "not mount"` is specified.
     """
-    reprojected_xr_time_series: Dataset
+    reprojected_xr_time_series: T_Dataset
     kwargs: dict[str, Any] = dict(
         variable_name="tasmax",
         x_grid=reference_final_coord_grid.projection_x_coordinate,
@@ -813,6 +856,7 @@ def test_interpolate_coords(
         assert reprojected_xr_time_series.dims["time"] == 31
         # assert reprojected_xr_time_series.dims[HADS_XDIM] == 528
         # assert reprojected_xr_time_series.dims[HADS_YDIM] == 651
+        assert reprojected_xr_time_series.rio.crs
     else:
         # We are now using gdal_warp_wrapper. See test_cpm_warp_steps
         reprojected_xr_time_series = interpolate_coords(
@@ -825,6 +869,22 @@ def test_interpolate_coords(
         assert reprojected_xr_time_series.dims["time"] == 360
     assert reprojected_xr_time_series.dims[HADS_XDIM] == 528
     assert reprojected_xr_time_series.dims[HADS_YDIM] == 651
+
+
+@pytest.mark.mount
+def test_hads_resample_and_reproject(
+    tasmax_hads_1980_raw: T_Dataset,
+) -> None:
+    variable_name: str = "tasmax"
+    reprojected: T_Dataset = hads_resample_and_reproject(
+        tasmax_hads_1980_raw,
+        variable_name=variable_name,
+    )
+    plot_xarray(
+        reprojected, path="tests/runs/reample-hads/tasmas-1980.png", time_stamp=True
+    )
+    assert_allclose(reprojected[10][430][230:250], FINAL_HADS_JAN_10_430_X_230_250_Y)
+    assert False
 
 
 @pytest.mark.mount
@@ -861,7 +921,7 @@ def test_execute_resample_configs(multiprocess: bool, tmp_path) -> None:
     resamplers: tuple[
         HADsResampler | CPMResampler, ...
     ] = test_config.execute_resample_configs(multiprocess=multiprocess)
-    export: Dataset = open_dataset(resamplers[0][0])
+    export: T_Dataset = open_dataset(resamplers[0][0])
     assert len(export.time) == 31
     assert not np.isnan(export.tasmax[0][200:300].values).all()
     assert (
@@ -893,7 +953,7 @@ def test_execute_resample_configs(multiprocess: bool, tmp_path) -> None:
 #         'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
 #         crop_geom=glasgow_shape_file_path, invert=True)
 #     assert cropped.rio.bounds == result_bounds
-#     ts_to_crop: dict[Path, Dataset] = {}
+#     ts_to_crop: dict[Path, T_Dataset] = {}
 #     for path in ukcp_tasmax_raw_5_years_paths:
 #         assert path.exists()
 #         ts_to_crop[path] = open_dataset(path, decode_coords="all")

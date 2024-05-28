@@ -3,13 +3,14 @@ from datetime import date, datetime, timedelta
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
-from typing import Any, Callable, Final, Iterable, Literal
+from typing import Any, Callable, Final, Iterable, Literal, Sequence
 
 import numpy as np
 import rioxarray  # nopycln: import
 from cftime._cftime import Datetime360Day
 from geopandas import GeoDataFrame, read_file
-from numpy import array, random
+from matplotlib import pyplot as plt
+from numpy import array, ndarray, random
 from numpy.typing import NDArray
 from osgeo.gdal import Dataset as GDALDataset
 from osgeo.gdal import GDALWarpAppOptions, Warp, WarpOptions
@@ -17,7 +18,13 @@ from pandas import DatetimeIndex, date_range, to_datetime
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
 from xarray.backends.api import ENGINES
 from xarray.coding.calendar_ops import convert_calendar
-from xarray.core.types import CFCalendar, InterpOptions
+from xarray.core.types import (
+    CFCalendar,
+    InterpOptions,
+    T_DataArray,
+    T_DataArrayOrSet,
+    T_Dataset,
+)
 
 from .core import (
     CLI_DATE_FORMAT_STR,
@@ -26,6 +33,7 @@ from .core import (
     climate_data_mount_path,
     date_range_generator,
     date_range_to_str,
+    results_path,
     time_str,
 )
 from .gdal_formats import (
@@ -41,7 +49,7 @@ DropDayType = set[tuple[int, int]]
 ChangeDayType = set[tuple[int, int]]
 
 # MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
-"""A `set` of tuples of month and day numbers for `enforce_date_changes`."""
+# """A `set` of tuples of month and day numbers for `enforce_date_changes`."""
 
 BRITISH_NATIONAL_GRID_EPSG: Final[str] = "EPSG:27700"
 
@@ -102,6 +110,10 @@ XArrayEngineType = Literal[*tuple(ENGINES)]
 DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
 NETCDF4_XARRAY_ENGINE: Final[str] = "netcdf4"
 
+DEFAULT_RELATIVE_GRID_DATA_PATH: Final[Path] = (
+    Path().absolute() / "../data/rcp85_land-cpm_uk_2.2km_grid.nc"
+)
+
 
 CPM_365_OR_366_INTERMEDIATE_NC: Final[str] = "cpm-365-or-366.nc"
 CPM_365_OR_366_SIMPLIFIED_NC: Final[str] = "cpm-365-or-366-simplified.nc"
@@ -109,13 +121,18 @@ CPM_365_OR_366_27700_TIF: Final[str] = "cpm-365-or-366-27700.tif"
 CPM_365_OR_366_27700_FINAL: Final[str] = "cpm-365-or-366-27700-final.nc"
 CPM_LOCAL_INTERMEDIATE_PATH: Final[Path] = Path("cpm-intermediate-files")
 
+HADS_RAW_X_COLUMN_NAME: Final[str] = "projection_x_coordinate"
+HADS_RAW_Y_COLUMN_NAME: Final[str] = "projection_y_coordinate"
+HADS_DROP_VARS_AFTER_PROJECTION: Final[tuple[str, ...]] = ("longitude", "latitude")
+
+# TODO: CHECK IF I GOT THESE BACKWARDS
 FINAL_RESAMPLE_LAT_COL: Final[str] = "x"
 FINAL_RESAMPLE_LON_COL: Final[str] = "y"
 
 
 def cpm_xarray_to_standard_calendar(
-    cpm_xr_time_series: Dataset | PathLike, include_bnds_index: bool = False
-) -> Dataset:
+    cpm_xr_time_series: T_Dataset | PathLike, include_bnds_index: bool = False
+) -> T_Dataset:
     """Convert a CPM `nc` file of 360 day calendars to standard calendar.
 
     Parameters
@@ -131,7 +148,7 @@ def cpm_xarray_to_standard_calendar(
     """
     if isinstance(cpm_xr_time_series, PathLike):
         cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
-    cpm_to_std_calendar: Dataset = convert_xr_calendar(
+    cpm_to_std_calendar: T_Dataset = convert_xr_calendar(
         cpm_xr_time_series, interpolate_na=True, check_cftime_cols=("time_bnds",)
     )
     cpm_to_std_calendar[
@@ -142,7 +159,9 @@ def cpm_xarray_to_standard_calendar(
     cpm_to_std_calendar["year"] = cpm_to_std_calendar.year.interpolate_na(
         "time", fill_value="extrapolate"
     )
-    yyyymmdd_fix: DataArray = cpm_to_std_calendar.time.dt.strftime(CLI_DATE_FORMAT_STR)
+    yyyymmdd_fix: T_DataArray = cpm_to_std_calendar.time.dt.strftime(
+        CLI_DATE_FORMAT_STR
+    )
     cpm_to_std_calendar["yyyymmdd"] = yyyymmdd_fix
     assert cpm_xr_time_series.rio.crs == cpm_to_std_calendar.rio.crs
     if include_bnds_index:
@@ -233,8 +252,8 @@ class IntermediateCPMFilesManager:
     def __repr__(self):
         """Summary of config."""
         return (
-            f"<IntermediateCPMFilesManager(output_path='{self.output_path}, "
-            f"intermediate_files_folder='{self.intermediate_files_folder})>"
+            f"<IntermediateCPMFilesManager(output_path='{self.output_path}', "
+            f"intermediate_files_folder='{self.intermediate_files_folder}')>"
         )
 
     @property
@@ -290,16 +309,20 @@ class IntermediateCPMFilesManager:
 
 
 def cpm_reproject_with_standard_calendar(
-    cpm_xr_time_series: Dataset | PathLike,
+    cpm_xr_time_series: T_Dataset | PathLike,
     variable_name: str,
     output_path: PathLike,
     file_name_prefix: str = "",
     subfolder: PathLike = CPM_LOCAL_INTERMEDIATE_PATH,
     subfolder_time_stamp: bool = False,
-    final_x_coord_label: str = FINAL_RESAMPLE_LON_COL,
-    final_y_coord_label: str = FINAL_RESAMPLE_LAT_COL,
-) -> Dataset:
+    source_x_coord_column_name: str = HADS_RAW_X_COLUMN_NAME,
+    source_y_coord_column_name: str = HADS_RAW_Y_COLUMN_NAME,
+) -> T_Dataset:
     """Convert raw `cpm_xr_time_series` to an 365/366 days and 27700 coords.
+
+    Notes
+    -----
+    Currently makes UTM coordinate structure
 
     Parameters
     ----------
@@ -318,63 +341,75 @@ def cpm_reproject_with_standard_calendar(
     if isinstance(cpm_xr_time_series, PathLike):
         cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
 
-    intermediate_files: IntermediateCPMFilesManager = IntermediateCPMFilesManager(
-        file_name_prefix=file_name_prefix,
-        variable_name=variable_name,
-        output_path=Path(output_path),
-        subfolder_path=Path(subfolder),
-        subfolder_time_stamp=subfolder_time_stamp,
-        time_series_start=cpm_xr_time_series.time.values[0],
-        time_series_end=cpm_xr_time_series.time.values[-1],
+    intermediate_file_configs: IntermediateCPMFilesManager = (
+        IntermediateCPMFilesManager(
+            file_name_prefix=file_name_prefix,
+            variable_name=variable_name,
+            output_path=Path(output_path),
+            subfolder_path=Path(subfolder),
+            subfolder_time_stamp=subfolder_time_stamp,
+            time_series_start=cpm_xr_time_series.time.values[0],
+            time_series_end=cpm_xr_time_series.time.values[-1],
+        )
     )
 
-    expanded_calendar: Dataset = cpm_xarray_to_standard_calendar(cpm_xr_time_series)
-    subset_within_ensemble: DataArray = expanded_calendar[variable_name][0]
-    subset_within_ensemble.to_netcdf(intermediate_files.intermediate_nc_path)
-    simplified_netcdf: Dataset = open_dataset(
-        intermediate_files.intermediate_nc_path, decode_coords="all"
+    expanded_calendar: T_Dataset = cpm_xarray_to_standard_calendar(cpm_xr_time_series)
+    # Index through the first ensemble
+    subset_within_ensemble: T_DataArray = expanded_calendar[variable_name][0]
+
+    subset_within_ensemble.to_netcdf(intermediate_file_configs.intermediate_nc_path)
+    simplified_netcdf: T_Dataset = open_dataset(
+        intermediate_file_configs.intermediate_nc_path, decode_coords="all"
     )
-    simplified_netcdf[variable_name].to_netcdf(intermediate_files.simplified_nc_path)
+    simplified_netcdf["grid_longitude_bnds"] = expanded_calendar.grid_longitude_bnds
+    simplified_netcdf["grid_latitude_bnds"] = expanded_calendar.grid_latitude_bnds
+    simplified_netcdf[variable_name].to_netcdf(
+        intermediate_file_configs.simplified_nc_path
+    )
 
     warped_to_22700_path = gdal_warp_wrapper(
-        input_path=intermediate_files.simplified_nc_path,
-        output_path=intermediate_files.intermediate_warp_path,
+        input_path=intermediate_file_configs.simplified_nc_path,
+        output_path=intermediate_file_configs.intermediate_warp_path,
         copy_metadata=True,
         format=None,
     )
 
-    assert warped_to_22700_path == intermediate_files.intermediate_warp_path
-    warped_to_22700 = open_dataset(intermediate_files.intermediate_warp_path)
+    assert warped_to_22700_path == intermediate_file_configs.intermediate_warp_path
+    warped_to_22700 = open_dataset(intermediate_file_configs.intermediate_warp_path)
     assert warped_to_22700.rio.crs == BRITISH_NATIONAL_GRID_EPSG
     assert len(warped_to_22700.time) == len(expanded_calendar.time)
 
     # Commenting these out in prep for addressing
     # https://github.com/alan-turing-institute/clim-recal/issues/151
-    # warped_to_22700_y_axis_inverted: Dataset = warped_to_22700.reindex(
-    #     y=list(reversed(warped_to_22700.y))
+    # warped_to_22700_y_axis_inverted: T_Dataset = warped_to_22700.reindex(
+    #     y=warped_to_22700.y * -1
     # )
     #
     # warped_to_22700_y_axis_inverted = warped_to_22700_y_axis_inverted.rename(
-    #     {"x": final_x_coord_label, "y": final_y_coord_label}
+    #     {"x": source_x_coord_column_name, "y": source_y_coord_column_name}
     # )
 
-    warped_to_22700_y_axis_inverted.to_netcdf(intermediate_files.final_nc_path)
-    final_results = open_dataset(intermediate_files.final_nc_path, decode_coords="all")
+    # warped_to_22700_y_axis_inverted.to_netcdf(intermediate_file_configs.final_nc_path)
+    warped_to_22700.to_netcdf(intermediate_file_configs.final_nc_path)
+    final_results = open_dataset(
+        intermediate_file_configs.final_nc_path, decode_coords="all"
+    )
     assert (final_results.time == expanded_calendar.time).all()
     return final_results
 
 
 def interpolate_coords(
-    xr_time_series: Dataset,
+    xr_time_series: T_Dataset,
     variable_name: str,
-    x_grid: NDArray,
-    y_grid: NDArray,
-    xr_time_series_x_column_name: str = FINAL_RESAMPLE_LON_COL,
-    xr_time_series_y_column_name: str = FINAL_RESAMPLE_LAT_COL,
+    x_grid: NDArray | None = None,
+    y_grid: NDArray | None = None,
+    x_coord_column_name: str = HADS_RAW_X_COLUMN_NAME,
+    y_coord_column_name: str = HADS_RAW_Y_COLUMN_NAME,
+    reference_coords: T_Dataset | PathLike = DEFAULT_RELATIVE_GRID_DATA_PATH,
     method: str = "linear",
     engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
     **kwargs,
-) -> Dataset:
+) -> T_Dataset:
     """Reproject `xr_time_series` to `x_resolution`/`y_resolution`.
 
     Notes
@@ -387,20 +422,157 @@ def interpolate_coords(
         xr_time_series = open_dataset(
             xr_time_series, decode_coords="all", engine=engine
         )
-    assert isinstance(xr_time_series, Dataset)
-    # crs = crs if crs else xr_time_series.rio.crs
-    # Code commented out below relates to a method following this discussion:
-    # https://github.com/corteva/rioxarray/discussions/762
-    # if x_resolution and y_resolution:
-    #     kwargs['resolution'] = (x_resolution, y_resolution)
-    # return xr_time_series.rio.reproject(dst_crs=crs, **kwargs)
-    kwargs[xr_time_series_x_column_name] = x_grid
-    kwargs[xr_time_series_y_column_name] = y_grid
-    return xr_time_series[[variable_name]].interp(method=method, **kwargs)
+
+    try:
+        assert isinstance(xr_time_series, Dataset)
+    except:
+        ValueError(f"'xr_time_series' must be an 'xr.Dataset' instance.")
+
+    if x_grid is None or y_grid is None:
+        try:
+            assert x_grid is None and y_grid is None
+        except:
+            raise ValueError(f"Both 'x_grid' and 'y_grid' must be set or none")
+        if isinstance(reference_coords, PathLike | str):
+            reference_coords = open_dataset(
+                reference_coords, decode_coords="all", engine=engine
+            )
+        try:
+            assert isinstance(reference_coords, Dataset)
+        except:
+            ValueError(f"'reference_coords' must be an 'xr.Dataset' instance.")
+
+        x_grid = (
+            reference_coords[x_coord_column_name].values if x_grid is None else x_grid
+        )
+        y_grid = (
+            reference_coords[y_coord_column_name].values if y_grid is None else y_grid
+        )
+        try:
+            assert x_coord_column_name in reference_coords.coords
+            assert y_coord_column_name in reference_coords.coords
+            assert x_coord_column_name in xr_time_series.coords
+            assert y_coord_column_name in xr_time_series.coords
+        except AssertionError:
+            raise ValueError(
+                f"At least one of\n"
+                f"'x_coord_column_name': '{x_coord_column_name}'\n"
+                f"'y_coord_column_name': '{y_coord_column_name}'\n"
+                f"not in 'reference_coords' and/or 'xr_time_series'."
+            )
+
+    try:
+        assert isinstance(x_grid, ndarray)
+        assert isinstance(y_grid, ndarray)
+    except:
+        raise ValueError(
+            f"Both must be 'ndarray' instances.\n"
+            f"'x_grid': {x_grid}\n'y_grid': {y_grid}"
+        )
+    kwargs[x_coord_column_name] = x_grid
+    kwargs[y_coord_column_name] = y_grid
+    reprojected: T_Dataset = xr_time_series[variable_name].interp(
+        method=method, **kwargs
+    )
+    # Ensure original `rio.crs` is kept in returned `Dataset`
+    if x_grid is None and y_grid is None:
+        reprojected.rio.write_crs(reference_coords.rio.crs, inplace=True)
+    else:
+        reprojected.rio.write_crs(xr_time_series.rio.crs, inplace=True)
+    return reprojected
+
+
+def hads_resample_and_reproject(
+    hads_xr_time_series: T_Dataset | PathLike,
+    variable_name: str,
+    x_grid: NDArray | None = None,
+    y_grid: NDArray | None = None,
+    method: str = "linear",
+    source_x_coord_column_name: str = HADS_RAW_X_COLUMN_NAME,
+    source_y_coord_column_name: str = HADS_RAW_Y_COLUMN_NAME,
+    final_x_coord_column_name: str = "lon",
+    final_y_coord_column_name: str = "lat",
+    final_crs: str | None = BRITISH_NATIONAL_GRID_EPSG,
+    vars_to_drop: Sequence[str] | None = HADS_DROP_VARS_AFTER_PROJECTION,
+) -> T_Dataset:
+    """Resample `HADs` `xarray` time series to 2.2km."""
+    if isinstance(hads_xr_time_series, PathLike):
+        hads_xr_time_series = open_dataset(hads_xr_time_series, decode_coords="all")
+
+    interpolated_hads: T_Dataset = interpolate_coords(
+        hads_xr_time_series,
+        variable_name=variable_name,
+        x_grid=x_grid,
+        y_grid=y_grid,
+        x_coord_column_name=source_x_coord_column_name,
+        y_coord_column_name=source_y_coord_column_name,
+        method=method,
+    )
+    if vars_to_drop:
+        interpolated_hads = interpolated_hads.drop_vars(vars_to_drop)
+    interpolated_hads = interpolated_hads.rename(
+        {
+            source_x_coord_column_name: final_x_coord_column_name,
+            source_y_coord_column_name: final_y_coord_column_name,
+        }
+    )
+    if final_crs:
+        interpolated_hads.rio.write_crs(final_crs, inplace=True)
+    return interpolated_hads
+
+
+def plot_xarray(
+    da: T_DataArrayOrSet, path: PathLike, time_stamp: bool = False, **kwargs
+) -> Path:
+    """Plot `da` with `**kwargs` to `path`.
+
+    Parameters
+    ----------
+    da
+        `xarray` objec to plot.
+    path
+        File to write plot to.
+    time_stamp
+        Whather to add a `datetime` `str` of time of writing in file name.
+    kwargs
+        Additional parameters to pass to `plot`.
+
+    Examples
+    --------
+    >>> example_path: Path = (
+    ...     getfixture('tmp_path') / 'test-path/example.png')
+    >>> image_path: Path = plot_xarray(
+    ...     xarray_spatial_4_days, example_path)
+    >>> example_path == image_path
+    True
+    >>> example_time_stamped: Path = (
+    ...      example_path.parent / 'example-stamped.png')
+    >>> timed_image_path: Path = plot_xarray(
+    ...     xarray_spatial_4_days, example_time_stamped,
+    ...     time_stamp=True)
+    >>> example_time_stamped != timed_image_path
+    True
+    >>> print(timed_image_path)
+    /.../test-path/example-stamped_...-...-..._...png
+    """
+    da.plot(**kwargs)
+    path = Path(path)
+    path.parent.mkdir(exist_ok=True, parents=True)
+    if time_stamp:
+        path = results_path(
+            name=path.stem,
+            path=path.parent,
+            mkdir=True,
+            extension=path.suffix,
+            dot_pre_extension=False,
+        )
+    plt.savefig(path)
+    plt.close()
+    return Path(path)
 
 
 def crop_nc(
-    xr_time_series: Dataset | PathLike,
+    xr_time_series: T_Dataset | PathLike,
     crop_geom: PathLike | GeoDataFrame,
     invert=False,
     final_crs: str = BRITISH_NATIONAL_GRID_EPSG,
@@ -409,7 +581,7 @@ def crop_nc(
     xr_spatial_xdim: str = "grid_longitude",
     xr_spatial_ydim: str = "grid_latitude",
     **kwargs,
-) -> Dataset:
+) -> T_Dataset:
     """Crop `xr_time_series` with `crop_path` `shapefile`.
 
     Parameters
@@ -482,8 +654,8 @@ def crop_nc(
 
 
 def ensure_xr_dataset(
-    xr_time_series: Dataset | DataArray, default_name="to_convert"
-) -> Dataset:
+    xr_time_series: T_DataArrayOrSet, default_name="to_convert"
+) -> T_Dataset:
     """Return `xr_time_series` as a `xarray.Dataset` instance.
 
     Parameters
@@ -533,7 +705,7 @@ def convert_xr_calendar(
     check_cftime_cols: tuple[str] | None = None,
     cftime_range_gen_kwargs: dict[str, Any] | None = None,
     **kwargs,
-) -> Dataset | DataArray:
+) -> T_DataArrayOrSet:
     """Convert cpm 360 day time series to a standard 365/366 day time series.
 
     Notes
@@ -598,7 +770,7 @@ def convert_xr_calendar(
     --------
     # Note a new doctest needs to be written to deal
     # with default `year` vs `date` parameters
-    >>> xr_360_to_365_datetime64: Dataset = convert_xr_calendar(
+    >>> xr_360_to_365_datetime64: T_Dataset = convert_xr_calendar(
     ...     xarray_spatial_4_years_360_day, align_on="date")
     >>> xr_360_to_365_datetime64.sel(
     ...     time=slice("1981-01-30", "1981-02-01"),
@@ -607,7 +779,7 @@ def convert_xr_calendar(
     Coordinates:
       * time     (time) datetime64[ns] ...1981-01-30 1981-01-31 1981-02-01
         space    <U10 ...'Glasgow'
-    >>> xr_360_to_365_datetime64_interp: Dataset = convert_xr_calendar(
+    >>> xr_360_to_365_datetime64_interp: T_Dataset = convert_xr_calendar(
     ...     xarray_spatial_4_years_360_day, interpolate_na=True)
     >>> xr_360_to_365_datetime64_interp.sel(
     ...     time=slice("1981-01-30", "1981-02-01"),
@@ -631,7 +803,7 @@ def convert_xr_calendar(
             xr_time_series = open_dataset(xr_time_series, engine=engine)
     if ensure_output_type_is_dataset:
         xr_time_series = ensure_xr_dataset(xr_time_series)
-    calendar_converted_ts: Dataset | DataArray = convert_calendar(
+    calendar_converted_ts: T_DataArrayOrSet = convert_calendar(
         xr_time_series,
         calendar,
         align_on=align_on,
@@ -658,8 +830,8 @@ def convert_xr_calendar(
 
 
 def interpolate_xr_ts_nans(
-    xr_ts: Dataset,
-    original_xr_ts: Dataset | None = None,
+    xr_ts: T_Dataset,
+    original_xr_ts: T_Dataset | None = None,
     check_cftime_cols: tuple[str] | None = None,
     interpolate_method: InterpOptions = DEFAULT_INTERPOLATION_METHOD,
     keep_crs: bool = True,
@@ -667,7 +839,7 @@ def interpolate_xr_ts_nans(
     limit: int = 1,
     cftime_range_gen_kwargs: dict[str, Any] | None = None,
     **kwargs,
-) -> Dataset:
+) -> T_Dataset:
     """Interpolate `nan` values in a `Dataset` time series.
 
     Notes
@@ -709,7 +881,7 @@ def interpolate_xr_ts_nans(
     # Without this the `nan` values don't get filled
     kwargs["fill_value"] = "extrapolate"
 
-    interpolated_ts: Dataset = xr_ts.interpolate_na(
+    interpolated_ts: T_Dataset = xr_ts.interpolate_na(
         dim="time",
         method=interpolate_method,
         keep_attrs=keep_attrs,
@@ -839,7 +1011,7 @@ def apply_geo_func(
     export_path = Path(export_folder) / export_path.name
     if export_path_as_output_path_kwarg:
         kwargs["output_path"] = export_path
-    results: Dataset | Path | GDALDataset = func(source_path, **kwargs)
+    results: T_Dataset | Path | GDALDataset = func(source_path, **kwargs)
     if to_netcdf or to_raster:
         if isinstance(results, Path):
             results = open_dataset(results)
@@ -937,7 +1109,7 @@ def xarray_example(
     # If useful, add lat/lon (currently not working)
     # lat: list[float] = [coord[0] for coord in coordinates.values()]
     # lon: list[float] = [coord[1] for coord in coordinates.values()]
-    da: DataArray = DataArray(
+    da: T_DataArray = DataArray(
         random_data,
         name=name,
         coords={
@@ -1010,7 +1182,7 @@ def file_name_to_start_end_dates(
     return start_date, end_date
 
 
-def generate_360_to_standard(array_to_expand: DataArray) -> DataArray:
+def generate_360_to_standard(array_to_expand: T_DataArray) -> DataArray:
     """Return `array_to_expand` 360 days expanded to 365 or 366 days.
 
     This may be dropped if `cpm_reproject_with_standard_calendar` is successful.
@@ -1038,7 +1210,7 @@ def correct_int_time_datafile(
     new_index_name: str = "time",
     replace_index: str | None = "band",
     data_attribute_name: str = "band_data",
-) -> Dataset:
+) -> T_Dataset:
     """Load a `Dataset` from path and generate `time` index.
 
     Notes
@@ -1052,13 +1224,13 @@ def correct_int_time_datafile(
     ...     glasgow_example_cropped_cpm_rainfall_path)
     >>> assert False
     """
-    xr_dataset: Dataset = open_dataset(xr_dataset_path)
+    xr_dataset: T_Dataset = open_dataset(xr_dataset_path)
     metric_name: str = str(xr_dataset_path).split("_")[0]
     start_date, end_date = file_name_to_start_end_dates(xr_dataset_path)
     dates_index: DatetimeIndex = date_range(start_date, end_date)
     intermediate_new_index: str = new_index_name + "_standard"
     # xr_intermediate_date = xr_dataset.assign_coords({intermediate_new_index: dates_index})
-    xr_dataset[intermediate_new_index]: Dataset = dates_index
+    xr_dataset[intermediate_new_index]: T_Dataset = dates_index
     xr_360_datetime = xr_dataset[intermediate_new_index].convert_calendar(
         "360_day", align_on="year", dim=intermediate_new_index
     )
@@ -1071,21 +1243,21 @@ def correct_int_time_datafile(
     assert len(xr_360_datetime[intermediate_new_index]) == 360
     # xr_with_datetime['time'] = xr_360_datetime
     assert False
-    xr_bands_time_indexed: DataArray = xr_intermediate_date[
+    xr_bands_time_indexed: T_DataArray = xr_intermediate_date[
         data_attribute_name
     ].expand_dims(dim={new_index_name: xr_intermediate_date[new_index_name]})
-    # xr_365_data_array: DataArray = convert_xr_calendar(xr_bands_time_indexed)
-    xr_365_dataset: Dataset = Dataset({metric_name: xr_bands_time_indexed})
-    partial_fix_365_dataset: Dataset = convert_xr_calendar(xr_365_dataset.time)
+    # xr_365_data_array: T_DataArray = convert_xr_calendar(xr_bands_time_indexed)
+    xr_365_dataset: T_Dataset = Dataset({metric_name: xr_bands_time_indexed})
+    partial_fix_365_dataset: T_Dataset = convert_xr_calendar(xr_365_dataset.time)
     assert False
 
 
-def cftime_range_gen(time_data_array: DataArray, **kwargs) -> NDArray:
+def cftime_range_gen(time_data_array: T_DataArray, **kwargs) -> NDArray:
     """Convert a banded time index a banded standard (Gregorian)."""
     assert hasattr(time_data_array, "time")
     time_bnds_fix_range_start: CFTimeIndex = cftime_range(
         time_data_array.time.dt.strftime(ISO_DATE_FORMAT_STR).values[0],
-        time_data_array.time.dt.strftime(ISO_DATE_FORMAT_STR).values[-1],
+        time_data_array.time.dt.strftime(ISO_DATE_FORMAT_STR).values[0],
         **kwargs,
     )
     time_bnds_fix_range_end: CFTimeIndex = time_bnds_fix_range_start + timedelta(days=1)
