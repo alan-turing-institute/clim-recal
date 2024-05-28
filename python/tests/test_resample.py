@@ -27,7 +27,6 @@ from clim_recal.resample import (
     HADsResampler,
     HADsResamplerManager,
     cpm_reproject_with_standard_calendar,
-    interpolate_coords,
 )
 from clim_recal.utils.core import (
     CLI_DATE_FORMAT_STR,
@@ -61,6 +60,7 @@ from clim_recal.utils.xarray import (
     file_name_to_start_end_dates,
     gdal_warp_wrapper,
     hads_resample_and_reproject,
+    interpolate_coords,
     plot_xarray,
     xarray_example,
 )
