@@ -906,8 +906,8 @@ def test_hads_resample_and_reproject(
     reprojected.to_netcdf(export_netcdf_path)
     read_from_export: T_Dataset = open_dataset(export_netcdf_path, decode_coords="all")
     assert read_from_export.dims["time"] == 31
-    assert read_from_export.dims["lat"] == 651
-    assert read_from_export.dims["lon"] == 528
+    assert read_from_export.dims["lon"] == 528  # replaces projection_x_coordinate
+    assert read_from_export.dims["lat"] == 651  # replaces projection_y_coordinate
     assert reprojected.rio.crs == read_from_export.rio.crs == BRITISH_NATIONAL_GRID_EPSG
 
 
