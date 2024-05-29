@@ -97,4 +97,5 @@ markers = [
     "docker: requires running via docker jupyterlab.",
     "multiprocess: uses multiprocessing.",
     "darwin: requires darwin (macOS) operating system.",
+    "localcache: uses local copies of mount files.",
 ]
