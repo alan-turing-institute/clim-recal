@@ -56,12 +56,13 @@ BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
 CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData")
 CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateData")
 
-TEST_PATH: Final[Path] = Path().absolute()
-TEST_DATA_PATH: Final[Path] = TEST_PATH / "tests"
+TEST_RUN_PATH: Final[Path] = Path().absolute()
+TEST_FILE_PATH: Final[Path] = TEST_RUN_PATH / "tests"
 TEST_RESULTS_PATH: Final[Path] = results_path(
-    name="test-run-results", path=TEST_DATA_PATH, mkdir=True
+    name="test-run-results", path=TEST_FILE_PATH, mkdir=True
 )
 PYTHON_DIR_NAME: Final[Path] = Path("python")
+TEST_DATA_PATH: Final[Path] = TEST_FILE_PATH / "data"
 
 CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str, ...]] = (
     "python",
@@ -224,8 +225,8 @@ def conda_lock_file_manager() -> CondaLockFileManager:
 
 @pytest.fixture
 def data_fixtures_path(tmp_path: Path) -> Iterator[Path]:
-    yield copytree(TEST_DATA_PATH, tmp_path / TEST_DATA_PATH.name)
-    rmtree(tmp_path / TEST_DATA_PATH.name)
+    yield copytree(TEST_FILE_PATH, tmp_path / TEST_FILE_PATH.name)
+    rmtree(tmp_path / TEST_FILE_PATH.name)
 
 
 @pytest.mark.mount
@@ -240,6 +241,21 @@ def test_runs_output_path(path=TEST_RESULTS_PATH) -> Iterator[Path]:
     yield path
     # Comment out rmtree line below to leave test files for checking after runs
     rmtree(path, ignore_errors=True)
+
+
+@pytest.fixture(scope="session")
+def local_cache_path() -> Path:
+    return TEST_DATA_PATH
+
+
+@pytest.fixture(scope="session")
+def local_hads_cache_path(local_cache_path: Path) -> Path:
+    return local_cache_path / "hadsuk"
+
+
+@pytest.fixture(scope="session")
+def local_cpm_cache_path(local_cache_path: Path) -> Path:
+    return local_cache_path / "ukcp"
 
 
 @pytest.fixture

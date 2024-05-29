@@ -156,13 +156,18 @@ FINAL_HADS_JAN_10_430_X_230_250_Y: Final[NDArray] = np.array(
 def tasmax_cpm_1980_raw() -> T_Dataset:
     # Backup path if furture rehydration issues
     # return open_dataset("/Volumes/vmfileshare/ClimateData/Raw/UKCP2.2/tasmin/05/latest/tasmin_rcp85_land-cpm_uk_2.2km_05_day_19801201-19811130.nc", decode_coords="all")
+    # return open_dataset(local_cpm_cache_path / UKCP_RAW_TASMAX_1980_FILE, decode_coorda="all")
     return open_dataset(UKCP_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
 
 
 @pytest.mark.mount
 @pytest.fixture(scope="session")
-def tasmax_hads_1980_raw() -> T_Dataset:
-    return open_dataset(HADS_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
+def tasmax_hads_1980_raw(local_hads_cache_path) -> T_Dataset:
+    # return open_dataset(HADS_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
+    # Using below to manage issues with server mount
+    return open_dataset(
+        local_hads_cache_path / HADS_RAW_TASMAX_1980_FILE, decode_coords="all"
+    )
 
 
 @pytest.fixture(scope="session")
@@ -876,15 +881,34 @@ def test_hads_resample_and_reproject(
     tasmax_hads_1980_raw: T_Dataset,
 ) -> None:
     variable_name: str = "tasmax"
+    output_path: Path = Path("tests/runs/reample-hads")
+    # The the first index is the first time point of a month, in this case January
+    plot_xarray(
+        tasmax_hads_1980_raw[0],
+        path=output_path / "tasmas-1980-JAN-1-raw.png",
+        time_stamp=True,
+    )
+
+    assert tasmax_hads_1980_raw.dims["time"] == 31
+    assert tasmax_hads_1980_raw.dims["projection_x_coordinate"] == 900
+    assert tasmax_hads_1980_raw.dims["projection_y_coordinate"] == 1450
     reprojected: T_Dataset = hads_resample_and_reproject(
         tasmax_hads_1980_raw,
         variable_name=variable_name,
     )
-    plot_xarray(
-        reprojected, path="tests/runs/reample-hads/tasmas-1980.png", time_stamp=True
-    )
+    # The the first index is the first time point of a month, in this case January
+    plot_xarray(reprojected[0], path=output_path / "tasmas-1980.png", time_stamp=True)
     assert_allclose(reprojected[10][430][230:250], FINAL_HADS_JAN_10_430_X_230_250_Y)
-    assert False
+    assert reprojected.rio.crs.to_epsg() == int(BRITISH_NATIONAL_GRID_EPSG[5:])
+    export_netcdf_path: Path = results_path(
+        "tasmax-1980-converted", path=output_path, extension="nc"
+    )
+    reprojected.to_netcdf(export_netcdf_path)
+    read_from_export: T_Dataset = open_dataset(export_netcdf_path, decode_coords="all")
+    assert read_from_export.dims["time"] == 31
+    assert read_from_export.dims["lat"] == 651
+    assert read_from_export.dims["lon"] == 528
+    assert reprojected.rio.crs == read_from_export.rio.crs == BRITISH_NATIONAL_GRID_EPSG
 
 
 @pytest.mark.mount
