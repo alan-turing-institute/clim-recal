@@ -902,7 +902,7 @@ def test_hads_resample_and_reproject(
     variable_name: str = "tasmax"
     output_path: Path = Path("tests/runs/reample-hads")
     tasmax_hads_1980_raw = tasmax_hads_1980_raw_mount_or_local_cache
-    # The the first index is the first time point of a month, in this case January
+    # First index is for month, in this case January 1980
     plot_xarray(
         tasmax_hads_1980_raw.tasmax[0],
         path=output_path / "tasmas-1980-JAN-1-raw.png",
@@ -916,7 +916,7 @@ def test_hads_resample_and_reproject(
         tasmax_hads_1980_raw,
         variable_name=variable_name,
     )
-    # The the first index is the first time point of a month, in this case January
+
     plot_xarray(reprojected[0], path=output_path / "tasmas-1980.png", time_stamp=True)
     assert_allclose(reprojected[10][430][230:250], FINAL_HADS_JAN_10_430_X_230_250_Y)
     assert reprojected.rio.crs.to_epsg() == int(BRITISH_NATIONAL_GRID_EPSG[5:])

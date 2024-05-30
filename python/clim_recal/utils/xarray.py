@@ -94,6 +94,32 @@ XARRAY_EXAMPLE_START_DATE_STR: Final[str] = "1980-11-30"
 XARRAY_EXAMPLE_END_DATE_4_YEARS: Final[str] = "1984-11-30"
 
 
+@dataclass
+class CityCoords:
+    name: str
+    xmin: float
+    xmax: float
+    ymin: float
+    ymax: float
+    epsg: int = int(BRITISH_NATIONAL_GRID_EPSG[5:])
+
+    def as_tuple(self) -> tuple[float, float, float, float]:
+        """Return in `xmin`, `xmax`, `ymin`, `ymax` order."""
+        return self.xmin, self.xmax, self.ymin, self.ymax
+
+
+GlasgowCoords: Final[CityCoords] = CityCoords(
+    "Glasgow", 249799.999600002, 269234.9996, 657761.472000003, 672330.696800007
+)
+
+LondonCoords: Final[CityCoords] = CityCoords(
+    "London", 503568.1996, 561957.4961, 155850.7974, 200933.9025
+)
+ManchesterCoords: Final[CityCoords] = CityCoords(
+    "Manchester", 380399.997, 393249.999, 389349.999, 405300.003
+)
+
+
 GLASGOW_GEOM_LOCAL_PATH: Final[Path] = Path(
     "shapefiles/three.cities/Glasgow/Glasgow.shp"
 )
@@ -408,6 +434,7 @@ def interpolate_coords(
     reference_coords: T_Dataset | PathLike = DEFAULT_RELATIVE_GRID_DATA_PATH,
     method: str = "linear",
     engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
+    use_reference_grid: bool = True,
     **kwargs,
 ) -> T_Dataset:
     """Reproject `xr_time_series` to `x_resolution`/`y_resolution`.
@@ -428,7 +455,8 @@ def interpolate_coords(
     except:
         ValueError(f"'xr_time_series' must be an 'xr.Dataset' instance.")
 
-    if x_grid is None or y_grid is None:
+    if use_reference_grid or (x_grid is None or y_grid is None):
+        use_reference_grid = True
         try:
             assert x_grid is None and y_grid is None
         except:
@@ -475,7 +503,7 @@ def interpolate_coords(
         method=method, **kwargs
     )
     # Ensure original `rio.crs` is kept in returned `Dataset`
-    if x_grid is None and y_grid is None:
+    if use_reference_grid:
         reprojected.rio.write_crs(reference_coords.rio.crs, inplace=True)
     else:
         reprojected.rio.write_crs(xr_time_series.rio.crs, inplace=True)
@@ -490,8 +518,8 @@ def hads_resample_and_reproject(
     method: str = "linear",
     source_x_coord_column_name: str = HADS_RAW_X_COLUMN_NAME,
     source_y_coord_column_name: str = HADS_RAW_Y_COLUMN_NAME,
-    final_x_coord_column_name: str = "lon",
-    final_y_coord_column_name: str = "lat",
+    final_x_coord_column_name: str = "x",
+    final_y_coord_column_name: str = "y",
     final_crs: str | None = BRITISH_NATIONAL_GRID_EPSG,
     vars_to_drop: Sequence[str] | None = HADS_DROP_VARS_AFTER_PROJECTION,
 ) -> T_Dataset:
@@ -510,6 +538,7 @@ def hads_resample_and_reproject(
     )
     if vars_to_drop:
         interpolated_hads = interpolated_hads.drop_vars(vars_to_drop)
+
     interpolated_hads = interpolated_hads.rename(
         {
             source_x_coord_column_name: final_x_coord_column_name,

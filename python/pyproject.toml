@@ -36,6 +36,7 @@ dependencies = [
     "netcdf4>=1.6.5",
     "pdm>=2.12.4",
     "typer>=0.12.3",
+    "seaborn>=0.13.2",
 ]
 
 [project.scripts]
