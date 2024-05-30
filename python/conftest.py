@@ -229,7 +229,6 @@ def data_fixtures_path(tmp_path: Path) -> Iterator[Path]:
     rmtree(tmp_path / TEST_FILE_PATH.name)
 
 
-@pytest.mark.mount
 @pytest.fixture
 def glasgow_shape_file_path(data_fixtures_path: Path) -> Path:
     return data_fixtures_path / Path(*GLASGOW_GEOM_LOCAL_PATH.parts[-2:])
@@ -287,7 +286,6 @@ def uk_rotated_grid_bounds() -> BoundsTupleType:
 
 
 # Note: it may be worth setting this to cache for session runs
-@pytest.mark.mount
 @pytest.fixture
 def clim_runner(tmp_path) -> ClimRecalConfig:
     """Return default `ClimRecalConfig`."""

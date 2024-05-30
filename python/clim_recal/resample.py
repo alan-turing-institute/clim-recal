@@ -391,8 +391,8 @@ class HADsResampler(ResamblerBase):
             variable_name=self.variable_name,
             x_grid=self.x,
             y_grid=self.y,
-            xr_time_series_x_column_name=self.input_file_x_column_name,
-            xr_time_series_y_column_name=self.input_file_y_column_name,
+            x_coord_column_name=self.input_file_x_column_name,
+            y_coord_column_name=self.input_file_y_column_name,
             new_path_name_func=reproject_2_2km_filename,
             return_results=return_results,
         )
@@ -487,8 +487,8 @@ class CPMResampler(ResamblerBase):
             variable_name=self.cpm_variable_name,
             # x_grid=self.x,
             # y_grid=self.y,
-            # xr_time_series_x_column_name=self.input_file_x_column_name,
-            # xr_time_series_y_column_name=self.input_file_y_column_name,
+            # x_coord_column_name=self.input_file_x_column_name,
+            # y_coord_column_name=self.input_file_y_column_name,
             return_results=return_results,
         )
 

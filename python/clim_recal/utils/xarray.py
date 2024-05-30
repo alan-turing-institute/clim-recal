@@ -152,8 +152,10 @@ HADS_RAW_Y_COLUMN_NAME: Final[str] = "projection_y_coordinate"
 HADS_DROP_VARS_AFTER_PROJECTION: Final[tuple[str, ...]] = ("longitude", "latitude")
 
 # TODO: CHECK IF I GOT THESE BACKWARDS
-FINAL_RESAMPLE_LAT_COL: Final[str] = "x"
-FINAL_RESAMPLE_LON_COL: Final[str] = "y"
+# FINAL_RESAMPLE_LAT_COL: Final[str] = "x"
+# FINAL_RESAMPLE_LON_COL: Final[str] = "y"
+FINAL_RESAMPLE_LON_COL: Final[str] = "x"
+FINAL_RESAMPLE_LAT_COL: Final[str] = "y"
 
 
 def cpm_xarray_to_standard_calendar(
@@ -518,8 +520,8 @@ def hads_resample_and_reproject(
     method: str = "linear",
     source_x_coord_column_name: str = HADS_RAW_X_COLUMN_NAME,
     source_y_coord_column_name: str = HADS_RAW_Y_COLUMN_NAME,
-    final_x_coord_column_name: str = "x",
-    final_y_coord_column_name: str = "y",
+    final_x_coord_column_name: str = FINAL_RESAMPLE_LON_COL,
+    final_y_coord_column_name: str = FINAL_RESAMPLE_LAT_COL,
     final_crs: str | None = BRITISH_NATIONAL_GRID_EPSG,
     vars_to_drop: Sequence[str] | None = HADS_DROP_VARS_AFTER_PROJECTION,
 ) -> T_Dataset:

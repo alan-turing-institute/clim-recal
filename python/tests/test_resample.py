@@ -50,6 +50,8 @@ from clim_recal.utils.xarray import (
     CPM_LOCAL_INTERMEDIATE_PATH,
     FINAL_RESAMPLE_LAT_COL,
     FINAL_RESAMPLE_LON_COL,
+    HADS_RAW_X_COLUMN_NAME,
+    HADS_RAW_Y_COLUMN_NAME,
     NETCDF4_XARRAY_ENGINE,
     BoundsTupleType,
     ConvertCalendarAlignOptions,
@@ -870,8 +872,8 @@ def test_interpolate_coords(
     if data_type == "hads":
         reprojected_xr_time_series = interpolate_coords(
             tasmax_hads_1980_raw,
-            xr_time_series_x_column_name=HADS_XDIM,
-            xr_time_series_y_column_name=HADS_YDIM,
+            x_coord_column_name=HADS_XDIM,
+            y_coord_column_name=HADS_YDIM,
             **kwargs,
         )
         assert reprojected_xr_time_series.dims["time"] == 31
@@ -882,8 +884,8 @@ def test_interpolate_coords(
         # We are now using gdal_warp_wrapper. See test_cpm_warp_steps
         reprojected_xr_time_series = interpolate_coords(
             tasmax_cpm_1980_raw,
-            xr_time_series_x_column_name=CPRUK_XDIM,
-            xr_time_series_y_column_name=CPRUK_YDIM,
+            x_coord_column_name=CPRUK_XDIM,
+            y_coord_column_name=CPRUK_YDIM,
             **kwargs,
         )
         # Note: this test is to a raw file without 365 day projection
@@ -910,8 +912,8 @@ def test_hads_resample_and_reproject(
     )
 
     assert tasmax_hads_1980_raw.dims["time"] == 31
-    assert tasmax_hads_1980_raw.dims["projection_x_coordinate"] == 900
-    assert tasmax_hads_1980_raw.dims["projection_y_coordinate"] == 1450
+    assert tasmax_hads_1980_raw.dims[HADS_RAW_X_COLUMN_NAME] == 900
+    assert tasmax_hads_1980_raw.dims[HADS_RAW_Y_COLUMN_NAME] == 1450
     reprojected: T_Dataset = hads_resample_and_reproject(
         tasmax_hads_1980_raw,
         variable_name=variable_name,
@@ -926,8 +928,12 @@ def test_hads_resample_and_reproject(
     reprojected.to_netcdf(export_netcdf_path)
     read_from_export: T_Dataset = open_dataset(export_netcdf_path, decode_coords="all")
     assert read_from_export.dims["time"] == 31
-    assert read_from_export.dims["lon"] == 528  # replaces projection_x_coordinate
-    assert read_from_export.dims["lat"] == 651  # replaces projection_y_coordinate
+    assert (
+        read_from_export.dims[FINAL_RESAMPLE_LON_COL] == 528
+    )  # replaces projection_x_coordinate
+    assert (
+        read_from_export.dims[FINAL_RESAMPLE_LAT_COL] == 651
+    )  # replaces projection_y_coordinate
     assert reprojected.rio.crs == read_from_export.rio.crs == BRITISH_NATIONAL_GRID_EPSG
 
 
