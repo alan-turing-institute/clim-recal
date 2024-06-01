@@ -152,6 +152,21 @@ FINAL_HADS_JAN_10_430_X_230_250_Y: Final[NDArray] = np.array(
     )
 )
 
+FINAL_CPM_DEC_10_5_X_0_10_Y: Final[NDArray] = np.array(
+    (
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        12.31753,
+        12.31753,
+        12.305811,
+        12.290186,
+    )
+)
+
 
 @pytest.mark.mount
 @pytest.fixture(scope="session")
@@ -673,8 +688,9 @@ def test_cpm_warp_steps(
     variable_name: str = "tasmax",
 ) -> None:
     """Test all steps around calendar and warping CPM RAW data."""
-    # file_name_prefix: str = "test-1980"
-    output_path: Path = test_runs_output_path / "test-cpm-warp"
+    output_path: Path = results_path(
+        "test-cpm-warp", path=test_runs_output_path, mkdir=True
+    )
     test_intermediate_files = IntermediateCPMFilesManager(
         variable_name=variable_name,
         output_path=output_path,
@@ -702,7 +718,6 @@ def test_cpm_warp_steps(
         test_intermediate_files.final_nc_path, decode_coords="all"
     )
     assert (final_results.time == projected.time).all()
-    assert False
 
 
 @pytest.mark.xfail(reason="test not complete")
@@ -809,7 +824,9 @@ def test_ukcp_manager(resample_test_cpm_output_path, config: str) -> None:
     assert export.dims["time"] == 365
     assert export.dims[FINAL_RESAMPLE_LON_COL] == 492
     assert export.dims[FINAL_RESAMPLE_LAT_COL] == 608  # previously 603
-    assert not np.isnan(export.tasmax.head()[0].values).all()
+    # TODO: check final correct values
+    assert_allclose(export.tasmax[10][5][:10].values, FINAL_CPM_DEC_10_5_X_0_10_Y)
+    # assert not np.isnan(export.tasmax.head()[0].values).all()
     # Todo: reapply these checks to intermediary files
     # assert export.dims[CPRUK_XDIM] == 484
     # assert export.dims[CPRUK_YDIM] == 606
@@ -851,11 +868,13 @@ def test_hads_manager(resample_test_hads_output_path, range: bool) -> None:
 @pytest.mark.mount
 @pytest.mark.slow
 @pytest.mark.parametrize("data_type", ("hads", "cpm"))
+@pytest.mark.parametrize("use_reference_grid", (True, False))
 def test_interpolate_coords(
     data_type: str,
     reference_final_coord_grid: T_Dataset,
     tasmax_cpm_1980_raw: T_Dataset,
     tasmax_hads_1980_raw: T_Dataset,
+    use_reference_grid: bool,
 ) -> None:
     """Test reprojecting raw spatial files.
 
@@ -866,32 +885,50 @@ def test_interpolate_coords(
     reprojected_xr_time_series: T_Dataset
     kwargs: dict[str, Any] = dict(
         variable_name="tasmax",
-        x_grid=reference_final_coord_grid.projection_x_coordinate,
-        y_grid=reference_final_coord_grid.projection_y_coordinate,
+        x_grid=reference_final_coord_grid.projection_x_coordinate.values,
+        y_grid=reference_final_coord_grid.projection_y_coordinate.values,
     )
+    x_col_name: str = HADS_XDIM
+    y_col_name: str = HADS_YDIM
     if data_type == "hads":
         reprojected_xr_time_series = interpolate_coords(
             tasmax_hads_1980_raw,
-            x_coord_column_name=HADS_XDIM,
-            y_coord_column_name=HADS_YDIM,
+            x_coord_column_name=x_col_name,
+            y_coord_column_name=y_col_name,
+            use_reference_grid=use_reference_grid,
             **kwargs,
         )
         assert reprojected_xr_time_series.dims["time"] == 31
         # assert reprojected_xr_time_series.dims[HADS_XDIM] == 528
         # assert reprojected_xr_time_series.dims[HADS_YDIM] == 651
-        assert reprojected_xr_time_series.rio.crs
+        assert_allclose(
+            reprojected_xr_time_series.tasmax[10][430][230:250],
+            FINAL_HADS_JAN_10_430_X_230_250_Y,
+        )
+        if use_reference_grid:
+            assert reprojected_xr_time_series.rio.crs == BRITISH_NATIONAL_GRID_EPSG
+        else:
+            assert reprojected_xr_time_series.rio.crs == tasmax_hads_1980_raw.rio.crs
     else:
+        x_col_name = CPRUK_XDIM
+        y_col_name = CPRUK_YDIM
         # We are now using gdal_warp_wrapper. See test_cpm_warp_steps
         reprojected_xr_time_series = interpolate_coords(
             tasmax_cpm_1980_raw,
-            x_coord_column_name=CPRUK_XDIM,
-            y_coord_column_name=CPRUK_YDIM,
+            x_coord_column_name=x_col_name,
+            y_coord_column_name=y_col_name,
+            use_reference_grid=use_reference_grid,
             **kwargs,
         )
         # Note: this test is to a raw file without 365 day projection
         assert reprojected_xr_time_series.dims["time"] == 360
-    assert reprojected_xr_time_series.dims[HADS_XDIM] == 528
-    assert reprojected_xr_time_series.dims[HADS_YDIM] == 651
+        assert np.isnan(reprojected_xr_time_series.tasmax[0][10][5][:10].values).all()
+        if use_reference_grid:
+            assert reprojected_xr_time_series.rio.crs == BRITISH_NATIONAL_GRID_EPSG
+        else:
+            assert reprojected_xr_time_series.rio.crs == tasmax_cpm_1980_raw.rio.crs
+    assert reprojected_xr_time_series.dims[x_col_name] == 528
+    assert reprojected_xr_time_series.dims[y_col_name] == 651
 
 
 @pytest.mark.mount
@@ -919,8 +956,12 @@ def test_hads_resample_and_reproject(
         variable_name=variable_name,
     )
 
-    plot_xarray(reprojected[0], path=output_path / "tasmas-1980.png", time_stamp=True)
-    assert_allclose(reprojected[10][430][230:250], FINAL_HADS_JAN_10_430_X_230_250_Y)
+    plot_xarray(
+        reprojected.tasmax[0], path=output_path / "tasmas-1980.png", time_stamp=True
+    )
+    assert_allclose(
+        reprojected.tasmax[10][430][230:250], FINAL_HADS_JAN_10_430_X_230_250_Y
+    )
     assert reprojected.rio.crs.to_epsg() == int(BRITISH_NATIONAL_GRID_EPSG[5:])
     export_netcdf_path: Path = results_path(
         "tasmax-1980-converted", path=output_path, extension="nc"

@@ -7,7 +7,6 @@
 
 """
 
-import pickle
 from dataclasses import dataclass, field
 from datetime import date
 from glob import glob
@@ -16,6 +15,7 @@ from os import PathLike, cpu_count
 from pathlib import Path
 from typing import Any, Callable, Final, Iterable, Iterator, Literal, Sequence
 
+import dill as pickle
 import numpy as np
 import rioxarray  # nopycln: import
 from geopandas import GeoDataFrame
@@ -365,6 +365,7 @@ class HADsResampler(ResamblerBase):
     resolution_relative_path: Path = HADS_2_2K_RESOLUTION_PATH
     input_file_x_column_name: str = HADS_XDIM
     input_file_y_column_name: str = HADS_YDIM
+    _use_reference_grid: bool = True
 
     def to_reprojection(
         self,
@@ -391,8 +392,9 @@ class HADsResampler(ResamblerBase):
             variable_name=self.variable_name,
             x_grid=self.x,
             y_grid=self.y,
-            x_coord_column_name=self.input_file_x_column_name,
-            y_coord_column_name=self.input_file_y_column_name,
+            source_x_coord_column_name=self.input_file_x_column_name,
+            source_y_coord_column_name=self.input_file_y_column_name,
+            use_reference_grid=self._use_reference_grid,
             new_path_name_func=reproject_2_2km_filename,
             return_results=return_results,
         )

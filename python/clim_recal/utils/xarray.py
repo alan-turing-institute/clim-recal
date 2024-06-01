@@ -7,6 +7,7 @@ from typing import Any, Callable, Final, Iterable, Literal, Sequence
 
 import numpy as np
 import rioxarray  # nopycln: import
+import seaborn
 from cftime._cftime import Datetime360Day
 from geopandas import GeoDataFrame, read_file
 from matplotlib import pyplot as plt
@@ -44,6 +45,8 @@ from .gdal_formats import (
 )
 
 logger = getLogger(__name__)
+
+seaborn.set()  # Use seaborn style for all `matplotlib` plots
 
 DropDayType = set[tuple[int, int]]
 ChangeDayType = set[tuple[int, int]]
@@ -434,6 +437,8 @@ def interpolate_coords(
     x_coord_column_name: str = HADS_RAW_X_COLUMN_NAME,
     y_coord_column_name: str = HADS_RAW_Y_COLUMN_NAME,
     reference_coords: T_Dataset | PathLike = DEFAULT_RELATIVE_GRID_DATA_PATH,
+    reference_coord_x_column_name: str = HADS_RAW_X_COLUMN_NAME,
+    reference_coord_y_column_name: str = HADS_RAW_Y_COLUMN_NAME,
     method: str = "linear",
     engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
     use_reference_grid: bool = True,
@@ -458,11 +463,6 @@ def interpolate_coords(
         ValueError(f"'xr_time_series' must be an 'xr.Dataset' instance.")
 
     if use_reference_grid or (x_grid is None or y_grid is None):
-        use_reference_grid = True
-        try:
-            assert x_grid is None and y_grid is None
-        except:
-            raise ValueError(f"Both 'x_grid' and 'y_grid' must be set or none")
         if isinstance(reference_coords, PathLike | str):
             reference_coords = open_dataset(
                 reference_coords, decode_coords="all", engine=engine
@@ -471,25 +471,32 @@ def interpolate_coords(
             assert isinstance(reference_coords, Dataset)
         except:
             ValueError(f"'reference_coords' must be an 'xr.Dataset' instance.")
-
-        x_grid = (
-            reference_coords[x_coord_column_name].values if x_grid is None else x_grid
-        )
-        y_grid = (
-            reference_coords[y_coord_column_name].values if y_grid is None else y_grid
-        )
         try:
-            assert x_coord_column_name in reference_coords.coords
-            assert y_coord_column_name in reference_coords.coords
+            assert reference_coord_x_column_name in reference_coords.coords
+            assert reference_coord_y_column_name in reference_coords.coords
             assert x_coord_column_name in xr_time_series.coords
             assert y_coord_column_name in xr_time_series.coords
         except AssertionError:
             raise ValueError(
                 f"At least one of\n"
+                f"'reference_coord_x_column_name': '{reference_coord_x_column_name}'\n"
+                f"'reference_coord_y_column_name': '{reference_coord_y_column_name}'\n"
                 f"'x_coord_column_name': '{x_coord_column_name}'\n"
                 f"'y_coord_column_name': '{y_coord_column_name}'\n"
                 f"not in 'reference_coords' and/or 'xr_time_series'."
             )
+
+        x_grid = (
+            reference_coords[reference_coord_x_column_name].values
+            if x_grid is None
+            else x_grid
+        )
+        y_grid = (
+            reference_coords[reference_coord_y_column_name].values
+            if y_grid is None
+            else y_grid
+        )
+        use_reference_grid = True
 
     try:
         assert isinstance(x_grid, ndarray)
@@ -501,14 +508,16 @@ def interpolate_coords(
         )
     kwargs[x_coord_column_name] = x_grid
     kwargs[y_coord_column_name] = y_grid
-    reprojected: T_Dataset = xr_time_series[variable_name].interp(
+    reprojected_data_array: T_DataArray = xr_time_series[variable_name].interp(
         method=method, **kwargs
     )
+
     # Ensure original `rio.crs` is kept in returned `Dataset`
     if use_reference_grid:
-        reprojected.rio.write_crs(reference_coords.rio.crs, inplace=True)
+        reprojected_data_array.rio.write_crs(reference_coords.rio.crs, inplace=True)
     else:
-        reprojected.rio.write_crs(xr_time_series.rio.crs, inplace=True)
+        reprojected_data_array.rio.write_crs(xr_time_series.rio.crs, inplace=True)
+    reprojected: Dataset = Dataset({variable_name: reprojected_data_array})
     return reprojected
 
 
@@ -524,6 +533,7 @@ def hads_resample_and_reproject(
     final_y_coord_column_name: str = FINAL_RESAMPLE_LAT_COL,
     final_crs: str | None = BRITISH_NATIONAL_GRID_EPSG,
     vars_to_drop: Sequence[str] | None = HADS_DROP_VARS_AFTER_PROJECTION,
+    use_reference_grid: bool = False,
 ) -> T_Dataset:
     """Resample `HADs` `xarray` time series to 2.2km."""
     if isinstance(hads_xr_time_series, PathLike):
@@ -537,6 +547,7 @@ def hads_resample_and_reproject(
         x_coord_column_name=source_x_coord_column_name,
         y_coord_column_name=source_y_coord_column_name,
         method=method,
+        use_reference_grid=use_reference_grid,
     )
     if vars_to_drop:
         interpolated_hads = interpolated_hads.drop_vars(vars_to_drop)
@@ -1288,7 +1299,7 @@ def cftime_range_gen(time_data_array: T_DataArray, **kwargs) -> NDArray:
     assert hasattr(time_data_array, "time")
     time_bnds_fix_range_start: CFTimeIndex = cftime_range(
         time_data_array.time.dt.strftime(ISO_DATE_FORMAT_STR).values[0],
-        time_data_array.time.dt.strftime(ISO_DATE_FORMAT_STR).values[0],
+        time_data_array.time.dt.strftime(ISO_DATE_FORMAT_STR).values[-1],
         **kwargs,
     )
     time_bnds_fix_range_end: CFTimeIndex = time_bnds_fix_range_start + timedelta(days=1)

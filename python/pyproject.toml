@@ -37,6 +37,7 @@ dependencies = [
     "pdm>=2.12.4",
     "typer>=0.12.3",
     "seaborn>=0.13.2",
+    "dill>=0.3.8",
 ]
 
 [project.scripts]

@@ -43,9 +43,10 @@ def test_main(
     capsys,
 ) -> None:
     """Test running pipeline configurations."""
-    output_path: Path = (
-        test_runs_output_path / f"{'-'.join(variables)}-multi-{multiprocess}"
-    )
+    run_folder_name: str = f"{'-'.join(variables)}-multi-{multiprocess}"
+    if execute:
+        run_folder_name = "executed-" + run_folder_name
+    output_path: Path = test_runs_output_path / run_folder_name
 
     results = main(
         execute=execute,
