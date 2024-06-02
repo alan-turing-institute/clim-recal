@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
-from typing import Any, Callable, Final, Iterable, Literal, Sequence
+from typing import Any, Callable, Final, Literal, Sequence
 
 import numpy as np
 import rioxarray  # nopycln: import
@@ -11,11 +11,11 @@ import seaborn
 from cftime._cftime import Datetime360Day
 from geopandas import GeoDataFrame, read_file
 from matplotlib import pyplot as plt
-from numpy import array, ndarray, random
+from numpy import ndarray
 from numpy.typing import NDArray
 from osgeo.gdal import Dataset as GDALDataset
 from osgeo.gdal import GDALWarpAppOptions, Warp, WarpOptions
-from pandas import DatetimeIndex, date_range, to_datetime
+from pandas import DatetimeIndex, date_range
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
 from xarray.backends.api import ENGINES
 from xarray.coding.calendar_ops import convert_calendar
@@ -30,9 +30,7 @@ from xarray.core.types import (
 from .core import (
     CLI_DATE_FORMAT_STR,
     ISO_DATE_FORMAT_STR,
-    DateType,
     climate_data_mount_path,
-    date_range_generator,
     date_range_to_str,
     results_path,
     time_str,
@@ -90,11 +88,6 @@ THREE_CITY_CENTRE_COORDS: Final[dict[str, tuple[float, float]]] = {
     "London": LONDON_CENTRE_COORDS,
 }
 """City centre `(lon, lat)` `tuple` coords of `Glasgow`, `Manchester` and `London`."""
-
-XARRAY_EXAMPLE_RANDOM_SEED: Final[int] = 0
-# Default 4 year start and end date covering leap year
-XARRAY_EXAMPLE_START_DATE_STR: Final[str] = "1980-11-30"
-XARRAY_EXAMPLE_END_DATE_4_YEARS: Final[str] = "1984-11-30"
 
 
 @dataclass
@@ -1077,94 +1070,6 @@ def apply_geo_func(
         return results
     else:
         return export_path
-
-
-# Note: `rioxarray` is imported to ensure GIS methods are included. See:
-# https://corteva.github.io/rioxarray/stable/getting_started/getting_started.html#rio-accessor
-def xarray_example(
-    start_date: DateType = XARRAY_EXAMPLE_START_DATE_STR,
-    end_date: DateType = XARRAY_EXAMPLE_END_DATE_4_YEARS,
-    coordinates: dict[str, tuple[float, float]] = THREE_CITY_CENTRE_COORDS,
-    skip_dates: Iterable[date] | None = None,
-    random_seed_int: int | None = XARRAY_EXAMPLE_RANDOM_SEED,
-    name: str | None = None,
-    as_dataset: bool = False,
-    **kwargs,
-) -> DataArray | Dataset:
-    """Generate spatial and temporal `xarray` objects.
-
-    Parameters
-    ----------
-    start_date
-        Start of time series.
-    end_date
-        End of time series (by default not inclusive).
-    coordinates
-        A `dict` of region name `str` to `tuple` of
-        `(lon, lat)` form.
-    skip_dates
-        A list of `date` objects to drop/skip between
-        `start_date` and `end_date`.
-    as_dataset
-        Convert output to `Dataset`.
-    name
-        Name of returned `DataArray` and `Dataset`.
-    kwargs
-        Additional parameters to pass to `date_range_generator`.
-
-    Returns
-    -------
-    :
-        A `DataArray` of `start_date` to `end_date` date
-        range a random variable for coordinates regions
-        (Glasgow, Manchester and London as default).
-
-    Examples
-    --------
-    >>> xarray_example('1980-11-30', '1980-12-5')
-    <xarray.DataArray 'xa_template' (time: 5, space: 3)>...
-    array([[..., ..., ...],
-           [..., ..., ...],
-           [..., ..., ...],
-           [..., ..., ...],
-           [..., ..., ...]])
-    Coordinates:
-      * time     (time) datetime64[ns] ...1980-11-30 ... 1980-12-04
-      * space    (space) <U10 ...'Glasgow' 'Manchester' 'London'
-    """
-    date_range: list[DateType] = list(
-        date_range_generator(
-            start_date=start_date,
-            end_date=end_date,
-            start_format_str=ISO_DATE_FORMAT_STR,
-            end_format_str=ISO_DATE_FORMAT_STR,
-            skip_dates=skip_dates,
-            **kwargs,
-        )
-    )
-    if not name:
-        name = f"xa_template"
-    if isinstance(random_seed_int, int):
-        random.seed(random_seed_int)  # ensure results are predictable
-    random_data: array = random.rand(len(date_range), len(coordinates))
-    spaces: list[str] = list(coordinates.keys())
-    # If useful, add lat/lon (currently not working)
-    # lat: list[float] = [coord[0] for coord in coordinates.values()]
-    # lon: list[float] = [coord[1] for coord in coordinates.values()]
-    da: T_DataArray = DataArray(
-        random_data,
-        name=name,
-        coords={
-            "time": to_datetime(date_range),
-            "space": spaces,
-            # "lon": lon,# *len(date_range),
-            # "lat": lat,
-        },
-    )
-    if as_dataset:
-        return da.to_dataset()
-    else:
-        return da
 
 
 def file_name_to_start_end_dates(

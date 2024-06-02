@@ -1,29 +1,14 @@
 from pathlib import Path
 from pprint import pprint
 from shutil import copytree, rmtree
-from typing import Final, Iterator
+from typing import Final, Iterator, Literal
 
 import pytest
 from coverage_badge.__main__ import main as gen_cov_badge
 from xarray import DataArray, Dataset
 
 from clim_recal.config import ClimRecalConfig
-from clim_recal.debiasing.debias_wrapper import (
-    CALIB_DATES_STR_DEFAULT,
-    CMETHODS_FILE_NAME,
-    CMETHODS_OUT_FOLDER_DEFAULT,
-    DATA_PATH_DEFAULT,
-    MOD_FOLDER_DEFAULT,
-    OBS_FOLDER_DEFAULT,
-    PREPROCESS_FILE_NAME,
-    PREPROCESS_OUT_FOLDER_DEFAULT,
-    PROCESSESORS_DEFAULT,
-    VALID_DATES_STR_DEFAULT,
-    CityOptions,
-    MethodOptions,
-    RunOptions,
-    VariableOptions,
-)
+from clim_recal.debiasing.debias_wrapper import CityOptions
 from clim_recal.resample import CPM_OUTPUT_LOCAL_PATH, HADS_OUTPUT_LOCAL_PATH
 from clim_recal.utils.core import (
     ISO_DATE_FORMAT_STR,
@@ -31,26 +16,27 @@ from clim_recal.utils.core import (
     climate_data_mount_path,
     is_climate_data_mounted,
     is_platform_darwin,
-    iter_to_tuple_strs,
     results_path,
 )
 from clim_recal.utils.server import CondaLockFileManager
-from clim_recal.utils.xarray import (
-    GLASGOW_GEOM_LOCAL_PATH,
+from clim_recal.utils.xarray import GLASGOW_GEOM_LOCAL_PATH, BoundsTupleType
+from tests.utils import (
+    CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT,
+    CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT,
+    CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT,
+    CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT,
+    CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT,
+    CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT,
+    TEST_AUTH_CSV_FILE_NAME,
+    XARRAY_END_DATE_4_DAYS,
+    XARRAY_END_DATE_8_DAYS,
     XARRAY_EXAMPLE_END_DATE_4_YEARS,
-    BoundsTupleType,
+    XARRAY_SKIP_2_FROM_8_DAYS,
     xarray_example,
 )
 
 MOUNT_DOCTEST_SKIP_MESSAGE: Final[str] = "requires external data mounted"
 # Date Range covering leap year
-XARRAY_END_DATE_4_DAYS: Final[str] = "1980-12-5"
-XARRAY_END_DATE_8_DAYS: Final[str] = "1980-12-10"
-XARRAY_SKIP_2_FROM_8_DAYS: Final[tuple[str, str]] = (
-    "1980-12-7",
-    "1980-12-8",
-)
-TEST_AUTH_CSV_FILE_NAME: Final[Path] = Path("test_auth.csv")
 
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
 CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData")
@@ -63,72 +49,16 @@ TEST_RESULTS_PATH: Final[Path] = results_path(
 )
 PYTHON_DIR_NAME: Final[Path] = Path("python")
 TEST_DATA_PATH: Final[Path] = TEST_FILE_PATH / "data"
-
-CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str, ...]] = (
-    "python",
-    PREPROCESS_FILE_NAME,
-    "--mod",
-    DATA_PATH_DEFAULT / MOD_FOLDER_DEFAULT / CityOptions.default(),
-    "--obs",
-    DATA_PATH_DEFAULT / OBS_FOLDER_DEFAULT / CityOptions.default(),
-    "-v",
-    VariableOptions.default(),
-    "-r",
-    RunOptions.default(),
-    "--out",
-    (
-        DATA_PATH_DEFAULT
-        / PREPROCESS_OUT_FOLDER_DEFAULT
-        / CityOptions.default()
-        / RunOptions.default()
-        / VariableOptions.default()
-    ),
-    "--calib_dates",
-    CALIB_DATES_STR_DEFAULT,
-    "--valid_dates",
-    VALID_DATES_STR_DEFAULT,
-)
-
-CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT: Final[
-    tuple[str, ...]
-] = iter_to_tuple_strs(CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT)
-
-CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = " ".join(
-    CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
-)
-
-CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str, ...]] = (
-    "python",
-    CMETHODS_FILE_NAME,
-    "--input_data_folder",
-    CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT[11],
-    "--out",
-    (
-        DATA_PATH_DEFAULT
-        / CMETHODS_OUT_FOLDER_DEFAULT
-        / CityOptions.default()
-        / RunOptions.default()
-    ).resolve(),
-    "--method",
-    MethodOptions.default(),
-    "-v",
-    VariableOptions.default(),
-    "-p",
-    PROCESSESORS_DEFAULT,
-)
-
-CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT: Final[
-    tuple[str, ...]
-] = iter_to_tuple_strs(CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT)
-
-CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = " ".join(
-    CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
-)
+LOCAL_FIXTURE_PATH_NAME: Final[Path] = Path("local-cache")
 
 
 MOD_FOLDER_FILES_COUNT_CORRECT: Final[int] = 1478
 OBS_FOLDER_FILES_COUNT_CORRECT: Final[int] = MOD_FOLDER_FILES_COUNT_CORRECT
 PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT: Final[int] = 4
+
+
+MOUNT_FIXTURE_CONFIG_CHOICES: Final[tuple[str, str]] = ("mount", "local_cache")
+MountFixtureConfigChoices = Literal[*MOUNT_FIXTURE_CONFIG_CHOICES]
 
 
 @pytest.fixture
@@ -160,6 +90,10 @@ def data_mount_path() -> Path:
     -------
     The `Path` climate data would likely be mounted to.
     """
+    # if 'localcache' in fixture_data_source_marks:
+    #     assert False
+    #     return LOCAL_CACHE_FIXTURE_PATH
+    # else:
     return climate_data_mount_path()
 
 
@@ -242,9 +176,26 @@ def test_runs_output_path(path=TEST_RESULTS_PATH) -> Iterator[Path]:
     rmtree(path, ignore_errors=True)
 
 
+def pytest_addoption(parser):
+    """Add test cli config options."""
+    parser.addoption(
+        "--mount-fixture-config",
+        choices=MOUNT_FIXTURE_CONFIG_CHOICES,
+        # action="store",
+        default="mount",  # 'mount'
+        type=str,
+        help="'mount' or 'local_cache' data fixture types",
+    )
+
+
+@pytest.fixture(scope="session")
+def mount_fixture_config(request) -> MountFixtureConfigChoices:
+    return request.config.getoption("--mount-fixture-config")
+
+
 @pytest.fixture(scope="session")
 def local_cache_path() -> Path:
-    return TEST_DATA_PATH
+    return TEST_DATA_PATH / LOCAL_FIXTURE_PATH_NAME
 
 
 @pytest.fixture(scope="session")
@@ -397,6 +348,18 @@ def doctest_auto_fixtures(
         "glasgow_example_cropped_cpm_rainfall_path"
     ] = glasgow_example_cropped_cpm_rainfall_path
     doctest_namespace["clim_runner"] = clim_runner
+
+
+# def pytest_generate_tests(metafunc):
+#     """Customise the standard process of generating tests."""
+#     fixture_data_source_marks: list[str] = ['mount']
+#     # use_local_cache: bool = False
+#     # if "use_local_cache" in metafunc.fixturenames:
+#     #use_local_fixture_cache: bool = metafunc.config.getoption("use_local_fixture_cache")
+#     if metafunc.config.getoption("use_local_fixture_cache"):
+#         fixture_data_source_marks.append('localcache')
+#     metafunc.parametrize("fixture_data_sources", fixture_data_source_marks, indirect=True)
+#     # metafunc.parametrize("use_local_cache", use_local_cache)
 
 
 def pytest_sessionfinish(session, exitstatus):

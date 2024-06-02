@@ -30,9 +30,6 @@ from clim_recal.resample import (
 )
 from clim_recal.utils.core import (
     CLI_DATE_FORMAT_STR,
-    CPM_YEAR_DAYS,
-    LEAP_YEAR_DAYS,
-    NORMAL_YEAR_DAYS,
     DateType,
     annual_data_path,
     annual_data_paths_generator,
@@ -64,8 +61,9 @@ from clim_recal.utils.xarray import (
     hads_resample_and_reproject,
     interpolate_coords,
     plot_xarray,
-    xarray_example,
 )
+
+from .utils import xarray_example, year_days_count
 
 HADS_UK_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
 HADS_UK_RESAMPLED_DAY_SERVER_PATH: Final[Path] = Path(
@@ -168,13 +166,33 @@ FINAL_CPM_DEC_10_5_X_0_10_Y: Final[NDArray] = np.array(
 )
 
 
+# @pytest.mark.mount
+# @pytest.fixture(scope="session")
+# def tasmax_cpm_1980_raw() -> T_Dataset:
+#     # Backup path if furture rehydration issues
+#     # return open_dataset("/Volumes/vmfileshare/ClimateData/Raw/UKCP2.2/tasmin/05/latest/tasmin_rcp85_land-cpm_uk_2.2km_05_day_19801201-19811130.nc", decode_coords="all")
+#     # return open_dataset(local_cpm_cache_path / UKCP_RAW_TASMAX_1980_FILE, decode_coorda="all")
+#     return open_dataset(UKCP_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
 @pytest.mark.mount
+# @pytest.mark.localcache
+# @pytest.fixture(scope="session", params=("mount", "localcache"))
 @pytest.fixture(scope="session")
-def tasmax_cpm_1980_raw() -> T_Dataset:
-    # Backup path if furture rehydration issues
-    # return open_dataset("/Volumes/vmfileshare/ClimateData/Raw/UKCP2.2/tasmin/05/latest/tasmin_rcp85_land-cpm_uk_2.2km_05_day_19801201-19811130.nc", decode_coords="all")
-    # return open_dataset(local_cpm_cache_path / UKCP_RAW_TASMAX_1980_FILE, decode_coorda="all")
-    return open_dataset(UKCP_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
+def tasmax_cpm_1980_raw(
+    # request: pytest.FixtureRequest, local_cpm_cache_path: Path,
+    # localfixturecare: bool,
+    mount_fixture_config: str,
+    local_cpm_cache_path: Path,
+) -> T_Dataset:
+    if mount_fixture_config == "mount":
+        # return open_dataset(HADS_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
+        return open_dataset(UKCP_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
+    # Using below to manage issues with server mount
+    elif mount_fixture_config == "local_cache":
+        return open_dataset(
+            local_cpm_cache_path / UKCP_RAW_TASMAX_1980_FILE, decode_coords="all"
+        )
+    else:
+        raise ValueError(f"only 'mount' and 'localcache' params are supported")
 
 
 @pytest.mark.mount
@@ -232,60 +250,6 @@ def hads_tasmax_local_test_path(data_fixtures_path: Path) -> Path:
 @pytest.fixture
 def ukcp_tasmax_local_test_path(data_fixtures_path: Path) -> Path:
     return data_fixtures_path / UKCP_TASMAX_LOCAL_TEST_PATH
-
-
-class StandardWith360DayError(Exception):
-    ...
-
-
-def year_days_count(
-    standard_years: int = 0,
-    leap_years: int = 0,
-    xarray_360_day_years: int = 0,
-    strict: bool = True,
-) -> int:
-    """Return the number of days for the combination of learn lengths.
-
-    Parameters
-    ----------
-    standard_years
-        Count of 365 day years.
-    leap_years
-        Count of 366 day years.
-    xarray_360_day_years
-        Count of 360 day years following xarray's specification.
-    strict
-        Whether to prevent combining `standard_years` or `leap_years`
-        with `xarray_360_day_years`.
-
-    Returns
-    -------
-    Sum of all year type counts
-
-    Examples
-    --------
-    >>> year_days_count(standard_years=4) == NORMAL_YEAR_DAYS*4 == 365*4
-    True
-    >>> year_days_count(xarray_360_day_years=4) == CPM_YEAR_DAYS*4 == 360*4
-    True
-    >>> (year_days_count(standard_years=3, leap_years=1)
-    ...  == NORMAL_YEAR_DAYS*3 + LEAP_YEAR_DAYS
-    ...  == 365*3 + 366)
-    True
-    """
-    if strict and (standard_years or leap_years) and xarray_360_day_years:
-        raise StandardWith360DayError(
-            f"With 'strict == True', "
-            f"{standard_years} standard (365 day) years and/or "
-            f"{leap_years} leap (366 day) years "
-            f"cannot be combined with "
-            f"xarray_360_day_years ({xarray_360_day_years})."
-        )
-    return (
-        standard_years * NORMAL_YEAR_DAYS
-        + leap_years * LEAP_YEAR_DAYS
-        + xarray_360_day_years * CPM_YEAR_DAYS
-    )
 
 
 def test_leap_year_days() -> None:
