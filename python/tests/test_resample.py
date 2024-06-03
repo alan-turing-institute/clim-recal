@@ -166,43 +166,32 @@ FINAL_CPM_DEC_10_5_X_0_10_Y: Final[NDArray] = np.array(
 )
 
 
-# @pytest.mark.mount
-# @pytest.fixture(scope="session")
-# def tasmax_cpm_1980_raw() -> T_Dataset:
-#     # Backup path if furture rehydration issues
-#     # return open_dataset("/Volumes/vmfileshare/ClimateData/Raw/UKCP2.2/tasmin/05/latest/tasmin_rcp85_land-cpm_uk_2.2km_05_day_19801201-19811130.nc", decode_coords="all")
-#     # return open_dataset(local_cpm_cache_path / UKCP_RAW_TASMAX_1980_FILE, decode_coorda="all")
-#     return open_dataset(UKCP_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
 @pytest.mark.mount
-# @pytest.mark.localcache
-# @pytest.fixture(scope="session", params=("mount", "localcache"))
 @pytest.fixture(scope="session")
 def tasmax_cpm_1980_raw(
-    # request: pytest.FixtureRequest, local_cpm_cache_path: Path,
-    # localfixturecare: bool,
-    mount_fixture_config: str,
+    local_cache: bool,
     local_cpm_cache_path: Path,
 ) -> T_Dataset:
-    if mount_fixture_config == "mount":
-        # return open_dataset(HADS_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
-        return open_dataset(UKCP_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
-    # Using below to manage issues with server mount
-    elif mount_fixture_config == "local_cache":
+    if local_cache:
         return open_dataset(
             local_cpm_cache_path / UKCP_RAW_TASMAX_1980_FILE, decode_coords="all"
         )
     else:
-        raise ValueError(f"only 'mount' and 'localcache' params are supported")
+        return open_dataset(UKCP_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
 
 
 @pytest.mark.mount
 @pytest.fixture(scope="session")
-def tasmax_hads_1980_raw() -> T_Dataset:
-    return open_dataset(HADS_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
-    # Using below to manage issues with server mount
-    # return open_dataset(
-    #     local_hads_cache_path / HADS_RAW_TASMAX_1980_FILE, decode_coords="all"
-    # )
+def tasmax_hads_1980_raw(
+    local_cache: bool,
+    local_hads_cache_path: Path,
+) -> T_Dataset:
+    if local_cache:
+        return open_dataset(
+            local_hads_cache_path / HADS_RAW_TASMAX_1980_FILE, decode_coords="all"
+        )
+    else:
+        return open_dataset(HADS_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
 
 
 @pytest.mark.localcache
@@ -896,15 +885,16 @@ def test_interpolate_coords(
 
 
 @pytest.mark.mount
-@pytest.mark.parametrize(
-    "tasmax_hads_1980_raw_mount_or_local_cache", ("mount", "localcache"), indirect=True
-)
+# @pytest.mark.parametrize(
+#     "tasmax_hads_1980_raw_mount_or_local_cache", ("mount", "localcache"), indirect=True
+# )
 def test_hads_resample_and_reproject(
-    tasmax_hads_1980_raw_mount_or_local_cache: T_Dataset,
+    # tasmax_hads_1980_raw_mount_or_local_cache: T_Dataset,
+    tasmax_hads_1980_raw: T_Dataset,
 ) -> None:
     variable_name: str = "tasmax"
     output_path: Path = Path("tests/runs/reample-hads")
-    tasmax_hads_1980_raw = tasmax_hads_1980_raw_mount_or_local_cache
+    # tasmax_hads_1980_raw = tasmax_hads_1980_raw_mount_or_local_cache
     # First index is for month, in this case January 1980
     plot_xarray(
         tasmax_hads_1980_raw.tasmax[0],

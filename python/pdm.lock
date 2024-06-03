@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:996b7c055224d6d78334907c4e0b4d1ca9e0237e6b00b7a81caa5b71213fe036"
+content_hash = "sha256:edcd2288b6d61726de0d0f6c5a47e2e1317d77f386d29e1aa368a581246f43c0"
 
 [[package]]
 name = "affine"
@@ -2915,6 +2915,20 @@ files = [
 ]
 
 [[package]]
+name = "sysrsync"
+version = "1.1.1"
+requires_python = ">=3.6,<4.0"
+summary = "Simple and safe python wrapper for calling system rsync"
+groups = ["dev"]
+dependencies = [
+    "toml<0.11.0,>=0.10.0",
+]
+files = [
+    {file = "sysrsync-1.1.1-py3-none-any.whl", hash = "sha256:9c8877f162dce9c480804445fca56cd19bf41b998d2172651468ccebfdc60850"},
+    {file = "sysrsync-1.1.1.tar.gz", hash = "sha256:435f9eb620e68ffb18ca5cbad32b113396a432361c7722038eab65c97dd83bd5"},
+]
+
+[[package]]
 name = "tabulate"
 version = "0.9.0"
 requires_python = ">=3.7"
@@ -2964,6 +2978,17 @@ dependencies = [
 files = [
     {file = "tinycss2-1.3.0-py3-none-any.whl", hash = "sha256:54a8dbdffb334d536851be0226030e9505965bb2f30f21a4a82c55fb2a80fae7"},
     {file = "tinycss2-1.3.0.tar.gz", hash = "sha256:152f9acabd296a8375fbca5b84c961ff95971fcfc32e79550c8df8e29118c54d"},
+]
+
+[[package]]
+name = "toml"
+version = "0.10.2"
+requires_python = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+summary = "Python Library for Tom's Obvious, Minimal Language"
+groups = ["dev"]
+files = [
+    {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
+    {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
 ]
 
 [[package]]

@@ -22,7 +22,7 @@ COMMAND_DIR_DEFAULT: Final[Path] = Path("clim_recal/debiasing").resolve()
 PREPROCESS_FILE_NAME: Final[Path] = Path("preprocess_data.py")
 CMETHODS_FILE_NAME: Final[Path] = Path("run_cmethods.py")
 
-PROCESSESORS_DEFAULT: Final[int] = 2
+PROCESSORS_DEFAULT: Final[int] = 2
 RUN_PREFIX_DEFAULT: Final[str] = "python"
 
 MOD_FOLDER_DEFAULT: Final[Path] = Path("Cropped/three.cities/CPM")
@@ -83,7 +83,7 @@ class BaseRunConfig:
     valid_date_start: DateType = VALID_DATE_START_DEFAULT
     valid_date_end: DateType = VALID_DATE_END_DEFAULT
 
-    processors: int = PROCESSESORS_DEFAULT
+    processors: int = PROCESSORS_DEFAULT
 
     date_format_str: str = CLI_DATE_FORMAT_STR
     date_split_str: str = DATE_FORMAT_SPLIT_STR

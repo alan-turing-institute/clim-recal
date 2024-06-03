@@ -1,7 +1,8 @@
+from argparse import BooleanOptionalAction
 from pathlib import Path
 from pprint import pprint
 from shutil import copytree, rmtree
-from typing import Final, Iterator, Literal
+from typing import Final, Iterator
 
 import pytest
 from coverage_badge.__main__ import main as gen_cov_badge
@@ -27,16 +28,19 @@ from tests.utils import (
     CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT,
     CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT,
     CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT,
+    MOD_FOLDER_FILES_COUNT_CORRECT,
+    OBS_FOLDER_FILES_COUNT_CORRECT,
+    PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT,
     TEST_AUTH_CSV_FILE_NAME,
     XARRAY_END_DATE_4_DAYS,
     XARRAY_END_DATE_8_DAYS,
     XARRAY_EXAMPLE_END_DATE_4_YEARS,
     XARRAY_SKIP_2_FROM_8_DAYS,
+    LocalCache,
     xarray_example,
 )
 
 MOUNT_DOCTEST_SKIP_MESSAGE: Final[str] = "requires external data mounted"
-# Date Range covering leap year
 
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
 CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData")
@@ -50,15 +54,6 @@ TEST_RESULTS_PATH: Final[Path] = results_path(
 PYTHON_DIR_NAME: Final[Path] = Path("python")
 TEST_DATA_PATH: Final[Path] = TEST_FILE_PATH / "data"
 LOCAL_FIXTURE_PATH_NAME: Final[Path] = Path("local-cache")
-
-
-MOD_FOLDER_FILES_COUNT_CORRECT: Final[int] = 1478
-OBS_FOLDER_FILES_COUNT_CORRECT: Final[int] = MOD_FOLDER_FILES_COUNT_CORRECT
-PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT: Final[int] = 4
-
-
-MOUNT_FIXTURE_CONFIG_CHOICES: Final[tuple[str, str]] = ("mount", "local_cache")
-MountFixtureConfigChoices = Literal[*MOUNT_FIXTURE_CONFIG_CHOICES]
 
 
 @pytest.fixture
@@ -90,10 +85,6 @@ def data_mount_path() -> Path:
     -------
     The `Path` climate data would likely be mounted to.
     """
-    # if 'localcache' in fixture_data_source_marks:
-    #     assert False
-    #     return LOCAL_CACHE_FIXTURE_PATH
-    # else:
     return climate_data_mount_path()
 
 
@@ -159,7 +150,7 @@ def conda_lock_file_manager() -> CondaLockFileManager:
 
 @pytest.fixture
 def data_fixtures_path(tmp_path: Path) -> Iterator[Path]:
-    yield copytree(TEST_FILE_PATH, tmp_path / TEST_FILE_PATH.name)
+    yield copytree(TEST_DATA_PATH, tmp_path / TEST_FILE_PATH.name)
     rmtree(tmp_path / TEST_FILE_PATH.name)
 
 
@@ -177,25 +168,28 @@ def test_runs_output_path(path=TEST_RESULTS_PATH) -> Iterator[Path]:
 
 
 def pytest_addoption(parser):
-    """Add test cli config options."""
+    """Add cli config to use used cached test fixture files."""
     parser.addoption(
-        "--mount-fixture-config",
-        choices=MOUNT_FIXTURE_CONFIG_CHOICES,
-        # action="store",
-        default="mount",  # 'mount'
-        type=str,
-        help="'mount' or 'local_cache' data fixture types",
+        "--local-cache",
+        action=BooleanOptionalAction,
+        default=True,
+        help="use 'local_cache' data fixtures",
     )
 
 
 @pytest.fixture(scope="session")
-def mount_fixture_config(request) -> MountFixtureConfigChoices:
-    return request.config.getoption("--mount-fixture-config")
+def local_cache(request) -> bool:
+    return request.config.getoption("--local-cache")
 
 
 @pytest.fixture(scope="session")
-def local_cache_path() -> Path:
-    return TEST_DATA_PATH / LOCAL_FIXTURE_PATH_NAME
+def local_test_data_path() -> Path:
+    return TEST_DATA_PATH
+
+
+@pytest.fixture(scope="session")
+def local_cache_path(local_test_data_path) -> Path:
+    return local_test_data_path / LOCAL_FIXTURE_PATH_NAME
 
 
 @pytest.fixture(scope="session")
@@ -276,6 +270,15 @@ def glasgow_example_cropped_cpm_rainfall_path(data_fixtures_path: Path) -> Path:
     )
 
 
+@pytest.fixture
+def glasgow_tif_cache(data_fixtures_path: Path, tmp_path: Path) -> LocalCache:
+    return LocalCache(
+        name="test-users",
+        source_path=data_fixtures_path / "test_user_accounts.xlsx",
+        local_cache_path=tmp_path / "test-local-cache",
+    )
+
+
 @pytest.fixture(autouse=True)
 def doctest_auto_fixtures(
     doctest_namespace: dict,
@@ -348,18 +351,6 @@ def doctest_auto_fixtures(
         "glasgow_example_cropped_cpm_rainfall_path"
     ] = glasgow_example_cropped_cpm_rainfall_path
     doctest_namespace["clim_runner"] = clim_runner
-
-
-# def pytest_generate_tests(metafunc):
-#     """Customise the standard process of generating tests."""
-#     fixture_data_source_marks: list[str] = ['mount']
-#     # use_local_cache: bool = False
-#     # if "use_local_cache" in metafunc.fixturenames:
-#     #use_local_fixture_cache: bool = metafunc.config.getoption("use_local_fixture_cache")
-#     if metafunc.config.getoption("use_local_fixture_cache"):
-#         fixture_data_source_marks.append('localcache')
-#     metafunc.parametrize("fixture_data_sources", fixture_data_source_marks, indirect=True)
-#     # metafunc.parametrize("use_local_cache", use_local_cache)
 
 
 def pytest_sessionfinish(session, exitstatus):
