@@ -194,22 +194,6 @@ def tasmax_hads_1980_raw(
         return open_dataset(HADS_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
 
 
-@pytest.mark.localcache
-@pytest.fixture(scope="session", params=("mount", "localcache"))
-def tasmax_hads_1980_raw_mount_or_local_cache(
-    request: pytest.FixtureRequest, local_hads_cache_path
-) -> T_Dataset:
-    if request.param == "mount":
-        return open_dataset(HADS_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
-    # Using below to manage issues with server mount
-    elif request.param == "localcache":
-        return open_dataset(
-            local_hads_cache_path / HADS_RAW_TASMAX_1980_FILE, decode_coords="all"
-        )
-    else:
-        raise ValueError(f"only 'mount' and 'localcache' params are supported")
-
-
 @pytest.fixture(scope="session")
 def reference_final_coord_grid() -> T_Dataset:
     return open_dataset(DEFAULT_RELATIVE_GRID_DATA_PATH, decode_coords="all")
@@ -852,8 +836,6 @@ def test_interpolate_coords(
             **kwargs,
         )
         assert reprojected_xr_time_series.dims["time"] == 31
-        # assert reprojected_xr_time_series.dims[HADS_XDIM] == 528
-        # assert reprojected_xr_time_series.dims[HADS_YDIM] == 651
         assert_allclose(
             reprojected_xr_time_series.tasmax[10][430][230:250],
             FINAL_HADS_JAN_10_430_X_230_250_Y,
@@ -885,16 +867,11 @@ def test_interpolate_coords(
 
 
 @pytest.mark.mount
-# @pytest.mark.parametrize(
-#     "tasmax_hads_1980_raw_mount_or_local_cache", ("mount", "localcache"), indirect=True
-# )
 def test_hads_resample_and_reproject(
-    # tasmax_hads_1980_raw_mount_or_local_cache: T_Dataset,
     tasmax_hads_1980_raw: T_Dataset,
 ) -> None:
     variable_name: str = "tasmax"
     output_path: Path = Path("tests/runs/reample-hads")
-    # tasmax_hads_1980_raw = tasmax_hads_1980_raw_mount_or_local_cache
     # First index is for month, in this case January 1980
     plot_xarray(
         tasmax_hads_1980_raw.tasmax[0],
