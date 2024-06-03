@@ -5,7 +5,7 @@ from datetime import date, datetime
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
-from typing import Awaitable, Final, Iterable, Sequence, TypedDict
+from typing import Any, Awaitable, Callable, Final, Iterable, Sequence, TypedDict
 
 import sysrsync
 from numpy import array, random
@@ -310,10 +310,12 @@ class LocalCache:
     local_cache_path: PathLike
     created: datetime | None = None
     synced: datetime | None = None
-    _make_local_cache_folders: bool = True
 
-    # reader: Callable | None
-    # reader_kwargs: dict[str, Any] = field(default_factory=dict)
+    reader: Callable | None = None
+    reader_kwargs: dict[str, Any] = field(default_factory=dict)
+
+    _make_parent_folders: bool = True
+
     def __repr__(self) -> str:
         """Summary of caching config."""
         return f"<LocalCache(name='{self.name}', is_cached={self.is_cached})>"
@@ -322,12 +324,11 @@ class LocalCache:
         """Account `self.cache_path` consistency."""
         self.source_path = Path(self.source_path)
         self.local_cache_path = Path(self.local_cache_path)
-        try:
-            assert self.source_path.is_file()
-        except:
-            raise ValueError(f"Only files can be cached, not: '{self.source_path}'")
-        if self._make_local_cache_folders:
-            self.local_cache_path.mkdir(parents=True, exist_ok=True)
+        if self.source_path.exists():
+            if not self.source_path.is_file():
+                raise ValueError(f"Only files can be cached, not: '{self.source_path}'")
+        if self._make_parent_folders:
+            self.cache_path.parent.mkdir(parents=True, exist_ok=True)
 
     @property
     def is_cached(self) -> bool:
@@ -394,6 +395,64 @@ class LocalCache:
             )
             self._update_synced()
         return self.name, self.synced, self.cache_path
+
+    def read(self, cache_path: bool = True, run_sync: bool = False, **kwargs) -> Any:
+        """Read file using `self.reader` and `self.kwargs`.
+
+        Parameters
+        ----------
+        cache_path
+            Whether to read `self.cache_path` (`True`) or `self.source_path` (`False`).
+        run_sync
+            Whether to run `run_sync` if `self.cache_path` is not set.
+
+        Returns
+        -------
+        A processed version of either `self.cache_path` or `self.source_path`.
+
+        Examples
+        --------
+        >>> glasgow_tif_cache = getfixture('glasgow_tif_cache')
+        >>> glasgow_tif_cache.read()
+        Traceback (most recent call last):
+            ...
+        ValueError: `reader` attribute must be set for
+        <LocalCache(name='test-users', is_cached=False)>
+        >>> from pandas import read_excel
+        >>> glasgow_tif_cache.reader = read_excel
+        >>> glasgow_tif_cache.read()
+        Traceback (most recent call last):
+            ...
+        ValueError: Can't use `local_path` prior to
+        cache run. Run with `run_sync` to override for
+        <LocalCache(name='test-users', is_cached=False)>.
+        >>> glasgow_tif_cache.read(run_sync=True)
+           A Column User Name      Password
+        0         1     sally        a pass
+        1         2    george  another pass
+        2        34      jean       passing
+        3         4  felicity      pastoral
+        4         2     frank        plough
+        >>> glasgow_tif_cache
+        <LocalCache(name='test-users', is_cached=True)>
+        """
+        if not self.reader:
+            raise ValueError(f"`reader` attribute must be set for {self}")
+        path: Path
+        if cache_path:
+            if self.is_cached:
+                path = self.cache_path
+            elif run_sync:
+                _, _, path = self.sync()
+            else:
+                raise ValueError(
+                    f"Can't use `local_path` prior to cache run. "
+                    f"Run with `run_sync` to override for {self}."
+                )
+        else:
+            self._check_source_path()
+            path = Path(self.source_path)
+        return self.reader(path, **(kwargs | self.reader_kwargs))
 
 
 @dataclass

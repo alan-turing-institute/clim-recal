@@ -175,11 +175,33 @@ def pytest_addoption(parser):
         default=True,
         help="use 'local_cache' data fixtures",
     )
+    parser.addoption(
+        "--sync-all",
+        action=BooleanOptionalAction,
+        default=False,
+        help="sync all local cached data fixtures",
+    )
+    parser.addoption(
+        "--use-async",
+        action=BooleanOptionalAction,
+        default=False,
+        help="Use asyc if --sync-all is used",
+    )
 
 
 @pytest.fixture(scope="session")
 def local_cache(request) -> bool:
     return request.config.getoption("--local-cache")
+
+
+@pytest.fixture(scope="session")
+def sync_all(request) -> bool:
+    return request.config.getoption("--sync-all")
+
+
+@pytest.fixture(scope="session")
+def use_async(request) -> bool:
+    return request.config.getoption("--use-async")
 
 
 @pytest.fixture(scope="session")

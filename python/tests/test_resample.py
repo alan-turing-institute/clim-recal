@@ -1,3 +1,4 @@
+import asyncio
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Final, Literal
@@ -63,7 +64,7 @@ from clim_recal.utils.xarray import (
     plot_xarray,
 )
 
-from .utils import xarray_example, year_days_count
+from .utils import LocalCache, LocalCachesManager, xarray_example, year_days_count
 
 HADS_UK_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
 HADS_UK_RESAMPLED_DAY_SERVER_PATH: Final[Path] = Path(
@@ -166,32 +167,55 @@ FINAL_CPM_DEC_10_5_X_0_10_Y: Final[NDArray] = np.array(
 )
 
 
+@pytest.fixture(scope="session")
+def local_cach_fixtures(
+    local_cpm_cache_path: Path,
+    local_hads_cache_path: Path,
+    sync_all: bool,
+    use_async: bool,
+) -> LocalCachesManager:
+    cache_manager: LocalCachesManager = LocalCachesManager(
+        caches=(
+            LocalCache(
+                name="tasmax_cpm_1980_raw",
+                source_path=UKCP_RAW_TASMAX_EXAMPLE_PATH,
+                local_cache_path=local_cpm_cache_path / UKCP_RAW_TASMAX_1980_FILE,
+                reader=open_dataset,
+                reader_kwargs={"decode_coords": "all"},
+            ),
+            LocalCache(
+                name="tasmax_hads_1980_raw",
+                source_path=HADS_RAW_TASMAX_EXAMPLE_PATH,
+                local_cache_path=local_hads_cache_path / HADS_RAW_TASMAX_1980_FILE,
+                reader=open_dataset,
+                reader_kwargs={"decode_coords": "all"},
+            ),
+        )
+    )
+    if sync_all:
+        if use_async:
+            _ = asyncio.run(cache_manager.async_sync_all())
+        else:
+            _ = cache_manager.sync_all()
+    return cache_manager
+
+
 @pytest.mark.mount
 @pytest.fixture(scope="session")
 def tasmax_cpm_1980_raw(
     local_cache: bool,
-    local_cpm_cache_path: Path,
+    local_cach_fixtures: LocalCachesManager,
 ) -> T_Dataset:
-    if local_cache:
-        return open_dataset(
-            local_cpm_cache_path / UKCP_RAW_TASMAX_1980_FILE, decode_coords="all"
-        )
-    else:
-        return open_dataset(UKCP_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
+    return local_cach_fixtures["tasmax_cpm_1980_raw"].read(cache_path=local_cache)
 
 
 @pytest.mark.mount
 @pytest.fixture(scope="session")
 def tasmax_hads_1980_raw(
     local_cache: bool,
-    local_hads_cache_path: Path,
+    local_cach_fixtures: LocalCachesManager,
 ) -> T_Dataset:
-    if local_cache:
-        return open_dataset(
-            local_hads_cache_path / HADS_RAW_TASMAX_1980_FILE, decode_coords="all"
-        )
-    else:
-        return open_dataset(HADS_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all")
+    return local_cach_fixtures["tasmax_hads_1980_raw"].read(cache_path=local_cache)
 
 
 @pytest.fixture(scope="session")
