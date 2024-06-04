@@ -1,3 +1,4 @@
+import asyncio
 from argparse import BooleanOptionalAction
 from pathlib import Path
 from pprint import pprint
@@ -6,7 +7,7 @@ from typing import Final, Iterator
 
 import pytest
 from coverage_badge.__main__ import main as gen_cov_badge
-from xarray import DataArray, Dataset
+from xarray import DataArray, Dataset, open_dataset
 
 from clim_recal.config import ClimRecalConfig
 from clim_recal.debiasing.debias_wrapper import CityOptions
@@ -28,15 +29,20 @@ from tests.utils import (
     CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT,
     CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT,
     CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT,
+    HADS_RAW_TASMAX_1980_FILE,
+    HADS_RAW_TASMAX_EXAMPLE_PATH,
     MOD_FOLDER_FILES_COUNT_CORRECT,
     OBS_FOLDER_FILES_COUNT_CORRECT,
     PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT,
     TEST_AUTH_CSV_FILE_NAME,
+    UKCP_RAW_TASMAX_1980_FILE,
+    UKCP_RAW_TASMAX_EXAMPLE_PATH,
     XARRAY_END_DATE_4_DAYS,
     XARRAY_END_DATE_8_DAYS,
     XARRAY_EXAMPLE_END_DATE_4_YEARS,
     XARRAY_SKIP_2_FROM_8_DAYS,
     LocalCache,
+    LocalCachesManager,
     xarray_example,
 )
 
@@ -97,6 +103,39 @@ def is_data_mounted(data_mount_path) -> bool:
         condition by returning `None`.
     """
     return is_climate_data_mounted(mount_path=data_mount_path)
+
+
+@pytest.fixture(scope="session")
+def local_cach_fixtures(
+    local_cpm_cache_path: Path,
+    local_hads_cache_path: Path,
+    sync_all: bool,
+    use_async: bool,
+) -> LocalCachesManager:
+    cache_manager: LocalCachesManager = LocalCachesManager(
+        caches=(
+            LocalCache(
+                name="tasmax_cpm_1980_raw",
+                source_path=UKCP_RAW_TASMAX_EXAMPLE_PATH,
+                local_cache_path=local_cpm_cache_path / UKCP_RAW_TASMAX_1980_FILE,
+                reader=open_dataset,
+                reader_kwargs={"decode_coords": "all"},
+            ),
+            LocalCache(
+                name="tasmax_hads_1980_raw",
+                source_path=HADS_RAW_TASMAX_EXAMPLE_PATH,
+                local_cache_path=local_hads_cache_path / HADS_RAW_TASMAX_1980_FILE,
+                reader=open_dataset,
+                reader_kwargs={"decode_coords": "all"},
+            ),
+        )
+    )
+    if sync_all:
+        if use_async:
+            _ = asyncio.run(cache_manager.async_sync_all())
+        else:
+            _ = cache_manager.sync_all()
+    return cache_manager
 
 
 # This may be removed in future

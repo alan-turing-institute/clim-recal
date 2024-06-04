@@ -1,4 +1,3 @@
-import asyncio
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Final, Literal
@@ -64,38 +63,47 @@ from clim_recal.utils.xarray import (
     plot_xarray,
 )
 
-from .utils import LocalCache, LocalCachesManager, xarray_example, year_days_count
-
-HADS_UK_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
-HADS_UK_RESAMPLED_DAY_SERVER_PATH: Final[Path] = Path(
-    "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"
+from .utils import (
+    HADS_UK_TASMAX_DAY_SERVER_PATH,
+    HADS_UK_TASMAX_LOCAL_TEST_PATH,
+    UKCP_RAW_TASMAX_EXAMPLE_PATH,
+    UKCP_TASMAX_DAY_SERVER_PATH,
+    UKCP_TASMAX_LOCAL_TEST_PATH,
+    LocalCachesManager,
+    xarray_example,
+    year_days_count,
 )
 
-UKCP_RAW_TASMAX_1980_FILE: Final[Path] = Path(
-    "tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc"
-)
-HADS_RAW_TASMAX_1980_FILE: Final[Path] = Path(
-    "tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc"
-)
-
-HADS_UK_TASMAX_LOCAL_TEST_PATH: Final[Path] = (
-    Path(HadUKGrid.slug) / HADS_RAW_TASMAX_1980_FILE
-)
-
-UKCP_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/UKCP2.2/tasmax/01/latest")
-# Todo: Change "tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc"
-# to "tasmax_cpm_example.nc"
-UKCP_TASMAX_LOCAL_TEST_PATH: Final[Path] = (
-    Path(UKCPLocalProjections.slug) / UKCP_RAW_TASMAX_1980_FILE
-)
-
-UKCP_RAW_TASMAX_EXAMPLE_PATH: Final[Path] = (
-    RAW_CPM_TASMAX_PATH / UKCP_RAW_TASMAX_1980_FILE
-)
-
-HADS_RAW_TASMAX_EXAMPLE_PATH: Final[Path] = (
-    RAW_HADS_TASMAX_PATH / HADS_RAW_TASMAX_1980_FILE
-)
+# HADS_UK_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
+# HADS_UK_RESAMPLED_DAY_SERVER_PATH: Final[Path] = Path(
+#     "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"
+# )
+#
+# UKCP_RAW_TASMAX_1980_FILE: Final[Path] = Path(
+#     "tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc"
+# )
+# HADS_RAW_TASMAX_1980_FILE: Final[Path] = Path(
+#     "tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc"
+# )
+#
+# HADS_UK_TASMAX_LOCAL_TEST_PATH: Final[Path] = (
+#     Path(HadUKGrid.slug) / HADS_RAW_TASMAX_1980_FILE
+# )
+#
+# UKCP_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/UKCP2.2/tasmax/01/latest")
+# # Todo: Change "tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc"
+# # to "tasmax_cpm_example.nc"
+# UKCP_TASMAX_LOCAL_TEST_PATH: Final[Path] = (
+#     Path(UKCPLocalProjections.slug) / UKCP_RAW_TASMAX_1980_FILE
+# )
+#
+# UKCP_RAW_TASMAX_EXAMPLE_PATH: Final[Path] = (
+#     RAW_CPM_TASMAX_PATH / UKCP_RAW_TASMAX_1980_FILE
+# )
+#
+# HADS_RAW_TASMAX_EXAMPLE_PATH: Final[Path] = (
+#     RAW_HADS_TASMAX_PATH / HADS_RAW_TASMAX_1980_FILE
+# )
 
 HADS_FIRST_DATES: np.array = np.array(
     ["19800101", "19800102", "19800103", "19800104", "19800105"]
@@ -165,39 +173,6 @@ FINAL_CPM_DEC_10_5_X_0_10_Y: Final[NDArray] = np.array(
         12.290186,
     )
 )
-
-
-@pytest.fixture(scope="session")
-def local_cach_fixtures(
-    local_cpm_cache_path: Path,
-    local_hads_cache_path: Path,
-    sync_all: bool,
-    use_async: bool,
-) -> LocalCachesManager:
-    cache_manager: LocalCachesManager = LocalCachesManager(
-        caches=(
-            LocalCache(
-                name="tasmax_cpm_1980_raw",
-                source_path=UKCP_RAW_TASMAX_EXAMPLE_PATH,
-                local_cache_path=local_cpm_cache_path / UKCP_RAW_TASMAX_1980_FILE,
-                reader=open_dataset,
-                reader_kwargs={"decode_coords": "all"},
-            ),
-            LocalCache(
-                name="tasmax_hads_1980_raw",
-                source_path=HADS_RAW_TASMAX_EXAMPLE_PATH,
-                local_cache_path=local_hads_cache_path / HADS_RAW_TASMAX_1980_FILE,
-                reader=open_dataset,
-                reader_kwargs={"decode_coords": "all"},
-            ),
-        )
-    )
-    if sync_all:
-        if use_async:
-            _ = asyncio.run(cache_manager.async_sync_all())
-        else:
-            _ = cache_manager.sync_all()
-    return cache_manager
 
 
 @pytest.mark.mount
