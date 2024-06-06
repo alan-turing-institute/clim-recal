@@ -74,37 +74,6 @@ from .utils import (
     year_days_count,
 )
 
-# HADS_UK_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
-# HADS_UK_RESAMPLED_DAY_SERVER_PATH: Final[Path] = Path(
-#     "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"
-# )
-#
-# UKCP_RAW_TASMAX_1980_FILE: Final[Path] = Path(
-#     "tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc"
-# )
-# HADS_RAW_TASMAX_1980_FILE: Final[Path] = Path(
-#     "tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc"
-# )
-#
-# HADS_UK_TASMAX_LOCAL_TEST_PATH: Final[Path] = (
-#     Path(HadUKGrid.slug) / HADS_RAW_TASMAX_1980_FILE
-# )
-#
-# UKCP_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/UKCP2.2/tasmax/01/latest")
-# # Todo: Change "tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc"
-# # to "tasmax_cpm_example.nc"
-# UKCP_TASMAX_LOCAL_TEST_PATH: Final[Path] = (
-#     Path(UKCPLocalProjections.slug) / UKCP_RAW_TASMAX_1980_FILE
-# )
-#
-# UKCP_RAW_TASMAX_EXAMPLE_PATH: Final[Path] = (
-#     RAW_CPM_TASMAX_PATH / UKCP_RAW_TASMAX_1980_FILE
-# )
-#
-# HADS_RAW_TASMAX_EXAMPLE_PATH: Final[Path] = (
-#     RAW_HADS_TASMAX_PATH / HADS_RAW_TASMAX_1980_FILE
-# )
-
 HADS_FIRST_DATES: np.array = np.array(
     ["19800101", "19800102", "19800103", "19800104", "19800105"]
 )
