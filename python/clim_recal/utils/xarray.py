@@ -339,8 +339,8 @@ def cpm_reproject_with_standard_calendar(
     file_name_prefix: str = "",
     subfolder: PathLike = CPM_LOCAL_INTERMEDIATE_PATH,
     subfolder_time_stamp: bool = False,
-    source_x_coord_column_name: str = HADS_RAW_X_COLUMN_NAME,
-    source_y_coord_column_name: str = HADS_RAW_Y_COLUMN_NAME,
+    # source_x_coord_column_name: str = HADS_RAW_X_COLUMN_NAME,
+    # source_y_coord_column_name: str = HADS_RAW_Y_COLUMN_NAME,
 ) -> T_Dataset:
     """Convert raw `cpm_xr_time_series` to an 365/366 days and 27700 coords.
 
@@ -353,10 +353,18 @@ def cpm_reproject_with_standard_calendar(
     cpm_xr_time_series
         `Dataset` (or path to load as `Dataset`) expected to be in raw UKCPM
         format, with 360 day years and a rotated coordinate system.
-    output_folder
+    variable_name
+        Name of variable used, usually a measure of climate change like
+        `tasmax` and `tasmin`.
+    output_path
         Path to store all intermediary and final projection.
     file_name_prefix
         `str` to prefix all written files with.
+    subfolder
+        Local `path` to place intermediate files from
+        `IntermediateCPMFilesManager` calls.
+    subfolder_time_stamp
+        Whether to add a timestamp in the intermediate file names.
 
     Returns
     -------
@@ -510,7 +518,7 @@ def interpolate_coords(
         reprojected_data_array.rio.write_crs(reference_coords.rio.crs, inplace=True)
     else:
         reprojected_data_array.rio.write_crs(xr_time_series.rio.crs, inplace=True)
-    reprojected: Dataset = Dataset({variable_name: reprojected_data_array})
+    reprojected: T_Dataset = Dataset({variable_name: reprojected_data_array})
     return reprojected
 
 
@@ -724,7 +732,7 @@ def ensure_xr_dataset(
 
 
 def convert_xr_calendar(
-    xr_time_series: DataArray | Dataset | PathLike,
+    xr_time_series: T_DataArray | T_Dataset | PathLike,
     align_on: ConvertCalendarAlignOptions = DEFAULT_CALENDAR_ALIGN,
     calendar: CFCalendar = CFCalendarSTANDARD,
     use_cftime: bool = False,
@@ -946,7 +954,7 @@ def gdal_warp_wrapper(
     output_y_resolution: int | None = None,
     copy_metadata: bool = True,
     return_path: bool = True,
-    format: GDALFormatsType | None = GDALGeoTiffFormatStr,
+    format: GDALFormatsType | str | None = GDALGeoTiffFormatStr,
     multithread: bool = True,
     **kwargs,
 ) -> Path | GDALDataset:
@@ -987,9 +995,12 @@ def gdal_warp_wrapper(
         Whether to copy metadata when possible.
     return_path
         Return the resulting path if `True`, else the new `GDALDataset`.
-    resampling_method
-        Sampling method. `resampleAlg` in `WarpOption`. See other options
-        in: `https://gdal.org/programs/gdalwarp.html#cmdoption-gdalwarp-r`.
+    format
+        Format to write new file to.
+    multithread
+        Whether to use `multithread` to speed up calculations.
+    kwargs
+        Any additional parameters to pass to `WarpOption`.
     """
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     try:
@@ -1016,7 +1027,7 @@ def gdal_warp_wrapper(
 
 def apply_geo_func(
     source_path: PathLike,
-    func: Callable[[Dataset], Dataset],
+    func: Callable[[T_Dataset], T_Dataset],
     export_folder: PathLike,
     new_path_name_func: Callable[[Path], Path] | None = None,
     to_netcdf: bool = True,
@@ -1024,7 +1035,7 @@ def apply_geo_func(
     export_path_as_output_path_kwarg: bool = False,
     return_results: bool = False,
     **kwargs,
-) -> Path | Dataset | GDALDataset:
+) -> Path | T_Dataset | GDALDataset:
     """Apply a `Callable` to `netcdf_source` file and export via `to_netcdf`.
 
     Parameters
@@ -1035,10 +1046,20 @@ def apply_geo_func(
         `Callable` to modify `netcdf`.
     export_folder
         Where to save results.
-    path_name_replace_tuple
-        Optional replacement `str` to apply to `source_path.name` when exporting
+    new_path_name_func
+        `Callabe` to generate new path to save to.
     to_netcdf
-        Whether to call `to_netcdf` method on `results` `Dataset`.
+        Whether to call `to_netcdf()` method on `results` `Dataset`.
+    to_raster
+        Whether to call `rio.to_raster()` on `results` `Dataset`.
+    export_path_as_output_path_kwarg
+        Whether to add `output_path = export_path` to `kwargs` passed to
+        `func`. Meant for cases calling `gdal_warp_wrapper`.
+    return_results
+        Whether to return results, which would be a `Dataset` or
+        `GDALDataset` (the latter if `gdal_warp_wrapper` is used).
+    **kwargs
+        Other parameters passed to `func` call.
     """
     export_path: Path = Path(source_path)
     if new_path_name_func:
@@ -1129,7 +1150,7 @@ def file_name_to_start_end_dates(
     return start_date, end_date
 
 
-def generate_360_to_standard(array_to_expand: T_DataArray) -> DataArray:
+def generate_360_to_standard(array_to_expand: T_DataArray) -> T_DataArray:
     """Return `array_to_expand` 360 days expanded to 365 or 366 days.
 
     This may be dropped if `cpm_reproject_with_standard_calendar` is successful.
