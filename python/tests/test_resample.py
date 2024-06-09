@@ -69,7 +69,6 @@ from .utils import (
     UKCP_RAW_TASMAX_EXAMPLE_PATH,
     UKCP_TASMAX_DAY_SERVER_PATH,
     UKCP_TASMAX_LOCAL_TEST_PATH,
-    LocalCachesManager,
     xarray_example,
     year_days_count,
 )
@@ -142,24 +141,6 @@ FINAL_CPM_DEC_10_5_X_0_10_Y: Final[NDArray] = np.array(
         12.290186,
     )
 )
-
-
-@pytest.mark.mount
-@pytest.fixture(scope="session")
-def tasmax_cpm_1980_raw(
-    local_cache: bool,
-    local_cach_fixtures: LocalCachesManager,
-) -> T_Dataset:
-    return local_cach_fixtures["tasmax_cpm_1980_raw"].read(cache_path=local_cache)
-
-
-@pytest.mark.mount
-@pytest.fixture(scope="session")
-def tasmax_hads_1980_raw(
-    local_cache: bool,
-    local_cach_fixtures: LocalCachesManager,
-) -> T_Dataset:
-    return local_cach_fixtures["tasmax_hads_1980_raw"].read(cache_path=local_cache)
 
 
 @pytest.fixture(scope="session")

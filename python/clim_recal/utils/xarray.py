@@ -52,7 +52,9 @@ ChangeDayType = set[tuple[int, int]]
 # MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
 # """A `set` of tuples of month and day numbers for `enforce_date_changes`."""
 
-BRITISH_NATIONAL_GRID_EPSG: Final[str] = "EPSG:27700"
+
+BRITISH_NATION_GRID_COORDS_NUMBER: Final[int] = 27700
+BRITISH_NATIONAL_GRID_EPSG: Final[str] = f"EPSG:{BRITISH_NATION_GRID_COORDS_NUMBER}"
 
 MONTH_DAY_XARRAY_LEAP_YEAR_DROP: DropDayType = {
     (1, 31),
@@ -104,14 +106,14 @@ class CityCoords:
         return self.xmin, self.xmax, self.ymin, self.ymax
 
 
-GlasgowCoords: Final[CityCoords] = CityCoords(
+GlasgowCoordsEPSG27700: Final[CityCoords] = CityCoords(
     "Glasgow", 249799.999600002, 269234.9996, 657761.472000003, 672330.696800007
 )
 
-LondonCoords: Final[CityCoords] = CityCoords(
+LondonCoordsEPSG27700: Final[CityCoords] = CityCoords(
     "London", 503568.1996, 561957.4961, 155850.7974, 200933.9025
 )
-ManchesterCoords: Final[CityCoords] = CityCoords(
+ManchesterCoordsEPSG27700: Final[CityCoords] = CityCoords(
     "Manchester", 380399.997, 393249.999, 389349.999, 405300.003
 )
 
@@ -332,10 +334,39 @@ class IntermediateCPMFilesManager:
         )
 
 
+def check_xarray_path_and_var_name(
+    xr_time_series: T_Dataset | PathLike, variable_name: str | None
+) -> tuple[Dataset, str]:
+    """Check and return a `T_Dataset` instances and included variable name."""
+    if isinstance(xr_time_series, PathLike):
+        xr_time_series = open_dataset(xr_time_series, decode_coords="all")
+    try:
+        assert isinstance(xr_time_series, Dataset)
+    except AssertionError:
+        raise TypeError(
+            f"'xr_time_series' should be a 'Dataset' or 'NetCDF', recieved: '{type(xr_time_series)}'"
+        )
+
+    if not variable_name:
+        data_vars_count: int = len(xr_time_series.data_vars)
+        try:
+            assert data_vars_count == 1
+        except:
+            ValueError(
+                f"'variable_name' must be specified or 'data_vars' count must be 1, not {data_vars_count}."
+            )
+        variable_name = xr_time_series.data_vars[0]
+    if not isinstance(variable_name, str):
+        raise ValueError(
+            "'variable_name' must be a 'str' or inferred from 'xr_time_series.data_vars'. Got: '{variable_name}'"
+        )
+    return xr_time_series, variable_name
+
+
 def cpm_reproject_with_standard_calendar(
     cpm_xr_time_series: T_Dataset | PathLike,
-    variable_name: str,
-    output_path: PathLike,
+    variable_name: str | None = None,
+    output_path: PathLike | None = None,
     file_name_prefix: str = "",
     subfolder: PathLike = CPM_LOCAL_INTERMEDIATE_PATH,
     subfolder_time_stamp: bool = False,
@@ -369,65 +400,211 @@ def cpm_reproject_with_standard_calendar(
     Returns
     -------
     Final `xarray` `Dataset` after spatial and temporal changes.
+
+    Examples
+    --------
+    >>> tasmax_cpm_1980_raw = getfixture('tasmax_cpm_1980_raw')
+    >>> if not tasmax_cpm_1980_raw:
+    ...     pytest.skip(mount_or_cache_doctest_skip_message)
+    >>> tasmax_cpm_1980_365_day: T_Dataset = cpm_reproject_with_standard_calendar(
+    ...     cpm_xr_time_series=tasmax_cpm_1980_raw,
+    ...     variable_name="tasmax")
+    xarray.Dataset {
+    dimensions:
+        time = 365 ;
+        grid_latitude = 606 ;
+        grid_longitude = 484 ;
+    ...
+    >>> tasmax_cpm_1980_365_day
+    <xarray.Dataset> Size: 504MB
+    Dimensions:      (x: 529, y: 653, time: 365)
+    Coordinates:
+      * x            (x) float64 4kB -3.129e+05 -3.107e+05 ... 8.465e+05 8.487e+05
+      * y            (y) float64 5kB 1.197e+06 1.195e+06 ... -2.353e+05 -2.375e+05
+      * time         (time) datetime64[ns] 3kB 1980-12-01T12:00:00 ... 1981-11-30...
+        spatial_ref  int64 8B 0
+    Data variables:
+        tasmax       (time, y, x) float32 504MB 3.403e+38 3.403e+38 ... 3.403e+38
     """
-    if isinstance(cpm_xr_time_series, PathLike):
-        cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
 
-    intermediate_file_configs: IntermediateCPMFilesManager = (
-        IntermediateCPMFilesManager(
-            file_name_prefix=file_name_prefix,
-            variable_name=variable_name,
-            output_path=Path(output_path),
-            subfolder_path=Path(subfolder),
-            subfolder_time_stamp=subfolder_time_stamp,
-            time_series_start=cpm_xr_time_series.time.values[0],
-            time_series_end=cpm_xr_time_series.time.values[-1],
-        )
+    # intermediate_file_configs: IntermediateCPMFilesManager = (
+    #     IntermediateCPMFilesManager(
+    #         file_name_prefix=file_name_prefix,
+    #         variable_name=variable_name,
+    #         output_path=Path(output_path),
+    #         subfolder_path=Path(subfolder),
+    #         subfolder_time_stamp=subfolder_time_stamp,
+    #         time_series_start=cpm_xr_time_series.time.values[0],
+    #         time_series_end=cpm_xr_time_series.time.values[-1],
+    #     )
+    # )
+    cpm_xr_time_series, variable_name = check_xarray_path_and_var_name(
+        cpm_xr_time_series, variable_name
     )
 
-    expanded_calendar: T_Dataset = cpm_xarray_to_standard_calendar(cpm_xr_time_series)
-    # Index through the first ensemble
-    subset_within_ensemble: T_DataArray = expanded_calendar[variable_name][0]
-
-    subset_within_ensemble.to_netcdf(intermediate_file_configs.intermediate_nc_path)
-    simplified_netcdf: T_Dataset = open_dataset(
-        intermediate_file_configs.intermediate_nc_path, decode_coords="all"
-    )
-    simplified_netcdf["grid_longitude_bnds"] = expanded_calendar.grid_longitude_bnds
-    simplified_netcdf["grid_latitude_bnds"] = expanded_calendar.grid_latitude_bnds
-    simplified_netcdf[variable_name].to_netcdf(
-        intermediate_file_configs.simplified_nc_path
+    standar_calendar_ts: T_Dataset = cpm_xarray_to_standard_calendar(cpm_xr_time_series)
+    # Index through the first ensemble to skip the 'ensemble_member' index
+    subset_within_ensemble: T_Dataset = Dataset(
+        {variable_name: standar_calendar_ts[variable_name][0]}
     )
 
-    warped_to_22700_path = gdal_warp_wrapper(
-        input_path=intermediate_file_configs.simplified_nc_path,
-        output_path=intermediate_file_configs.intermediate_warp_path,
-        copy_metadata=True,
-        format=None,
+    subset_in_epsg_27700: T_DataArray = xr_reproject_crs(
+        subset_within_ensemble, variable_name=variable_name
     )
 
-    assert warped_to_22700_path == intermediate_file_configs.intermediate_warp_path
-    warped_to_22700 = open_dataset(intermediate_file_configs.intermediate_warp_path)
-    assert warped_to_22700.rio.crs == BRITISH_NATIONAL_GRID_EPSG
-    assert len(warped_to_22700.time) == len(expanded_calendar.time)
-
-    # Commenting these out in prep for addressing
-    # https://github.com/alan-turing-institute/clim-recal/issues/151
-    # warped_to_22700_y_axis_inverted: T_Dataset = warped_to_22700.reindex(
-    #     y=warped_to_22700.y * -1
+    # subset_within_ensemble.to_netcdf(intermediate_file_configs.intermediate_nc_path)
+    # simplified_netcdf: T_Dataset = open_dataset(
+    #     intermediate_file_configs.intermediate_nc_path, decode_coords="all"
+    # )
+    # simplified_netcdf["grid_longitude_bnds"] = expanded_calendar.grid_longitude_bnds
+    # simplified_netcdf["grid_latitude_bnds"] = expanded_calendar.grid_latitude_bnds
+    # simplified_netcdf[variable_name].to_netcdf(
+    #     intermediate_file_configs.simplified_nc_path
     # )
     #
-    # warped_to_22700_y_axis_inverted = warped_to_22700_y_axis_inverted.rename(
-    #     {"x": source_x_coord_column_name, "y": source_y_coord_column_name}
+    # warped_to_22700_path = gdal_warp_wrapper(
+    #     input_path=intermediate_file_configs.simplified_nc_path,
+    #     output_path=intermediate_file_configs.intermediate_warp_path,
+    #     copy_metadata=True,
+    #     format=None,
     # )
+    #
+    # assert warped_to_22700_path == intermediate_file_configs.intermediate_warp_path
+    # warped_to_22700 = open_dataset(intermediate_file_configs.intermediate_warp_path)
+    # assert warped_to_22700.rio.crs == BRITISH_NATIONAL_GRID_EPSG
+    # assert len(warped_to_22700.time) == len(expanded_calendar.time)
+    #
+    # # Commenting these out in prep for addressing
+    # # https://github.com/alan-turing-institute/clim-recal/issues/151
+    # # warped_to_22700_y_axis_inverted: T_Dataset = warped_to_22700.reindex(
+    # #     y=warped_to_22700.y * -1
+    # # )
+    # #
+    # # warped_to_22700_y_axis_inverted = warped_to_22700_y_axis_inverted.rename(
+    # #     {"x": source_x_coord_column_name, "y": source_y_coord_column_name}
+    # # )
+    #
+    # # warped_to_22700_y_axis_inverted.to_netcdf(intermediate_file_configs.final_nc_path)
+    # warped_to_22700.to_netcdf(intermediate_file_configs.final_nc_path)
+    # final_results = open_dataset(
+    #     intermediate_file_configs.final_nc_path, decode_coords="all"
+    # )
+    try:
+        assert (subset_in_epsg_27700.time == standar_calendar_ts.time).all()
+    except:
+        raise ValueError(
+            f"Time series of 'standar_calendar_ts' does not match projection to {BRITISH_NATIONAL_GRID_EPSG}."
+        )
+    return subset_in_epsg_27700
 
-    # warped_to_22700_y_axis_inverted.to_netcdf(intermediate_file_configs.final_nc_path)
-    warped_to_22700.to_netcdf(intermediate_file_configs.final_nc_path)
-    final_results = open_dataset(
-        intermediate_file_configs.final_nc_path, decode_coords="all"
+
+def xr_reproject_crs(
+    xr_time_series: T_Dataset | PathLike,
+    variable_name: str,
+    x_dim_name: str = "grid_longitude",
+    y_dim_name: str = "grid_latitude",
+    final_crs: str = BRITISH_NATIONAL_GRID_EPSG,
+    final_resolution: tuple[int, int] = (2200, 2200),
+    # target_xr: T_DataArray | PathLike = DEFAULT_RELATIVE_GRID_DATA_PATH,
+    time_dim_name: str = "time",
+    # target_x_dim_name: str = "x",
+    # target_y_dim_name: str = "y",
+    rename_final_dims_dict: dict[str, str] | None = None,
+    # target_time_dim_name: str = "time",
+) -> T_Dataset:
+    """Reproject `source_xr` to `target_xr` coordinate structure.
+
+    Examples
+    --------
+    >>> tasmax_cpm_1980_raw = getfixture('tasmax_cpm_1980_raw')
+    >>> if not tasmax_cpm_1980_raw:
+    ...     pytest.skip(mount_or_cache_doctest_skip_message)
+    >>> tasmax_cpm_1980_365_day: T_Dataset = cpm_xarray_to_standard_calendar(
+    ...     tasmax_cpm_1980_raw)
+    >>> tasmax_sub_section =
+    >>> projected_cpm: Dataset = xr_reproject_crs(
+    ...        tasmax_cpm_1980_365_day,)
+    >>> assert False
+
+    """
+    if isinstance(xr_time_series, PathLike | str):
+        xr_time_series = open_dataset(xr_time_series, decode_coords="all")
+    # if isinstance(xr_time_series, DataArray):
+    #     if xr_time_series.name:
+    #         if variable_name:
+    #             try:
+    #                 assert variable_name == xr_time_series.name
+    #             except AssertionError:
+    #                 raise ValueError(f"'variable_name': 'variable_name' != 'xr_time_series': '{xr_time_series.name}'.")
+    #         else:
+    #             variable_name = xr_time_series.name
+    #         variable_name
+    # xr_time_series = Dataset({var})
+    xr_time_series = xr_time_series.rio.set_spatial_dims(
+        x_dim=x_dim_name, y_dim=y_dim_name, inplace=True
     )
-    assert (final_results.time == expanded_calendar.time).all()
-    return final_results
+    logger.info(xr_time_series.info())
+    # if len(xr_time_series[variable_name].dims) > 3:
+    data_array: T_DataArray = xr_time_series[variable_name]
+    final_index_names: tuple[str, str, str] = (time_dim_name, x_dim_name, y_dim_name)
+    extra_dims: set[str] = set(data_array.indexes.dims) - set(final_index_names)
+    if extra_dims:
+        raise ValueError(
+            f"Can only reindex using dims: {final_index_names}, extra dim(s): {extra_dims}"
+        )
+        data_array = data_array.drop_indexes(*extra_dims)
+        data_array = data_array.drop_vars(*extra_dims)
+    # if tuple(data_array.indexes.dims.keys()) != final_index_names:
+    #     data_array = data_array.transpose(*final_index_names, ...)
+    coords: dict[str, DataArray] = {
+        time_dim_name: xr_time_series[time_dim_name],
+        y_dim_name: xr_time_series[y_dim_name],
+        x_dim_name: xr_time_series[x_dim_name],
+    }
+    without_attributes: T_DataArray = DataArray(
+        data=data_array.to_numpy(), coords=coords, name=variable_name
+    )
+    without_attributes = without_attributes.rio.write_crs(xr_time_series.rio.crs)
+    without_attributes_reprojected: DataArray = without_attributes.rio.reproject(
+        final_crs, resolution=final_resolution
+    )
+    return Dataset({variable_name: without_attributes_reprojected})
+    # return without_attributes_reprojected
+    # coords: tuple[T_DataArray, T_DataArray, T_DataArray] = (
+    #         source_xr[source_time_dim_name].to_numpy(),
+    #         source_xr[source_x_dim_name].to_numpy(),
+    #         source_xr[source_y_dim_name].to_numpy(),
+    # )
+    # dims: tuple[str, str, str] = (target_time_dim_name, target_x_dim_name, target_y_dim_name)
+    # dims: tuple[str, str, str] = (target_time_dim_name, target_x_dim_name, target_y_dim_name)
+
+    # without_attributes: T_DataArray = DataArray(
+    #     data=data_to_numpy,
+    #     coords=coords,
+    #     # dims=dims,
+    #     name=variable_name
+    # )
+    coords: dict[str, T_DataArray] = {
+        target_time_dim_name: source_xr[source_time_dim_name].to_numpy(),
+        source_y_dim_name: source_xr[source_y_dim_name].to_numpy(),
+        source_x_dim_name: source_xr[source_x_dim_name].to_numpy(),
+    }
+    data_to_numpy: NDArray = source_xr[variable_name].to_numpy()
+    without_attributes: T_DataArray = DataArray(
+        data=data_to_numpy[0],
+        coords=coords,
+        # dims=dims,
+        name=variable_name,
+    )
+    renamed_attributes: T_DataArray = without_attributes.rename(
+        {source_x_dim_name: target_x_dim_name, source_y_dim_name: target_y_dim_name}
+    )
+    renamed_attributes = renamed_attributes.rio.write_crs(source_xr.rio.crs)
+    renamed_attributes = renamed_attributes.rio.reproject_match(target_xr)
+    if rename_final_dims_dict:
+        renamed_attributes = renamed_attributes.rename(renamed_attributes)
+
+    return Dataset({variable_name: renamed_attributes})
 
 
 def interpolate_coords(

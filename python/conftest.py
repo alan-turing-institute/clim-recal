@@ -8,6 +8,7 @@ from typing import Final, Iterator
 import pytest
 from coverage_badge.__main__ import main as gen_cov_badge
 from xarray import DataArray, Dataset, open_dataset
+from xarray.core.types import T_Dataset
 
 from clim_recal.config import ClimRecalConfig
 from clim_recal.debiasing.debias_wrapper import CityOptions
@@ -47,6 +48,9 @@ from tests.utils import (
 )
 
 MOUNT_DOCTEST_SKIP_MESSAGE: Final[str] = "requires external data mounted"
+MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE: Final[
+    str
+] = "requires external data mounted or cached"
 
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
 CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData")
@@ -106,7 +110,7 @@ def is_data_mounted(data_mount_path) -> bool:
 
 
 @pytest.fixture(scope="session")
-def local_cach_fixtures(
+def local_cache_fixtures(
     local_cpm_cache_path: Path,
     local_hads_cache_path: Path,
     sync_all: bool,
@@ -136,6 +140,22 @@ def local_cach_fixtures(
         else:
             _ = cache_manager.sync_all()
     return cache_manager
+
+
+@pytest.fixture(scope="session")
+def tasmax_cpm_1980_raw(
+    local_cache: bool,
+    local_cache_fixtures: LocalCachesManager,
+) -> T_Dataset:
+    return local_cache_fixtures["tasmax_cpm_1980_raw"].read(cache_path=local_cache)
+
+
+@pytest.fixture(scope="session")
+def tasmax_hads_1980_raw(
+    local_cache: bool,
+    local_cache_fixtures: LocalCachesManager,
+) -> T_Dataset | None:
+    return local_cache_fixtures["tasmax_hads_1980_raw"].read(cache_path=local_cache)
 
 
 # This may be removed in future
@@ -408,6 +428,9 @@ def doctest_auto_fixtures(
     doctest_namespace["resample_test_hads_output_path"] = resample_test_hads_output_path
     doctest_namespace["resample_test_cpm_output_path"] = resample_test_cpm_output_path
     doctest_namespace["mount_doctest_skip_message"] = MOUNT_DOCTEST_SKIP_MESSAGE
+    doctest_namespace[
+        "mount_or_cache_doctest_skip_message"
+    ] = MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE
     doctest_namespace[
         "glasgow_example_cropped_cpm_rainfall_path"
     ] = glasgow_example_cropped_cpm_rainfall_path
