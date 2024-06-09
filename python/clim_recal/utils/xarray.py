@@ -31,16 +31,9 @@ from .core import (
     CLI_DATE_FORMAT_STR,
     ISO_DATE_FORMAT_STR,
     climate_data_mount_path,
-    date_range_to_str,
     results_path,
-    time_str,
 )
-from .gdal_formats import (
-    NETCDF_EXTENSION_STR,
-    GDALFormatExtensions,
-    GDALFormatsType,
-    GDALGeoTiffFormatStr,
-)
+from .gdal_formats import NETCDF_EXTENSION_STR, GDALFormatsType, GDALGeoTiffFormatStr
 
 logger = getLogger(__name__)
 
@@ -211,129 +204,6 @@ def cftime360_to_date(cf_360: Datetime360Day) -> date:
     return date(cf_360.year, cf_360.month, cf_360.day)
 
 
-@dataclass
-class IntermediateCPMFilesManager:
-
-    """Manage intermediate files and paths for CPM calendar projection.
-
-    Parameters
-    ----------
-    variable_name
-        Name of variable (e.g. `tasmax`). Included in file names.
-    output_path
-        Folder to save results to.
-    subfolder_path
-        Path to place intermediate files relative to output_path.
-    time_series_start
-        Start of time series covered to include in file name.
-    time_series_end
-        End of time series covered to include in file name.
-    file_name_prefix
-        str to add at the start of the output file names (after integers).
-    subfolder_time_stamp
-        Whether to include a time stamp in the subfolder file name.
-
-    Examples
-    --------
-    >>> test_path = getfixture('tmp_path')
-    >>> intermedate_files_manager: IntermediateCPMFilesManager = IntermediateCPMFilesManager(
-    ...     file_name_prefix="test-1980",
-    ...     variable_name="tasmax",
-    ...     output_path=test_path / 'intermediate_test_folder',
-    ...     subfolder_path='test_subfolder',
-    ...     time_series_start=date(1980, 12, 1),
-    ...     time_series_end=date(1981, 11, 30),
-    ... )
-    >>> str(intermedate_files_manager.output_path)
-    '.../intermediate_test_folder'
-    >>> str(intermedate_files_manager.intermediate_files_folder)
-    '.../test_subfolder'
-    >>> str(intermedate_files_manager.final_nc_path)
-    '.../test_subfolder/3-test-1980-tasmax-19801201-19811130-cpm-365-or-366-27700-final.nc'
-    """
-
-    variable_name: str
-    output_path: Path | None
-    time_series_start: datetime | date | Datetime360Day
-    time_series_end: datetime | date | Datetime360Day
-    subfolder_path: Path = CPM_LOCAL_INTERMEDIATE_PATH
-    file_name_prefix: str = ""
-    subfolder_time_stamp: bool = False
-
-    def __post_init__(self) -> None:
-        """Ensure `output_path`, `time_series_start/end` are set correctly."""
-        self.output_path = Path(self.output_path) if self.output_path else Path()
-        if self.output_path.suffix[1:] in GDALFormatExtensions.values():
-            logger.info(
-                f"Output path is: '{str(self.output_path)}'\n"
-                "Putting intermediate files in parent directory."
-            )
-            self._passed_output_path = self.output_path
-            self.output_path = self.output_path.parent
-        if isinstance(self.time_series_start, Datetime360Day):
-            self.time_series_start = cftime360_to_date(self.time_series_start)
-        if isinstance(self.time_series_end, Datetime360Day):
-            self.time_series_end = cftime360_to_date(self.time_series_end)
-
-    def __repr__(self):
-        """Summary of config."""
-        return (
-            f"<IntermediateCPMFilesManager(output_path='{self.output_path}', "
-            f"intermediate_files_folder='{self.intermediate_files_folder}')>"
-        )
-
-    @property
-    def date_range_to_str(self) -> str:
-        return date_range_to_str(self.time_series_start, self.time_series_end)
-
-    @property
-    def prefix_var_name_and_date(self) -> str:
-        prefix: str = f"{self.variable_name}-{self.date_range_to_str}-"
-        if self.file_name_prefix:
-            return f"{self.file_name_prefix}-{prefix}"
-        else:
-            return prefix
-
-    @property
-    def subfolder(self) -> Path:
-        if self.subfolder_time_stamp:
-            return Path(Path(self.subfolder_path).name + f"-{time_str()}")
-        else:
-            return self.subfolder_path
-
-    @property
-    def intermediate_files_folder(self) -> Path:
-        assert self.output_path
-        path: Path = self.output_path / self.subfolder
-        path.mkdir(exist_ok=True, parents=True)
-        assert path.is_dir()
-        return path
-
-    @property
-    def intermediate_nc_path(self) -> Path:
-        return self.intermediate_files_folder / (
-            "0-" + self.prefix_var_name_and_date + CPM_365_OR_366_INTERMEDIATE_NC
-        )
-
-    @property
-    def simplified_nc_path(self) -> Path:
-        return self.intermediate_files_folder / (
-            "1-" + self.prefix_var_name_and_date + CPM_365_OR_366_SIMPLIFIED_NC
-        )
-
-    @property
-    def intermediate_warp_path(self) -> Path:
-        return self.intermediate_files_folder / (
-            "2-" + self.prefix_var_name_and_date + CPM_365_OR_366_27700_TIF
-        )
-
-    @property
-    def final_nc_path(self) -> Path:
-        return self.intermediate_files_folder / (
-            "3-" + self.prefix_var_name_and_date + CPM_365_OR_366_27700_FINAL
-        )
-
-
 def check_xarray_path_and_var_name(
     xr_time_series: T_Dataset | PathLike, variable_name: str | None
 ) -> tuple[Dataset, str]:
@@ -366,12 +236,6 @@ def check_xarray_path_and_var_name(
 def cpm_reproject_with_standard_calendar(
     cpm_xr_time_series: T_Dataset | PathLike,
     variable_name: str | None = None,
-    output_path: PathLike | None = None,
-    file_name_prefix: str = "",
-    subfolder: PathLike = CPM_LOCAL_INTERMEDIATE_PATH,
-    subfolder_time_stamp: bool = False,
-    # source_x_coord_column_name: str = HADS_RAW_X_COLUMN_NAME,
-    # source_y_coord_column_name: str = HADS_RAW_Y_COLUMN_NAME,
 ) -> T_Dataset:
     """Convert raw `cpm_xr_time_series` to an 365/366 days and 27700 coords.
 
@@ -426,24 +290,11 @@ def cpm_reproject_with_standard_calendar(
     Data variables:
         tasmax       (time, y, x) float32 504MB 3.403e+38 3.403e+38 ... 3.403e+38
     """
-
-    # intermediate_file_configs: IntermediateCPMFilesManager = (
-    #     IntermediateCPMFilesManager(
-    #         file_name_prefix=file_name_prefix,
-    #         variable_name=variable_name,
-    #         output_path=Path(output_path),
-    #         subfolder_path=Path(subfolder),
-    #         subfolder_time_stamp=subfolder_time_stamp,
-    #         time_series_start=cpm_xr_time_series.time.values[0],
-    #         time_series_end=cpm_xr_time_series.time.values[-1],
-    #     )
-    # )
     cpm_xr_time_series, variable_name = check_xarray_path_and_var_name(
         cpm_xr_time_series, variable_name
     )
 
     standar_calendar_ts: T_Dataset = cpm_xarray_to_standard_calendar(cpm_xr_time_series)
-    # Index through the first ensemble to skip the 'ensemble_member' index
     subset_within_ensemble: T_Dataset = Dataset(
         {variable_name: standar_calendar_ts[variable_name][0]}
     )
@@ -451,44 +302,6 @@ def cpm_reproject_with_standard_calendar(
     subset_in_epsg_27700: T_DataArray = xr_reproject_crs(
         subset_within_ensemble, variable_name=variable_name
     )
-
-    # subset_within_ensemble.to_netcdf(intermediate_file_configs.intermediate_nc_path)
-    # simplified_netcdf: T_Dataset = open_dataset(
-    #     intermediate_file_configs.intermediate_nc_path, decode_coords="all"
-    # )
-    # simplified_netcdf["grid_longitude_bnds"] = expanded_calendar.grid_longitude_bnds
-    # simplified_netcdf["grid_latitude_bnds"] = expanded_calendar.grid_latitude_bnds
-    # simplified_netcdf[variable_name].to_netcdf(
-    #     intermediate_file_configs.simplified_nc_path
-    # )
-    #
-    # warped_to_22700_path = gdal_warp_wrapper(
-    #     input_path=intermediate_file_configs.simplified_nc_path,
-    #     output_path=intermediate_file_configs.intermediate_warp_path,
-    #     copy_metadata=True,
-    #     format=None,
-    # )
-    #
-    # assert warped_to_22700_path == intermediate_file_configs.intermediate_warp_path
-    # warped_to_22700 = open_dataset(intermediate_file_configs.intermediate_warp_path)
-    # assert warped_to_22700.rio.crs == BRITISH_NATIONAL_GRID_EPSG
-    # assert len(warped_to_22700.time) == len(expanded_calendar.time)
-    #
-    # # Commenting these out in prep for addressing
-    # # https://github.com/alan-turing-institute/clim-recal/issues/151
-    # # warped_to_22700_y_axis_inverted: T_Dataset = warped_to_22700.reindex(
-    # #     y=warped_to_22700.y * -1
-    # # )
-    # #
-    # # warped_to_22700_y_axis_inverted = warped_to_22700_y_axis_inverted.rename(
-    # #     {"x": source_x_coord_column_name, "y": source_y_coord_column_name}
-    # # )
-    #
-    # # warped_to_22700_y_axis_inverted.to_netcdf(intermediate_file_configs.final_nc_path)
-    # warped_to_22700.to_netcdf(intermediate_file_configs.final_nc_path)
-    # final_results = open_dataset(
-    #     intermediate_file_configs.final_nc_path, decode_coords="all"
-    # )
     try:
         assert (subset_in_epsg_27700.time == standar_calendar_ts.time).all()
     except:
@@ -500,17 +313,13 @@ def cpm_reproject_with_standard_calendar(
 
 def xr_reproject_crs(
     xr_time_series: T_Dataset | PathLike,
-    variable_name: str,
+    variable_name: str | None,
     x_dim_name: str = "grid_longitude",
     y_dim_name: str = "grid_latitude",
     final_crs: str = BRITISH_NATIONAL_GRID_EPSG,
     final_resolution: tuple[int, int] = (2200, 2200),
-    # target_xr: T_DataArray | PathLike = DEFAULT_RELATIVE_GRID_DATA_PATH,
     time_dim_name: str = "time",
-    # target_x_dim_name: str = "x",
-    # target_y_dim_name: str = "y",
     rename_final_dims_dict: dict[str, str] | None = None,
-    # target_time_dim_name: str = "time",
 ) -> T_Dataset:
     """Reproject `source_xr` to `target_xr` coordinate structure.
 
@@ -527,24 +336,13 @@ def xr_reproject_crs(
     >>> assert False
 
     """
-    if isinstance(xr_time_series, PathLike | str):
-        xr_time_series = open_dataset(xr_time_series, decode_coords="all")
-    # if isinstance(xr_time_series, DataArray):
-    #     if xr_time_series.name:
-    #         if variable_name:
-    #             try:
-    #                 assert variable_name == xr_time_series.name
-    #             except AssertionError:
-    #                 raise ValueError(f"'variable_name': 'variable_name' != 'xr_time_series': '{xr_time_series.name}'.")
-    #         else:
-    #             variable_name = xr_time_series.name
-    #         variable_name
-    # xr_time_series = Dataset({var})
+    xr_time_series, variable_name = check_xarray_path_and_var_name(
+        xr_time_series, variable_name
+    )
     xr_time_series = xr_time_series.rio.set_spatial_dims(
         x_dim=x_dim_name, y_dim=y_dim_name, inplace=True
     )
     logger.info(xr_time_series.info())
-    # if len(xr_time_series[variable_name].dims) > 3:
     data_array: T_DataArray = xr_time_series[variable_name]
     final_index_names: tuple[str, str, str] = (time_dim_name, x_dim_name, y_dim_name)
     extra_dims: set[str] = set(data_array.indexes.dims) - set(final_index_names)
@@ -552,10 +350,6 @@ def xr_reproject_crs(
         raise ValueError(
             f"Can only reindex using dims: {final_index_names}, extra dim(s): {extra_dims}"
         )
-        data_array = data_array.drop_indexes(*extra_dims)
-        data_array = data_array.drop_vars(*extra_dims)
-    # if tuple(data_array.indexes.dims.keys()) != final_index_names:
-    #     data_array = data_array.transpose(*final_index_names, ...)
     coords: dict[str, DataArray] = {
         time_dim_name: xr_time_series[time_dim_name],
         y_dim_name: xr_time_series[y_dim_name],
@@ -569,42 +363,6 @@ def xr_reproject_crs(
         final_crs, resolution=final_resolution
     )
     return Dataset({variable_name: without_attributes_reprojected})
-    # return without_attributes_reprojected
-    # coords: tuple[T_DataArray, T_DataArray, T_DataArray] = (
-    #         source_xr[source_time_dim_name].to_numpy(),
-    #         source_xr[source_x_dim_name].to_numpy(),
-    #         source_xr[source_y_dim_name].to_numpy(),
-    # )
-    # dims: tuple[str, str, str] = (target_time_dim_name, target_x_dim_name, target_y_dim_name)
-    # dims: tuple[str, str, str] = (target_time_dim_name, target_x_dim_name, target_y_dim_name)
-
-    # without_attributes: T_DataArray = DataArray(
-    #     data=data_to_numpy,
-    #     coords=coords,
-    #     # dims=dims,
-    #     name=variable_name
-    # )
-    coords: dict[str, T_DataArray] = {
-        target_time_dim_name: source_xr[source_time_dim_name].to_numpy(),
-        source_y_dim_name: source_xr[source_y_dim_name].to_numpy(),
-        source_x_dim_name: source_xr[source_x_dim_name].to_numpy(),
-    }
-    data_to_numpy: NDArray = source_xr[variable_name].to_numpy()
-    without_attributes: T_DataArray = DataArray(
-        data=data_to_numpy[0],
-        coords=coords,
-        # dims=dims,
-        name=variable_name,
-    )
-    renamed_attributes: T_DataArray = without_attributes.rename(
-        {source_x_dim_name: target_x_dim_name, source_y_dim_name: target_y_dim_name}
-    )
-    renamed_attributes = renamed_attributes.rio.write_crs(source_xr.rio.crs)
-    renamed_attributes = renamed_attributes.rio.reproject_match(target_xr)
-    if rename_final_dims_dict:
-        renamed_attributes = renamed_attributes.rename(renamed_attributes)
-
-    return Dataset({variable_name: renamed_attributes})
 
 
 def interpolate_coords(
