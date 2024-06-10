@@ -131,13 +131,6 @@ DEFAULT_RELATIVE_GRID_DATA_PATH: Final[Path] = (
     Path().absolute() / "../data/rcp85_land-cpm_uk_2.2km_grid.nc"
 )
 
-
-CPM_365_OR_366_INTERMEDIATE_NC: Final[str] = "cpm-365-or-366.nc"
-CPM_365_OR_366_SIMPLIFIED_NC: Final[str] = "cpm-365-or-366-simplified.nc"
-CPM_365_OR_366_27700_TIF: Final[str] = "cpm-365-or-366-27700.tif"
-CPM_365_OR_366_27700_FINAL: Final[str] = "cpm-365-or-366-27700-final.nc"
-CPM_LOCAL_INTERMEDIATE_PATH: Final[Path] = Path("cpm-intermediate-files")
-
 HADS_RAW_X_COLUMN_NAME: Final[str] = "projection_x_coordinate"
 HADS_RAW_Y_COLUMN_NAME: Final[str] = "projection_y_coordinate"
 HADS_DROP_VARS_AFTER_PROJECTION: Final[tuple[str, ...]] = ("longitude", "latitude")
@@ -225,7 +218,7 @@ def check_xarray_path_and_var_name(
             ValueError(
                 f"'variable_name' must be specified or 'data_vars' count must be 1, not {data_vars_count}."
             )
-        variable_name = xr_time_series.data_vars[0]
+        variable_name = tuple(xr_time_series.data_vars)[0]
     if not isinstance(variable_name, str):
         raise ValueError(
             "'variable_name' must be a 'str' or inferred from 'xr_time_series.data_vars'. Got: '{variable_name}'"
@@ -251,15 +244,6 @@ def cpm_reproject_with_standard_calendar(
     variable_name
         Name of variable used, usually a measure of climate change like
         `tasmax` and `tasmin`.
-    output_path
-        Path to store all intermediary and final projection.
-    file_name_prefix
-        `str` to prefix all written files with.
-    subfolder
-        Local `path` to place intermediate files from
-        `IntermediateCPMFilesManager` calls.
-    subfolder_time_stamp
-        Whether to add a timestamp in the intermediate file names.
 
     Returns
     -------
@@ -273,12 +257,6 @@ def cpm_reproject_with_standard_calendar(
     >>> tasmax_cpm_1980_365_day: T_Dataset = cpm_reproject_with_standard_calendar(
     ...     cpm_xr_time_series=tasmax_cpm_1980_raw,
     ...     variable_name="tasmax")
-    xarray.Dataset {
-    dimensions:
-        time = 365 ;
-        grid_latitude = 606 ;
-        grid_longitude = 484 ;
-    ...
     >>> tasmax_cpm_1980_365_day
     <xarray.Dataset> Size: 504MB
     Dimensions:      (x: 529, y: 653, time: 365)
@@ -289,6 +267,14 @@ def cpm_reproject_with_standard_calendar(
         spatial_ref  int64 8B 0
     Data variables:
         tasmax       (time, y, x) float32 504MB 3.403e+38 3.403e+38 ... 3.403e+38
+    >>> tasmax_cpm_1980_raw.dims
+    FrozenMappingWarningOnValuesAccess({'ensemble_member': 1,
+                                        'time': 360,
+                                        'grid_latitude': 606,
+                                        'grid_longitude': 484,
+                                        'bnds': 2})
+    >>> tasmax_cpm_1980_365_day.dims
+    FrozenMappingWarningOnValuesAccess({'x': 529, 'y': 653, 'time': 365})
     """
     cpm_xr_time_series, variable_name = check_xarray_path_and_var_name(
         cpm_xr_time_series, variable_name
@@ -313,28 +299,49 @@ def cpm_reproject_with_standard_calendar(
 
 def xr_reproject_crs(
     xr_time_series: T_Dataset | PathLike,
-    variable_name: str | None,
     x_dim_name: str = "grid_longitude",
     y_dim_name: str = "grid_latitude",
-    final_crs: str = BRITISH_NATIONAL_GRID_EPSG,
-    final_resolution: tuple[int, int] = (2200, 2200),
     time_dim_name: str = "time",
-    rename_final_dims_dict: dict[str, str] | None = None,
+    variable_name: str | None = None,
+    final_crs: str = BRITISH_NATIONAL_GRID_EPSG,
+    final_resolution: tuple[int, int] | None = (2200, 2200),
 ) -> T_Dataset:
     """Reproject `source_xr` to `target_xr` coordinate structure.
 
+    Parameters
+    ----------
+    xr_time_series
+        `Dataset` or `PathLike` to load and reproject.
+    x_dim_name
+        `str` name of `x` spatial dimension in `xr_time_series`.
+    y_dim_name
+        `str` name of `y` spatial dimension in `xr_time_series`.
+    y_dim_name
+        `str` name of `time` dimension in `xr_time_series`.
+    variable_name
+        Name of datset to apply projection to within `xr_time_series`.
+        Inferred if `None` assuming only one `data_var` attribute.
+    final_crs
+        Coordinate system `str` to project `xr_time_series` to.
+    final_resolution
+        Resolution to project `xr_time_series` raster data to.
+
     Examples
     --------
-    >>> tasmax_cpm_1980_raw = getfixture('tasmax_cpm_1980_raw')
-    >>> if not tasmax_cpm_1980_raw:
+    >>> tasmax_hads_1980_raw = getfixture('tasmax_hads_1980_raw')
+    >>> if not tasmax_hads_1980_raw:
     ...     pytest.skip(mount_or_cache_doctest_skip_message)
-    >>> tasmax_cpm_1980_365_day: T_Dataset = cpm_xarray_to_standard_calendar(
-    ...     tasmax_cpm_1980_raw)
-    >>> tasmax_sub_section =
-    >>> projected_cpm: Dataset = xr_reproject_crs(
-    ...        tasmax_cpm_1980_365_day,)
-    >>> assert False
-
+    >>> tasmax_hads_1980_raw.dims
+    FrozenMappingWarningOnValuesAccess({'time': 31,
+                                        'projection_y_coordinate': 1450,
+                                        'projection_x_coordinate': 900,
+                                        'bnds': 2})
+    >>> tasmax_hads_2_2km: T_Dataset = xr_reproject_crs(
+    ...     tasmax_hads_1980_raw,
+    ...     x_dim_name=HADS_RAW_X_COLUMN_NAME,
+    ...     y_dim_name=HADS_RAW_Y_COLUMN_NAME,)
+    >>> tasmax_hads_2_2km.dims
+    FrozenMappingWarningOnValuesAccess({'x': 410, 'y': 660, 'time': 31})
     """
     xr_time_series, variable_name = check_xarray_path_and_var_name(
         xr_time_series, variable_name
@@ -342,7 +349,8 @@ def xr_reproject_crs(
     xr_time_series = xr_time_series.rio.set_spatial_dims(
         x_dim=x_dim_name, y_dim=y_dim_name, inplace=True
     )
-    logger.info(xr_time_series.info())
+    # info requires a bf parameter, not straightforward for logging
+    # logger.info(xr_time_series.info())
     data_array: T_DataArray = xr_time_series[variable_name]
     final_index_names: tuple[str, str, str] = (time_dim_name, x_dim_name, y_dim_name)
     extra_dims: set[str] = set(data_array.indexes.dims) - set(final_index_names)

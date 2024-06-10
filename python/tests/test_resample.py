@@ -44,7 +44,6 @@ from clim_recal.utils.gdal_formats import (
     GDALNetCDFFormatStr,
 )
 from clim_recal.utils.xarray import (
-    CPM_LOCAL_INTERMEDIATE_PATH,
     FINAL_RESAMPLE_LAT_COL,
     FINAL_RESAMPLE_LON_COL,
     HADS_RAW_X_COLUMN_NAME,
@@ -52,7 +51,6 @@ from clim_recal.utils.xarray import (
     NETCDF4_XARRAY_ENGINE,
     BoundsTupleType,
     ConvertCalendarAlignOptions,
-    IntermediateCPMFilesManager,
     convert_xr_calendar,
     cpm_xarray_to_standard_calendar,
     crop_nc,
@@ -127,6 +125,22 @@ FINAL_HADS_JAN_10_430_X_230_250_Y: Final[NDArray] = np.array(
     )
 )
 
+# Previous CPM test results, likely flipped
+# FINAL_CPM_DEC_10_5_X_0_10_Y: Final[NDArray] = np.array(
+#     (
+#         np.nan,
+#         np.nan,
+#         np.nan,
+#         np.nan,
+#         np.nan,
+#         np.nan,
+#         12.31753,
+#         12.31753,
+#         12.305811,
+#         12.290186,
+#     )
+# )
+
 FINAL_CPM_DEC_10_5_X_0_10_Y: Final[NDArray] = np.array(
     (
         np.nan,
@@ -135,10 +149,10 @@ FINAL_CPM_DEC_10_5_X_0_10_Y: Final[NDArray] = np.array(
         np.nan,
         np.nan,
         np.nan,
-        12.31753,
-        12.31753,
-        12.305811,
-        12.290186,
+        5.131494,
+        5.091943,
+        5.091943,
+        5.057275,
     )
 )
 
@@ -567,43 +581,32 @@ def test_cpm_xarray_to_standard_calendar(
 
 @pytest.mark.mount
 @pytest.mark.slow
-def test_cpm_warp_steps(
+def test_cpm_reproject_with_standard_calendar(
     tasmax_cpm_1980_raw: T_Dataset,
     test_runs_output_path: Path,
-    caplog: pytest.LogCaptureFixture,
     variable_name: str = "tasmax",
 ) -> None:
     """Test all steps around calendar and warping CPM RAW data."""
     output_path: Path = results_path(
-        "test-cpm-warp", path=test_runs_output_path, mkdir=True
+        "test-cpm-warp", path=test_runs_output_path, mkdir=True, extension="nc"
     )
-    test_intermediate_files = IntermediateCPMFilesManager(
-        variable_name=variable_name,
-        output_path=output_path,
-        time_series_start=tasmax_cpm_1980_raw.time.values[0],
-        time_series_end=tasmax_cpm_1980_raw.time.values[-1],
-    )
-    projected = cpm_reproject_with_standard_calendar(
+    plot_path: Path = output_path.parent / (output_path.stem + ".png")
+    projected: T_Dataset = cpm_reproject_with_standard_calendar(
         tasmax_cpm_1980_raw,
-        variable_name=variable_name,
-        output_path=output_path,
-        # file_name_prefix=file_name_prefix,
     )
     assert projected.rio.crs == BRITISH_NATIONAL_GRID_EPSG
-    # Previous checks, worth re-wroking/expanding
-    # test_projected = open_dataset(intermediate_warp_path)
-    # assert test_projected.rio.crs == BRITISH_NATIONAL_GRID_EPSG
-    # assert len(test_projected.time) == len(expanded_calendar.time)
-    # assert len(test_projected.x) == len(tasmax_cpm_1980_raw.grid_longitude)
-    # assert len(test_projected.y) == len(tasmax_cpm_1980_raw.grid_latitude)
-    # test_projected.to_netcdf(final_nc_path)
-    assert test_intermediate_files.intermediate_files_folder.name.startswith(
-        CPM_LOCAL_INTERMEDIATE_PATH.name
-    )
-    final_results: T_Dataset = open_dataset(
-        test_intermediate_files.final_nc_path, decode_coords="all"
-    )
-    assert (final_results.time == projected.time).all()
+    projected.to_netcdf(output_path)
+    results: T_Dataset = open_dataset(output_path, decode_coords="all")
+    assert (results.time == projected.time).all()
+    assert results.dims == {
+        FINAL_RESAMPLE_LON_COL: 529,
+        FINAL_RESAMPLE_LAT_COL: 653,
+        "time": 365,
+    }
+    assert results.rio.crs == BRITISH_NATIONAL_GRID_EPSG
+    assert len(results.data_vars) == 1
+    assert_allclose(results[variable_name][10][5][:10], FINAL_CPM_DEC_10_5_X_0_10_Y)
+    plot_xarray(results.tasmax[0], plot_path)
 
 
 @pytest.mark.xfail(reason="test not complete")
