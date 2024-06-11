@@ -11,9 +11,9 @@ mkdir -p $this_path/data/hads
 # Example raw CPM file
 rsync \
     /Volumes/vmfileshare/ClimateData/Raw/UKCP2.2/tasmax/05/latest/tasmax_rcp85_land-cpm_uk_2.2km_05_day_19811201-19821130.nc \
-    $this_path/data/cpm/example-cpm-tasmax_rcp85_land-cpm_uk_2.2km_05_day_19811201-19821130.nc
+    $this_path/data/cpm/tasmax_rcp85_land-cpm_uk_2.2km_05_day_19811201-19821130_cpm_example.nc
 
 # Example raw HADs file
 rsync \
     /Volumes/vmfileshare/ClimateData/Raw/HadsUKgrid/tasmax/day/tasmax_hadukgrid_uk_1km_day_19940101-19940131.nc \
-    $this_path/data/hads/example-hads-tasmax_hadukgrid_uk_1km_day_19940101-19940131.nc
+    $this_path/data/hads/tasmax_hadukgrid_uk_1km_day_19940101-19940131_hads_example.nc
