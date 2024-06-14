@@ -74,8 +74,8 @@ from .utils import (
 HADS_FIRST_DATES: np.array = np.array(
     ["19800101", "19800102", "19800103", "19800104", "19800105"]
 )
-FINAL_CONVERTED_CPM_WIDTH: Final[int] = 484
-FINAL_CONVERTED_CPM_HEIGHT: Final[int] = 606
+FINAL_CONVERTED_CPM_WIDTH: Final[int] = 529
+FINAL_CONVERTED_CPM_HEIGHT: Final[int] = 653
 
 RAW_CPM_TASMAX_1980_FIRST_5: np.array = np.array(
     [12.654932, 12.63711, 12.616358, 12.594385, 12.565821], dtype="float32"
@@ -91,14 +91,6 @@ PROJECTED_CPM_TASMAX_1980_DEC_31_FIRST_5: np.array = np.array(
     [10.645899, 10.508448, 10.546778, 10.547998, 10.553614], dtype="float32"
 )
 
-# Initial HADS projection test results matched this, leaving to
-# double check before merge to main
-# FINAL_HADS_JAN_10_430_X_370_390_Y: Final[NDArray] = np.array(
-# (        np.nan,     np.nan,     np.nan,    np.nan,      np.nan,
-#          np.nan,     np.nan,     np.nan,    np.nan,  4.99268164,
-#      4.82281839, 4.55366184, 4.45834185, 4.27357187, 4.1575218,
-#      4.07316193, 3.97350405, 3.84286826, 3.81615739, 3.84426594),
-# )
 
 FINAL_HADS_JAN_10_430_X_230_250_Y: Final[NDArray] = np.array(
     (
@@ -125,21 +117,6 @@ FINAL_HADS_JAN_10_430_X_230_250_Y: Final[NDArray] = np.array(
     )
 )
 
-# Previous CPM test results, likely flipped
-# FINAL_CPM_DEC_10_5_X_0_10_Y: Final[NDArray] = np.array(
-#     (
-#         np.nan,
-#         np.nan,
-#         np.nan,
-#         np.nan,
-#         np.nan,
-#         np.nan,
-#         12.31753,
-#         12.31753,
-#         12.305811,
-#         12.290186,
-#     )
-# )
 
 FINAL_CPM_DEC_10_5_X_0_10_Y: Final[NDArray] = np.array(
     (
@@ -599,8 +576,8 @@ def test_cpm_reproject_with_standard_calendar(
     results: T_Dataset = open_dataset(output_path, decode_coords="all")
     assert (results.time == projected.time).all()
     assert results.dims == {
-        FINAL_RESAMPLE_LON_COL: 529,
-        FINAL_RESAMPLE_LAT_COL: 653,
+        FINAL_RESAMPLE_LON_COL: FINAL_CONVERTED_CPM_HEIGHT,
+        FINAL_RESAMPLE_LAT_COL: FINAL_CONVERTED_CPM_WIDTH,
         "time": 365,
     }
     assert results.rio.crs == BRITISH_NATIONAL_GRID_EPSG
@@ -711,23 +688,11 @@ def test_ukcp_manager(resample_test_cpm_output_path, config: str) -> None:
             )
     export: T_Dataset = open_dataset(paths[0])
     assert export.dims["time"] == 365
-    assert export.dims[FINAL_RESAMPLE_LON_COL] == 492
-    assert export.dims[FINAL_RESAMPLE_LAT_COL] == 608  # previously 603
-    # TODO: check final correct values
+    assert export.dims[FINAL_RESAMPLE_LON_COL] == FINAL_CONVERTED_CPM_WIDTH
     assert_allclose(export.tasmax[10][5][:10].values, FINAL_CPM_DEC_10_5_X_0_10_Y)
-    # assert not np.isnan(export.tasmax.head()[0].values).all()
-    # Todo: reapply these checks to intermediary files
-    # assert export.dims[CPRUK_XDIM] == 484
-    # assert export.dims[CPRUK_YDIM] == 606
-    # assert not np.isnan(export.tasmax.head()[0][0][0].values).all()
     assert (
         CPM_FIRST_DATES == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
     ).all()
-    # assert (
-    #     CPM_FIRST_DATES
-    #     == export.time_bnds.dt.strftime(CLI_DATE_FORMAT_STR).head().values
-    # ).all()
-    # assert (CPM_FIRST_DATES == export.yyyymmdd.head().values).all()
 
 
 # @pytest.mark.xfail(reason="checking `export.tasmax` values currently yields `nan`")

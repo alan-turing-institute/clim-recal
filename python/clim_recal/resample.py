@@ -195,6 +195,10 @@ class ResamblerBase:
     def set_grid(self, new_grid_data_path: PathLike | None = None) -> None:
         """Set check and set (if necessary) `grid` attribute of `self`.
 
+        Notes
+        -----
+        To be depricated.
+
         Parameters
         ----------
         new_grid_data_path
@@ -481,11 +485,7 @@ class CPMResampler(ResamblerBase):
             func=cpm_reproject_with_standard_calendar,
             new_path_name_func=reproject_standard_calendar_filename,
             export_folder=path,
-            # export_folder=gdal_warp_wrapper,
-            # Leaving in case we return to using warp
-            export_path_as_output_path_kwarg=True,
             to_netcdf=True,
-            # to_netcdf=True,
             variable_name=self.cpm_variable_name,
             # x_grid=self.x,
             # y_grid=self.y,
