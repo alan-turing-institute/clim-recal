@@ -14,7 +14,7 @@ from ..utils.core import (
     iter_to_tuple_strs,
     path_iterdir,
 )
-from ..utils.data import CityOptions, MethodOptions, RunOptions, VariableOptions
+from ..utils.data import MethodOptions, RegionOptions, RunOptions, VariableOptions
 
 DATA_PATH_DEFAULT: Final[Path] = climate_data_mount_path()
 
@@ -55,7 +55,7 @@ DEBIAS_DIR_DEFAULT: Final[Path] = (COMMAND_DIR_DEFAULT / "debiasing").resolve()
 class RunConfigType(TypedDict):
     """Parameters needed for a model run."""
 
-    city: CityOptions | None
+    region: RegionOptions | None
     variable: VariableOptions
     run: RunOptions
     method: MethodOptions
@@ -96,7 +96,7 @@ class RunConfig(BaseRunConfig):
 
     variable: VariableOptions | str = VariableOptions.default()
     run: RunOptions | str = RunOptions.default()
-    city: CityOptions | str | None = CityOptions.default()
+    region: RegionOptions | str | None = RegionOptions.default()
     method: MethodOptions | str = MethodOptions.default()
 
     def calib_dates_to_str(
@@ -182,8 +182,8 @@ class RunConfig(BaseRunConfig):
             split_str=split_str,
         )
 
-    def mod_path(self, city: str | None = None) -> Path:
-        """Return city estimates path.
+    def mod_path(self, region: str | None = None) -> Path:
+        """Return region estimates path.
 
         Examples
         --------
@@ -195,11 +195,11 @@ class RunConfig(BaseRunConfig):
         >>> config.mod_path('Glasgow')
         PosixPath('/.../ClimateData/Cropped/three.cities/CPM/Glasgow')
         """
-        city = city if city else self.city
-        return self.data_path / self.mod_folder / city
+        region = region if region else self.region
+        return self.data_path / self.mod_folder / region
 
-    def obs_path(self, city: str | None = None) -> Path:
-        """Return city observations path.
+    def obs_path(self, region: str | None = None) -> Path:
+        """Return region observations path.
 
         Examples
         --------
@@ -211,12 +211,12 @@ class RunConfig(BaseRunConfig):
         >>> config.obs_path('Glasgow')
         PosixPath('/.../ClimateData/Cropped/three.cities/Hads.updated360/Glasgow')
         """
-        city = city if city else self.city
-        return self.data_path / self.obs_folder / city
+        region = region if region else self.region
+        return self.data_path / self.obs_folder / region
 
     def preprocess_out_path(
         self,
-        city: str | None = None,
+        region: str | None = None,
         run: str | None = None,
         variable: str | None = None,
     ) -> Path:
@@ -229,19 +229,19 @@ class RunConfig(BaseRunConfig):
         >>> config: RunConfig = RunConfig()
         >>> config.preprocess_out_path()
         PosixPath('.../ClimateData/Cropped/three.cities/Preprocessed/Manchester/05/tasmax')
-        >>> config.preprocess_out_path(city='Glasgow', run='07')
+        >>> config.preprocess_out_path(region='Glasgow', run='07')
         PosixPath('.../ClimateData/Cropped/three.cities/Preprocessed/Glasgow/07/tasmax')
         """
-        city = city if city else self.city
+        region = region if region else self.region
         run = run if run else self.run
         variable = variable if variable else self.variable
         return (
-            self.data_path / self.preprocess_out_folder / city / run / variable
+            self.data_path / self.preprocess_out_folder / region / run / variable
         ).resolve()
 
     def cmethods_out_path(
         self,
-        city: str | None = None,
+        region: str | None = None,
         run: str | None = None,
     ) -> Path:
         """Return path to save cmethods results.
@@ -251,12 +251,12 @@ class RunConfig(BaseRunConfig):
         >>> config: RunConfig = RunConfig()
         >>> config.cmethods_out_path()
         PosixPath('/.../ClimateData/Debiased/three.cities.cropped/Manchester/05')
-        >>> config.cmethods_out_path(city='Glasgow', run='07')
+        >>> config.cmethods_out_path(region='Glasgow', run='07')
         PosixPath('/.../ClimateData/Debiased/three.cities.cropped/Glasgow/07')
         """
-        city = city if city else self.city
+        region = region if region else self.region
         run = run if run else self.run
-        return (self.data_path / self.cmethods_out_folder / city / run).resolve()
+        return (self.data_path / self.cmethods_out_folder / region / run).resolve()
 
     @property
     def run_prefix_tuple(self) -> tuple[str, ...]:
@@ -274,7 +274,7 @@ class RunConfig(BaseRunConfig):
         self,
         variable: str | None = None,
         run: str | None = None,
-        city: str | None = None,
+        region: str | None = None,
         calib_start: Optional[DateType] = None,
         calib_end: Optional[DateType] = None,
         valid_start: Optional[DateType] = None,
@@ -291,14 +291,14 @@ class RunConfig(BaseRunConfig):
         >>> command_str_tuple: tuple[str, ...] = config.to_cli_preprocess_tuple()
         >>> assert command_str_tuple == CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT
         """
-        city = city if city else self.city
+        region = region if region else self.region
         variable = variable if variable else self.variable
         run = run if run else self.run
 
-        mod_path: Path = self.mod_path(city=city)
-        obs_path: Path = self.obs_path(city=city)
+        mod_path: Path = self.mod_path(region=region)
+        obs_path: Path = self.obs_path(region=region)
         preprocess_out_path: Path = self.preprocess_out_path(
-            city=city, run=run, variable=variable
+            region=region, run=run, variable=variable
         )
         calib_dates_str: str = self.calib_dates_to_str(
             start_date=calib_start, end_date=calib_end
@@ -330,7 +330,7 @@ class RunConfig(BaseRunConfig):
         self,
         variable: str | None = None,
         run: str | None = None,
-        city: str | None = None,
+        region: str | None = None,
         calib_start: Optional[DateType] = None,
         calib_end: Optional[DateType] = None,
         valid_start: Optional[DateType] = None,
@@ -348,7 +348,7 @@ class RunConfig(BaseRunConfig):
             self.to_cli_preprocess_tuple(
                 variable=variable,
                 run=run,
-                city=city,
+                region=region,
                 calib_start=calib_start,
                 calib_end=calib_end,
                 valid_start=valid_start,
@@ -360,7 +360,7 @@ class RunConfig(BaseRunConfig):
         self,
         variable: str | None = None,
         run: str | None = None,
-        city: str | None = None,
+        region: str | None = None,
         calib_start: Optional[DateType] = None,
         calib_end: Optional[DateType] = None,
         valid_start: Optional[DateType] = None,
@@ -380,7 +380,7 @@ class RunConfig(BaseRunConfig):
             self.to_cli_preprocess_tuple_strs(
                 variable=variable,
                 run=run,
-                city=city,
+                region=region,
                 calib_start=calib_start,
                 calib_end=calib_end,
                 valid_start=valid_start,
@@ -388,7 +388,7 @@ class RunConfig(BaseRunConfig):
             )
         )
 
-    def yield_mod_folder(self, city: str | None = None) -> Iterator[Path]:
+    def yield_mod_folder(self, region: str | None = None) -> Iterator[Path]:
         """`Iterable` of all `Path`s in `self.mod_folder`.
 
         Examples
@@ -399,10 +399,10 @@ class RunConfig(BaseRunConfig):
         >>> len(tuple(config.yield_mod_folder())) == MOD_FOLDER_FILES_COUNT_CORRECT
         True
         """
-        city = city if city else self.city
-        return path_iterdir(self.obs_path(city=city))
+        region = region if region else self.region
+        return path_iterdir(self.obs_path(region=region))
 
-    def yield_obs_folder(self, city: str | None = None) -> Iterator[Path]:
+    def yield_obs_folder(self, region: str | None = None) -> Iterator[Path]:
         """`Iterable` of all `Path`s in `self.obs_folder`.
 
         Examples
@@ -413,12 +413,12 @@ class RunConfig(BaseRunConfig):
         >>> len(tuple(config.yield_obs_folder())) == OBS_FOLDER_FILES_COUNT_CORRECT
         True
         """
-        city = city if city else self.city
-        return path_iterdir(self.obs_path(city=city))
+        region = region if region else self.region
+        return path_iterdir(self.obs_path(region=region))
 
     def yield_preprocess_out_folder(
         self,
-        city: str | None = None,
+        region: str | None = None,
         run: str | None = None,
         variable: str | None = None,
     ) -> Iterator[Path]:
@@ -433,11 +433,11 @@ class RunConfig(BaseRunConfig):
         ...  PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT)
         True
         """
-        city = city if city else self.city
+        region = region if region else self.region
         run = run if run else self.run
         variable = variable if variable else self.variable
         return path_iterdir(
-            self.preprocess_out_path(city=city, run=run, variable=variable)
+            self.preprocess_out_path(region=region, run=run, variable=variable)
         )
 
     @property
@@ -447,7 +447,7 @@ class RunConfig(BaseRunConfig):
 
     def to_cli_run_cmethods_tuple(
         self,
-        city: str | None = None,
+        region: str | None = None,
         run: str | None = None,
         variable: str | None = None,
         method: str | None = None,
@@ -466,7 +466,7 @@ class RunConfig(BaseRunConfig):
         >>> command_str_tuple: tuple[str, ...] = config.to_cli_run_cmethods_tuple()
         >>> assert command_str_tuple == CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT
         """
-        city = city if city else self.city
+        region = region if region else self.region
         variable = variable if variable else self.variable
         run = run if run else self.run
         method = method if method else self.method
@@ -475,13 +475,13 @@ class RunConfig(BaseRunConfig):
         input_data_path = (
             input_data_path
             if input_data_path
-            else self.preprocess_out_path(city=city, run=run, variable=variable)
+            else self.preprocess_out_path(region=region, run=run, variable=variable)
         )
 
         cmethods_out_path = (
             cmethods_out_path
             if cmethods_out_path
-            else self.cmethods_out_path(city=city, run=run)
+            else self.cmethods_out_path(region=region, run=run)
         )
 
         return (
@@ -501,7 +501,7 @@ class RunConfig(BaseRunConfig):
 
     def to_cli_run_cmethods_tuple_strs(
         self,
-        city: str | None = None,
+        region: str | None = None,
         run: str | None = None,
         variable: str | None = None,
         method: str | None = None,
@@ -519,7 +519,7 @@ class RunConfig(BaseRunConfig):
         """
         return iter_to_tuple_strs(
             self.to_cli_run_cmethods_tuple(
-                city=city,
+                region=region,
                 run=run,
                 variable=variable,
                 method=method,
@@ -531,7 +531,7 @@ class RunConfig(BaseRunConfig):
 
     def to_cli_run_cmethods_str(
         self,
-        city: str | None = None,
+        region: str | None = None,
         run: str | None = None,
         variable: str | None = None,
         method: str | None = None,
@@ -551,7 +551,7 @@ class RunConfig(BaseRunConfig):
         """
         return " ".join(
             self.to_cli_run_cmethods_tuple_strs(
-                city=city,
+                region=region,
                 run=run,
                 variable=variable,
                 method=method,

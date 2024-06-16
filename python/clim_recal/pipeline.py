@@ -61,7 +61,7 @@ clim-recal should be a command line function
 ```console
 $ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written
 clim-recal pipeline configurations:
-<ClimRecalConfig(variables_count=3, runs_count=4, cities_count=1, methods_count=1,
+<ClimRecalConfig(variables_count=3, runs_count=4, regions_count=1, methods_count=1,
                  cpm_folders_count=12, hads_folders_count=3, start_index=0,
                  stop_index=None, cpus=2)>
 <CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)>
@@ -92,7 +92,7 @@ assuming a local install:
 ```console
 $ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written --execute
 clim-recal pipeline configurations:
-<ClimRecalConfig(variables_count=3, runs_count=4, cities_count=1, methods_count=1,
+<ClimRecalConfig(variables_count=3, runs_count=4, regions_count=1, methods_count=1,
                  cpm_folders_count=12, hads_folders_count=3, start_index=0,
                  stop_index=None, cpus=2)>
 <CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)>
@@ -139,10 +139,10 @@ from rich import print
 
 from .config import (
     DEFAULT_OUTPUT_PATH,
-    CityOptions,
     ClimRecalConfig,
     ClimRecalRunResultsType,
     MethodOptions,
+    RegionOptions,
     RunOptions,
     VariableOptions,
 )
@@ -156,11 +156,11 @@ def main(
     execute: bool = False,
     output_path: PathLike = DEFAULT_OUTPUT_PATH,
     variables: Sequence[VariableOptions | str] = (VariableOptions.default(),),
-    cities: Sequence[CityOptions | str] | None = (CityOptions.default(),),
+    regions: Sequence[RegionOptions | str] | None = (RegionOptions.default(),),
     runs: Sequence[RunOptions | str] = (RunOptions.default(),),
     methods: Sequence[MethodOptions | str] = (MethodOptions.default(),),
     all_variables: bool = False,
-    all_cities: bool = False,
+    all_regions: bool = False,
     default_runs: bool = False,
     all_runs: bool = False,
     all_methods: bool = False,
@@ -182,8 +182,8 @@ def main(
         Variables to include in the model, eg. `tasmax`, `tasmin`.
     runs
         Which model runs to include, eg. "01", "08", "11".
-    cities
-        Which cities to crop data to. Future plans facilitate
+    regions
+        Which regions to crop data to. Future plans facilitate
         skipping to run for entire UK.
     methods
         Which debiasing methods to apply.
@@ -220,7 +220,7 @@ def main(
     ... )
     clim-recal pipeline configurations:
     <ClimRecalConfig(variables_count=2, runs_count=1,
-                     cities_count=1, methods_count=1,
+                     regions_count=1, methods_count=1,
                      cpm_folders_count=2, hads_folders_count=2,
                      start_index=0, stop_index=None,
                      cpus=...)>
@@ -239,8 +239,8 @@ def main(
             f"'stop_index': {stop_index} set from 'total': {total} and 'start_index': {start_index}."
         )
     variables = VariableOptions.all() if all_variables else tuple(variables)
-    assert cities  # In future there will be support for skipping city cropping
-    cities = CityOptions.all() if all_cities else tuple(cities)
+    assert regions  # In future there will be support for skipping city cropping
+    regions = RegionOptions.all() if all_regions else tuple(regions)
     methods = MethodOptions.all() if all_methods else tuple(methods)
     if all_runs:
         runs = RunOptions.all()
@@ -252,7 +252,7 @@ def main(
     config: ClimRecalConfig = ClimRecalConfig(
         output_path=output_path,
         variables=variables,
-        cities=cities,
+        regions=regions,
         methods=methods,
         runs=runs,
         cpus=cpus,

@@ -24,10 +24,6 @@ from clim_recal.debiasing.debias_wrapper import (
     PREPROCESS_OUT_FOLDER_DEFAULT,
     PROCESSORS_DEFAULT,
     VALID_DATES_STR_DEFAULT,
-    CityOptions,
-    MethodOptions,
-    RunOptions,
-    VariableOptions,
 )
 from clim_recal.resample import RAW_CPM_TASMAX_PATH, RAW_HADS_TASMAX_PATH
 from clim_recal.utils.core import (
@@ -39,7 +35,14 @@ from clim_recal.utils.core import (
     date_range_generator,
     iter_to_tuple_strs,
 )
-from clim_recal.utils.data import HadUKGrid, UKCPLocalProjections
+from clim_recal.utils.data import (
+    HadUKGrid,
+    MethodOptions,
+    RegionOptions,
+    RunOptions,
+    UKCPLocalProjections,
+    VariableOptions,
+)
 from clim_recal.utils.xarray import THREE_CITY_CENTRE_COORDS
 
 logger = getLogger(__name__)
@@ -92,9 +95,9 @@ CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str | Path, ...]] = (
     "python",
     PREPROCESS_FILE_NAME,
     "--mod",
-    DATA_PATH_DEFAULT / MOD_FOLDER_DEFAULT / CityOptions.default(),
+    DATA_PATH_DEFAULT / MOD_FOLDER_DEFAULT / RegionOptions.default(),
     "--obs",
-    DATA_PATH_DEFAULT / OBS_FOLDER_DEFAULT / CityOptions.default(),
+    DATA_PATH_DEFAULT / OBS_FOLDER_DEFAULT / RegionOptions.default(),
     "-v",
     VariableOptions.default(),
     "-r",
@@ -103,7 +106,7 @@ CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str | Path, ...]] = (
     (
         DATA_PATH_DEFAULT
         / PREPROCESS_OUT_FOLDER_DEFAULT
-        / CityOptions.default()
+        / RegionOptions.default()
         / RunOptions.default()
         / VariableOptions.default()
     ),
@@ -130,7 +133,7 @@ CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str | Path | int, ...]] 
     (
         DATA_PATH_DEFAULT
         / CMETHODS_OUT_FOLDER_DEFAULT
-        / CityOptions.default()
+        / RegionOptions.default()
         / RunOptions.default()
     ).resolve(),
     "--method",

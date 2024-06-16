@@ -9,8 +9,6 @@ from tqdm import TqdmExperimentalWarning, tqdm
 
 from .debiasing.debias_wrapper import (
     BaseRunConfig,
-    CityOptions,
-    MethodOptions,
     RunConfig,
     RunConfigType,
     climate_data_mount_path,
@@ -22,7 +20,7 @@ from .resample import (
     HADsResamplerManager,
 )
 from .utils.core import product_dict, results_path
-from .utils.data import RunOptions, VariableOptions
+from .utils.data import MethodOptions, RegionOptions, RunOptions, VariableOptions
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 
@@ -38,7 +36,7 @@ class ClimRecalRunsConfigType(TypedDict):
 
     """Lists of parameters to generate `RunConfigType` instances."""
 
-    cities: Sequence[CityOptions] | None
+    regions: Sequence[RegionOptions] | None
     variables: Sequence[VariableOptions]
     runs: Sequence[RunOptions]
     methods: Sequence[MethodOptions]
@@ -58,8 +56,8 @@ class ClimRecalConfig(BaseRunConfig):
         Variables to include in the model, eg. `tasmax`, `tasmin`.
     runs
         Which model runs to include, eg. "01", "08", "11".
-    cities
-        Which cities to crop data to. Future plans facilitate skipping to run for entire UK.
+    regions
+        Which regions to crop data to. Future plans facilitate skipping to run for entire UK.
     methods
         Which debiasing methods to apply.
     multiprocess
@@ -84,11 +82,11 @@ class ClimRecalConfig(BaseRunConfig):
     >>> if not is_data_mounted:
     ...     pytest.skip(mount_doctest_skip_message)
     >>> run_config: ClimRecalConfig = ClimRecalConfig(
-    ...     cities=('Manchester', 'Glasgow'),
+    ...     regions=('Manchester', 'Glasgow'),
     ...     output_path=test_runs_output_path,
     ...     cpus=1)
     >>> run_config
-    <ClimRecalConfig(variables_count=1, runs_count=1, cities_count=2,
+    <ClimRecalConfig(variables_count=1, runs_count=1, regions_count=2,
                      methods_count=1, cpm_folders_count=1,
                      hads_folders_count=1, start_index=0,
                      stop_index=None, cpus=1)>
@@ -96,7 +94,7 @@ class ClimRecalConfig(BaseRunConfig):
 
     variables: Sequence[VariableOptions] = (VariableOptions.default(),)
     runs: Sequence[RunOptions] = (RunOptions.default(),)
-    cities: Sequence[CityOptions] | None = (CityOptions.default(),)
+    regions: Sequence[RegionOptions] | None = (RegionOptions.default(),)
     methods: Sequence[MethodOptions] = (MethodOptions.default(),)
     multiprocess: bool = False
     cpus: int | None = DEFAULT_CPUS
@@ -197,7 +195,7 @@ class ClimRecalConfig(BaseRunConfig):
             f"<{self.__class__.__name__}("
             f"variables_count={len(self.variables)}, "
             f"runs_count={len(self.runs)}, "
-            f"cities_count={len(self.cities) if self.cities else None}, "
+            f"regions_count={len(self.regions) if self.regions else None}, "
             f"methods_count={len(self.methods)}, "
             f"cpm_folders_count={len(self.cpm_manager)}, "
             f"hads_folders_count={len(self.hads_manager)}, "
@@ -213,13 +211,13 @@ class ClimRecalConfig(BaseRunConfig):
         Examples
         --------
         >>> pprint(clim_runner.model_vars)
-        {'cities': ('Glasgow', 'Manchester'),
-         'methods': ('quantile_delta_mapping',),
+        {'methods': ('quantile_delta_mapping',),
+         'regions': ('Glasgow', 'Manchester'),
          'runs': ('05',),
          'variables': ('tasmax',)}
         """
         return ClimRecalRunsConfigType(
-            cities=self.cities,
+            regions=self.regions,
             variables=self.variables,
             runs=self.runs,
             methods=self.methods,
@@ -232,19 +230,19 @@ class ClimRecalConfig(BaseRunConfig):
         Examples
         --------
         >>> pprint(clim_runner.model_configs)
-        ({'city': 'Glasgow',
-          'method': 'quantile_delta_mapping',
+        ({'method': 'quantile_delta_mapping',
+          'region': 'Glasgow',
           'run': '05',
           'variable': 'tasmax'},
-         {'city': 'Manchester',
-          'method': 'quantile_delta_mapping',
+         {'method': 'quantile_delta_mapping',
+          'region': 'Manchester',
           'run': '05',
           'variable': 'tasmax'})
         """
         return tuple(
             RunConfigType(**params)
             for params in product_dict(
-                city=self.cities,
+                region=self.regions,
                 variable=self.variables,
                 run=self.runs,
                 method=self.methods,
@@ -279,9 +277,9 @@ class ClimRecalConfig(BaseRunConfig):
         return self.methods[0]
 
     @property
-    def _first_conf_city(self) -> VariableOptions | None:
+    def _first_conf_region(self) -> VariableOptions | None:
         """Return the first `self.variables` value."""
-        return self._get_first_or_none(attr_name="cities")
+        return self._get_first_or_none(attr_name="regions")
 
     @property
     def _base_run_config(self) -> RunConfig:
@@ -290,7 +288,7 @@ class ClimRecalConfig(BaseRunConfig):
             command_dir=self.command_dir,
             variable=self._first_conf_variable,
             run=self._first_conf_run,
-            city=self._first_conf_city,
+            region=self._first_conf_region,
             method=self._first_conf_method,
             run_prefix=self.run_prefix,
             preprocess_data_file=self.preprocess_data_file,
@@ -328,14 +326,14 @@ class ClimRecalConfig(BaseRunConfig):
                 self._base_run_config.to_cli_preprocess_tuple_strs(
                     variable=model_config["variable"],
                     run=model_config["run"],
-                    city=model_config["city"],
+                    region=model_config["region"],
                 ),
                 capture_output=True,
                 text=True,
             )
             cmethods_run: subprocess.CompletedProcess = subprocess.run(
                 self._base_run_config.to_cli_run_cmethods_tuple_strs(
-                    city=model_config["city"],
+                    region=model_config["region"],
                     run=model_config["run"],
                     variable=model_config["variable"],
                     method=model_config["method"],

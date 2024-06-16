@@ -11,7 +11,7 @@ from xarray import DataArray, Dataset, open_dataset
 from xarray.core.types import T_Dataset
 
 from clim_recal.config import ClimRecalConfig
-from clim_recal.debiasing.debias_wrapper import CityOptions
+from clim_recal.debiasing.debias_wrapper import RegionOptions
 from clim_recal.resample import CPM_OUTPUT_LOCAL_PATH, HADS_OUTPUT_LOCAL_PATH
 from clim_recal.utils.core import (
     ISO_DATE_FORMAT_STR,
@@ -348,12 +348,12 @@ def clim_runner(
     try:
         return ClimRecalConfig(
             preprocess_out_folder=tmp_path,
-            cities=(CityOptions.GLASGOW, CityOptions.MANCHESTER),
+            regions=(RegionOptions.GLASGOW, RegionOptions.MANCHESTER),
         )
     except FileExistsError:
         return ClimRecalConfig(
             preprocess_out_folder=tmp_path,
-            cities=(CityOptions.GLASGOW, CityOptions.MANCHESTER),
+            regions=(RegionOptions.GLASGOW, RegionOptions.MANCHESTER),
             hads_folder=local_cache_fixtures.default_local_cache_path,
             cpm_folder=local_cache_fixtures.default_local_cache_path,
             cpm_kwargs=dict(_allow_check_fail=True),

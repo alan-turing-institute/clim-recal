@@ -10,8 +10,8 @@ import pytest
 
 from clim_recal.debiasing.debias_wrapper import (
     PREPROCESS_FILE_NAME,
-    CityOptions,
     MethodOptions,
+    RegionOptions,
     RunConfig,
     RunOptions,
     VariableOptions,
@@ -36,29 +36,29 @@ def test_command_line_default(cli_preprocess_default_command_str_correct) -> Non
 @pytest.mark.server
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "city, variable, run, method",
+    "region, variable, run, method",
     (
         (
-            CityOptions.default(),  # 'Manchester'
+            RegionOptions.default(),  # 'Manchester'
             VariableOptions.default(),  # 'tasmax`
             RunOptions.default(),  # '05'
             MethodOptions.default(),  # 'quantile_delta_mapping'
         ),
         (
-            CityOptions.GLASGOW,
+            RegionOptions.GLASGOW,
             VariableOptions.default(),
             RunOptions.default(),
             MethodOptions.default(),
         ),
         pytest.param(
-            CityOptions.LONDON,
+            RegionOptions.LONDON,
             VariableOptions.default(),
             RunOptions.default(),
             MethodOptions.default(),
             marks=pytest.mark.slow,
         ),
         pytest.param(
-            CityOptions.LONDON,
+            RegionOptions.LONDON,
             VariableOptions.RAINFALL,
             RunOptions.SIX,
             MethodOptions.DELTA_METHOD,
@@ -68,7 +68,7 @@ def test_command_line_default(cli_preprocess_default_command_str_correct) -> Non
 )
 def test_run(
     run_config,
-    city,
+    region,
     variable,
     run,
     method,
@@ -82,33 +82,35 @@ def test_run(
     assert PREPROCESS_FILE_NAME in tuple(Path().iterdir())
     # run_config.method = method
     preprocess_run: subprocess.CompletedProcess = subprocess.run(
-        run_config.to_cli_preprocess_tuple_strs(city=city, variable=variable, run=run),
+        run_config.to_cli_preprocess_tuple_strs(
+            region=region, variable=variable, run=run
+        ),
         capture_output=True,
         text=True,
     )
     assert preprocess_run.returncode == 0
     assert (
-        len(tuple(run_config.yield_mod_folder(city=city)))
+        len(tuple(run_config.yield_mod_folder(region=region)))
         == mod_folder_files_count_correct
     )
     assert (
-        len(tuple(run_config.yield_obs_folder(city=city)))
+        len(tuple(run_config.yield_obs_folder(region=region)))
         == obs_folder_files_count_correct
     )
 
     if method == MethodOptions.default():
         assert (
-            len(tuple(run_config.yield_preprocess_out_folder(city=city)))
+            len(tuple(run_config.yield_preprocess_out_folder(region=region)))
             == preprocess_out_folder_files_count_correct
         )
     for log_txt in (
         "Saved observed (HADs) data for validation, period ('2010-01-01', '2010-12-30')",
-        f"{city}/{run}/{variable}/modv_var-{variable}_run-{run}_20100101_20101230.nc",
+        f"{region}/{run}/{variable}/modv_var-{variable}_run-{run}_20100101_20101230.nc",
     ):
         assert log_txt in preprocess_run.stdout
     cmethods_run: subprocess.CompletedProcess = subprocess.run(
         run_config.to_cli_run_cmethods_tuple_strs(
-            city=city, run=run, variable=variable, method=method
+            region=region, run=run, variable=variable, method=method
         ),
         capture_output=True,
         text=True,
@@ -118,21 +120,21 @@ def test_run(
         "Loading modelled calibration data (CPM)",
         # Todo: uncomment in future to check new paths
         # (
-        #     f"Debiased/three.cities.cropped/{city}/{run}/{variable}/"
+        #     f"Debiased/three.cities.cropped/{region}/{run}/{variable}/"
         #     f"debiased_{method}_result_var"
         #     f"-{variable}_quantiles-1000_kind-+_group-None_20100101_20101229.nc"
         # ),
         (
-            f"Debiased/three.cities.cropped/{city}/{run}/{variable}/"
+            f"Debiased/three.cities.cropped/{region}/{run}/{variable}/"
             f"debiased_{method}_result_var"
         ),
         "Saving to",
         # Todo: uncomment in future to check new paths
         # (
-        #     f"Saving to {DATA_PATH_DEFAULT}/{city}/{run}/{variable}/"
+        #     f"Saving to {DATA_PATH_DEFAULT}/{region}/{run}/{variable}/"
         #     f"debiased_{method}_result_var-{variable}_kind-+None_20100101_20101229.nc"
         # ),
-        (f"{city}/{run}/{variable}/debiased_{method}_result_var-"),
+        (f"{region}/{run}/{variable}/debiased_{method}_result_var-"),
     ):
         assert log_txt in cmethods_run.stdout
 

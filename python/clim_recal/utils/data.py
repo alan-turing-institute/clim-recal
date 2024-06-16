@@ -132,7 +132,7 @@ class MethodOptions(StrEnumReprName):
         return tuple(map(lambda c: c.value, cls))
 
 
-class CityOptions(StrEnumReprName):
+class RegionOptions(StrEnumReprName):
     """Supported options for variables."""
 
     GLASGOW = "Glasgow"
