@@ -9,7 +9,6 @@ import numpy as np
 import rioxarray  # nopycln: import
 import seaborn
 from cftime._cftime import Datetime360Day
-from geopandas import GeoDataFrame, read_file
 from matplotlib import pyplot as plt
 from numpy import ndarray
 from numpy.typing import NDArray
@@ -87,7 +86,7 @@ THREE_CITY_CENTRE_COORDS: Final[dict[str, tuple[float, float]]] = {
 
 
 @dataclass
-class BondingBoxCoords:
+class BoundingBoxCoords:
     name: str
     xmin: float
     xmax: float
@@ -99,15 +98,20 @@ class BondingBoxCoords:
         """Return in `xmin`, `xmax`, `ymin`, `ymax` order."""
         return self.xmin, self.xmax, self.ymin, self.ymax
 
+    @property
+    def rioxarry_epsg(self) -> str:
+        """Return `self.epsg` in `rioxarray` `str` format."""
+        return f"EPSG:{self.epsg}"
 
-GlasgowCoordsEPSG27700: Final[BondingBoxCoords] = BondingBoxCoords(
+
+GlasgowCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
     "Glasgow", 249799.999600002, 269234.9996, 657761.472000003, 672330.696800007
 )
 
-LondonCoordsEPSG27700: Final[BondingBoxCoords] = BondingBoxCoords(
+LondonCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
     "London", 503568.1996, 561957.4961, 155850.7974, 200933.9025
 )
-ManchesterCoordsEPSG27700: Final[BondingBoxCoords] = BondingBoxCoords(
+ManchesterCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
     "Manchester", 380399.997, 393249.999, 389349.999, 405300.003
 )
 
@@ -577,9 +581,9 @@ def plot_xarray(
     return Path(path)
 
 
-def crop_nc(
+def crop_xarray(
     xr_time_series: T_Dataset | PathLike,
-    crop_geom: PathLike | GeoDataFrame,
+    crop_box: BoundingBoxCoords,
     invert=False,
     final_crs: str = BRITISH_NATIONAL_GRID_EPSG,
     initial_clip_box: bool = False,
@@ -595,7 +599,7 @@ def crop_nc(
     xr_time_series
         `Dataset` or path to `netcdf` file to load and crop.
     crop_geom
-        `GeoDataFrame` or `Path` of file to crop with.
+        Box coordinates to crop to.
     invert
         Whether to invert the `crop_geom` coordinates.
     final_crs
@@ -620,16 +624,33 @@ def crop_nc(
 
     Examples
     --------
-    >>> pytest.skip('Refactor needed, may be removed.')
-    >>> if not is_data_mounted:
-    ...     pytest.skip(mount_doctest_skip_message)
-    >>> cropped = crop_nc(
-    ...     RAW_CPM_TASMAX_PATH /
-    ...     'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
-    ...     crop_geom=glasgow_shape_file_path, invert=True)
-    >>> cropped.rio.bounds() == glasgow_epsg_27700_bounds
-    True
+    >>> from numpy.testing import assert_allclose
+    >>> tasmax_cpm_1980_raw = getfixture('tasmax_cpm_1980_raw')
+    >>> if not tasmax_cpm_1980_raw:
+    ...     pytest.skip(mount_or_cache_doctest_skip_message)
+    >>> tasmax_cpm_1980_365_day: T_Dataset = cpm_reproject_with_standard_calendar(
+    ...     cpm_xr_time_series=tasmax_cpm_1980_raw,
+    ...     variable_name="tasmax")
+    >>> cropped = crop_xarray(
+    ...     tasmax_cpm_1980_365_day,
+    ...     crop_box=GlasgowCoordsEPSG27700)
+    >>> assert_allclose(cropped.rio.bounds(),
+    ...                 GlasgowCoordsEPSG27700.as_tuple(),
+    ...                 rtol=.01)
+    >>> tasmax_cpm_1980_365_day.sizes
+    Frozen({'x': 529, 'y': 653, 'time': 365})
+    >>> cropped.sizes
+    Frozen({'x': 186, 'y': 185, 'time': 365})
     """
+    xr_time_series, _ = check_xarray_path_and_var_name(xr_time_series, None)
+    try:
+        assert str(xr_time_series.rio.crs) == crop_box.rioxarry_epsg
+    except AssertionError:
+        raise ValueError(
+            f"'xr_time_series.rio.crs': '{xr_time_series.rio.epsg}' must equal 'crop_box.crs': '{crop_box.crs}'"
+        )
+    return xr_time_series.rio.clip_box(*crop_box.as_tuple())
+
     # xr_time_series = reproject_xarray_by_crs(
     #     xr_time_series,
     #     crs=final_crs,
@@ -638,8 +659,6 @@ def crop_nc(
     #     xr_spatial_ydim=xr_spatial_ydim,
     # )
 
-    if isinstance(crop_geom, PathLike):
-        crop_geom = read_file(crop_geom)
     # assert isinstance(crop_geom, GeoDataFrame)
     # crop_geom.set_crs(crs=final_crs, inplace=True)
     # if initial_clip_box:

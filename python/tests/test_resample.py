@@ -50,7 +50,7 @@ from clim_recal.utils.xarray import (
     convert_xr_calendar,
     cpm_reproject_with_standard_calendar,
     cpm_xarray_to_standard_calendar,
-    crop_nc,
+    crop_xarray,
     file_name_to_start_end_dates,
     gdal_warp_wrapper,
     hads_resample_and_reproject,
@@ -609,7 +609,7 @@ def test_cpm_tif_to_standard_calendar(
 
 
 @pytest.mark.xfail(reason="not finished writing, will need refactor")
-def test_crop_nc(
+def test_crop_xarray(
     # align_on: ConvertCalendarAlignOptions,
     # ukcp_tasmax_raw_path
     glasgow_shape_file_path,
@@ -650,7 +650,7 @@ def test_crop_nc(
     assert str(xarray_pre_crop.rio.crs) != BRITISH_NATIONAL_GRID_EPSG
     assert xarray_pre_crop.rio.bounds() == uk_rotated_grid_bounds
 
-    cropped: T_Dataset = crop_nc(
+    cropped: T_Dataset = crop_xarray(
         xr_time_series=max_temp_1981_path,
         crop_geom=glasgow_shape_file_path,
         enforce_xarray_spatial_dims=True,
@@ -926,7 +926,7 @@ def test_execute_resample_configs(
 #         8.073382596733156
 #      )
 #
-#     cropped = crop_nc(
+#     cropped = crop_xarray(
 #         'tests/data/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
 #         crop_geom=glasgow_shape_file_path, invert=True)
 #     assert cropped.rio.bounds == result_bounds
@@ -936,4 +936,4 @@ def test_execute_resample_configs(
 #         ts_to_crop[path] = open_dataset(path, decode_coords="all")
 #
 #     assert False
-#     test_crop = crop_nc()
+#     test_crop = crop_xarray()
