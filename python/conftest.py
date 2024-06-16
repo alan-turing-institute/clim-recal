@@ -111,12 +111,14 @@ def is_data_mounted(data_mount_path) -> bool:
 
 @pytest.fixture(scope="session")
 def local_cache_fixtures(
+    local_cache_path: Path,
     local_cpm_cache_path: Path,
     local_hads_cache_path: Path,
     sync_all: bool,
     use_async: bool,
 ) -> LocalCachesManager:
     cache_manager: LocalCachesManager = LocalCachesManager(
+        default_local_cache_path=local_cache_path,
         caches=(
             LocalCache(
                 name="tasmax_cpm_1980_raw",
@@ -132,7 +134,7 @@ def local_cache_fixtures(
                 reader=open_dataset,
                 reader_kwargs={"decode_coords": "all"},
             ),
-        )
+        ),
     )
     if sync_all:
         if use_async:
@@ -151,11 +153,33 @@ def tasmax_cpm_1980_raw(
 
 
 @pytest.fixture(scope="session")
+def tasmax_cpm_1980_raw_path(
+    local_cache: bool,
+    local_cache_fixtures: LocalCachesManager,
+) -> T_Dataset:
+    if local_cache:
+        return local_cache_fixtures["tasmax_cpm_1980_raw"].local_cache_path
+    else:
+        return local_cache_fixtures["tasmax_cpm_1980_raw"].source_path
+
+
+@pytest.fixture(scope="session")
 def tasmax_hads_1980_raw(
     local_cache: bool,
     local_cache_fixtures: LocalCachesManager,
 ) -> T_Dataset | None:
     return local_cache_fixtures["tasmax_hads_1980_raw"].read(cache_path=local_cache)
+
+
+@pytest.fixture(scope="session")
+def tasmax_hads_1980_raw_path(
+    local_cache: bool,
+    local_cache_fixtures: LocalCachesManager,
+) -> T_Dataset:
+    if local_cache:
+        return local_cache_fixtures["tasmax_hads_1980_raw"].local_cache_path
+    else:
+        return local_cache_fixtures["tasmax_hads_1980_raw"].source_path
 
 
 # This may be removed in future
@@ -313,8 +337,14 @@ def uk_rotated_grid_bounds() -> BoundsTupleType:
 
 # Note: it may be worth setting this to cache for session runs
 @pytest.fixture
-def clim_runner(tmp_path) -> ClimRecalConfig:
+def clim_runner(
+    tmp_path: Path,
+    local_cache: bool,
+    local_cache_fixtures: LocalCachesManager,
+) -> ClimRecalConfig:
     """Return default `ClimRecalConfig`."""
+    assert local_cache_fixtures.default_local_cache_path
+    assert local_cache_fixtures.check_default_cache_path()
     try:
         return ClimRecalConfig(
             preprocess_out_folder=tmp_path,
@@ -324,6 +354,8 @@ def clim_runner(tmp_path) -> ClimRecalConfig:
         return ClimRecalConfig(
             preprocess_out_folder=tmp_path,
             cities=(CityOptions.GLASGOW, CityOptions.MANCHESTER),
+            hads_folder=local_cache_fixtures.default_local_cache_path,
+            cpm_folder=local_cache_fixtures.default_local_cache_path,
             cpm_kwargs=dict(_allow_check_fail=True),
             hads_kwargs=dict(_allow_check_fail=True),
         )

@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
-from typing import Any, Callable, Final, Literal, Sequence
+from typing import Any, Callable, Final, Literal
 
 import numpy as np
 import rioxarray  # nopycln: import
@@ -41,6 +41,7 @@ seaborn.set()  # Use seaborn style for all `matplotlib` plots
 
 DropDayType = set[tuple[int, int]]
 ChangeDayType = set[tuple[int, int]]
+ReprojectFuncType = Callable[[T_Dataset], T_Dataset]
 
 # MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
 # """A `set` of tuples of month and day numbers for `enforce_date_changes`."""
@@ -86,7 +87,7 @@ THREE_CITY_CENTRE_COORDS: Final[dict[str, tuple[float, float]]] = {
 
 
 @dataclass
-class CityCoords:
+class BondingBoxCoords:
     name: str
     xmin: float
     xmax: float
@@ -99,14 +100,14 @@ class CityCoords:
         return self.xmin, self.xmax, self.ymin, self.ymax
 
 
-GlasgowCoordsEPSG27700: Final[CityCoords] = CityCoords(
+GlasgowCoordsEPSG27700: Final[BondingBoxCoords] = BondingBoxCoords(
     "Glasgow", 249799.999600002, 269234.9996, 657761.472000003, 672330.696800007
 )
 
-LondonCoordsEPSG27700: Final[CityCoords] = CityCoords(
+LondonCoordsEPSG27700: Final[BondingBoxCoords] = BondingBoxCoords(
     "London", 503568.1996, 561957.4961, 155850.7974, 200933.9025
 )
-ManchesterCoordsEPSG27700: Final[CityCoords] = CityCoords(
+ManchesterCoordsEPSG27700: Final[BondingBoxCoords] = BondingBoxCoords(
     "Manchester", 380399.997, 393249.999, 389349.999, 405300.003
 )
 
@@ -130,14 +131,16 @@ NETCDF4_XARRAY_ENGINE: Final[str] = "netcdf4"
 DEFAULT_RELATIVE_GRID_DATA_PATH: Final[Path] = (
     Path().absolute() / "../data/rcp85_land-cpm_uk_2.2km_grid.nc"
 )
+TIME_COLUMN_NAME: Final[str] = "time"
 
 HADS_RAW_X_COLUMN_NAME: Final[str] = "projection_x_coordinate"
 HADS_RAW_Y_COLUMN_NAME: Final[str] = "projection_y_coordinate"
 HADS_DROP_VARS_AFTER_PROJECTION: Final[tuple[str, ...]] = ("longitude", "latitude")
 
-# TODO: CHECK IF I GOT THESE BACKWARDS
-# FINAL_RESAMPLE_LAT_COL: Final[str] = "x"
-# FINAL_RESAMPLE_LON_COL: Final[str] = "y"
+CPM_RAW_X_COLUMN_NAME: Final[str] = "grid_longitude"
+CPM_RAW_Y_COLUMN_NAME: Final[str] = "grid_latitude"
+
+# TODO: CHECK IF THESE ARE BACKWARDS
 FINAL_RESAMPLE_LON_COL: Final[str] = "x"
 FINAL_RESAMPLE_LAT_COL: Final[str] = "y"
 
@@ -229,6 +232,8 @@ def check_xarray_path_and_var_name(
 def cpm_reproject_with_standard_calendar(
     cpm_xr_time_series: T_Dataset | PathLike,
     variable_name: str | None = None,
+    x_dim_name: str = CPM_RAW_X_COLUMN_NAME,
+    y_dim_name: str = CPM_RAW_Y_COLUMN_NAME,
 ) -> T_Dataset:
     """Convert raw `cpm_xr_time_series` to an 365/366 days and 27700 coords.
 
@@ -286,22 +291,25 @@ def cpm_reproject_with_standard_calendar(
     )
 
     subset_in_epsg_27700: T_DataArray = xr_reproject_crs(
-        subset_within_ensemble, variable_name=variable_name
+        subset_within_ensemble,
+        variable_name=variable_name,
+        x_dim_name=x_dim_name,
+        y_dim_name=y_dim_name,
     )
     try:
         assert (subset_in_epsg_27700.time == standar_calendar_ts.time).all()
     except:
         raise ValueError(
-            f"Time series of 'standar_calendar_ts' does not match projection to {BRITISH_NATIONAL_GRID_EPSG}."
+            f"Time series of 'standar_calendar_ts' does not match time series of projection to {BRITISH_NATIONAL_GRID_EPSG}."
         )
     return subset_in_epsg_27700
 
 
 def xr_reproject_crs(
     xr_time_series: T_Dataset | PathLike,
-    x_dim_name: str = "grid_longitude",
-    y_dim_name: str = "grid_latitude",
-    time_dim_name: str = "time",
+    x_dim_name: str = CPM_RAW_X_COLUMN_NAME,
+    y_dim_name: str = CPM_RAW_Y_COLUMN_NAME,
+    time_dim_name: str = TIME_COLUMN_NAME,
     variable_name: str | None = None,
     final_crs: str = BRITISH_NATIONAL_GRID_EPSG,
     final_resolution: tuple[int, int] | None = (2200, 2200),
@@ -313,10 +321,10 @@ def xr_reproject_crs(
     xr_time_series
         `Dataset` or `PathLike` to load and reproject.
     x_dim_name
-        `str` name of `x` spatial dimension in `xr_time_series`.
+        `str` name of `x` spatial dimension in `xr_time_series`. Default matches CPM UK projections.
     y_dim_name
-        `str` name of `y` spatial dimension in `xr_time_series`.
-    y_dim_name
+        `str` name of `y` spatial dimension in `xr_time_series`. Default matches CPM UK projections.
+    time_dim_name
         `str` name of `time` dimension in `xr_time_series`.
     variable_name
         Name of datset to apply projection to within `xr_time_series`.
@@ -468,43 +476,55 @@ def interpolate_coords(
 def hads_resample_and_reproject(
     hads_xr_time_series: T_Dataset | PathLike,
     variable_name: str,
-    x_grid: NDArray | None = None,
-    y_grid: NDArray | None = None,
-    method: str = "linear",
-    source_x_coord_column_name: str = HADS_RAW_X_COLUMN_NAME,
-    source_y_coord_column_name: str = HADS_RAW_Y_COLUMN_NAME,
-    final_x_coord_column_name: str = FINAL_RESAMPLE_LON_COL,
-    final_y_coord_column_name: str = FINAL_RESAMPLE_LAT_COL,
-    final_crs: str | None = BRITISH_NATIONAL_GRID_EPSG,
-    vars_to_drop: Sequence[str] | None = HADS_DROP_VARS_AFTER_PROJECTION,
-    use_reference_grid: bool = False,
+    x_dim_name: str = HADS_RAW_X_COLUMN_NAME,
+    y_dim_name: str = HADS_RAW_Y_COLUMN_NAME,
+    # x_grid: NDArray | None = None,
+    # y_grid: NDArray | None = None,
+    # method: str = "linear",
+    # source_x_coord_column_name: str = HADS_RAW_X_COLUMN_NAME,
+    # source_y_coord_column_name: str = HADS_RAW_Y_COLUMN_NAME,
+    # final_x_coord_column_name: str = FINAL_RESAMPLE_LON_COL,
+    # final_y_coord_column_name: str = FINAL_RESAMPLE_LAT_COL,
+    # final_crs: str | None = BRITISH_NATIONAL_GRID_EPSG,
+    # vars_to_drop: Sequence[str] | None = HADS_DROP_VARS_AFTER_PROJECTION,
+    # use_reference_grid: bool = False,
 ) -> T_Dataset:
     """Resample `HADs` `xarray` time series to 2.2km."""
-    if isinstance(hads_xr_time_series, PathLike):
-        hads_xr_time_series = open_dataset(hads_xr_time_series, decode_coords="all")
-
-    interpolated_hads: T_Dataset = interpolate_coords(
+    hads_xr_time_series, variable_name = check_xarray_path_and_var_name(
+        hads_xr_time_series, variable_name
+    )
+    # if isinstance(hads_xr_time_series, PathLike):
+    #     hads_xr_time_series = open_dataset(hads_xr_time_series, decode_coords="all")
+    epsg_277000_2_2km: T_Dataset = xr_reproject_crs(
         hads_xr_time_series,
         variable_name=variable_name,
-        x_grid=x_grid,
-        y_grid=y_grid,
-        x_coord_column_name=source_x_coord_column_name,
-        y_coord_column_name=source_y_coord_column_name,
-        method=method,
-        use_reference_grid=use_reference_grid,
+        x_dim_name=x_dim_name,
+        y_dim_name=y_dim_name,
     )
-    if vars_to_drop:
-        interpolated_hads = interpolated_hads.drop_vars(vars_to_drop)
 
-    interpolated_hads = interpolated_hads.rename(
-        {
-            source_x_coord_column_name: final_x_coord_column_name,
-            source_y_coord_column_name: final_y_coord_column_name,
-        }
-    )
-    if final_crs:
-        interpolated_hads.rio.write_crs(final_crs, inplace=True)
-    return interpolated_hads
+    # interpolated_hads: T_Dataset = interpolate_coords(
+    #     hads_xr_time_series,
+    #     variable_name=variable_name,
+    #     x_grid=x_grid,
+    #     y_grid=y_grid,
+    #     x_coord_column_name=source_x_coord_column_name,
+    #     y_coord_column_name=source_y_coord_column_name,
+    #     method=method,
+    #     use_reference_grid=use_reference_grid,
+    # )
+    # if vars_to_drop:
+    #     interpolated_hads = interpolated_hads.drop_vars(vars_to_drop)
+    #
+    # interpolated_hads = interpolated_hads.rename(
+    #     {
+    #         source_x_coord_column_name: final_x_coord_column_name,
+    #         source_y_coord_column_name: final_y_coord_column_name,
+    #     }
+    # )
+    # if final_crs:
+    #     interpolated_hads.rio.write_crs(final_crs, inplace=True)
+    # return interpolated_hads
+    return epsg_277000_2_2km
 
 
 def plot_xarray(
@@ -970,7 +990,7 @@ def gdal_warp_wrapper(
 
 def apply_geo_func(
     source_path: PathLike,
-    func: Callable[[T_Dataset], T_Dataset],
+    func: ReprojectFuncType,
     export_folder: PathLike,
     new_path_name_func: Callable[[Path], Path] | None = None,
     to_netcdf: bool = True,
@@ -1004,6 +1024,11 @@ def apply_geo_func(
     **kwargs
         Other parameters passed to `func` call.
     """
+    if not source_path:
+        raise ValueError(
+            f"Source path must be a folder, currently '{source_path}'. "
+            f"May need to mount drive."
+        )
     export_path: Path = Path(source_path)
     if new_path_name_func:
         export_path = new_path_name_func(export_path)

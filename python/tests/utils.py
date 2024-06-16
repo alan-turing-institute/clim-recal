@@ -515,6 +515,8 @@ class LocalCachesManager(UserDict):
     """
 
     caches: Sequence[LocalCache] | None
+    fail_if_no_source: bool = False
+    default_local_cache_path: PathLike | None = None
     _synced: dict[str, SyncedLog] = field(default_factory=dict)
 
     def __repr__(self) -> str:
@@ -526,9 +528,21 @@ class LocalCachesManager(UserDict):
         if self.caches:
             self.data = {cache.name: cache for cache in self.caches}
 
+    def check_default_cache_path(self) -> bool:
+        """Check `self.cached_paths` in `self.default_local_cache_path`."""
+        if len(self):
+            return all(
+                self.default_local_cache_path in cache_config.local_cache_path.parents
+                for cache_config in self.values()
+            )
+        else:
+            return False
+
     def __post_init__(self) -> None:
         """Populate the `data` attribute."""
         self._sync_caches_attr()
+        if not self._synced:
+            self.sync_all(fail_if_no_source=self.fail_if_no_source)
 
     @property
     def cached_paths(self) -> tuple[Path, ...]:

@@ -37,6 +37,7 @@ from .utils.xarray import (
     HADS_RAW_X_COLUMN_NAME,
     HADS_RAW_Y_COLUMN_NAME,
     NETCDF_EXTENSION_STR,
+    ReprojectFuncType,
     apply_geo_func,
     cpm_reproject_with_standard_calendar,
     hads_resample_and_reproject,
@@ -369,6 +370,7 @@ class HADsResampler(ResamblerBase):
     resolution_relative_path: Path = HADS_2_2K_RESOLUTION_PATH
     input_file_x_column_name: str = HADS_XDIM
     input_file_y_column_name: str = HADS_YDIM
+    _resample_func: ReprojectFuncType = hads_resample_and_reproject
     _use_reference_grid: bool = True
 
     def to_reprojection(
@@ -387,18 +389,20 @@ class HADsResampler(ResamblerBase):
         return apply_geo_func(
             source_path=source_path,
             # func=interpolate_coords,
-            func=hads_resample_and_reproject,
+            func=self._resample_func,
             export_folder=path,
             # Leaving in case we return to using warp
             # export_path_as_output_path_kwarg=True,
             # to_netcdf=False,
             to_netcdf=True,
             variable_name=self.variable_name,
-            x_grid=self.x,
-            y_grid=self.y,
-            source_x_coord_column_name=self.input_file_x_column_name,
-            source_y_coord_column_name=self.input_file_y_column_name,
-            use_reference_grid=self._use_reference_grid,
+            x_dim_name=self.input_file_x_column_name,
+            y_dim_name=self.input_file_y_column_name,
+            # x_grid=self.x,
+            # y_grid=self.y,
+            # source_x_coord_column_name=self.input_file_x_column_name,
+            # source_y_coord_column_name=self.input_file_y_column_name,
+            # use_reference_grid=self._use_reference_grid,
             new_path_name_func=reproject_2_2km_filename,
             return_results=return_results,
         )
@@ -462,6 +466,7 @@ class CPMResampler(ResamblerBase):
     input_file_x_column_name: str = CPRUK_XDIM
     input_file_y_column_name: str = CPRUK_YDIM
     resolution_relative_path: Path = CPM_SPATIAL_COORDS_PATH
+    _resample_func: ReprojectFuncType = cpm_reproject_with_standard_calendar
 
     @property
     def cpm_variable_name(self) -> str:
@@ -482,11 +487,13 @@ class CPMResampler(ResamblerBase):
         )
         return apply_geo_func(
             source_path=source_path,
-            func=cpm_reproject_with_standard_calendar,
+            func=self._resample_func,
             new_path_name_func=reproject_standard_calendar_filename,
             export_folder=path,
             to_netcdf=True,
             variable_name=self.cpm_variable_name,
+            x_dim_name=self.input_file_x_column_name,
+            y_dim_name=self.input_file_y_column_name,
             # x_grid=self.x,
             # y_grid=self.y,
             # x_coord_column_name=self.input_file_x_column_name,

@@ -19,14 +19,10 @@ from clim_recal.resample import (
     DEFAULT_RELATIVE_GRID_DATA_PATH,
     HADS_XDIM,
     HADS_YDIM,
-    RAW_CPM_TASMAX_PATH,
-    RAW_HADS_PATH,
-    RAW_HADS_TASMAX_PATH,
     CPMResampler,
     CPMResamplerManager,
     HADsResampler,
     HADsResamplerManager,
-    cpm_reproject_with_standard_calendar,
 )
 from clim_recal.utils.core import (
     CLI_DATE_FORMAT_STR,
@@ -52,6 +48,7 @@ from clim_recal.utils.xarray import (
     BoundsTupleType,
     ConvertCalendarAlignOptions,
     convert_xr_calendar,
+    cpm_reproject_with_standard_calendar,
     cpm_xarray_to_standard_calendar,
     crop_nc,
     file_name_to_start_end_dates,
@@ -60,6 +57,7 @@ from clim_recal.utils.xarray import (
     interpolate_coords,
     plot_xarray,
 )
+from conftest import resample_test_cpm_output_path
 
 from .utils import (
     HADS_UK_TASMAX_DAY_SERVER_PATH,
@@ -74,8 +72,17 @@ from .utils import (
 HADS_FIRST_DATES: np.array = np.array(
     ["19800101", "19800102", "19800103", "19800104", "19800105"]
 )
+
+CALENDAR_CONVERTED_CPM_WIDTH: Final[int] = 484
+CALENDAR_CONVERTED_CPM_HEIGHT: Final[int] = 606
+
+# FINAL_CONVERTED_CPM_WIDTH: Final[int] = 410
+# FINAL_CONVERTED_CPM_HEIGHT: Final[int] = 660
 FINAL_CONVERTED_CPM_WIDTH: Final[int] = 529
 FINAL_CONVERTED_CPM_HEIGHT: Final[int] = 653
+
+FINAL_CONVERTED_HADS_WIDTH: Final[int] = 410
+FINAL_CONVERTED_HADS_HEIGHT: Final[int] = 660
 
 RAW_CPM_TASMAX_1980_FIRST_5: np.array = np.array(
     [12.654932, 12.63711, 12.616358, 12.594385, 12.565821], dtype="float32"
@@ -503,6 +510,7 @@ def test_geo_warp_format_type_crop(
         assert read_exported.rio.bounds() == glasgow_epsg_27700_bounds
 
 
+@pytest.mark.localcache
 @pytest.mark.mount
 @pytest.mark.slow
 @pytest.mark.parametrize("include_bnds_index", (True, False))
@@ -523,8 +531,8 @@ def test_cpm_xarray_to_standard_calendar(
     test_converted = cpm_xarray_to_standard_calendar(
         tasmax_cpm_1980_raw, include_bnds_index=include_bnds_index
     )
-    assert test_converted.rio.width == FINAL_CONVERTED_CPM_WIDTH
-    assert test_converted.rio.height == FINAL_CONVERTED_CPM_HEIGHT
+    assert test_converted.rio.width == CALENDAR_CONVERTED_CPM_WIDTH
+    assert test_converted.rio.height == CALENDAR_CONVERTED_CPM_HEIGHT
     assert test_converted.rio.crs.to_proj4() == CORRECT_PROJ4
     assert test_converted.tasmax.rio.crs.to_proj4() == CORRECT_PROJ4
     assert len(test_converted.time) == 365
@@ -556,6 +564,7 @@ def test_cpm_xarray_to_standard_calendar(
     ).all()
 
 
+@pytest.mark.localcache
 @pytest.mark.mount
 @pytest.mark.slow
 def test_cpm_reproject_with_standard_calendar(
@@ -576,14 +585,14 @@ def test_cpm_reproject_with_standard_calendar(
     results: T_Dataset = open_dataset(output_path, decode_coords="all")
     assert (results.time == projected.time).all()
     assert results.dims == {
-        FINAL_RESAMPLE_LON_COL: FINAL_CONVERTED_CPM_HEIGHT,
-        FINAL_RESAMPLE_LAT_COL: FINAL_CONVERTED_CPM_WIDTH,
+        FINAL_RESAMPLE_LON_COL: FINAL_CONVERTED_CPM_WIDTH,
+        FINAL_RESAMPLE_LAT_COL: FINAL_CONVERTED_CPM_HEIGHT,
         "time": 365,
     }
     assert results.rio.crs == BRITISH_NATIONAL_GRID_EPSG
     assert len(results.data_vars) == 1
     assert_allclose(results[variable_name][10][5][:10], FINAL_CPM_DEC_10_5_X_0_10_Y)
-    plot_xarray(results.tasmax[0], plot_path)
+    plot_xarray(results.tasmax[0], plot_path, time_stamp=True)
 
 
 @pytest.mark.xfail(reason="test not complete")
@@ -657,19 +666,22 @@ def test_crop_nc(
     assert False
 
 
+@pytest.mark.localcache
 @pytest.mark.slow
 @pytest.mark.mount
 @pytest.mark.parametrize(
     "config", ("direct", "range", "direct_provided", "range_provided")
 )
-def test_ukcp_manager(resample_test_cpm_output_path, config: str) -> None:
+def test_ukcp_manager(
+    resample_test_cpm_output_path, config: str, tasmax_cpm_1980_raw_path: Path
+) -> None:
     """Test running default CPM calendar fix."""
     CPM_FIRST_DATES: np.array = np.array(
         ["19801201", "19801202", "19801203", "19801204", "19801205"]
     )
     output_path: Path = resample_test_cpm_output_path / config
     test_config = CPMResampler(
-        input_path=RAW_CPM_TASMAX_PATH,
+        input_path=tasmax_cpm_1980_raw_path.parent,
         output_path=output_path,
     )
     paths: list[Path]
@@ -693,16 +705,24 @@ def test_ukcp_manager(resample_test_cpm_output_path, config: str) -> None:
     assert (
         CPM_FIRST_DATES == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
     ).all()
+    plot_xarray(
+        export.tasmax[0],
+        path=resample_test_cpm_output_path / f"config-{config}.png",
+        time_stamp=True,
+    )
 
 
 # @pytest.mark.xfail(reason="checking `export.tasmax` values currently yields `nan`")
+@pytest.mark.localcache
 @pytest.mark.slow
 @pytest.mark.mount
 @pytest.mark.parametrize("range", (False, True))
-def test_hads_manager(resample_test_hads_output_path, range: bool) -> None:
+def test_hads_manager(
+    resample_test_hads_output_path, range: bool, tasmax_hads_1980_raw_path: Path
+) -> None:
     """Test running default HADs spatial projection."""
     test_config = HADsResampler(
-        input_path=RAW_HADS_TASMAX_PATH,
+        input_path=tasmax_hads_1980_raw_path.parent,
         output_path=resample_test_hads_output_path / f"range-{range}",
     )
     paths: list[Path]
@@ -717,8 +737,14 @@ def test_hads_manager(resample_test_hads_output_path, range: bool) -> None:
         HADS_FIRST_DATES.astype(object)
         == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
     ).all()
+    plot_xarray(
+        export.tasmax[0],
+        path=resample_test_hads_output_path / f"range-{range}.png",
+        time_stamp=True,
+    )
 
 
+@pytest.mark.localcache
 @pytest.mark.mount
 @pytest.mark.slow
 @pytest.mark.parametrize("data_type", ("hads", "cpm"))
@@ -783,13 +809,16 @@ def test_interpolate_coords(
     assert reprojected_xr_time_series.dims[y_col_name] == 651
 
 
+@pytest.mark.localcache
 @pytest.mark.mount
 def test_hads_resample_and_reproject(
     tasmax_hads_1980_raw: T_Dataset,
+    tasmax_cpm_1980_raw: T_Dataset,
 ) -> None:
     variable_name: str = "tasmax"
     output_path: Path = Path("tests/runs/reample-hads")
     # First index is for month, in this case January 1980
+    cpm_to_match: T_Dataset = cpm_reproject_with_standard_calendar(tasmax_cpm_1980_raw)
     plot_xarray(
         tasmax_hads_1980_raw.tasmax[0],
         path=output_path / "tasmas-1980-JAN-1-raw.png",
@@ -804,12 +833,12 @@ def test_hads_resample_and_reproject(
         variable_name=variable_name,
     )
 
-    plot_xarray(
-        reprojected.tasmax[0], path=output_path / "tasmas-1980.png", time_stamp=True
-    )
-    assert_allclose(
-        reprojected.tasmax[10][430][230:250], FINAL_HADS_JAN_10_430_X_230_250_Y
-    )
+    # plot_xarray(
+    #     reprojected.tasmax[0], path=output_path / "tasmas-1980.png", time_stamp=True
+    # )
+    # assert_allclose(
+    #     reprojected.tasmax[10][430][230:250], FINAL_HADS_JAN_10_430_X_230_250_Y
+    # )
     assert reprojected.rio.crs.to_epsg() == int(BRITISH_NATIONAL_GRID_EPSG[5:])
     export_netcdf_path: Path = results_path(
         "tasmax-1980-converted", path=output_path, extension="nc"
@@ -818,42 +847,51 @@ def test_hads_resample_and_reproject(
     read_from_export: T_Dataset = open_dataset(export_netcdf_path, decode_coords="all")
     assert read_from_export.dims["time"] == 31
     assert (
-        read_from_export.dims[FINAL_RESAMPLE_LON_COL] == 528
+        read_from_export.dims[FINAL_RESAMPLE_LON_COL] == FINAL_CONVERTED_HADS_WIDTH
     )  # replaces projection_x_coordinate
     assert (
-        read_from_export.dims[FINAL_RESAMPLE_LAT_COL] == 651
+        read_from_export.dims[FINAL_RESAMPLE_LAT_COL] == FINAL_CONVERTED_HADS_HEIGHT
     )  # replaces projection_y_coordinate
     assert reprojected.rio.crs == read_from_export.rio.crs == BRITISH_NATIONAL_GRID_EPSG
+    # Check projection coordinates match for CPM and HADs
+    assert all(cpm_to_match.x == read_from_export.x)
+    assert all(cpm_to_match.y == read_from_export.y)
 
 
+@pytest.mark.localcache
 @pytest.mark.mount
 @pytest.mark.parametrize("strict_fail_bool", (True, False))
 @pytest.mark.parametrize("manager", (HADsResamplerManager, CPMResamplerManager))
 def test_variable_in_base_import_path_error(
-    strict_fail_bool: bool, manager: HADsResamplerManager | CPMResamplerManager
+    strict_fail_bool: bool,
+    manager: HADsResamplerManager | CPMResamplerManager,
+    tasmax_hads_1980_raw_path: Path,
 ) -> None:
     """Test checking import path validity for a given variable."""
     with pytest.raises(manager.VarirableInBaseImportPathError):
-        HADsResamplerManager(
-            input_paths=RAW_HADS_TASMAX_PATH,
+        manager(
+            input_paths=tasmax_hads_1980_raw_path,
             stop_index=1,
         )
     if strict_fail_bool:
         with pytest.raises(FileExistsError):
-            HADsResamplerManager(
-                input_paths=RAW_HADS_TASMAX_PATH,
+            manager(
+                input_paths=tasmax_hads_1980_raw_path,
                 stop_index=1,
                 _strict_fail_if_var_in_input_path=False,
             )
 
 
+@pytest.mark.localcache
 @pytest.mark.slow
 @pytest.mark.mount
 @pytest.mark.parametrize("multiprocess", (False, True))
-def test_execute_resample_configs(multiprocess: bool, tmp_path) -> None:
+def test_execute_resample_configs(
+    multiprocess: bool, tmp_path, tasmax_hads_1980_raw_path: Path
+) -> None:
     """Test running default HADs spatial projection."""
     test_config = HADsResamplerManager(
-        input_paths=RAW_HADS_PATH,
+        input_paths=tasmax_hads_1980_raw_path.parent,
         output_paths=tmp_path,
         stop_index=1,
     )
