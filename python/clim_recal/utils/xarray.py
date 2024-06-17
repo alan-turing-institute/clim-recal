@@ -1,9 +1,8 @@
-from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
-from typing import Any, Callable, Final, Literal
+from typing import Any, Callable, Final
 
 import numpy as np
 import rioxarray  # nopycln: import
@@ -16,7 +15,6 @@ from osgeo.gdal import Dataset as GDALDataset
 from osgeo.gdal import GDALWarpAppOptions, Warp, WarpOptions
 from pandas import DatetimeIndex, date_range
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
-from xarray.backends.api import ENGINES
 from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import (
     CFCalendar,
@@ -32,110 +30,34 @@ from .core import (
     climate_data_mount_path,
     results_path,
 )
+from .data import (
+    BRITISH_NATIONAL_GRID_EPSG,
+    DEFAULT_CALENDAR_ALIGN,
+    DEFAULT_INTERPOLATION_METHOD,
+    DEFAULT_RELATIVE_GRID_DATA_PATH,
+    GLASGOW_GEOM_LOCAL_PATH,
+    NETCDF4_XARRAY_ENGINE,
+    TIME_COLUMN_NAME,
+    BoundingBoxCoords,
+    CFCalendarSTANDARD,
+    ConvertCalendarAlignOptions,
+    XArrayEngineType,
+)
 from .gdal_formats import NETCDF_EXTENSION_STR, GDALFormatsType, GDALGeoTiffFormatStr
 
 logger = getLogger(__name__)
 
 seaborn.set()  # Use seaborn style for all `matplotlib` plots
 
-DropDayType = set[tuple[int, int]]
-ChangeDayType = set[tuple[int, int]]
 ReprojectFuncType = Callable[[T_Dataset], T_Dataset]
 
-# MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
-# """A `set` of tuples of month and day numbers for `enforce_date_changes`."""
-
-
-BRITISH_NATION_GRID_COORDS_NUMBER: Final[int] = 27700
-BRITISH_NATIONAL_GRID_EPSG: Final[str] = f"EPSG:{BRITISH_NATION_GRID_COORDS_NUMBER}"
-
-MONTH_DAY_XARRAY_LEAP_YEAR_DROP: DropDayType = {
-    (1, 31),
-    (4, 1),
-    (6, 1),
-    (8, 1),
-    (9, 31),
-    (12, 1),
-}
-"""A `set` of month and day tuples dropped for `xarray.day_360` leap years."""
-
-MONTH_DAY_XARRAY_NO_LEAP_YEAR_DROP: DropDayType = {
-    (2, 6),
-    (4, 20),
-    (7, 2),
-    (9, 13),
-    (11, 25),
-}
-"""A `set` of month and day tuples dropped for `xarray.day_360` non leap years."""
-
-DEFAULT_INTERPOLATION_METHOD: str = "linear"
-"""Default method to infer missing estimates in a time series."""
-
-CFCalendarSTANDARD: Final[str] = "standard"
-ConvertCalendarAlignOptions = Literal["date", "year", None]
-
-GLASGOW_CENTRE_COORDS: Final[tuple[float, float]] = (55.86279, -4.25424)
-MANCHESTER_CENTRE_COORDS: Final[tuple[float, float]] = (53.48095, -2.23743)
-LONDON_CENTRE_COORDS: Final[tuple[float, float]] = (51.509865, -0.118092)
-THREE_CITY_CENTRE_COORDS: Final[dict[str, tuple[float, float]]] = {
-    "Glasgow": GLASGOW_CENTRE_COORDS,
-    "Manchester": MANCHESTER_CENTRE_COORDS,
-    "London": LONDON_CENTRE_COORDS,
-}
-"""City centre `(lon, lat)` `tuple` coords of `Glasgow`, `Manchester` and `London`."""
-
-
-@dataclass
-class BoundingBoxCoords:
-    name: str
-    xmin: float
-    xmax: float
-    ymin: float
-    ymax: float
-    epsg: int = int(BRITISH_NATIONAL_GRID_EPSG[5:])
-
-    def as_tuple(self) -> tuple[float, float, float, float]:
-        """Return in `xmin`, `xmax`, `ymin`, `ymax` order."""
-        return self.xmin, self.xmax, self.ymin, self.ymax
-
-    @property
-    def rioxarry_epsg(self) -> str:
-        """Return `self.epsg` in `rioxarray` `str` format."""
-        return f"EPSG:{self.epsg}"
-
-
-GlasgowCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
-    "Glasgow", 249799.999600002, 269234.9996, 657761.472000003, 672330.696800007
-)
-
-LondonCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
-    "London", 503568.1996, 561957.4961, 155850.7974, 200933.9025
-)
-ManchesterCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
-    "Manchester", 380399.997, 393249.999, 389349.999, 405300.003
-)
-
-
-GLASGOW_GEOM_LOCAL_PATH: Final[Path] = Path(
-    "shapefiles/three.cities/Glasgow/Glasgow.shp"
-)
 GLASGOW_GEOM_ABSOLUTE_PATH: Final[Path] = (
     climate_data_mount_path() / GLASGOW_GEOM_LOCAL_PATH
 )
 
-BoundsTupleType = tuple[float, float, float, float]
-"""`GeoPandas` bounds: (`minx`, `miny`, `maxx`, `maxy`)."""
+# MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
+# """A `set` of tuples of month and day numbers for `enforce_date_changes`."""
 
-XArrayEngineType = Literal[*tuple(ENGINES)]
-"""Engine types supported by `xarray` as `str`."""
-
-DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
-NETCDF4_XARRAY_ENGINE: Final[str] = "netcdf4"
-
-DEFAULT_RELATIVE_GRID_DATA_PATH: Final[Path] = (
-    Path().absolute() / "../data/rcp85_land-cpm_uk_2.2km_grid.nc"
-)
-TIME_COLUMN_NAME: Final[str] = "time"
 
 HADS_RAW_X_COLUMN_NAME: Final[str] = "projection_x_coordinate"
 HADS_RAW_Y_COLUMN_NAME: Final[str] = "projection_y_coordinate"
@@ -165,8 +87,7 @@ def cpm_xarray_to_standard_calendar(
     -------
     `Dataset` calendar converted to standard (Gregorian).
     """
-    if isinstance(cpm_xr_time_series, PathLike):
-        cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
+    cpm_xr_time_series, _ = check_xarray_path_and_var_name(cpm_xr_time_series, None)
     cpm_to_std_calendar: T_Dataset = convert_xr_calendar(
         cpm_xr_time_series, interpolate_na=True, check_cftime_cols=("time_bnds",)
     )
@@ -584,12 +505,6 @@ def plot_xarray(
 def crop_xarray(
     xr_time_series: T_Dataset | PathLike,
     crop_box: BoundingBoxCoords,
-    invert=False,
-    final_crs: str = BRITISH_NATIONAL_GRID_EPSG,
-    initial_clip_box: bool = False,
-    enforce_xarray_spatial_dims: bool = True,
-    xr_spatial_xdim: str = "grid_longitude",
-    xr_spatial_ydim: str = "grid_latitude",
     **kwargs,
 ) -> T_Dataset:
     """Crop `xr_time_series` with `crop_path` `shapefile`.
@@ -624,6 +539,7 @@ def crop_xarray(
 
     Examples
     --------
+    >>> from clim_recal.utils.data import GlasgowCoordsEPSG27700
     >>> from numpy.testing import assert_allclose
     >>> tasmax_cpm_1980_raw = getfixture('tasmax_cpm_1980_raw')
     >>> if not tasmax_cpm_1980_raw:
@@ -649,33 +565,7 @@ def crop_xarray(
         raise ValueError(
             f"'xr_time_series.rio.crs': '{xr_time_series.rio.epsg}' must equal 'crop_box.crs': '{crop_box.crs}'"
         )
-    return xr_time_series.rio.clip_box(*crop_box.as_tuple())
-
-    # xr_time_series = reproject_xarray_by_crs(
-    #     xr_time_series,
-    #     crs=final_crs,
-    #     enforce_xarray_spatial_dims=enforce_xarray_spatial_dims,
-    #     xr_spatial_xdim=xr_spatial_xdim,
-    #     xr_spatial_ydim=xr_spatial_ydim,
-    # )
-
-    # assert isinstance(crop_geom, GeoDataFrame)
-    # crop_geom.set_crs(crs=final_crs, inplace=True)
-    # if initial_clip_box:
-    # return xr_time_series.rio.clip_box(
-    #     minx=crop_geom.bounds.minx,
-    #     miny=crop_geom.bounds.miny,
-    #     maxx=crop_geom.bounds.maxx,
-    #     maxy=crop_geom.bounds.maxy,
-    # )
-    # return xr_time_series.rio.clip(
-    #     crop_geom.geometry.values, drop=True, invert=invert, **kwargs
-    # )
-    assert False
-    gdal_warp_wrapper(
-        input_path=xr_time_series,
-        output_path=output_path,
-    )
+    return xr_time_series.rio.clip_box(*crop_box.as_tuple(), **kwargs)
 
 
 def ensure_xr_dataset(
@@ -1217,3 +1107,13 @@ def cftime_range_gen(time_data_array: T_DataArray, **kwargs) -> NDArray:
     )
     time_bnds_fix_range_end: CFTimeIndex = time_bnds_fix_range_start + timedelta(days=1)
     return np.array((time_bnds_fix_range_start, time_bnds_fix_range_end)).T
+
+
+# def tansform_lat_lng_bounding_box(bbox: tuple[float, float] | BoundsTupleType):
+#     # clip_box = box(*bbox)
+#     wgs84 = pyproj.CRS('EPSG:4326')
+#     brit_grid = pyproj.CRS('EPSG:27700')
+#     project = pyproj.Transformer.from_crs(wgs84, brit_grid, always_xy=True).transform
+#     clip_box = transform(project, clip_box)
+#     clipped = grid.rio.clip([clip_box])
+#     return clipped

@@ -166,6 +166,8 @@ def main(
     all_methods: bool = False,
     skip_cpm_standard_calendar_projection: bool = False,
     skip_hads_spatial_2k_projection: bool = False,
+    crop_cpm: bool = False,
+    crop_hads: bool = False,
     cpus: int | None = None,
     multiprocess: bool = False,
     start_index: int = 0,
@@ -239,7 +241,7 @@ def main(
             f"'stop_index': {stop_index} set from 'total': {total} and 'start_index': {start_index}."
         )
     variables = VariableOptions.all() if all_variables else tuple(variables)
-    assert regions  # In future there will be support for skipping city cropping
+    assert regions  # In future there will be support for skipping region cropping
     regions = RegionOptions.all() if all_regions else tuple(regions)
     methods = MethodOptions.all() if all_methods else tuple(methods)
     if all_runs:
@@ -286,6 +288,31 @@ def main(
                 multiprocess=multiprocess, cpus=cpus
             )
             print(hads_resamplers[:print_range_length])
+        if skip_cropping:
+            print("Skipping cropping.")
+        else:
+            if skip_cpm_standard_calendar_projection and not crop_cpm:
+                print("Skipping cropping CPM Standard Calendar projections.")
+            else:
+                print(f"Cropping CPMs to regions {config.regions}: ...")
+                cropped_cpm_resamplers: tuple[
+                    CPMResampler, ...
+                ] = config.cpm_manager.execute_crop_resamples(
+                    multiprocess=multiprocess, cpus=cpus
+                )
+                print(cropped_cpm_resamplers[:print_range_length])
+            if skip_cpm_standard_calendar_projection and not crop_hads:
+                print("Skipping cropping HADS 2.2km projections.")
+            else:
+                print(
+                    f"Cropping HADS 2.2km projections to regions {config.regions}: ..."
+                )
+                cropped_hads_resamplers: tuple[
+                    CPMResampler, ...
+                ] = config.hands_manager.execute_crop_resamples(
+                    multiprocess=multiprocess, cpus=cpus
+                )
+                print(cropped_hads_resamplers[:print_range_length])
     else:
         print("No steps run. Add '--execute' to run steps.")
 

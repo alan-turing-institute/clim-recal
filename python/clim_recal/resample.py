@@ -18,7 +18,6 @@ from typing import Any, Callable, Final, Iterable, Iterator, Literal, Sequence
 import dill as pickle
 import numpy as np
 import rioxarray  # nopycln: import
-from geopandas import GeoDataFrame
 from numpy.typing import NDArray
 from osgeo.gdal import GRA_NearestNeighbour
 from rich import print
@@ -29,7 +28,7 @@ from xarray.core.types import T_Dataset
 from clim_recal.debiasing.debias_wrapper import VariableOptions
 
 from .utils.core import climate_data_mount_path, multiprocess_execute
-from .utils.data import RunOptions, VariableOptions
+from .utils.data import RegionOptions, RunOptions, VariableOptions
 from .utils.gdal_formats import TIF_EXTENSION_STR
 from .utils.xarray import (
     BRITISH_NATIONAL_GRID_EPSG,
@@ -37,9 +36,11 @@ from .utils.xarray import (
     HADS_RAW_X_COLUMN_NAME,
     HADS_RAW_Y_COLUMN_NAME,
     NETCDF_EXTENSION_STR,
+    BoundingBoxCoords,
     ReprojectFuncType,
     apply_geo_func,
     cpm_reproject_with_standard_calendar,
+    crop_xarray,
     hads_resample_and_reproject,
 )
 
@@ -87,6 +88,8 @@ HADS_END_DATE: Final[date] = date(2021, 12, 31)
 
 CPM_OUTPUT_LOCAL_PATH: Final[Path] = Path("cpm")
 HADS_OUTPUT_LOCAL_PATH: Final[Path] = Path("hads")
+CPM_CROP_OUTPUT_LOCAL_PATH: Final[Path] = Path("cpm-crop")
+HADS_CROP_OUTPUT_LOCAL_PATH: Final[Path] = Path("hads-crop")
 
 
 NETCDF_OR_TIF = Literal[TIF_EXTENSION_STR, NETCDF_EXTENSION_STR]
@@ -109,11 +112,12 @@ class ResamblerBase:
 
     input_path: PathLike | None = RAW_HADS_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH
-    variable_name: VariableOptions = VariableOptions.default()
+    variable_name: VariableOptions | str = VariableOptions.default()
     grid: PathLike | T_Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
     input_files: Iterable[PathLike] | None = None
     cpus: int | None = None
-    crop: PathLike | GeoDataFrame | None = None
+    crop_regions: tuple[RegionOptions | str, ...] | None = RegionOptions.all()
+    crop_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH
     final_crs: str = BRITISH_NATIONAL_GRID_EPSG
     grid_x_column_name: str = HADS_XDIM
     grid_y_column_name: str = HADS_YDIM
@@ -136,6 +140,8 @@ class ResamblerBase:
         self.set_grid_x_y()
         self.set_input_files()
         Path(self.output_path).mkdir(parents=True, exist_ok=True)
+        if self.crop_regions:
+            Path(self.crop_path).mkdir(parents=True, exist_ok=True)
         self.total_cpus: int | None = cpu_count()
         if not self.cpus:
             self.cpus = 1 if not self.total_cpus else self.total_cpus
@@ -301,6 +307,70 @@ class ResamblerBase:
         """Run all steps for processing"""
         return self.range_to_reprojection(**kwargs) if not skip_spatial else None
 
+    def exported_range_to_crop(
+        self,
+        start: int | None = None,
+        stop: int | None = None,
+        step: int = 1,
+        override_export_path: Path | None = None,
+        source_to_index: Sequence | None = None,
+    ) -> list[Path]:
+        start = start or self.start_index
+        stop = stop or self.stop_index
+        return self._range_call(
+            method=crop_xarray,
+            start=start,
+            stop=stop,
+            step=step,
+            override_export_path=override_export_path,
+            source_to_index=source_to_index,
+        )
+
+    def crop_projection(
+        self,
+        region: str,
+        index: int = 0,
+        everride_export_path: Path | None = None,
+        return_results: bool = False,
+        source_to_index: Sequence | None = None,
+    ) -> Path | T_Dataset:
+        """Crop a projection to `region` geometry."""
+        # source_path: Path = self._get_source_path(
+        #     index=index, source_to_index=source_to_index
+        # )
+
+        assert False
+        # source_path: Path =
+        path: PathLike = self._output_path(
+            self.resolution_relative_path, override_export_path
+        )
+        return apply_geo_func(
+            source_path=source_path,
+            # func=interpolate_coords,
+            func=self._resample_func,
+            export_folder=path,
+            # Leaving in case we return to using warp
+            # export_path_as_output_path_kwarg=True,
+            # to_netcdf=False,
+            to_netcdf=True,
+            variable_name=self.variable_name,
+            x_dim_name=self.input_file_x_column_name,
+            y_dim_name=self.input_file_y_column_name,
+            # x_grid=self.x,
+            # y_grid=self.y,
+            # source_x_coord_column_name=self.input_file_x_column_name,
+            # source_y_coord_column_name=self.input_file_y_column_name,
+            # use_reference_grid=self._use_reference_grid,
+            new_path_name_func=reproject_2_2km_filename,
+            return_results=return_results,
+        )
+
+    # def execute_crop(self, **kwargs) -> list[Path] | None:
+    #     """Run crop for related reprojections."""
+    #     if not self.output_path or not Path(self.output_path).exists():
+    #         raise ValueError(f"Output path {self.output_path} required to crop.")
+    #     else:
+
 
 @dataclass(kw_only=True, repr=False)
 class HADsResampler(ResamblerBase):
@@ -361,7 +431,7 @@ class HADsResampler(ResamblerBase):
     grid: PathLike | T_Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
     input_files: Iterable[PathLike] | None = None
     cpus: int | None = None
-    crop: PathLike | GeoDataFrame | None = None
+    crop_coords: tuple[BoundingBoxCoords] | None = None
     final_crs: str = BRITISH_NATIONAL_GRID_EPSG
     grid_x_column_name: str = HADS_XDIM
     grid_y_column_name: str = HADS_YDIM
@@ -406,6 +476,40 @@ class HADsResampler(ResamblerBase):
             new_path_name_func=reproject_2_2km_filename,
             return_results=return_results,
         )
+
+    # def to_crop(
+    #     self,
+    #     index: int = 0,
+    #     override_export_path: Path | None = None,
+    #     return_results: bool = False,
+    #     source_to_index: Sequence | None = None,
+    # ) -> Path | T_Dataset:
+    #     source_path: Path = self._output_path(
+    #         index=index, source_to_index=source_to_index
+    #     )
+    #     path: PathLike = self._output_path(
+    #         self.resolution_relative_path, override_export_path
+    #     )
+    #     return apply_geo_func(
+    #         source_path=source_path,
+    #         # func=interpolate_coords,
+    #         func=self._resample_func,
+    #         export_folder=path,
+    #         # Leaving in case we return to using warp
+    #         # export_path_as_output_path_kwarg=True,
+    #         # to_netcdf=False,
+    #         to_netcdf=True,
+    #         variable_name=self.variable_name,
+    #         x_dim_name=self.input_file_x_column_name,
+    #         y_dim_name=self.input_file_y_column_name,
+    #         # x_grid=self.x,
+    #         # y_grid=self.y,
+    #         # source_x_coord_column_name=self.input_file_x_column_name,
+    #         # source_y_coord_column_name=self.input_file_y_column_name,
+    #         # use_reference_grid=self._use_reference_grid,
+    #         new_path_name_func=reproject_2_2km_filename,
+    #         return_results=return_results,
+    #     )
 
 
 @dataclass(kw_only=True, repr=False)
@@ -462,10 +566,10 @@ class CPMResampler(ResamblerBase):
 
     input_path: PathLike | None = RAW_CPM_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_LOCAL_PATH
-    standard_calendar_relative_path: Path = CPM_STANDARD_CALENDAR_PATH
+    # standard_calendar_relative_path: Path = CPM_STANDARD_CALENDAR_PATH
     input_file_x_column_name: str = CPRUK_XDIM
     input_file_y_column_name: str = CPRUK_YDIM
-    resolution_relative_path: Path = CPM_SPATIAL_COORDS_PATH
+    # resolution_relative_path: Path = CPM_SPATIAL_COORDS_PATH
     _resample_func: ReprojectFuncType = cpm_reproject_with_standard_calendar
 
     @property
@@ -492,8 +596,6 @@ class CPMResampler(ResamblerBase):
             export_folder=path,
             to_netcdf=True,
             variable_name=self.cpm_variable_name,
-            x_dim_name=self.input_file_x_column_name,
-            y_dim_name=self.input_file_y_column_name,
             # x_grid=self.x,
             # y_grid=self.y,
             # x_coord_column_name=self.input_file_x_column_name,

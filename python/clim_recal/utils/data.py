@@ -3,13 +3,124 @@ from typing import Collection, Union, Callable, Any, Literal, Final, Iterable
 from os import PathLike
 from datetime import date
 from enum import auto
+from pathlib import Path
+
+from xarray.backends.api import ENGINES
 
 from .core import StrEnumReprName
+
+
+BRITISH_NATION_GRID_COORDS_NUMBER: Final[int] = 27700
+BRITISH_NATIONAL_GRID_EPSG: Final[str] = f"EPSG:{BRITISH_NATION_GRID_COORDS_NUMBER}"
 
 AuthorshipType = Union[
     str | tuple[str, ...], dict[str, str] |
     dict[str, dict[str, str]] | dict[str, Collection[str]]
 ]
+DropDayType = set[tuple[int, int]]
+ChangeDayType = set[tuple[int, int]]
+
+BoundsTupleType = tuple[float, float, float, float]
+"""`GeoPandas` bounds: (`minx`, `miny`, `maxx`, `maxy`)."""
+
+
+@dataclass
+class BoundingBoxCoords:
+
+    """A region name and its bounding box coordinates."""
+
+    name: str
+    xmin: float
+    xmax: float
+    ymin: float
+    ymax: float
+    epsg: int = BRITISH_NATION_GRID_COORDS_NUMBER
+
+    def as_tuple(self) -> tuple[float, float, float, float]:
+        """Return in `xmin`, `xmax`, `ymin`, `ymax` order."""
+        return self.xmin, self.xmax, self.ymin, self.ymax
+
+    @property
+    def rioxarry_epsg(self) -> str:
+        """Return `self.epsg` in `rioxarray` `str` format."""
+        return f"EPSG:{self.epsg}"
+
+
+GlasgowCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
+    "Glasgow", 249799.999600002, 269234.9996, 657761.472000003, 672330.696800007
+)
+"""Rough approximation of Glasgow box coordinates."""
+
+LondonCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
+    "London", 503568.1996, 561957.4961, 155850.7974, 200933.9025
+)
+"""Rough approximation of London box coordinates."""
+
+ManchesterCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
+    "Manchester", 380399.997, 393249.999, 389349.999, 405300.003
+)
+"""Rough approximation of Manchester box coordinates."""
+
+ScotlandCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
+    "Scotland", 51029, 547530, 419319, 1222324
+)
+"""Rough approximation of Scotland box coordinates."""
+
+DEFAULT_CROP_COORDS_EPSG2770: Final[dict[str, BoundingBoxCoords]] = {
+    record.name: record for record in 
+    (GlasgowCoordsEPSG27700, ManchesterCoordsEPSG27700,
+     LondonCoordsEPSG27700, ScotlandCoordsEPSG27700)
+}
+
+GLASGOW_CENTRE_COORDS: Final[tuple[float, float]] = (55.86279, -4.25424)
+MANCHESTER_CENTRE_COORDS: Final[tuple[float, float]] = (53.48095, -2.23743)
+LONDON_CENTRE_COORDS: Final[tuple[float, float]] = (51.509865, -0.118092)
+THREE_CITY_CENTRE_COORDS: Final[dict[str, tuple[float, float]]] = {
+    "Glasgow": GLASGOW_CENTRE_COORDS,
+    "Manchester": MANCHESTER_CENTRE_COORDS,
+    "London": LONDON_CENTRE_COORDS,
+}
+"""City centre `(lon, lat)` `tuple` coords of `Glasgow`, `Manchester` and `London`."""
+
+MONTH_DAY_XARRAY_LEAP_YEAR_DROP: DropDayType = {
+    (1, 31),
+    (4, 1),
+    (6, 1),
+    (8, 1),
+    (9, 31),
+    (12, 1),
+}
+"""A `set` of month and day tuples dropped for `xarray.day_360` leap years."""
+
+MONTH_DAY_XARRAY_NO_LEAP_YEAR_DROP: DropDayType = {
+    (2, 6),
+    (4, 20),
+    (7, 2),
+    (9, 13),
+    (11, 25),
+}
+"""A `set` of month and day tuples dropped for `xarray.day_360` non leap years."""
+
+DEFAULT_INTERPOLATION_METHOD: str = "linear"
+"""Default method to infer missing estimates in a time series."""
+
+CFCalendarSTANDARD: Final[str] = "standard"
+ConvertCalendarAlignOptions = Literal["date", "year", None]
+
+XArrayEngineType = Literal[*tuple(ENGINES)]
+"""Engine types supported by `xarray` as `str`."""
+
+DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
+NETCDF4_XARRAY_ENGINE: Final[str] = "netcdf4"
+
+DEFAULT_RELATIVE_GRID_DATA_PATH: Final[Path] = (
+    Path().absolute() / "../data/rcp85_land-cpm_uk_2.2km_grid.nc"
+)
+TIME_COLUMN_NAME: Final[str] = "time"
+
+GLASGOW_GEOM_LOCAL_PATH: Final[Path] = Path(
+    "shapefiles/three.cities/Glasgow/Glasgow.shp"
+)
 
 class VariableOptions(StrEnumReprName):
     """Supported options for variables"""
@@ -138,6 +249,7 @@ class RegionOptions(StrEnumReprName):
     GLASGOW = "Glasgow"
     MANCHESTER = "Manchester"
     LONDON = "London"
+    SCOTLAND = "Scotland"
 
     @classmethod
     def default(cls) -> str:
@@ -148,6 +260,11 @@ class RegionOptions(StrEnumReprName):
     def all(cls) -> tuple[str, ...]:
         """Return a `tuple` of all options"""
         return tuple(map(lambda c: c.value, cls))
+
+    @classmethod
+    def boundaries_dict(cls) -> dict[str, BoundingBoxCoords]:
+        """`dict` for accessing bounding boxes of included `Regions`."""
+        return DEFAULT_CROP_COORDS_EPSG2770
 
 
 @dataclass

@@ -21,8 +21,9 @@ from clim_recal.utils.core import (
     is_platform_darwin,
     results_path,
 )
+from clim_recal.utils.data import BoundsTupleType
 from clim_recal.utils.server import CondaLockFileManager
-from clim_recal.utils.xarray import GLASGOW_GEOM_LOCAL_PATH, BoundsTupleType
+from clim_recal.utils.xarray import GLASGOW_GEOM_LOCAL_PATH
 from tests.utils import (
     CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT,
     CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT,

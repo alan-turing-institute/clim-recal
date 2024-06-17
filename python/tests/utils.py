@@ -36,6 +36,7 @@ from clim_recal.utils.core import (
     iter_to_tuple_strs,
 )
 from clim_recal.utils.data import (
+    THREE_CITY_CENTRE_COORDS,
     HadUKGrid,
     MethodOptions,
     RegionOptions,
@@ -43,7 +44,6 @@ from clim_recal.utils.data import (
     UKCPLocalProjections,
     VariableOptions,
 )
-from clim_recal.utils.xarray import THREE_CITY_CENTRE_COORDS
 
 logger = getLogger(__name__)
 
