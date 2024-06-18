@@ -27,7 +27,7 @@ from xarray.core.types import T_Dataset
 
 from clim_recal.debiasing.debias_wrapper import VariableOptions
 
-from .utils.core import climate_data_mount_path, multiprocess_execute
+from .utils.core import climate_data_mount_path, console, multiprocess_execute
 from .utils.data import RegionOptions, RunOptions, VariableOptions
 from .utils.gdal_formats import TIF_EXTENSION_STR
 from .utils.xarray import (
@@ -36,7 +36,6 @@ from .utils.xarray import (
     HADS_RAW_X_COLUMN_NAME,
     HADS_RAW_Y_COLUMN_NAME,
     NETCDF_EXTENSION_STR,
-    BoundingBoxCoords,
     ReprojectFuncType,
     apply_geo_func,
     cpm_reproject_with_standard_calendar,
@@ -307,63 +306,96 @@ class ResamblerBase:
         """Run all steps for processing"""
         return self.range_to_reprojection(**kwargs) if not skip_spatial else None
 
-    def exported_range_to_crop(
+    def _sync_reprojected_paths(
+        self, overwrite_output_path: PathLike | None = None
+    ) -> None:
+        """Sync `self._reprojected_paths` with files in `self.export_path`."""
+        if not hasattr(self, "_reprojected_paths"):
+            if overwrite_output_path:
+                self.output_path = overwrite_output_path
+            path: PathLike = self.output_path
+        self._reprojected_paths: list[Path] = [
+            local_path
+            for local_path in Path(path).iterdir()
+            if local_path.is_file() and local_path.suffix == f".{NETCDF_EXTENSION_STR}"
+        ]
+
+    def range_crop_projection(
         self,
+        regions: Iterable[str] | None = None,
         start: int | None = None,
         stop: int | None = None,
         step: int = 1,
         override_export_path: Path | None = None,
-        source_to_index: Sequence | None = None,
+        return_results: bool = False,
+        **kwargs,
     ) -> list[Path]:
+        regions = regions or self.crop_regions
         start = start or self.start_index
         stop = stop or self.stop_index
-        return self._range_call(
-            method=crop_xarray,
-            start=start,
-            stop=stop,
-            step=step,
-            override_export_path=override_export_path,
-            source_to_index=source_to_index,
-        )
+        export_paths: list[Path | T_Dataset] = []
+        if stop is None:
+            stop = len(self)
+        assert regions
+        for region in regions:
+            console.print(f"Cropping to '{region}' from {self}...")
+            for index in trange(start, stop, step):
+                export_paths.append(
+                    self.crop_projection(
+                        region=region,
+                        index=index,
+                        override_export_path=override_export_path,
+                        return_results=return_results,
+                        **kwargs,
+                    )
+                )
+        return export_paths
 
     def crop_projection(
         self,
         region: str,
         index: int = 0,
-        everride_export_path: Path | None = None,
+        override_export_path: Path | None = None,
         return_results: bool = False,
-        source_to_index: Sequence | None = None,
+        sync_reprojection_paths: bool = True,
+        **kwargs,
     ) -> Path | T_Dataset:
         """Crop a projection to `region` geometry."""
-        # source_path: Path = self._get_source_path(
-        #     index=index, source_to_index=source_to_index
-        # )
-
-        assert False
-        # source_path: Path =
-        path: PathLike = self._output_path(
-            self.resolution_relative_path, override_export_path
+        try:
+            assert hasattr(self, "_reprojected_paths")
+        except AssertionError:
+            if sync_reprojection_paths:
+                self._sync_reprojected_paths()
+            else:
+                raise AttributeError(
+                    f"'_reprojected_paths' must be set. "
+                    "Run after 'self.to_reprojection()' or set as a "
+                    "list directly."
+                )
+        try:
+            assert region and region in self.crop_regions
+        except AttributeError:
+            raise IndexError(f"'{region}' not in 'crop_regions': '{self.crop_regions}'")
+        path: PathLike = override_export_path or Path(self.crop_path) / (region)
+        path.mkdir(exist_ok=True, parents=True)
+        resampled_xr: Dataset = self._reprojected_paths[index]
+        cropped: Dataset = crop_xarray(
+            xr_time_series=resampled_xr,
+            crop_box=RegionOptions.bounding_box(region),
+            **kwargs,
         )
-        return apply_geo_func(
-            source_path=source_path,
-            # func=interpolate_coords,
-            func=self._resample_func,
-            export_folder=path,
-            # Leaving in case we return to using warp
-            # export_path_as_output_path_kwarg=True,
-            # to_netcdf=False,
-            to_netcdf=True,
-            variable_name=self.variable_name,
-            x_dim_name=self.input_file_x_column_name,
-            y_dim_name=self.input_file_y_column_name,
-            # x_grid=self.x,
-            # y_grid=self.y,
-            # source_x_coord_column_name=self.input_file_x_column_name,
-            # source_y_coord_column_name=self.input_file_y_column_name,
-            # use_reference_grid=self._use_reference_grid,
-            new_path_name_func=reproject_2_2km_filename,
-            return_results=return_results,
-        )
+        cropped_file_name: str = "crop_" + region + "-" + resampled_xr.name
+        export_path: Path = path / cropped_file_name
+        cropped.to_netcdf(export_path)
+        if not hasattr(self, "_cropped_paths"):
+            self._cropped_paths: dict[str, list[PathLike]] = {}
+        if region not in self._cropped_paths:
+            self._cropped_paths[region] = []
+        self._cropped_paths[region].append(export_path)
+        if return_results:
+            return cropped
+        else:
+            return export_path
 
     # def execute_crop(self, **kwargs) -> list[Path] | None:
     #     """Run crop for related reprojections."""
@@ -431,13 +463,13 @@ class HADsResampler(ResamblerBase):
     grid: PathLike | T_Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
     input_files: Iterable[PathLike] | None = None
     cpus: int | None = None
-    crop_coords: tuple[BoundingBoxCoords] | None = None
+    crop_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH
     final_crs: str = BRITISH_NATIONAL_GRID_EPSG
     grid_x_column_name: str = HADS_XDIM
     grid_y_column_name: str = HADS_YDIM
     input_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
     export_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
-    resolution_relative_path: Path = HADS_2_2K_RESOLUTION_PATH
+    # resolution_relative_path: Path = HADS_2_2K_RESOLUTION_PATH
     input_file_x_column_name: str = HADS_XDIM
     input_file_y_column_name: str = HADS_YDIM
     _resample_func: ReprojectFuncType = hads_resample_and_reproject
@@ -453,9 +485,10 @@ class HADsResampler(ResamblerBase):
         source_path: Path = self._get_source_path(
             index=index, source_to_index=source_to_index
         )
-        path: PathLike = self._output_path(
-            self.resolution_relative_path, override_export_path
-        )
+        path: PathLike = self.output_path
+        # path: PathLike = self._output_path(
+        #     self.resolution_relative_path, override_export_path
+        # )
         return apply_geo_func(
             source_path=source_path,
             # func=interpolate_coords,
@@ -566,6 +599,7 @@ class CPMResampler(ResamblerBase):
 
     input_path: PathLike | None = RAW_CPM_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_LOCAL_PATH
+    crop_path: PathLike = RESAMPLING_OUTPUT_PATH / CPM_CROP_OUTPUT_LOCAL_PATH
     # standard_calendar_relative_path: Path = CPM_STANDARD_CALENDAR_PATH
     input_file_x_column_name: str = CPRUK_XDIM
     input_file_y_column_name: str = CPRUK_YDIM
@@ -586,22 +620,24 @@ class CPMResampler(ResamblerBase):
         source_path: Path = self._get_source_path(
             index=index, source_to_index=source_to_index
         )
-        path: PathLike = self._output_path(
-            self.resolution_relative_path, override_export_path
-        )
-        return apply_geo_func(
+        path: PathLike = self.output_path
+        # path: PathLike = self._output_path(
+        #     self.resolution_relative_path, override_export_path
+        # )
+        result: Path | T_Dataset | GDALDataset = apply_geo_func(
             source_path=source_path,
             func=self._resample_func,
             new_path_name_func=reproject_standard_calendar_filename,
             export_folder=path,
             to_netcdf=True,
             variable_name=self.cpm_variable_name,
-            # x_grid=self.x,
-            # y_grid=self.y,
-            # x_coord_column_name=self.input_file_x_column_name,
-            # y_coord_column_name=self.input_file_y_column_name,
             return_results=return_results,
         )
+        if isinstance(result, PathLike):
+            if not hasattr(self, "_reprojected_paths"):
+                self._reprojected_paths: list[Path] = []
+            self._reprojected_paths.append(Path(result))
+        return result
 
     def __getstate__(self):
         """Meanse of testing what aspects of instance have issues multiprocessing.

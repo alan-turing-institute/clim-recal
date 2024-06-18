@@ -1,11 +1,11 @@
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
-from typing import Any, Final, Literal
+from typing import Any, Final
 
 import numpy as np
 import pytest
-from geopandas import GeoDataFrame, read_file
-from matplotlib import pyplot as plt
+
+# from matplotlib import pyplot as plt
 from numpy.testing import assert_allclose
 from numpy.typing import NDArray
 from osgeo.gdal import Dataset as GDALDataset
@@ -14,9 +14,11 @@ from xarray.core.types import T_DataArray, T_Dataset
 
 from clim_recal.resample import (
     BRITISH_NATIONAL_GRID_EPSG,
+    CPM_CROP_OUTPUT_LOCAL_PATH,
     CPRUK_XDIM,
     CPRUK_YDIM,
     DEFAULT_RELATIVE_GRID_DATA_PATH,
+    HADS_CROP_OUTPUT_LOCAL_PATH,
     HADS_XDIM,
     HADS_YDIM,
     CPMResampler,
@@ -27,23 +29,11 @@ from clim_recal.resample import (
 from clim_recal.utils.core import (
     CLI_DATE_FORMAT_STR,
     DateType,
-    annual_data_path,
     annual_data_paths_generator,
     date_range_generator,
     results_path,
 )
-from clim_recal.utils.data import (
-    BoundsTupleType,
-    CEDADataSources,
-    HadUKGrid,
-    UKCPLocalProjections,
-)
-from clim_recal.utils.gdal_formats import (
-    GDALFormatExtensions,
-    GDALFormatsType,
-    GDALGeoTiffFormatStr,
-    GDALNetCDFFormatStr,
-)
+from clim_recal.utils.data import HadUKGrid, UKCPLocalProjections
 from clim_recal.utils.xarray import (
     FINAL_RESAMPLE_LAT_COL,
     FINAL_RESAMPLE_LON_COL,
@@ -55,7 +45,6 @@ from clim_recal.utils.xarray import (
     cpm_reproject_with_standard_calendar,
     cpm_xarray_to_standard_calendar,
     file_name_to_start_end_dates,
-    gdal_warp_wrapper,
     hads_resample_and_reproject,
     interpolate_coords,
     plot_xarray,
@@ -400,117 +389,117 @@ def test_convert_cpm_calendar(interpolate_na: bool) -> None:
     )
 
 
-@pytest.mark.slow
-@pytest.mark.xfail
-@pytest.mark.parametrize("data_type", (UKCPLocalProjections, HadUKGrid))
-@pytest.mark.parametrize("data_source", ("mounted", "local"))
-@pytest.mark.parametrize("output_format", (GDALNetCDFFormatStr, GDALGeoTiffFormatStr))
-@pytest.mark.parametrize("glasgow_crop", (True, False))
-def test_geo_warp_format_type_crop(
-    data_type: CEDADataSources,
-    data_source: Literal["mounted", "local"],
-    output_format: GDALFormatsType,
-    glasgow_crop: bool,
-    test_runs_output_path: Path,
-    glasgow_shape_file_path: Path,
-    glasgow_epsg_27700_bounds: BoundsTupleType,
-    uk_rotated_grid_bounds,
-    ukcp_tasmax_raw_mount_path: Path,
-    hads_tasmax_raw_mount_path: Path,
-    hads_tasmax_local_test_path: Path,
-    ukcp_tasmax_local_test_path: Path,
-    is_data_mounted: bool,
-) -> None:
-    """Test using `geo_warp` with mounted raw data."""
-    server_data_path: Path = (
-        ukcp_tasmax_raw_mount_path
-        if data_type == UKCPLocalProjections
-        else hads_tasmax_raw_mount_path
-    )
-    local_data_path: Path = (
-        ukcp_tasmax_local_test_path
-        if data_type == UKCPLocalProjections
-        else hads_tasmax_local_test_path
-    )
-    data_path: Path = server_data_path if data_source == "mounted" else local_data_path
-    if data_source == "mounted" and not is_data_mounted:
-        pytest.skip("requires external data mounted")
-    assert data_path.exists()
-
-    # cropped.rio.set_spatial_dims(x_dim="grid_longitude", y_dim="grid_latitude")
-    datetime_now = datetime.now()
-    warp_path: Path = test_runs_output_path / "geo_warp"
-    if glasgow_crop:
-        glasgow_test_fig_path = results_path(
-            name="glasgow",
-            path=warp_path,
-            time=datetime_now,
-            extension="png",
-            mkdir=True,
-        )
-    pre_warp_test_fig_path = results_path(
-        name="pre_warp", path=warp_path, time=datetime_now, extension="png", mkdir=True
-    )
-    warp_test_file_path = results_path(
-        name="test_warp_file",
-        path=warp_path,
-        time=datetime_now,
-        extension=GDALFormatExtensions[output_format],
-        mkdir=False,
-    )
-    warp_test_fig_path = results_path(
-        name="test_warp", path=warp_path, time=datetime_now, extension="png", mkdir=True
-    )
-
-    if glasgow_crop:
-        glasgow_geo_df: GeoDataFrame = read_file(glasgow_shape_file_path)
-        glasgow_geo_df.plot()
-        plt.savefig(glasgow_test_fig_path)
-        assert glasgow_geo_df.crs == BRITISH_NATIONAL_GRID_EPSG
-        assert (
-            tuple(glasgow_geo_df.bounds.values.tolist()[0]) == glasgow_epsg_27700_bounds
-        )
-
-    max_temp_data_path: Path = (
-        data_path
-        if data_source == "local"
-        else annual_data_path(
-            end_year=1981,
-            parent_path=data_path,
-        )
-    )
-    xarray_pre_warp: T_Dataset = open_dataset(
-        max_temp_data_path, decode_coords="all", engine=NETCDF4_XARRAY_ENGINE
-    )
-    xarray_pre_warp.isel(time=0).tasmax.plot()
-    plt.savefig(pre_warp_test_fig_path)
-
-    assert str(xarray_pre_warp.rio.crs) != BRITISH_NATIONAL_GRID_EPSG
-    assert xarray_pre_warp.rio.bounds() == uk_rotated_grid_bounds
-    # output_path: Path = warp_path / (max_temp_data_path.stem + ".tif" if output_format == GDALGeoTiffFormatStr else ".nc")
-    xarray_warped: GDALDataset
-    if glasgow_crop:
-        xarray_warped = gdal_warp_wrapper(
-            input_path=max_temp_data_path,
-            output_path=warp_test_file_path,
-            format=output_format,
-        )
-    else:
-        xarray_warped = gdal_warp_wrapper(
-            input_path=max_temp_data_path,
-            output_path=warp_test_file_path,
-            format=output_format,
-            output_bounds=uk_rotated_grid_bounds,
-        )
-    assert xarray_warped is not None
-    read_exported: T_Dataset = open_dataset(warp_test_file_path, decode_coords="all")
-
-    read_exported.Band1.plot()
-    plt.savefig(warp_test_fig_path)
-
-    assert str(read_exported.rio.crs) == BRITISH_NATIONAL_GRID_EPSG
-    if glasgow_crop:
-        assert read_exported.rio.bounds() == glasgow_epsg_27700_bounds
+# @pytest.mark.slow
+# @pytest.mark.xfail
+# @pytest.mark.parametrize("data_type", (UKCPLocalProjections, HadUKGrid))
+# @pytest.mark.parametrize("data_source", ("mounted", "local"))
+# @pytest.mark.parametrize("output_format", (GDALNetCDFFormatStr, GDALGeoTiffFormatStr))
+# @pytest.mark.parametrize("glasgow_crop", (True, False))
+# def test_geo_warp_format_type_crop(
+#     data_type: CEDADataSources,
+#     data_source: Literal["mounted", "local"],
+#     output_format: GDALFormatsType,
+#     glasgow_crop: bool,
+#     test_runs_output_path: Path,
+#     glasgow_shape_file_path: Path,
+#     glasgow_epsg_27700_bounds: BoundsTupleType,
+#     uk_rotated_grid_bounds,
+#     ukcp_tasmax_raw_mount_path: Path,
+#     hads_tasmax_raw_mount_path: Path,
+#     hads_tasmax_local_test_path: Path,
+#     ukcp_tasmax_local_test_path: Path,
+#     is_data_mounted: bool,
+# ) -> None:
+#     """Test using `geo_warp` with mounted raw data."""
+#     server_data_path: Path = (
+#         ukcp_tasmax_raw_mount_path
+#         if data_type == UKCPLocalProjections
+#         else hads_tasmax_raw_mount_path
+#     )
+#     local_data_path: Path = (
+#         ukcp_tasmax_local_test_path
+#         if data_type == UKCPLocalProjections
+#         else hads_tasmax_local_test_path
+#     )
+#     data_path: Path = server_data_path if data_source == "mounted" else local_data_path
+#     if data_source == "mounted" and not is_data_mounted:
+#         pytest.skip("requires external data mounted")
+#     assert data_path.exists()
+#
+#     # cropped.rio.set_spatial_dims(x_dim="grid_longitude", y_dim="grid_latitude")
+#     datetime_now = datetime.now()
+#     warp_path: Path = test_runs_output_path / "geo_warp"
+#     if glasgow_crop:
+#         glasgow_test_fig_path = results_path(
+#             name="glasgow",
+#             path=warp_path,
+#             time=datetime_now,
+#             extension="png",
+#             mkdir=True,
+#         )
+#     pre_warp_test_fig_path = results_path(
+#         name="pre_warp", path=warp_path, time=datetime_now, extension="png", mkdir=True
+#     )
+#     warp_test_file_path = results_path(
+#         name="test_warp_file",
+#         path=warp_path,
+#         time=datetime_now,
+#         extension=GDALFormatExtensions[output_format],
+#         mkdir=False,
+#     )
+#     warp_test_fig_path = results_path(
+#         name="test_warp", path=warp_path, time=datetime_now, extension="png", mkdir=True
+#     )
+#
+#     if glasgow_crop:
+#         glasgow_geo_df: GeoDataFrame = read_file(glasgow_shape_file_path)
+#         glasgow_geo_df.plot()
+#         plt.savefig(glasgow_test_fig_path)
+#         assert glasgow_geo_df.crs == BRITISH_NATIONAL_GRID_EPSG
+#         assert (
+#             tuple(glasgow_geo_df.bounds.values.tolist()[0]) == glasgow_epsg_27700_bounds
+#         )
+#
+#     max_temp_data_path: Path = (
+#         data_path
+#         if data_source == "local"
+#         else annual_data_path(
+#             end_year=1981,
+#             parent_path=data_path,
+#         )
+#     )
+#     xarray_pre_warp: T_Dataset = open_dataset(
+#         max_temp_data_path, decode_coords="all", engine=NETCDF4_XARRAY_ENGINE
+#     )
+#     xarray_pre_warp.isel(time=0).tasmax.plot()
+#     plt.savefig(pre_warp_test_fig_path)
+#
+#     assert str(xarray_pre_warp.rio.crs) != BRITISH_NATIONAL_GRID_EPSG
+#     assert xarray_pre_warp.rio.bounds() == uk_rotated_grid_bounds
+#     # output_path: Path = warp_path / (max_temp_data_path.stem + ".tif" if output_format == GDALGeoTiffFormatStr else ".nc")
+#     xarray_warped: GDALDataset
+#     if glasgow_crop:
+#         xarray_warped = gdal_warp_wrapper(
+#             input_path=max_temp_data_path,
+#             output_path=warp_test_file_path,
+#             format=output_format,
+#         )
+#     else:
+#         xarray_warped = gdal_warp_wrapper(
+#             input_path=max_temp_data_path,
+#             output_path=warp_test_file_path,
+#             format=output_format,
+#             output_bounds=uk_rotated_grid_bounds,
+#         )
+#     assert xarray_warped is not None
+#     read_exported: T_Dataset = open_dataset(warp_test_file_path, decode_coords="all")
+#
+#     read_exported.Band1.plot()
+#     plt.savefig(warp_test_fig_path)
+#
+#     assert str(read_exported.rio.crs) == BRITISH_NATIONAL_GRID_EPSG
+#     if glasgow_crop:
+#         assert read_exported.rio.bounds() == glasgow_epsg_27700_bounds
 
 
 @pytest.mark.localcache
@@ -615,31 +604,33 @@ def test_cpm_tif_to_standard_calendar(
 @pytest.mark.localcache
 @pytest.mark.slow
 @pytest.mark.mount
+@pytest.mark.parametrize("region", ("Glasgow", "Manchester", "London", "Scotland"))
 @pytest.mark.parametrize("data_type", (UKCPLocalProjections, HadUKGrid))
 @pytest.mark.parametrize(
-    "config", ("direct", "range", "direct_provided", "range_provided")
+    # "config", ("direct", "range", "direct_provided", "range_provided")
+    "config",
+    ("direct", "range"),
 )
 def test_crop_xarray(
-    # align_on: ConvertCalendarAlignOptions,
-    # ukcp_tasmax_raw_path
-    # glasgow_shape_file_path,
-    # data_fixtures_path,
-    # glasgow_epsg_27700_bounds,
     tasmax_cpm_1980_raw_path,
     tasmax_hads_1980_raw_path,
-    # uk_rotated_grid_bounds,
     resample_test_cpm_output_path,
+    resample_test_hads_output_path,
     config: str,
     data_type: str,
+    region: str,
 ):
     """Test `cropping` `DataArray` to `standard` calendar."""
     CPM_FIRST_DATES: np.array = np.array(
         ["19801201", "19801202", "19801203", "19801204", "19801205"]
     )
-    crop_path: Path = resample_test_cpm_output_path / config
-    output_path: Path = resample_test_cpm_output_path / config
     test_config: CPMResampler | HADsResampler
     if data_type == HadUKGrid:
+        output_path: Path = resample_test_hads_output_path / config
+        crop_path: Path = (
+            resample_test_hads_output_path / config / HADS_CROP_OUTPUT_LOCAL_PATH
+        )
+
         test_config = HADsResampler(
             input_path=tasmax_hads_1980_raw_path.parent,
             output_path=output_path,
@@ -647,85 +638,47 @@ def test_crop_xarray(
         )
     else:
         assert data_type == UKCPLocalProjections
+        output_path: Path = resample_test_cpm_output_path / config
+        crop_path: Path = (
+            resample_test_cpm_output_path / config / CPM_CROP_OUTPUT_LOCAL_PATH
+        )
         test_config = CPMResampler(
             input_path=tasmax_cpm_1980_raw_path.parent,
             output_path=output_path,
             crop_path=crop_path,
         )
     paths: list[Path]
-    reproject_result: GDALDataset = test_config.to_reprojection()
+    try:
+        reproject_result: GDALDataset = test_config.to_reprojection()
+    except FileExistsError:
+        test_config._sync_reprojected_paths(overwrite_output_path=output_path)
+
     match config:
         case "direct":
-            paths = [test_config.crop_projection(region="Scotland")]
+            paths = [test_config.crop_projection(region=region)]
         case "range":
-            paths = test_config.range_to_reprojection(stop=1)
-        case "direct_provided":
-            paths = [
-                test_config.to_reprojection(index=0, source_to_index=tuple(test_config))
-            ]
-        case "range_provided":
-            paths = test_config.range_to_reprojection(
-                stop=1, source_to_index=tuple(test_config)
-            )
+            paths = test_config.range_crop_projection(stop=1)
+        # case "direct_provided":
+        #     paths = [
+        #         test_config.to_reprojection(index=0, source_to_index=tuple(test_config))
+        #     ]
+        # case "range_provided":
+        #     paths = test_config.range_to_reprojection(
+        #         stop=1, source_to_index=tuple(test_config)
+        #     )
     crop: T_Dataset = open_dataset(paths[0])
-    assert crop.dims["time"] == 365
     # assert crop.dims[FINAL_RESAMPLE_LON_COL] == FINAL_CONVERTED_CPM_WIDTH
     # assert_allclose(export.tasmax[10][5][:10].values, FINAL_CPM_DEC_10_5_X_0_10_Y)
-    assert (
-        CPM_FIRST_DATES == crop.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
-    ).all()
+    if data_type == UKCPLocalProjections:
+        assert crop.dims["time"] == 365
+        assert (
+            CPM_FIRST_DATES == crop.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
+        ).all()
     plot_xarray(
         crop.tasmax[0],
-        path=resample_test_cpm_output_path / f"config-{config}.png",
+        path=crop_path / region / f"config-{config}.png",
         time_stamp=True,
     )
-    assert False
-    # cropped.rio.set_spatial_dims(x_dim="grid_longitude", y_dim="grid_latitude")
-    # datetime_now_str: str = str(datetime.now()).replace(" ", "-")
-    #
-    # # plot_path: Path = data_fixtures_path / 'output'
-    # plot_path: Path = Path("tests") / "runs"
-    # plot_path.mkdir(parents=True, exist_ok=True)
-    #
-    # glasgow_fig_file_name: Path = Path(f"glasgow_{datetime_now_str}.png")
-    # pre_crop_fig_file_name: Path = Path(f"pre_crop_{datetime_now_str}.png")
-    # crop_fig_file_name: Path = Path(f"test_crop_{datetime_now_str}.png")
-    #
-    # glasgow_test_fig_path: Path = plot_path / glasgow_fig_file_name
-    # pre_crop_test_fig_path: Path = plot_path / pre_crop_fig_file_name
-    # crop_test_fig_path: Path = plot_path / crop_fig_file_name
-    #
-    # glasgow_geo_df: GeoDataFrame = read_file(glasgow_shape_file_path)
-    # glasgow_geo_df.plot()
-    # plt.savefig(glasgow_test_fig_path)
-    # assert glasgow_geo_df.crs == BRITISH_NATIONAL_GRID_EPSG
-    # assert tuple(glasgow_geo_df.bounds.values.tolist()[0]) == glasgow_epsg_27700_bounds
-    #
-    # max_temp_1981_path: Path = annual_data_path(
-    #     end_year=1981,
-    #     parent_path=data_fixtures_path,
-    # )
-    # xarray_pre_crop: T_Dataset = open_dataset(max_temp_1981_path, decode_coords="all")
-    # xarray_pre_crop.isel(time=0).tasmax.plot()
-    # plt.savefig(pre_crop_test_fig_path)
-    #
-    # assert str(xarray_pre_crop.rio.crs) != BRITISH_NATIONAL_GRID_EPSG
-    # assert xarray_pre_crop.rio.bounds() == uk_rotated_grid_bounds
-    #
-    # cropped: T_Dataset = crop_xarray(
-    #     xr_time_series=max_temp_1981_path,
-    #     crop_geom=glasgow_shape_file_path,
-    #     enforce_xarray_spatial_dims=True,
-    #     invert=True,
-    #     initial_clip_box=False,
-    # )
-    #
-    # cropped.isel(time=0).tasmax.plot()
-    # plt.savefig(crop_test_fig_path)
-    #
-    # assert str(cropped.rio.crs) == BRITISH_NATIONAL_GRID_EPSG
-    # assert cropped.rio.bounds() == glasgow_epsg_27700_bounds
-    # assert False
 
 
 @pytest.mark.localcache

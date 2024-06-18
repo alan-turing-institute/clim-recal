@@ -513,22 +513,8 @@ def crop_xarray(
     ----------
     xr_time_series
         `Dataset` or path to `netcdf` file to load and crop.
-    crop_geom
-        Box coordinates to crop to.
-    invert
-        Whether to invert the `crop_geom` coordinates.
-    final_crs
-        Final coordinate system to return cropped `xr_time_series` in.
-    initial_clip_box
-        Whether to initially clip `xr_time_series` via `crop_geom`
-        boundaries. For more details on chained clip approaches see
-        https://corteva.github.io/rioxarray/html/examples/clip_geom.html#Clipping-larger-rasters
-    enforce_xarray_spatial_dims
-        Whether to use `set_spatial_dims` on `xr_time_series` prior to `clip`.
-    xr_spatial_xdim
-        Column parameter to pass as `xdim` to `set_spatial_dims` if used.
-    xr_spatial_ydim
-        Column parameter to pass as `ydim` to `set_spatial_dims` if used.
+    crop_box
+        Instance of `BoundingBoxCoords` with coords.
     kwargs
         Any additional parameters to pass to `clip`
 

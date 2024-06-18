@@ -244,11 +244,13 @@ def glasgow_shape_file_path(data_fixtures_path: Path) -> Path:
 
 
 @pytest.fixture(scope="session")
-def test_runs_output_path(path=TEST_RESULTS_PATH) -> Iterator[Path]:
+def test_runs_output_path(
+    keep_test_results: bool, path=TEST_RESULTS_PATH
+) -> Iterator[Path]:
     path.mkdir(exist_ok=True, parents=True)
     yield path
-    # Comment out rmtree line below to leave test files for checking after runs
-    rmtree(path, ignore_errors=True)
+    if not keep_test_results:
+        rmtree(path, ignore_errors=True)
 
 
 def pytest_addoption(parser):
@@ -271,6 +273,12 @@ def pytest_addoption(parser):
         default=False,
         help="Use asyc if --sync-all is used",
     )
+    parser.addoption(
+        "--keep-results",
+        action=BooleanOptionalAction,
+        default=False,
+        help="Keep test result files (else deleted after each test)",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -286,6 +294,11 @@ def sync_all(request) -> bool:
 @pytest.fixture(scope="session")
 def use_async(request) -> bool:
     return request.config.getoption("--use-async")
+
+
+@pytest.fixture(scope="session")
+def keep_test_results(request) -> bool:
+    return request.config.getoption("--keep-results")
 
 
 @pytest.fixture(scope="session")

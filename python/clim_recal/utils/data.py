@@ -40,6 +40,10 @@ class BoundingBoxCoords:
         """Return in `xmin`, `xmax`, `ymin`, `ymax` order."""
         return self.xmin, self.xmax, self.ymin, self.ymax
 
+    def as_dict(self) -> dict[str, float]:
+        """Return coords as `dict`"""
+        return {'xmin': self.xmin, 'xmax': self.xmax, 'ymin': self.ymin, 'ymax': self.ymax}
+
     @property
     def rioxarry_epsg(self) -> str:
         """Return `self.epsg` in `rioxarray` `str` format."""
@@ -47,22 +51,22 @@ class BoundingBoxCoords:
 
 
 GlasgowCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
-    "Glasgow", 249799.999600002, 269234.9996, 657761.472000003, 672330.696800007
+    name="Glasgow", xmin=249799.999600002, xmax=269234.9996, ymin=657761.472000003, ymax=672330.696800007
 )
 """Rough approximation of Glasgow box coordinates."""
 
 LondonCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
-    "London", 503568.1996, 561957.4961, 155850.7974, 200933.9025
+    name="London", xmin=503568.1996, xmax=561957.4961, ymin=155850.7974, ymax=200933.9025
 )
 """Rough approximation of London box coordinates."""
 
 ManchesterCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
-    "Manchester", 380399.997, 393249.999, 389349.999, 405300.003
+    name="Manchester", xmin=380399.997, xmax=393249.999, ymin=389349.999, ymax=405300.003
 )
 """Rough approximation of Manchester box coordinates."""
 
 ScotlandCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
-    "Scotland", 51029, 547530, 419319, 1222324
+    name="Scotland", xmin=51029, xmax=547530, ymin=4480515, ymax=1243058
 )
 """Rough approximation of Scotland box coordinates."""
 
@@ -261,10 +265,10 @@ class RegionOptions(StrEnumReprName):
         """Return a `tuple` of all options"""
         return tuple(map(lambda c: c.value, cls))
 
-    @classmethod
-    def boundaries_dict(cls) -> dict[str, BoundingBoxCoords]:
+    @staticmethod
+    def bounding_box(region_name: str) -> BoundingBoxCoords:
         """`dict` for accessing bounding boxes of included `Regions`."""
-        return DEFAULT_CROP_COORDS_EPSG2770
+        return DEFAULT_CROP_COORDS_EPSG2770[region_name.title()]
 
 
 @dataclass

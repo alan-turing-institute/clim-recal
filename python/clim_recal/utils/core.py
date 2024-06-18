@@ -24,9 +24,12 @@ from typing import (
     Union,
 )
 
+from rich.console import Console
 from tqdm import TqdmExperimentalWarning, tqdm
 
 logger = getLogger(__name__)
+
+console = Console()
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 
