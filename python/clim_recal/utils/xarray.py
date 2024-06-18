@@ -538,7 +538,7 @@ def crop_xarray(
     ...     crop_box=GlasgowCoordsEPSG27700)
     >>> assert_allclose(cropped.rio.bounds(),
     ...                 GlasgowCoordsEPSG27700.as_tuple(),
-    ...                 rtol=.01)
+    ...                 rtol=.001)
     >>> tasmax_cpm_1980_365_day.sizes
     Frozen({'x': 529, 'y': 653, 'time': 365})
     >>> cropped.sizes
@@ -551,7 +551,9 @@ def crop_xarray(
         raise ValueError(
             f"'xr_time_series.rio.crs': '{xr_time_series.rio.epsg}' must equal 'crop_box.crs': '{crop_box.crs}'"
         )
-    return xr_time_series.rio.clip_box(*crop_box.as_tuple(), **kwargs)
+    return xr_time_series.rio.clip_box(
+        **crop_box.as_rioxarray_dict(), crs=crop_box.rioxarry_epsg, **kwargs
+    )
 
 
 def ensure_xr_dataset(

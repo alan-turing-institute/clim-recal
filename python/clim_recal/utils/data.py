@@ -40,9 +40,9 @@ class BoundingBoxCoords:
         """Return in `xmin`, `xmax`, `ymin`, `ymax` order."""
         return self.xmin, self.xmax, self.ymin, self.ymax
 
-    def as_dict(self) -> dict[str, float]:
+    def as_rioxarray_dict(self) -> dict[str, float]:
         """Return coords as `dict`"""
-        return {'xmin': self.xmin, 'xmax': self.xmax, 'ymin': self.ymin, 'ymax': self.ymax}
+        return {'minx': self.xmin, 'maxx': self.xmax, 'miny': self.ymin, 'maxy': self.ymax}
 
     @property
     def rioxarry_epsg(self) -> str:
@@ -66,7 +66,7 @@ ManchesterCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
 """Rough approximation of Manchester box coordinates."""
 
 ScotlandCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
-    name="Scotland", xmin=51029, xmax=547530, ymin=4480515, ymax=1243058
+    name="Scotland", xmin=51029, xmax=547530, ymin=1243058, ymax=4480515,
 )
 """Rough approximation of Scotland box coordinates."""
 
@@ -225,7 +225,6 @@ class RunOptions(StrEnumReprName):
     def all(cls) -> tuple[str, ...]:
         """Return a `tuple` of all options"""
         return tuple(map(lambda c: c.value, cls))
-
 
 
 class MethodOptions(StrEnumReprName):
