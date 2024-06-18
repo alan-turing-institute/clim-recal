@@ -25,7 +25,7 @@ from clim_recal.debiasing.debias_wrapper import (
     PROCESSORS_DEFAULT,
     VALID_DATES_STR_DEFAULT,
 )
-from clim_recal.resample import RAW_CPM_TASMAX_PATH, RAW_HADS_TASMAX_PATH
+from clim_recal.resample import RAW_CPM_PATH, RAW_CPM_TASMAX_PATH, RAW_HADS_TASMAX_PATH
 from clim_recal.utils.core import (
     CPM_YEAR_DAYS,
     ISO_DATE_FORMAT_STR,
@@ -52,7 +52,7 @@ HADS_UK_RESAMPLED_DAY_SERVER_PATH: Final[Path] = Path(
     "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"
 )
 
-UKCP_RAW_TASMAX_1980_FILE: Final[Path] = Path(
+CPM_RAW_TASMAX_1980_FILE: Final[Path] = Path(
     "tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc"
 )
 HADS_RAW_TASMAX_1980_FILE: Final[Path] = Path(
@@ -63,20 +63,40 @@ HADS_UK_TASMAX_LOCAL_TEST_PATH: Final[Path] = (
     Path(HadUKGrid.slug) / HADS_RAW_TASMAX_1980_FILE
 )
 
-UKCP_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/UKCP2.2/tasmax/01/latest")
+CPM_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/UKCP2.2/tasmax/01/latest")
 # Todo: Change "tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc"
 # to "tasmax_cpm_example.nc"
-UKCP_TASMAX_LOCAL_TEST_PATH: Final[Path] = (
-    Path(UKCPLocalProjections.slug) / UKCP_RAW_TASMAX_1980_FILE
+CPM_TASMAX_LOCAL_TEST_PATH: Final[Path] = (
+    Path(UKCPLocalProjections.slug) / CPM_RAW_TASMAX_1980_FILE
 )
 
-UKCP_RAW_TASMAX_EXAMPLE_PATH: Final[Path] = (
-    RAW_CPM_TASMAX_PATH / UKCP_RAW_TASMAX_1980_FILE
+HADS_UK_RAINFALL_DAY_SERVER_PATH: Final[Path] = Path("Raw/HadsUKgrid/rainfall/day")
+HADS_RAW_RAINFALL_1980_FILE: Final[Path] = Path(
+    "rainfall_hadukgrid_uk_1km_day_19800101-19800131.nc"
+)
+
+
+RAW_CPM_RAINFALL_PATH: Final[Path] = Path(RAW_CPM_PATH) / "Raw/UKCP2.2/pr/01/latest/"
+RAW_HADS_RAINFALL_PATH: Final[Path] = Path(RAW_CPM_PATH) / "rainfall/day"
+CPM_RAW_RAINFALL_1980_FILE: Final[Path] = Path(
+    "pr_rcp85_land-cpm_uk_2.2km_01_day_20331201-20341130.nc"
+)
+
+CPM_RAW_TASMAX_EXAMPLE_PATH: Final[Path] = (
+    RAW_CPM_TASMAX_PATH / CPM_RAW_TASMAX_1980_FILE
+)
+CPM_RAW_RAINFALL_EXAMPLE_PATH: Final[Path] = (
+    RAW_CPM_RAINFALL_PATH / CPM_RAW_RAINFALL_1980_FILE
 )
 
 HADS_RAW_TASMAX_EXAMPLE_PATH: Final[Path] = (
     RAW_HADS_TASMAX_PATH / HADS_RAW_TASMAX_1980_FILE
 )
+
+HADS_RAW_RAINFALL_EXAMPLE_PATH: Final[Path] = (
+    RAW_HADS_RAINFALL_PATH / HADS_RAW_RAINFALL_1980_FILE
+)
+
 
 XARRAY_EXAMPLE_RANDOM_SEED: Final[int] = 0
 # Default 4 year start and end date covering leap year

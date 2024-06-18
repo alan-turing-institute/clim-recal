@@ -31,14 +31,14 @@ from tests.utils import (
     CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT,
     CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT,
     CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT,
+    CPM_RAW_TASMAX_1980_FILE,
+    CPM_RAW_TASMAX_EXAMPLE_PATH,
     HADS_RAW_TASMAX_1980_FILE,
     HADS_RAW_TASMAX_EXAMPLE_PATH,
     MOD_FOLDER_FILES_COUNT_CORRECT,
     OBS_FOLDER_FILES_COUNT_CORRECT,
     PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT,
     TEST_AUTH_CSV_FILE_NAME,
-    UKCP_RAW_TASMAX_1980_FILE,
-    UKCP_RAW_TASMAX_EXAMPLE_PATH,
     XARRAY_END_DATE_4_DAYS,
     XARRAY_END_DATE_8_DAYS,
     XARRAY_EXAMPLE_END_DATE_4_YEARS,
@@ -123,8 +123,8 @@ def local_cache_fixtures(
         caches=(
             LocalCache(
                 name="tasmax_cpm_1980_raw",
-                source_path=UKCP_RAW_TASMAX_EXAMPLE_PATH,
-                local_cache_path=local_cpm_cache_path / UKCP_RAW_TASMAX_1980_FILE,
+                source_path=CPM_RAW_TASMAX_EXAMPLE_PATH,
+                local_cache_path=local_cpm_cache_path / CPM_RAW_TASMAX_1980_FILE,
                 reader=open_dataset,
                 reader_kwargs={"decode_coords": "all"},
             ),
@@ -135,6 +135,20 @@ def local_cache_fixtures(
                 reader=open_dataset,
                 reader_kwargs={"decode_coords": "all"},
             ),
+            # LocalCache(
+            #     name="railfall_hads_1980_raw",
+            #     source_path=HADS_RAW_RAINFALL_EXAMPLE_PATH,
+            #     local_cache_path=local_hads_cache_path / HADS_RAW_RAINFALL_1980_FILE,
+            #     reader=open_dataset,
+            #     reader_kwargs={"decode_coords": "all"},
+            # ),
+            # LocalCache(
+            #     name="railfall_cpm_1980_raw",
+            #     source_path=CPM_RAW_RAINFALL_EXAMPLE_PATH,
+            #     local_cache_path=local_hads_cache_path / CPM_RAW_RAINFALL_1980_FILE,
+            #     reader=open_dataset,
+            #     reader_kwargs={"decode_coords": "all"},
+            # ),
         ),
     )
     if sync_all:

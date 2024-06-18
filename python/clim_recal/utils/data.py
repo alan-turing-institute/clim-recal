@@ -36,9 +36,9 @@ class BoundingBoxCoords:
     ymax: float
     epsg: int = BRITISH_NATION_GRID_COORDS_NUMBER
 
-    def as_tuple(self) -> tuple[float, float, float, float]:
+    def as_rioxarray_tuple(self) -> tuple[float, float, float, float]:
         """Return in `xmin`, `xmax`, `ymin`, `ymax` order."""
-        return self.xmin, self.xmax, self.ymin, self.ymax
+        return self.xmin, self.ymin, self.xmax, self.ymax
 
     def as_rioxarray_dict(self) -> dict[str, float]:
         """Return coords as `dict`"""

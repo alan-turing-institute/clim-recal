@@ -336,7 +336,10 @@ class ResamblerBase:
         export_paths: list[Path | T_Dataset] = []
         if stop is None:
             stop = len(self)
-        assert regions
+        try:
+            assert regions
+        except:
+            raise ValueError(f"Iterable 'regions' must be set.")
         for region in regions:
             console.print(f"Cropping to '{region}' from {self}...")
             for index in trange(start, stop, step):

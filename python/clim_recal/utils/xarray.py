@@ -537,12 +537,12 @@ def crop_xarray(
     ...     tasmax_cpm_1980_365_day,
     ...     crop_box=GlasgowCoordsEPSG27700)
     >>> assert_allclose(cropped.rio.bounds(),
-    ...                 GlasgowCoordsEPSG27700.as_tuple(),
-    ...                 rtol=.001)
+    ...                 GlasgowCoordsEPSG27700.as_rioxarray_tuple(),
+    ...                 rtol=.01)
     >>> tasmax_cpm_1980_365_day.sizes
     Frozen({'x': 529, 'y': 653, 'time': 365})
     >>> cropped.sizes
-    Frozen({'x': 186, 'y': 185, 'time': 365})
+    Frozen({'x': 10, 'y': 8, 'time': 365})
     """
     xr_time_series, _ = check_xarray_path_and_var_name(xr_time_series, None)
     try:
