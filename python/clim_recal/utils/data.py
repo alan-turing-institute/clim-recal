@@ -53,22 +53,22 @@ class BoundingBoxCoords:
 GlasgowCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
     name="Glasgow", xmin=249799.999600002, xmax=269234.9996, ymin=657761.472000003, ymax=672330.696800007
 )
-"""Rough approximation of Glasgow box coordinates."""
+"""Glasgow box coordinates in 27700 grid."""
 
 LondonCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
     name="London", xmin=503568.1996, xmax=561957.4961, ymin=155850.7974, ymax=200933.9025
 )
-"""Rough approximation of London box coordinates."""
+"""London box coordinates in 27700 grid."""
 
 ManchesterCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
     name="Manchester", xmin=380399.997, xmax=393249.999, ymin=389349.999, ymax=405300.003
 )
-"""Rough approximation of Manchester box coordinates."""
+"""Manchester box coordinates in 27700 grid."""
 
 ScotlandCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
-    name="Scotland", xmin=51029, xmax=547530, ymin=1243058, ymax=4480515,
+    name="Scotland", xmin=5513.00030000042, xmax=470323.0001, ymin=530252.800000001, ymax=1220301.5
 )
-"""Rough approximation of Scotland box coordinates."""
+"""Scotland box coordinates in 27700 grid."""
 
 DEFAULT_CROP_COORDS_EPSG2770: Final[dict[str, BoundingBoxCoords]] = {
     record.name: record for record in 
