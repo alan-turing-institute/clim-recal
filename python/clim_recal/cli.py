@@ -7,9 +7,9 @@ import typer
 from .config import (
     DEFAULT_CPUS,
     DEFAULT_OUTPUT_PATH,
-    CityOptions,
     ClimRecalRunResultsType,
     MethodOptions,
+    RegionOptions,
     RunOptions,
     VariableOptions,
 )
@@ -32,8 +32,8 @@ def pipeline(
     variable: Annotated[list[VariableOptions], typer.Option("--variable", "-v")] = [
         VariableOptions.default()
     ],
-    city: Annotated[list[CityOptions], typer.Option("--city", "-c")] = [
-        CityOptions.default()
+    region: Annotated[list[RegionOptions], typer.Option("--region", "-c")] = [
+        RegionOptions.default()
     ],
     run: Annotated[list[RunOptions], typer.Option("--run", "-r")] = [
         RunOptions.default()
@@ -42,7 +42,7 @@ def pipeline(
         MethodOptions.default()
     ],
     all_variables: Annotated[bool, typer.Option("--all-variables")] = False,
-    all_cities: Annotated[bool, typer.Option("--all-cities")] = False,
+    all_regions: Annotated[bool, typer.Option("--all-regions")] = False,
     all_runs: Annotated[bool, typer.Option("--all-runs")] = False,
     default_runs: Annotated[bool, typer.Option("--default-runs")] = False,
     all_methods: Annotated[bool, typer.Option("--all-methods")] = False,
@@ -62,7 +62,7 @@ def pipeline(
     results: ClimRecalRunResultsType = main(
         variables=variable,
         runs=run,
-        cities=city,
+        regions=region,
         methods=method,
         output_path=output_path,
         cpus=cpus,
@@ -73,7 +73,7 @@ def pipeline(
         total=total,
         multiprocess=multiprocess,
         all_variables=all_variables,
-        all_cities=all_cities,
+        all_regions=all_regions,
         all_runs=all_runs,
         default_runs=default_runs,
         all_methods=all_methods,

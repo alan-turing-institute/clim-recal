@@ -36,6 +36,8 @@ dependencies = [
     "netcdf4>=1.6.5",
     "pdm>=2.12.4",
     "typer>=0.12.3",
+    "seaborn>=0.13.2",
+    "dill>=0.3.8",
 ]
 
 [project.scripts]
@@ -56,6 +58,7 @@ dev = [
     "pre-commit<4.0.0,>=3.6.2",
     "coverage-badge<2.0.0,>=1.1.0",
     "pytest-xdist>=3.5.0",
+    "sysrsync>=1.1.1",
 ]
 
 [tool.pdm.build]
@@ -77,7 +80,7 @@ addopts = """
     --ignore=clim_recal/debiasing/python-cmethods
     --ignore=clim_recal/debiasing/preprocess_data.py
     --ignore=clim_recal/debiasing/run_cmethods.py
-    -m "not server and not mount"
+    -m "not server and not mount and not localcache"
     --pdbcls=IPython.terminal.debugger:TerminalPdb
     --cov=clim_recal
     --cov-report=term:skip-covered
@@ -97,4 +100,5 @@ markers = [
     "docker: requires running via docker jupyterlab.",
     "multiprocess: uses multiprocessing.",
     "darwin: requires darwin (macOS) operating system.",
+    "localcache: uses local copies of mount files.",
 ]

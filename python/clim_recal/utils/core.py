@@ -24,9 +24,12 @@ from typing import (
     Union,
 )
 
+from rich.console import Console
 from tqdm import TqdmExperimentalWarning, tqdm
 
 logger = getLogger(__name__)
+
+console = Console()
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 
@@ -664,6 +667,7 @@ def results_path(
     time: datetime | None = None,
     extension: str | None = None,
     mkdir: bool = False,
+    dot_pre_extension: bool = True,
 ) -> Path:
     """Return `Path`: `path`/`name`_`time`.`extension`.
 
@@ -679,7 +683,10 @@ def results_path(
         time = datetime.now()
     file_name: str = f"{name}_{time_str(time)}"
     if extension:
-        file_name += f".{extension}"
+        if dot_pre_extension:
+            file_name += f".{extension}"
+        else:
+            file_name += extension
     return path / file_name
 
 

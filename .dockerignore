@@ -13,3 +13,5 @@ python/tests/data/test-run-results*
 **/*.tic
 **/*.aux.xml
 .**/*
+!.conda-linux-64.lock
+!python/tests/data/local-cache
