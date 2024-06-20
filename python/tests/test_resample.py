@@ -761,6 +761,10 @@ def test_hads_resample_and_reproject(
     # Check projection coordinates match for CPM and HADs
     assert all(cpm_to_match.x == read_from_export.x)
     assert all(cpm_to_match.y == read_from_export.y)
+    assert (
+        read_from_export.spatial_ref.attrs["GeoTransform"]
+        == cpm_to_match.spatial_ref.attrs["GeoTransform"]
+    )
 
 
 @pytest.mark.localcache
