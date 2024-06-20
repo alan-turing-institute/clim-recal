@@ -63,6 +63,7 @@ HADS_RAW_X_COLUMN_NAME: Final[str] = "projection_x_coordinate"
 HADS_RAW_Y_COLUMN_NAME: Final[str] = "projection_y_coordinate"
 HADS_DROP_VARS_AFTER_PROJECTION: Final[tuple[str, ...]] = ("longitude", "latitude")
 
+CPM_RESOLUTION_METERS: Final[int] = 2200
 CPM_RAW_X_COLUMN_NAME: Final[str] = "grid_longitude"
 CPM_RAW_Y_COLUMN_NAME: Final[str] = "grid_latitude"
 
@@ -210,9 +211,11 @@ def cpm_reproject_with_standard_calendar(
         cpm_xr_time_series, variable_name
     )
 
-    standar_calendar_ts: T_Dataset = cpm_xarray_to_standard_calendar(cpm_xr_time_series)
+    standard_calendar_ts: T_Dataset = cpm_xarray_to_standard_calendar(
+        cpm_xr_time_series
+    )
     subset_within_ensemble: T_Dataset = Dataset(
-        {variable_name: standar_calendar_ts[variable_name][0]}
+        {variable_name: standard_calendar_ts[variable_name][0]}
     )
 
     subset_in_epsg_27700: T_DataArray = xr_reproject_crs(
@@ -220,12 +223,13 @@ def cpm_reproject_with_standard_calendar(
         variable_name=variable_name,
         x_dim_name=x_dim_name,
         y_dim_name=y_dim_name,
+        resolution=(CPM_RESOLUTION_METERS, CPM_RESOLUTION_METERS),
     )
     try:
-        assert (subset_in_epsg_27700.time == standar_calendar_ts.time).all()
+        assert (subset_in_epsg_27700.time == standard_calendar_ts.time).all()
     except:
         raise ValueError(
-            f"Time series of 'standar_calendar_ts' does not match time series of projection to {BRITISH_NATIONAL_GRID_EPSG}."
+            f"Time series of 'standard_calendar_ts' does not match time series of projection to {BRITISH_NATIONAL_GRID_EPSG}."
         )
     return subset_in_epsg_27700
 
@@ -237,7 +241,10 @@ def xr_reproject_crs(
     time_dim_name: str = TIME_COLUMN_NAME,
     variable_name: str | None = None,
     final_crs: str = BRITISH_NATIONAL_GRID_EPSG,
-    final_resolution: tuple[int, int] | None = (2200, 2200),
+    match_xr_time_series: T_Dataset | PathLike | None = None,
+    match_xr_time_series_load_func: Callable | None = None,
+    match_xr_time_series_load_kwargs: dict[str, Any] | None = None,
+    **kwargs,
 ) -> T_Dataset:
     """Reproject `source_xr` to `target_xr` coordinate structure.
 
@@ -256,8 +263,6 @@ def xr_reproject_crs(
         Inferred if `None` assuming only one `data_var` attribute.
     final_crs
         Coordinate system `str` to project `xr_time_series` to.
-    final_resolution
-        Resolution to project `xr_time_series` raster data to.
 
     Examples
     --------
@@ -271,10 +276,15 @@ def xr_reproject_crs(
                                         'bnds': 2})
     >>> tasmax_hads_2_2km: T_Dataset = xr_reproject_crs(
     ...     tasmax_hads_1980_raw,
+    ...     variable_name="tasmax",
     ...     x_dim_name=HADS_RAW_X_COLUMN_NAME,
-    ...     y_dim_name=HADS_RAW_Y_COLUMN_NAME,)
+    ...     y_dim_name=HADS_RAW_Y_COLUMN_NAME,
+    ...     resolution=(CPM_RESOLUTION_METERS,
+    ...                 CPM_RESOLUTION_METERS),)
     >>> tasmax_hads_2_2km.dims
-    FrozenMappingWarningOnValuesAccess({'x': 410, 'y': 660, 'time': 31})
+    FrozenMappingWarningOnValuesAccess({'x': 410,
+                                        'y': 660,
+                                        'time': 31})
     """
     xr_time_series, variable_name = check_xarray_path_and_var_name(
         xr_time_series, variable_name
@@ -282,14 +292,14 @@ def xr_reproject_crs(
     xr_time_series = xr_time_series.rio.set_spatial_dims(
         x_dim=x_dim_name, y_dim=y_dim_name, inplace=True
     )
-    # info requires a bf parameter, not straightforward for logging
+    # info requires a df parameter, not straightforward for logging
     # logger.info(xr_time_series.info())
     data_array: T_DataArray = xr_time_series[variable_name]
-    final_index_names: tuple[str, str, str] = (time_dim_name, x_dim_name, y_dim_name)
-    extra_dims: set[str] = set(data_array.indexes.dims) - set(final_index_names)
+    index_names: tuple[str, str, str] = (time_dim_name, x_dim_name, y_dim_name)
+    extra_dims: set[str] = set(data_array.indexes.dims) - set(index_names)
     if extra_dims:
         raise ValueError(
-            f"Can only reindex using dims: {final_index_names}, extra dim(s): {extra_dims}"
+            f"Can only reindex using dims: {index_names}, extra dim(s): {extra_dims}"
         )
     coords: dict[str, DataArray] = {
         time_dim_name: xr_time_series[time_dim_name],
@@ -300,9 +310,38 @@ def xr_reproject_crs(
         data=data_array.to_numpy(), coords=coords, name=variable_name
     )
     without_attributes = without_attributes.rio.write_crs(xr_time_series.rio.crs)
-    without_attributes_reprojected: DataArray = without_attributes.rio.reproject(
-        final_crs, resolution=final_resolution
-    )
+    without_attributes_reprojected: T_DataArray
+    if match_xr_time_series:
+        if match_xr_time_series_load_func:
+            match_xr_time_series_load_kwargs = match_xr_time_series_load_kwargs or {}
+            match_xr_time_series = match_xr_time_series_load_func(
+                match_xr_time_series, **match_xr_time_series_load_kwargs
+            )
+        if not {x_dim_name, y_dim_name} < match_xr_time_series.dims.keys():
+            # If dim name
+            # likely x, y indexes from a projection like cpm, need to match
+            logger.debug(
+                f"'x_dim_name': {x_dim_name} and "
+                f"'y_dim_name': {y_dim_name} not in "
+                f"'match_xr_time_series' dims: "
+                f"{match_xr_time_series.dims.keys()}."
+            )
+            if {"x", "y"} < match_xr_time_series.dims.keys():
+                logger.debug(
+                    "Renaming dims: '{x_dim_name}' -> 'x', '{y_dim_name}' -> 'y'"
+                )
+                without_attributes = without_attributes.rename(
+                    {x_dim_name: "x", y_dim_name: "y"}
+                )
+            else:
+                raise ValueError("Can't match dim names.")
+        without_attributes_reprojected = without_attributes.rio.reproject_match(
+            match_xr_time_series, **kwargs
+        )
+    else:
+        without_attributes_reprojected: T_DataArray = without_attributes.rio.reproject(
+            final_crs, **kwargs
+        )
     return Dataset({variable_name: without_attributes_reprojected})
 
 
@@ -401,54 +440,24 @@ def interpolate_coords(
 def hads_resample_and_reproject(
     hads_xr_time_series: T_Dataset | PathLike,
     variable_name: str,
+    cpm_to_match: T_Dataset | PathLike,
+    cpm_to_match_func: Callable | None = cpm_reproject_with_standard_calendar,
     x_dim_name: str = HADS_RAW_X_COLUMN_NAME,
     y_dim_name: str = HADS_RAW_Y_COLUMN_NAME,
-    # x_grid: NDArray | None = None,
-    # y_grid: NDArray | None = None,
-    # method: str = "linear",
-    # source_x_coord_column_name: str = HADS_RAW_X_COLUMN_NAME,
-    # source_y_coord_column_name: str = HADS_RAW_Y_COLUMN_NAME,
-    # final_x_coord_column_name: str = FINAL_RESAMPLE_LON_COL,
-    # final_y_coord_column_name: str = FINAL_RESAMPLE_LAT_COL,
-    # final_crs: str | None = BRITISH_NATIONAL_GRID_EPSG,
-    # vars_to_drop: Sequence[str] | None = HADS_DROP_VARS_AFTER_PROJECTION,
-    # use_reference_grid: bool = False,
 ) -> T_Dataset:
     """Resample `HADs` `xarray` time series to 2.2km."""
-    hads_xr_time_series, variable_name = check_xarray_path_and_var_name(
-        hads_xr_time_series, variable_name
-    )
-    # if isinstance(hads_xr_time_series, PathLike):
-    #     hads_xr_time_series = open_dataset(hads_xr_time_series, decode_coords="all")
+
+    if isinstance(cpm_to_match, Dataset) and {"x", "y"} < cpm_to_match.dims.keys():
+        cpm_to_match_func = None
     epsg_277000_2_2km: T_Dataset = xr_reproject_crs(
         hads_xr_time_series,
         variable_name=variable_name,
         x_dim_name=x_dim_name,
         y_dim_name=y_dim_name,
+        match_xr_time_series=cpm_to_match,
+        match_xr_time_series_load_func=cpm_to_match_func,
+        # match_xr_time_series_load_kwargs=dict(variable_name=variable_name),
     )
-
-    # interpolated_hads: T_Dataset = interpolate_coords(
-    #     hads_xr_time_series,
-    #     variable_name=variable_name,
-    #     x_grid=x_grid,
-    #     y_grid=y_grid,
-    #     x_coord_column_name=source_x_coord_column_name,
-    #     y_coord_column_name=source_y_coord_column_name,
-    #     method=method,
-    #     use_reference_grid=use_reference_grid,
-    # )
-    # if vars_to_drop:
-    #     interpolated_hads = interpolated_hads.drop_vars(vars_to_drop)
-    #
-    # interpolated_hads = interpolated_hads.rename(
-    #     {
-    #         source_x_coord_column_name: final_x_coord_column_name,
-    #         source_y_coord_column_name: final_y_coord_column_name,
-    #     }
-    # )
-    # if final_crs:
-    #     interpolated_hads.rio.write_crs(final_crs, inplace=True)
-    # return interpolated_hads
     return epsg_277000_2_2km
 
 

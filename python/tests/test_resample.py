@@ -104,15 +104,15 @@ FINAL_HADS_JAN_10_430_X_230_250_Y: Final[NDArray] = np.array(
         np.nan,
         np.nan,
         np.nan,
-        3.39634549,
-        2.97574018,
-        2.63433646,
-        2.62451613,
-        2.53676574,
-        2.42130933,
-        2.66667496,
-        2.60239203,
-        2.5052739,
+        3.61614943,
+        3.22494448,
+        2.87045363,
+        2.62269053,
+        2.79705005,
+        2.73883926,
+        2.48555346,
+        2.46462528,
+        2.61303118,
     )
 )
 
@@ -139,14 +139,14 @@ def reference_final_coord_grid() -> T_Dataset:
 
 
 @pytest.fixture
-def ukcp_tasmax_raw_mount_path(data_mount_path: Path) -> Path:
+def cpm_tasmax_raw_mount_path(data_mount_path: Path) -> Path:
     return data_mount_path / CPM_TASMAX_DAY_SERVER_PATH
 
 
 @pytest.fixture
-def ukcp_tasmax_raw_5_years_paths(ukcp_tasmax_raw_path: Path) -> tuple[Path, ...]:
+def cpm_tasmax_raw_5_years_paths(cpm_tasmax_raw_path: Path) -> tuple[Path, ...]:
     """Return a `tuple` of valid paths for 5 years of"""
-    return tuple(annual_data_paths_generator(parent_path=ukcp_tasmax_raw_path))
+    return tuple(annual_data_paths_generator(parent_path=cpm_tasmax_raw_path))
 
 
 @pytest.fixture
@@ -160,7 +160,7 @@ def hads_tasmax_local_test_path(data_fixtures_path: Path) -> Path:
 
 
 @pytest.fixture
-def ukcp_tasmax_local_test_path(data_fixtures_path: Path) -> Path:
+def cpm_tasmax_local_test_path(data_fixtures_path: Path) -> Path:
     return data_fixtures_path / CPM_TASMAX_LOCAL_TEST_PATH
 
 
@@ -574,7 +574,7 @@ def test_crop_xarray(
 @pytest.mark.parametrize(
     "config", ("direct", "range", "direct_provided", "range_provided")
 )
-def test_ukcp_manager(
+def test_cpm_manager(
     resample_test_cpm_output_path, config: str, tasmax_cpm_1980_raw_path: Path
 ) -> None:
     """Test running default CPM calendar fix."""
@@ -733,26 +733,29 @@ def test_hads_resample_and_reproject(
     reprojected: T_Dataset = hads_resample_and_reproject(
         tasmax_hads_1980_raw,
         variable_name=variable_name,
+        cpm_to_match=tasmax_cpm_1980_raw,
     )
 
-    # plot_xarray(
-    #     reprojected.tasmax[0], path=output_path / "tasmas-1980.png", time_stamp=True
-    # )
-    # assert_allclose(
-    #     reprojected.tasmax[10][430][230:250], FINAL_HADS_JAN_10_430_X_230_250_Y
-    # )
     assert reprojected.rio.crs.to_epsg() == int(BRITISH_NATIONAL_GRID_EPSG[5:])
     export_netcdf_path: Path = results_path(
         "tasmax-1980-converted", path=output_path, extension="nc"
     )
     reprojected.to_netcdf(export_netcdf_path)
     read_from_export: T_Dataset = open_dataset(export_netcdf_path, decode_coords="all")
+    plot_xarray(
+        read_from_export.tasmax[0],
+        path=output_path / "tasmax-1980-JAN-1-resampled.png",
+        time_stamp=True,
+    )
+    assert_allclose(
+        read_from_export.tasmax[10][430][230:250], FINAL_HADS_JAN_10_430_X_230_250_Y
+    )
     assert read_from_export.dims["time"] == 31
     assert (
-        read_from_export.dims[FINAL_RESAMPLE_LON_COL] == FINAL_CONVERTED_HADS_WIDTH
+        read_from_export.dims[FINAL_RESAMPLE_LON_COL] == FINAL_CONVERTED_CPM_WIDTH
     )  # replaces projection_x_coordinate
     assert (
-        read_from_export.dims[FINAL_RESAMPLE_LAT_COL] == FINAL_CONVERTED_HADS_HEIGHT
+        read_from_export.dims[FINAL_RESAMPLE_LAT_COL] == FINAL_CONVERTED_CPM_HEIGHT
     )  # replaces projection_y_coordinate
     assert reprojected.rio.crs == read_from_export.rio.crs == BRITISH_NATIONAL_GRID_EPSG
     # Check projection coordinates match for CPM and HADs

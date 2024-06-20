@@ -1,10 +1,7 @@
 """Resample UKHADS data and UKCP18 data.
 
-- UKHADS is resampled spatially from 1km to 2.2km.
-- UKCP18 is resampled temporally from a 360 day calendar to a standard (365/366 day) calendar and projected to British National Grid (BNG) (from rotated polar grid).
-
-## Notes
-
+- UKCP18 is resampled temporally from a 360 day calendar to a standard (365/366 day) calendar and projected to British National Grid (BNG) EPSG:27700 from its original rotated polar grid.
+- UKHADS is resampled spatially from 1km to 2.2km in BNG aligned with the projected UKCP18
 """
 
 from dataclasses import dataclass, field
@@ -61,11 +58,10 @@ RAW_HADS_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/HadsUKgrid"
 RAW_CPM_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/UKCP2.2"
 RAW_HADS_TASMAX_PATH: Final[PathLike] = RAW_HADS_PATH / "tasmax/day"
 RAW_CPM_TASMAX_PATH: Final[PathLike] = RAW_CPM_PATH / "tasmax/01/latest"
-REPROJECTED_CPM_TASMAX_05_LATEST_INPUT_PATH: Final[PathLike] = (
+REPROJECTED_CPM_TASMAX_05_LATEST_INPUT_PATH: Final[PathLike] = Path(
     CLIMATE_DATA_MOUNT_PATH / "Reprojected_infill/UKCP2.2/tasmax/05/latest"
 )
 
-CPRUK_RESOLUTION: Final[int] = 2200
 CPRUK_RESAMPLING_METHOD: Final[str] = GRA_NearestNeighbour
 ResamplingArgs = tuple[PathLike, np.ndarray, np.ndarray, PathLike]
 ResamplingCallable = Callable[[list | tuple], int]
@@ -440,7 +436,7 @@ class HADsResampler(ResamblerBase):
     -----
     - [x] Try time projection first
     - [x] Combine with space (this worked)
-    - [ ] Add crop step
+    - [x] Add crop step
 
     Examples
     --------
@@ -475,8 +471,24 @@ class HADsResampler(ResamblerBase):
     # resolution_relative_path: Path = HADS_2_2K_RESOLUTION_PATH
     input_file_x_column_name: str = HADS_XDIM
     input_file_y_column_name: str = HADS_YDIM
+    cpm_for_coord_alignment: T_Dataset | PathLike = RAW_CPM_TASMAX_PATH
     _resample_func: ReprojectFuncType = hads_resample_and_reproject
     _use_reference_grid: bool = True
+
+    def __post_init__(self) -> None:
+        """Ensure `self.cpm_for_coord_alignment` is set."""
+        super().__post_init__()
+        if Path(self.cpm_for_coord_alignment).is_dir():
+            self.cpm_for_coord_alignment = next(
+                Path(self.cpm_for_coord_alignment).glob("t*.nc")
+            )
+        self.cpm_for_coord_alignment = cpm_reproject_with_standard_calendar(
+            self.cpm_for_coord_alignment
+        )
+        logger.info(
+            f"Set 'self.cpm_for_coord_alignment' to: '{self.cpm_for_coord_alignment}'"
+        )
+        # cpm_match_variable_name: str = self.cpm_for_coord_alignment
 
     def to_reprojection(
         self,
@@ -504,6 +516,7 @@ class HADsResampler(ResamblerBase):
             variable_name=self.variable_name,
             x_dim_name=self.input_file_x_column_name,
             y_dim_name=self.input_file_y_column_name,
+            cpm_to_match=self.cpm_for_coord_alignment,
             # x_grid=self.x,
             # y_grid=self.y,
             # source_x_coord_column_name=self.input_file_x_column_name,
@@ -512,40 +525,6 @@ class HADsResampler(ResamblerBase):
             new_path_name_func=reproject_2_2km_filename,
             return_results=return_results,
         )
-
-    # def to_crop(
-    #     self,
-    #     index: int = 0,
-    #     override_export_path: Path | None = None,
-    #     return_results: bool = False,
-    #     source_to_index: Sequence | None = None,
-    # ) -> Path | T_Dataset:
-    #     source_path: Path = self._output_path(
-    #         index=index, source_to_index=source_to_index
-    #     )
-    #     path: PathLike = self._output_path(
-    #         self.resolution_relative_path, override_export_path
-    #     )
-    #     return apply_geo_func(
-    #         source_path=source_path,
-    #         # func=interpolate_coords,
-    #         func=self._resample_func,
-    #         export_folder=path,
-    #         # Leaving in case we return to using warp
-    #         # export_path_as_output_path_kwarg=True,
-    #         # to_netcdf=False,
-    #         to_netcdf=True,
-    #         variable_name=self.variable_name,
-    #         x_dim_name=self.input_file_x_column_name,
-    #         y_dim_name=self.input_file_y_column_name,
-    #         # x_grid=self.x,
-    #         # y_grid=self.y,
-    #         # source_x_coord_column_name=self.input_file_x_column_name,
-    #         # source_y_coord_column_name=self.input_file_y_column_name,
-    #         # use_reference_grid=self._use_reference_grid,
-    #         new_path_name_func=reproject_2_2km_filename,
-    #         return_results=return_results,
-    #     )
 
 
 @dataclass(kw_only=True, repr=False)
@@ -961,66 +940,3 @@ class CPMResamplerManager(HADsResamplerManager):
                 if append_var_path_dict:
                     self._var_path_dict[var_path] = var
                 yield var_path
-
-
-# Kept from previous structure for reference
-# if __name__ == "__main__":
-#     """
-#     Script to resample UKHADs data from the command line
-#     """
-#     # Initialize parser
-#     parser = argparse.ArgumentParser()
-#
-#     # Adding arguments
-#     parser.add_argument(
-#         "--input-path",
-#         help="Path where the .nc files to resample is located",
-#         required=True,
-#         type=str,
-#     )
-#     parser.add_argument(
-#         "--grid-data-path",
-#         help="Path where the .nc file with the grid to resample is located",
-#         required=False,
-#         type=str,
-#         default="../../data/rcp85_land-cpm_uk_2.2km_grid.nc",
-#     )
-#     parser.add_argument(
-#         "--output-path",
-#         help="Path to save the resampled data data",
-#         required=False,
-#         default=".",
-#         type=str,
-#     )
-#     parser_args = parser.parse_args()
-#     hads_run_manager = HADsResampler(
-#         input_path=parser_args.input_path,
-#         grid_data_path=parser_args.grid_data_path,
-#         output_path=parser_args.output,
-#     )
-#     res = hads_run_manager.resample_multiprocessing()
-#
-#     parser_args = parser.parse_args()
-#
-#     # reading baseline grid to resample files to
-#     grid = xr.open_dataset(parser_args.grid_data)
-#
-#     try:
-#         # must have dimensions named projection_x_coordinate and projection_y_coordinate
-#         x = grid["projection_x_coordinate"][:].values
-#         y = grid["projection_y_coordinate"][:].values
-#     except Exception as e:
-#         print(f"Grid file: {parser_args.grid_data} produced errors: {e}")
-#
-#     # If output file do not exist create it
-#     if not os.path.exists(parser_args.output):
-#         os.makedirs(parser_args.output)
-#
-#     # find all nc files in input directory
-#     files = glob.glob(f"{parser_args.input}/*.nc", recursive=True)
-#     N = len(files)
-#
-#     args = [[f, x, y, parser_args.output] for f in files]
-#
-#     with multiprocessing.Pool(processes=os.cpu_count() - 1) as pool:
-#         res = list(tqdm(pool.imap_unordered(resample_hadukgrid, args), total=N))
