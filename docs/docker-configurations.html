@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>clim-recal</title>
+<title>clim-recal - Docker configurations</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -79,7 +113,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../R/README.html">R</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/docker-configurations.html">Docker</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -141,7 +175,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../R/README.html" class="sidebar-item-text sidebar-link active">
+            <a href="../R/README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">R</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -279,7 +313,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/docker-configurations.html" class="sidebar-item-text sidebar-link">
+  <a href="../docs/docker-configurations.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Docker</span></a>
   </div>
 </li>
@@ -299,33 +333,142 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#methods-implemented-in-r" id="toc-methods-implemented-in-r" class="nav-link active" data-scroll-target="#methods-implemented-in-r"><span class="header-section-number">1</span> Methods implemented in R</a></li>
+  <li><a href="#install-docker" id="toc-install-docker" class="nav-link active" data-scroll-target="#install-docker"><span class="header-section-number">1</span> Install <code>Docker</code></a></li>
+  <li><a href="#default-jupyter-rstudio-and-docs" id="toc-default-jupyter-rstudio-and-docs" class="nav-link" data-scroll-target="#default-jupyter-rstudio-and-docs"><span class="header-section-number">2</span> Default <code>jupyter</code>, <code>rstudio</code> and <code>docs</code></a></li>
+  <li><a href="#server-for-multiple-users" id="toc-server-for-multiple-users" class="nav-link" data-scroll-target="#server-for-multiple-users"><span class="header-section-number">3</span> Server for multiple users</a>
+  <ul class="collapse">
+  <li><a href="#adding-multiple-users" id="toc-adding-multiple-users" class="nav-link" data-scroll-target="#adding-multiple-users"><span class="header-section-number">3.1</span> Adding multiple users</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Docker configurations</h1>
+</div>
 
 
 
-<section id="methods-implemented-in-r" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> Methods implemented in R</h1>
-<ul>
-<li><strong>/Resampling</strong> - code for Resampling data to different extents (grid sizes)</li>
-<li><strong>/bias-correction-methods</strong> - bias correction methods implemented in R</li>
-<li><strong>/comparing-r-and-python</strong> - Comparing various pipeline aspects between R and python</li>
-</ul>
-<!--
-### R
+<div class="quarto-title-meta">
 
-In the `R` subdirectory you can find code for replicating the different data processing and debiasing steps as above, along with comparisons of methods between the two languages.
-- **bias-correction-methods** for bias correction (debiasing) methods available specifically in `R` libraries
-- **comparing-r-and-python** for replication of resampling and reviewing the bias correction methods applied in `python`.
-- **Resampling** for resampling the HADsUK datasets from 1km to 2.2km grid in `R`.
--->
+    
+  
+    
+  </div>
+  
 
 
+</header>
+
+
+<p>The <code>compose.yml</code> file and <code>compose/</code> folder provider <code>Docker</code> configurations for deploying and testing this code and documentation reproducibly. These require an internet connection and <code>Docker</code> installation.</p>
+<section id="install-docker" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Install <code>Docker</code></h1>
+<p>The safest way to install <code>Docker</code> is following the instructions they provide: <a href="https://docs.docker.com/get-docker/" class="uri">https://docs.docker.com/get-docker/</a> which covers <code>linux</code>, <code>macOS</code> and <code>windows</code>. For local installs <code>Docker Desktop</code> is often the simplest option.</p>
+</section>
+<section id="default-jupyter-rstudio-and-docs" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Default <code>jupyter</code>, <code>rstudio</code> and <code>docs</code></h1>
+<p>Assuming you have an internet connection, the <code>compose.yml</code> file provides a configuration to build and run the view configurations via <code>RStudio</code>, <code>jupyter</code> and <code>docs</code> (via <code>quarto</code>).</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> clim-recal</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose build</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This can take some time, including dowloading the dependencies and building components, especially the <code>docs</code>. Once built, it is fairly quick to run, and components are cached.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose up</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This will print <code>logs</code> of build and any events on the terminal, and it can be stopped by running <code>CTL-C</code>.</p>
+<p>Running</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">--detach</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>will run all components in the background and allow that terminal to be used. To shut that down</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose down</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>should suffice.</p>
+</section>
+<section id="server-for-multiple-users" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Server for multiple users</h1>
+<p>To provide a server for users to explore and run <code>clim-recal</code> code and environment, we provide some utilities to ease that process within <code>python/utils.py</code>. These scripts can help automate creating a series of users within <code>JupyterHub</code> or <code>RStuido</code> environements.</p>
+<section id="adding-multiple-users" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="adding-multiple-users"><span class="header-section-number">3.1</span> Adding multiple users</h2>
+<p>Some utility functions are provided to ease adding many users for a workshop. We <em>do not recommend</em> using this for any long term deployment, and certainly not for any data or environments with security concerns.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>These examples are <em>not tested for security</em>. Rather: this is intended for a <em>short</em> workshop that can scale a series of environements generated via <code>docker</code> for many users to have remote access to play with the code and data provided.</p>
+</div>
+</div>
+<p>Our usecase is primarily for within a <code>docker</code> deploy with <code>root</code> permission.</p>
+<p>A list of user names and passwords are needed, and by default we assume those are in a table format in the following structure:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>user_name</th>
+<th>password</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>sally</td>
+<td>fig*new£kid</td>
+</tr>
+<tr class="even">
+<td>george</td>
+<td>tree&amp;iguana*sky</td>
+</tr>
+<tr class="odd">
+<td>susan</td>
+<td>history!bill-walk</td>
+</tr>
+</tbody>
+</table>
+<p>which in <code>csv</code> would look like:</p>
+<pre class="csv"><code>user_name,password
+sally,fig*new£kid
+george,tee&amp;iguana*sky
+susan,history!bill-walk</code></pre>
+<p>To generate basic user accounts one could run the following with <code>root</code> permission in an <code>rstudio</code> or <code>jupyter</code> environment (assuming <code>rstudio</code> has been built):</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose up <span class="at">-d</span> jupyter</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">[+]</span> Running 1/1</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a> <span class="ex">✔</span> Container clim-recal-jupyter-1  Started</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">-u</span> 0 exec jupyter bash</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">base</span><span class="kw">)</span> <span class="ex">root@aha22hnum:~#</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>which should instantiate a <code>bash</code> terminal in the <code>Docker</code> environment for the default <code>jupyter</code> <code>Docker</code> <code>root</code> user. The following demonstrates creating a <code>csv</code> file config in <code>test_auth.csv</code>:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> csv</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> csv_path: Path <span class="op">=</span> <span class="st">'test_auth.csv'</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> auth_dict: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">str</span>] <span class="op">=</span> {</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>...    <span class="st">'sally'</span>: <span class="st">'fig*new£kid'</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>...    <span class="st">'george'</span>: <span class="st">'tee&amp;iguana*sky'</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>...    <span class="st">'susan'</span>: <span class="st">'history!bill-walk'</span>,}</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> field_names: <span class="bu">tuple</span>[<span class="bu">str</span>, <span class="bu">str</span>] <span class="op">=</span> (<span class="st">'user_name'</span>, <span class="st">'password'</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">with</span> <span class="bu">open</span>(csv_path, <span class="st">'w'</span>) <span class="im">as</span> csv_file:</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>...     writer <span class="op">=</span> csv.writer(csv_file)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>...     line_num: <span class="bu">int</span> <span class="op">=</span> writer.writerow((<span class="st">'user_name'</span>, <span class="st">'password'</span>))</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>...     <span class="cf">for</span> user_name, password <span class="kw">in</span> auth_dict.items():</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>...         line_num <span class="op">=</span> writer.writerow((user_name, password))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>and then with that file generate users and their home folders from <code>test_auth.csv</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> utils.server <span class="im">import</span> JUPYTER_DOCKER_USER_PATH, csv_reader, make_users,</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> user_paths: <span class="bu">tuple</span>[Path, ...] <span class="op">=</span> <span class="bu">tuple</span>(make_users(</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>...     file_path<span class="op">=</span>csv_path,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>...     user_col<span class="op">=</span><span class="st">"user_name"</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>...     password_col<span class="op">=</span><span class="st">"password"</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>...     file_reader<span class="op">=</span>csv_reader,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>...     code_path<span class="op">=</span>JUPYTER_DOCKER_USER_PATH,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>... ))</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">tuple</span>(user_paths)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>(<span class="st">'/home/sally'</span>, <span class="st">'/home/george'</span>, <span class="st">'/home/susan'</span>)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> csv_path.unlink()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+
+</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->

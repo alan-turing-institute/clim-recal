@@ -20,25 +20,59 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../site_libs/quarto-nav/headroom.min.js"></script>
-<script src="../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../">
-<script src="../site_libs/quarto-html/quarto.js"></script>
-<script src="../site_libs/quarto-html/popper.min.js"></script>
-<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -79,7 +113,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../R/README.html">R</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../python/README.html">python</a></li><li class="breadcrumb-item"><a href="../../docs/reference/index.html">Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/clim_recal.utils.core.html">Utilities</a></li><li class="breadcrumb-item"><a href="../../docs/reference/clim_recal.utils.data.html">data</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -94,7 +128,7 @@ ul.task-list li input[type="checkbox"] {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="../">clim-recal</a> 
+      <a href="../../">clim-recal</a> 
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -106,13 +140,13 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../README.html" class="sidebar-item-text sidebar-link">
+  <a href="../../README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Summary</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../setup-instructions.html" class="sidebar-item-text sidebar-link">
+  <a href="../../setup-instructions.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Install</span></a>
   </div>
 </li>
@@ -127,13 +161,13 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/pipeline_guidance.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/pipeline_guidance.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Guidance</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/pipeline.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/pipeline.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Diagram</span></a>
   </div>
 </li>
@@ -141,7 +175,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../R/README.html" class="sidebar-item-text sidebar-link active">
+            <a href="../../R/README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">R</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -150,7 +184,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../R/misc/Identifying_Runs.html" class="sidebar-item-text sidebar-link">
+  <a href="../../R/misc/Identifying_Runs.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Identifying Runs</span></a>
   </div>
 </li>
@@ -165,7 +199,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.html" class="sidebar-item-text sidebar-link">
+  <a href="../../R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">WIP Comparing HADs grids</span></a>
   </div>
 </li>
@@ -175,7 +209,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../python/README.html" class="sidebar-item-text sidebar-link">
+            <a href="../../python/README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">python</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -184,40 +218,40 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../docs/reference/index.html" class="sidebar-item-text sidebar-link">
+            <a href="../../docs/reference/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Reference</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.pipeline.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.pipeline.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Pipeline</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.config.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.config.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Configure</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.ceda_ftp_download.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.ceda_ftp_download.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">CEDA Data Access</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.data_loader.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.data_loader.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data Loading</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.resample.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.resample.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data Resampling</span></a>
   </div>
 </li>
@@ -232,7 +266,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.debiasing.debias_wrapper.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.debiasing.debias_wrapper.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Wrapper</span></a>
   </div>
 </li>
@@ -240,34 +274,34 @@ ul.task-list li input[type="checkbox"] {
   </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true">
  <span class="menu-text">Utilities</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth3 ">  
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth3 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.utils.core.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.utils.core.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">core</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.utils.server.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.utils.server.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">server</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.utils.xarray.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.utils.xarray.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">xarray</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.utils.data.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.utils.data.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">data</span></a>
   </div>
 </li>
@@ -279,13 +313,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/docker-configurations.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/docker-configurations.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Docker</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/contributing.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/contributing.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Contributing</span></a>
   </div>
 </li>
@@ -299,7 +333,18 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#methods-implemented-in-r" id="toc-methods-implemented-in-r" class="nav-link active" data-scroll-target="#methods-implemented-in-r"><span class="header-section-number">1</span> Methods implemented in R</a></li>
+  <li><a href="#python.clim_recal.utils.data" id="toc-python.clim_recal.utils.data" class="nav-link active" data-scroll-target="#python.clim_recal.utils.data"><span class="header-section-number">1</span> clim_recal.utils.data</a>
+  <ul class="collapse">
+  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes"><span class="header-section-number">1.1</span> Classes</a>
+  <ul class="collapse">
+  <li><a href="#python.clim_recal.utils.data.CityOptions" id="toc-python.clim_recal.utils.data.CityOptions" class="nav-link" data-scroll-target="#python.clim_recal.utils.data.CityOptions"><span class="header-section-number">1.1.1</span> CityOptions</a></li>
+  <li><a href="#python.clim_recal.utils.data.DataLicense" id="toc-python.clim_recal.utils.data.DataLicense" class="nav-link" data-scroll-target="#python.clim_recal.utils.data.DataLicense"><span class="header-section-number">1.1.2</span> DataLicense</a></li>
+  <li><a href="#python.clim_recal.utils.data.MetaData" id="toc-python.clim_recal.utils.data.MetaData" class="nav-link" data-scroll-target="#python.clim_recal.utils.data.MetaData"><span class="header-section-number">1.1.3</span> MetaData</a></li>
+  <li><a href="#python.clim_recal.utils.data.MethodOptions" id="toc-python.clim_recal.utils.data.MethodOptions" class="nav-link" data-scroll-target="#python.clim_recal.utils.data.MethodOptions"><span class="header-section-number">1.1.4</span> MethodOptions</a></li>
+  <li><a href="#python.clim_recal.utils.data.RunOptions" id="toc-python.clim_recal.utils.data.RunOptions" class="nav-link" data-scroll-target="#python.clim_recal.utils.data.RunOptions"><span class="header-section-number">1.1.5</span> RunOptions</a></li>
+  <li><a href="#python.clim_recal.utils.data.VariableOptions" id="toc-python.clim_recal.utils.data.VariableOptions" class="nav-link" data-scroll-target="#python.clim_recal.utils.data.VariableOptions"><span class="header-section-number">1.1.6</span> VariableOptions</a></li>
+  </ul></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -309,23 +354,303 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<section id="methods-implemented-in-r" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> Methods implemented in R</h1>
-<ul>
-<li><strong>/Resampling</strong> - code for Resampling data to different extents (grid sizes)</li>
-<li><strong>/bias-correction-methods</strong> - bias correction methods implemented in R</li>
-<li><strong>/comparing-r-and-python</strong> - Comparing various pipeline aspects between R and python</li>
-</ul>
-<!--
-### R
+<section id="python.clim_recal.utils.data" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> clim_recal.utils.data</h1>
+<p><code>clim_recal.utils.data</code></p>
+<section id="classes" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="classes"><span class="header-section-number">1.1</span> Classes</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#python.clim_recal.utils.data.CityOptions">CityOptions</a></td>
+<td>Supported options for variables.</td>
+</tr>
+<tr class="even">
+<td><a href="#python.clim_recal.utils.data.DataLicense">DataLicense</a></td>
+<td>Class for standardising data license references.</td>
+</tr>
+<tr class="odd">
+<td><a href="#python.clim_recal.utils.data.MetaData">MetaData</a></td>
+<td>Manage info on source material.</td>
+</tr>
+<tr class="even">
+<td><a href="#python.clim_recal.utils.data.MethodOptions">MethodOptions</a></td>
+<td>Supported options for methods.</td>
+</tr>
+<tr class="odd">
+<td><a href="#python.clim_recal.utils.data.RunOptions">RunOptions</a></td>
+<td>Supported options for variables.</td>
+</tr>
+<tr class="even">
+<td><a href="#python.clim_recal.utils.data.VariableOptions">VariableOptions</a></td>
+<td>Supported options for variables</td>
+</tr>
+</tbody>
+</table>
+<section id="python.clim_recal.utils.data.CityOptions" class="level3" data-number="1.1.1">
+<h3 data-number="1.1.1" class="anchored" data-anchor-id="python.clim_recal.utils.data.CityOptions"><span class="header-section-number">1.1.1</span> CityOptions</h3>
+<p><code>clim_recal.utils.data.CityOptions()</code></p>
+<p>Supported options for variables.</p>
+<section id="methods" class="level4" data-number="1.1.1.1">
+<h4 data-number="1.1.1.1" class="anchored" data-anchor-id="methods"><span class="header-section-number">1.1.1.1</span> Methods</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#python.clim_recal.utils.data.CityOptions.all">all</a></td>
+<td>Return a <code>tuple</code> of all options</td>
+</tr>
+<tr class="even">
+<td><a href="#python.clim_recal.utils.data.CityOptions.default">default</a></td>
+<td>Default option.</td>
+</tr>
+</tbody>
+</table>
+<section id="python.clim_recal.utils.data.CityOptions.all" class="level5" data-number="1.1.1.1.1">
+<h5 data-number="1.1.1.1.1" class="anchored" data-anchor-id="python.clim_recal.utils.data.CityOptions.all"><span class="header-section-number">1.1.1.1.1</span> all</h5>
+<p><code>clim_recal.utils.data.CityOptions.all()</code></p>
+<p>Return a <code>tuple</code> of all options</p>
+</section>
+<section id="python.clim_recal.utils.data.CityOptions.default" class="level5" data-number="1.1.1.1.2">
+<h5 data-number="1.1.1.1.2" class="anchored" data-anchor-id="python.clim_recal.utils.data.CityOptions.default"><span class="header-section-number">1.1.1.1.2</span> default</h5>
+<p><code>clim_recal.utils.data.CityOptions.default()</code></p>
+<p>Default option.</p>
+</section>
+</section>
+</section>
+<section id="python.clim_recal.utils.data.DataLicense" class="level3" data-number="1.1.2">
+<h3 data-number="1.1.2" class="anchored" data-anchor-id="python.clim_recal.utils.data.DataLicense"><span class="header-section-number">1.1.2</span> DataLicense</h3>
+<p><code>clim_recal.utils.data.DataLicense(self, name, url, version)</code></p>
+<p>Class for standardising data license references.</p>
+</section>
+<section id="python.clim_recal.utils.data.MetaData" class="level3" data-number="1.1.3">
+<h3 data-number="1.1.3" class="anchored" data-anchor-id="python.clim_recal.utils.data.MetaData"><span class="header-section-number">1.1.3</span> MetaData</h3>
+<p><code>clim_recal.utils.data.MetaData(self, name, slug, region=None, description=None, date_created=None, authors=None, url=None, info_url=None, doi=None, path=None, license=lambda: OpenGovernmentLicense(), dates=None, date_published=None, unit=None, cite_as=None)</code></p>
+<p>Manage info on source material.</p>
+</section>
+<section id="python.clim_recal.utils.data.MethodOptions" class="level3" data-number="1.1.4">
+<h3 data-number="1.1.4" class="anchored" data-anchor-id="python.clim_recal.utils.data.MethodOptions"><span class="header-section-number">1.1.4</span> MethodOptions</h3>
+<p><code>clim_recal.utils.data.MethodOptions()</code></p>
+<p>Supported options for methods.</p>
+<section id="methods-1" class="level4" data-number="1.1.4.1">
+<h4 data-number="1.1.4.1" class="anchored" data-anchor-id="methods-1"><span class="header-section-number">1.1.4.1</span> Methods</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#python.clim_recal.utils.data.MethodOptions.all">all</a></td>
+<td>Return a <code>tuple</code> of all options</td>
+</tr>
+<tr class="even">
+<td><a href="#python.clim_recal.utils.data.MethodOptions.default">default</a></td>
+<td>Default method option.</td>
+</tr>
+</tbody>
+</table>
+<section id="python.clim_recal.utils.data.MethodOptions.all" class="level5" data-number="1.1.4.1.1">
+<h5 data-number="1.1.4.1.1" class="anchored" data-anchor-id="python.clim_recal.utils.data.MethodOptions.all"><span class="header-section-number">1.1.4.1.1</span> all</h5>
+<p><code>clim_recal.utils.data.MethodOptions.all()</code></p>
+<p>Return a <code>tuple</code> of all options</p>
+</section>
+<section id="python.clim_recal.utils.data.MethodOptions.default" class="level5" data-number="1.1.4.1.2">
+<h5 data-number="1.1.4.1.2" class="anchored" data-anchor-id="python.clim_recal.utils.data.MethodOptions.default"><span class="header-section-number">1.1.4.1.2</span> default</h5>
+<p><code>clim_recal.utils.data.MethodOptions.default()</code></p>
+<p>Default method option.</p>
+</section>
+</section>
+</section>
+<section id="python.clim_recal.utils.data.RunOptions" class="level3" data-number="1.1.5">
+<h3 data-number="1.1.5" class="anchored" data-anchor-id="python.clim_recal.utils.data.RunOptions"><span class="header-section-number">1.1.5</span> RunOptions</h3>
+<p><code>clim_recal.utils.data.RunOptions()</code></p>
+<p>Supported options for variables.</p>
+<section id="notes" class="level4" data-number="1.1.5.1">
+<h4 data-number="1.1.5.1" class="anchored" data-anchor-id="notes"><span class="header-section-number">1.1.5.1</span> Notes</h4>
+<p>Options <code>TWO</code> and <code>THREE</code> are not available for <code>UKCP2.2</code>.</p>
+</section>
+<section id="methods-2" class="level4" data-number="1.1.5.2">
+<h4 data-number="1.1.5.2" class="anchored" data-anchor-id="methods-2"><span class="header-section-number">1.1.5.2</span> Methods</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#python.clim_recal.utils.data.RunOptions.all">all</a></td>
+<td>Return a <code>tuple</code> of all options</td>
+</tr>
+<tr class="even">
+<td><a href="#python.clim_recal.utils.data.RunOptions.default">default</a></td>
+<td>Default option.</td>
+</tr>
+<tr class="odd">
+<td><a href="#python.clim_recal.utils.data.RunOptions.preferred">preferred</a></td>
+<td>Return the prferred runs determined by initial results.</td>
+</tr>
+</tbody>
+</table>
+<section id="python.clim_recal.utils.data.RunOptions.all" class="level5" data-number="1.1.5.2.1">
+<h5 data-number="1.1.5.2.1" class="anchored" data-anchor-id="python.clim_recal.utils.data.RunOptions.all"><span class="header-section-number">1.1.5.2.1</span> all</h5>
+<p><code>clim_recal.utils.data.RunOptions.all()</code></p>
+<p>Return a <code>tuple</code> of all options</p>
+</section>
+<section id="python.clim_recal.utils.data.RunOptions.default" class="level5" data-number="1.1.5.2.2">
+<h5 data-number="1.1.5.2.2" class="anchored" data-anchor-id="python.clim_recal.utils.data.RunOptions.default"><span class="header-section-number">1.1.5.2.2</span> default</h5>
+<p><code>clim_recal.utils.data.RunOptions.default()</code></p>
+<p>Default option.</p>
+</section>
+<section id="python.clim_recal.utils.data.RunOptions.preferred" class="level5" data-number="1.1.5.2.3">
+<h5 data-number="1.1.5.2.3" class="anchored" data-anchor-id="python.clim_recal.utils.data.RunOptions.preferred"><span class="header-section-number">1.1.5.2.3</span> preferred</h5>
+<p><code>clim_recal.utils.data.RunOptions.preferred()</code></p>
+<p>Return the prferred runs determined by initial results.</p>
+<section id="notes-1" class="level6" data-number="1.1.5.2.3.1">
+<h6 data-number="1.1.5.2.3.1" class="anchored" data-anchor-id="notes-1"><span class="header-section-number">1.1.5.2.3.1</span> Notes</h6>
+<p>See <code>R/misc/Identifying_Runs.md</code> for motivation and results.</p>
+</section>
+</section>
+</section>
+</section>
+<section id="python.clim_recal.utils.data.VariableOptions" class="level3" data-number="1.1.6">
+<h3 data-number="1.1.6" class="anchored" data-anchor-id="python.clim_recal.utils.data.VariableOptions"><span class="header-section-number">1.1.6</span> VariableOptions</h3>
+<p><code>clim_recal.utils.data.VariableOptions()</code></p>
+<p>Supported options for variables</p>
+<section id="methods-3" class="level4" data-number="1.1.6.1">
+<h4 data-number="1.1.6.1" class="anchored" data-anchor-id="methods-3"><span class="header-section-number">1.1.6.1</span> Methods</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#python.clim_recal.utils.data.VariableOptions.all">all</a></td>
+<td>Return a <code>tuple</code> of all options</td>
+</tr>
+<tr class="even">
+<td><a href="#python.clim_recal.utils.data.VariableOptions.cpm_value">cpm_value</a></td>
+<td>Return <code>CPM</code> value equivalent of <code>variable</code>.</td>
+</tr>
+<tr class="odd">
+<td><a href="#python.clim_recal.utils.data.VariableOptions.cpm_values">cpm_values</a></td>
+<td>Return <code>CPM</code> values equivalent of <code>variable</code>.</td>
+</tr>
+<tr class="even">
+<td><a href="#python.clim_recal.utils.data.VariableOptions.default">default</a></td>
+<td>Default option.</td>
+</tr>
+</tbody>
+</table>
+<section id="python.clim_recal.utils.data.VariableOptions.all" class="level5" data-number="1.1.6.1.1">
+<h5 data-number="1.1.6.1.1" class="anchored" data-anchor-id="python.clim_recal.utils.data.VariableOptions.all"><span class="header-section-number">1.1.6.1.1</span> all</h5>
+<p><code>clim_recal.utils.data.VariableOptions.all()</code></p>
+<p>Return a <code>tuple</code> of all options</p>
+</section>
+<section id="python.clim_recal.utils.data.VariableOptions.cpm_value" class="level5" data-number="1.1.6.1.2">
+<h5 data-number="1.1.6.1.2" class="anchored" data-anchor-id="python.clim_recal.utils.data.VariableOptions.cpm_value"><span class="header-section-number">1.1.6.1.2</span> cpm_value</h5>
+<p><code>clim_recal.utils.data.VariableOptions.cpm_value(variable)</code></p>
+<p>Return <code>CPM</code> value equivalent of <code>variable</code>.</p>
+<section id="parameters" class="level6" data-number="1.1.6.1.2.1">
+<h6 data-number="1.1.6.1.2.1" class="anchored" data-anchor-id="parameters"><span class="header-section-number">1.1.6.1.2.1</span> Parameters</h6>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 10%">
+<col style="width: 60%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>variable</code></td>
+<td>str</td>
+<td><code>VariableOptions</code> attribute to query value of.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples" class="level6" data-number="1.1.6.1.2.2">
+<h6 data-number="1.1.6.1.2.2" class="anchored" data-anchor-id="examples"><span class="header-section-number">1.1.6.1.2.2</span> Examples</h6>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> VariableOptions.cpm_value(<span class="st">'rainfall'</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">'pr'</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> VariableOptions.cpm_value(<span class="st">'tasmin'</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">'tasmin'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="python.clim_recal.utils.data.VariableOptions.cpm_values" class="level5" data-number="1.1.6.1.3">
+<h5 data-number="1.1.6.1.3" class="anchored" data-anchor-id="python.clim_recal.utils.data.VariableOptions.cpm_values"><span class="header-section-number">1.1.6.1.3</span> cpm_values</h5>
+<p><code>clim_recal.utils.data.VariableOptions.cpm_values(variables=None)</code></p>
+<p>Return <code>CPM</code> values equivalent of <code>variable</code>.</p>
+<section id="parameters-1" class="level6" data-number="1.1.6.1.3.1">
+<h6 data-number="1.1.6.1.3.1" class="anchored" data-anchor-id="parameters-1"><span class="header-section-number">1.1.6.1.3.1</span> Parameters</h6>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 30%">
+<col style="width: 47%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>variables</code></td>
+<td>typing.Iterable[str] | None</td>
+<td><code>VariableOptions</code> attributes to query values of.</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-1" class="level6" data-number="1.1.6.1.3.2">
+<h6 data-number="1.1.6.1.3.2" class="anchored" data-anchor-id="examples-1"><span class="header-section-number">1.1.6.1.3.2</span> Examples</h6>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> VariableOptions.cpm_values([<span class="st">'rainfall'</span>, <span class="st">'tasmin'</span>])</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>(<span class="st">'pr'</span>, <span class="st">'tasmin'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="python.clim_recal.utils.data.VariableOptions.default" class="level5" data-number="1.1.6.1.4">
+<h5 data-number="1.1.6.1.4" class="anchored" data-anchor-id="python.clim_recal.utils.data.VariableOptions.default"><span class="header-section-number">1.1.6.1.4</span> default</h5>
+<p><code>clim_recal.utils.data.VariableOptions.default()</code></p>
+<p>Default option.</p>
 
-In the `R` subdirectory you can find code for replicating the different data processing and debiasing steps as above, along with comparisons of methods between the two languages.
-- **bias-correction-methods** for bias correction (debiasing) methods available specifically in `R` libraries
-- **comparing-r-and-python** for replication of resampling and reviewing the bias correction methods applied in `python`.
-- **Resampling** for resampling the HADsUK datasets from 1km to 2.2km grid in `R`.
--->
 
-
+</section>
+</section>
+</section>
+</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->

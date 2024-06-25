@@ -20,25 +20,59 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../site_libs/quarto-nav/headroom.min.js"></script>
-<script src="../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../">
-<script src="../site_libs/quarto-html/quarto.js"></script>
-<script src="../site_libs/quarto-html/popper.min.js"></script>
-<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -79,7 +113,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../R/README.html">R</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../python/README.html">python</a></li><li class="breadcrumb-item"><a href="../../docs/reference/index.html">Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/clim_recal.pipeline.html">Pipeline</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -94,7 +128,7 @@ ul.task-list li input[type="checkbox"] {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="../">clim-recal</a> 
+      <a href="../../">clim-recal</a> 
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -106,13 +140,13 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../README.html" class="sidebar-item-text sidebar-link">
+  <a href="../../README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Summary</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../setup-instructions.html" class="sidebar-item-text sidebar-link">
+  <a href="../../setup-instructions.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Install</span></a>
   </div>
 </li>
@@ -127,13 +161,13 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/pipeline_guidance.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/pipeline_guidance.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Guidance</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/pipeline.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/pipeline.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Diagram</span></a>
   </div>
 </li>
@@ -141,7 +175,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../R/README.html" class="sidebar-item-text sidebar-link active">
+            <a href="../../R/README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">R</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -150,7 +184,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../R/misc/Identifying_Runs.html" class="sidebar-item-text sidebar-link">
+  <a href="../../R/misc/Identifying_Runs.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Identifying Runs</span></a>
   </div>
 </li>
@@ -165,7 +199,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.html" class="sidebar-item-text sidebar-link">
+  <a href="../../R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">WIP Comparing HADs grids</span></a>
   </div>
 </li>
@@ -175,7 +209,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../python/README.html" class="sidebar-item-text sidebar-link">
+            <a href="../../python/README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">python</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -184,40 +218,40 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../docs/reference/index.html" class="sidebar-item-text sidebar-link">
+            <a href="../../docs/reference/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Reference</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.pipeline.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.pipeline.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Pipeline</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.config.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.config.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Configure</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.ceda_ftp_download.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.ceda_ftp_download.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">CEDA Data Access</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.data_loader.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.data_loader.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data Loading</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.resample.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.resample.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data Resampling</span></a>
   </div>
 </li>
@@ -232,7 +266,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.debiasing.debias_wrapper.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.debiasing.debias_wrapper.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Wrapper</span></a>
   </div>
 </li>
@@ -249,25 +283,25 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.utils.core.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.utils.core.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">core</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.utils.server.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.utils.server.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">server</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.utils.xarray.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.utils.xarray.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">xarray</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.utils.data.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.utils.data.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">data</span></a>
   </div>
 </li>
@@ -279,13 +313,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/docker-configurations.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/docker-configurations.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Docker</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/contributing.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/contributing.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Contributing</span></a>
   </div>
 </li>
@@ -299,7 +333,23 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#methods-implemented-in-r" id="toc-methods-implemented-in-r" class="nav-link active" data-scroll-target="#methods-implemented-in-r"><span class="header-section-number">1</span> Methods implemented in R</a></li>
+  <li><a href="#python.clim_recal.pipeline" id="toc-python.clim_recal.pipeline" class="nav-link active" data-scroll-target="#python.clim_recal.pipeline"><span class="header-section-number">1</span> clim_recal.pipeline</a></li>
+  <li><a href="#download-data" id="toc-download-data" class="nav-link" data-scroll-target="#download-data"><span class="header-section-number">2</span> Download Data</a></li>
+  <li><a href="#reproject-ukcp" id="toc-reproject-ukcp" class="nav-link" data-scroll-target="#reproject-ukcp"><span class="header-section-number">3</span> Reproject UKCP</a></li>
+  <li><a href="#resample-cpm" id="toc-resample-cpm" class="nav-link" data-scroll-target="#resample-cpm"><span class="header-section-number">4</span> Resample CPM</a>
+  <ul class="collapse">
+  <li><a href="#todo" id="toc-todo" class="nav-link" data-scroll-target="#todo"><span class="header-section-number">4.1</span> Todo</a></li>
+  </ul></li>
+  <li><a href="#cropping" id="toc-cropping" class="nav-link" data-scroll-target="#cropping"><span class="header-section-number">5</span> Cropping</a></li>
+  <li><a href="#pre-processing" id="toc-pre-processing" class="nav-link" data-scroll-target="#pre-processing"><span class="header-section-number">6</span> Pre-processing</a></li>
+  <li><a href="#debiasing" id="toc-debiasing" class="nav-link" data-scroll-target="#debiasing"><span class="header-section-number">7</span> Debiasing</a></li>
+  <li><a href="#keep-track" id="toc-keep-track" class="nav-link" data-scroll-target="#keep-track"><span class="header-section-number">8</span> Keep track</a>
+  <ul class="collapse">
+  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions"><span class="header-section-number">8.1</span> Functions</a>
+  <ul class="collapse">
+  <li><a href="#python.clim_recal.pipeline.main" id="toc-python.clim_recal.pipeline.main" class="nav-link" data-scroll-target="#python.clim_recal.pipeline.main"><span class="header-section-number">8.1.1</span> main</a></li>
+  </ul></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -309,23 +359,253 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<section id="methods-implemented-in-r" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> Methods implemented in R</h1>
+<section id="python.clim_recal.pipeline" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> clim_recal.pipeline</h1>
+<p><code>clim_recal.pipeline</code></p>
+<p>Wrappers to automate the entire pipeline.</p>
+<p>Following Andy’s very helpful <code>excel</code> file, this manages a reproduction of all steps of the debiasing pipeline.</p>
+</section>
+<section id="download-data" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Download Data</h1>
+<p>The <code>download_ftp</code> function from <code>ceda_ftp_download.py</code> can be used (with registered account user name and password), to download two datasets from the Centre for Environmental Data Analysis (CEDA)</p>
 <ul>
-<li><strong>/Resampling</strong> - code for Resampling data to different extents (grid sizes)</li>
-<li><strong>/bias-correction-methods</strong> - bias correction methods implemented in R</li>
-<li><strong>/comparing-r-and-python</strong> - Comparing various pipeline aspects between R and python</li>
+<li>Saved to <code>ClimateData/Raw</code></li>
+<li><a href="https://catalogue.ceda.ac.uk/uuid/e6822428e4124c5986b689a37fda10bc"><code>HadUK-Grid</code></a>
+<ul>
+<li>a 1km climate projection grid which is designed to supersede <code>UKCP</code></li>
+<li>For further details see <a href="https://www.metoffice.gov.uk/research/climate/maps-and-data/data/haduk-grid">Met Office</a></li>
+<li>Saved to <code>Raw/HadsUKgrid/</code></li>
+</ul></li>
+<li><a href="https://catalogue.ceda.ac.uk/uuid/f9b6b55dfa174386a05efae2f0f76141"><code>UKCP</code></a> UK Climate Projections at 2.2 km
+<ul>
+<li>a 2.2km projection grid</li>
+<li>Saved to <code>Raw/UKCP2.2/</code></li>
+</ul></li>
 </ul>
-<!--
-### R
+</section>
+<section id="reproject-ukcp" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Reproject UKCP</h1>
+<p>The <code>bash/reproject_one.sh</code> copies and reprojects <code>UKCP2.2</code>via <code>gdalwrap</code> to a <code>Raw/Reprojected_infill</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gdalwarp</span> <span class="at">-t_srs</span> <span class="st">'EPSG:27700'</span> <span class="at">-tr</span> 2200 2200 <span class="at">-r</span> near <span class="at">-overwrite</span> <span class="va">$f</span> <span class="st">"</span><span class="va">${fn</span><span class="op">%</span>.nc<span class="va">}</span><span class="st">.tif"</span> <span class="co"># Reproject the file`</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><em>New step</em>: project UKCP to 360/365 days</p>
+<p>Relevant <code>xarray</code> utilities:</p>
+<ul>
+<li><a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html"><code>convert_calendar</code></a></li>
+<li><a href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.interp_calendar.html"><code>interp_calendar</code></a></li>
+</ul>
+</section>
+<section id="resample-cpm" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Resample CPM</h1>
+<p>New approach:</p>
+<ul>
+<li><code>resampling.py</code></li>
+<li>check <code>x_grid</code> and <code>y_grid</code> interpolation</li>
+</ul>
+<section id="todo" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="todo"><span class="header-section-number">4.1</span> Todo</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="">Update the example here</label></li>
+<li><label><input type="checkbox" checked="">Remove out of date elements</label></li>
+<li><label><input type="checkbox" checked="">Hardcode the process below</label></li>
+<li><label><input type="checkbox" checked="">Refactor to facilitate testing</label></li>
+<li><label><input type="checkbox" checked="">Ensure HADs still works</label></li>
+<li><label><input type="checkbox" checked="">Add function for UKCP</label></li>
+<li><label><input type="checkbox" checked="">Check <code>convert_xr_calendar</code> <code>doctest</code> examples</label></li>
+<li><label><input type="checkbox">Fix order of UKCP changes</label></li>
+</ul>
+<p>To run this step in the pipeline the following should work for the default combindations of <code>variables</code>: <code>tasmax</code>, <code>tasmin</code>, and <code>rainfall</code> and the default set of runs: <code>05</code>, <code>06</code>, <code>07</code> and <code>08</code>, assuming the necessary data is mounted.</p>
+<p>If installed via <code>pipx</code>/<code>pip</code> etc. on your local path (or within <code>Docker</code>) clim-recal should be a command line function</p>
+<pre class="console"><code>$ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written
+clim-recal pipeline configurations:
+&lt;ClimRecalConfig(variables_count=3, runs_count=4, cities_count=1, methods_count=1,
+                 cpm_folders_count=12, hads_folders_count=3, start_index=0,
+                 stop_index=None, cpus=2)&gt;
+&lt;CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)&gt;
+&lt;HADsResamplerManager(variables_count=3, input_paths_count=3)&gt;</code></pre>
+<p>Otherwise, you can install locally and either run via <code>pdm</code> from the <code>python</code> folder</p>
+<pre class="console"><code>$ cd clim-recal/python
+$ pdm run clim-recal --all-variables --default-runs --output-path /where/results/should/be/written
+# Skipping output for brevity</code></pre>
+<p>Or within an <code>ipython</code> or <code>jupyter</code> instance (truncated below for brevity)</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> clim_recal.pipeline <span class="im">import</span> main</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> main(all_variables<span class="op">=</span><span class="va">True</span>, default_runs<span class="op">=</span><span class="va">True</span>)  <span class="co"># doctest: +SKIP</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>clim<span class="op">-</span>recal pipeline configurations:</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>ClimRecalConfig(variables_count<span class="op">=</span><span class="dv">3</span>, runs_count<span class="op">=</span><span class="dv">4</span>, ...<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Regardless of your route, once you’re confident with the configuration, add the <code>--execute</code> parameter to run. For example, assuming a local install:</p>
+<pre class="console"><code>$ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written --execute
+clim-recal pipeline configurations:
+&lt;ClimRecalConfig(variables_count=3, runs_count=4, cities_count=1, methods_count=1,
+                 cpm_folders_count=12, hads_folders_count=3, start_index=0,
+                 stop_index=None, cpus=2)&gt;
+&lt;CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)&gt;
+&lt;HADsResamplerManager(variables_count=3, input_paths_count=3)&gt;
+Running CPM Standard Calendar projection...
+&lt;CPMResampler(count=100, max_count=100,
+              input_path='/mnt/vmfileshare/ClimateData/Raw/UKCP2.2/tasmax/05/latest',
+              output_path='/mnt/vmfileshare/ClimateData/CPM-365/test-run-3-may/resample/
+              cpm/tasmax/05/latest')&gt;
+ 100% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100/100  [ 0:38:27 &lt; 0:00:00 , 0 it/s ]
+  87% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 87/100  [ 0:17:42 &lt; 0:03:07 , 0 it/s ]</code></pre>
+</section>
+</section>
+<section id="cropping" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Cropping</h1>
+</section>
+<section id="pre-processing" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Pre-processing</h1>
+<ul>
+<li>Originally used <code>debiasing.pre_processing.py</code></li>
+</ul>
+<p>New approach:</p>
+<ul>
+<li>Refactor <code>debiasing.debias-wrapper</code></li>
+</ul>
+</section>
+<section id="debiasing" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Debiasing</h1>
+<ul>
+<li><code>python</code>
+<ul>
+<li>Originally used <code>debiasing.pre_processing.py</code></li>
+<li>Refactor <code>debiasing.debias-wrapper</code></li>
+</ul></li>
+<li><code>R</code></li>
+</ul>
+</section>
+<section id="keep-track" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> Keep track</h1>
+<ul>
+<li>What is being superseded</li>
+<li>What can be removed</li>
+</ul>
+<section id="functions" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="functions"><span class="header-section-number">8.1</span> Functions</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#python.clim_recal.pipeline.main">main</a></td>
+<td>Run all elements of the pipeline.</td>
+</tr>
+</tbody>
+</table>
+<section id="python.clim_recal.pipeline.main" class="level3" data-number="8.1.1">
+<h3 data-number="8.1.1" class="anchored" data-anchor-id="python.clim_recal.pipeline.main"><span class="header-section-number">8.1.1</span> main</h3>
+<p><code>clim_recal.pipeline.main(execute=False, output_path=DEFAULT_OUTPUT_PATH, variables=(VariableOptions.default()), cities=(CityOptions.default()), runs=(RunOptions.default()), methods=(MethodOptions.default()), all_variables=False, all_cities=False, default_runs=False, all_runs=False, all_methods=False, skip_cpm_standard_calendar_projection=False, skip_hads_spatial_2k_projection=False, cpus=None, multiprocess=False, start_index=0, stop_index=None, total=None, print_range_length=5, **kwargs)</code></p>
+<p>Run all elements of the pipeline.</p>
+<section id="parameters" class="level4" data-number="8.1.1.1">
+<h4 data-number="8.1.1.1" class="anchored" data-anchor-id="parameters"><span class="header-section-number">8.1.1.1</span> Parameters</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 33%">
+<col style="width: 44%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>variables</code></td>
+<td>typing.Sequence[python.clim_recal.config.VariableOptions | str]</td>
+<td>Variables to include in the model, eg. <code>tasmax</code>, <code>tasmin</code>.</td>
+<td><code>(VariableOptions.default())</code></td>
+</tr>
+<tr class="even">
+<td><code>runs</code></td>
+<td>typing.Sequence[python.clim_recal.config.RunOptions | str]</td>
+<td>Which model runs to include, eg. “01”, “08”, “11”.</td>
+<td><code>(RunOptions.default())</code></td>
+</tr>
+<tr class="odd">
+<td><code>cities</code></td>
+<td>typing.Sequence[python.clim_recal.config.CityOptions | str] | None</td>
+<td>Which cities to crop data to. Future plans facilitate skipping to run for entire UK.</td>
+<td><code>(CityOptions.default())</code></td>
+</tr>
+<tr class="even">
+<td><code>methods</code></td>
+<td>typing.Sequence[python.clim_recal.config.MethodOptions | str]</td>
+<td>Which debiasing methods to apply.</td>
+<td><code>(MethodOptions.default())</code></td>
+</tr>
+<tr class="odd">
+<td><code>output_path</code></td>
+<td>os.PathLike</td>
+<td><code>Path</code> to save intermediate and final results to.</td>
+<td><code>DEFAULT_OUTPUT_PATH</code></td>
+</tr>
+<tr class="even">
+<td><code>cpus</code></td>
+<td>int | None</td>
+<td>Number of cpus to use when multiprocessing.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td><code>multiprocess</code></td>
+<td>bool</td>
+<td>Whether to use multiprocessing.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="even">
+<td><code>start_index</code></td>
+<td>int</td>
+<td>Index to start all iterations from.</td>
+<td><code>0</code></td>
+</tr>
+<tr class="odd">
+<td><code>total</code></td>
+<td>int | None</td>
+<td>Total number of records to iterate over. 0 and <code>None</code> indicate all values from <code>start_index</code>.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td><code>**kwargs</code></td>
+<td></td>
+<td>Additional parameters to pass to a <code>ClimRecalConfig</code>.</td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="notes" class="level4" data-number="8.1.1.2">
+<h4 data-number="8.1.1.2" class="anchored" data-anchor-id="notes"><span class="header-section-number">8.1.1.2</span> Notes</h4>
+<p>The default parameters here are meant to reflect the entire workflow process to ease reproducibility.</p>
+</section>
+<section id="examples" class="level4" data-number="8.1.1.3">
+<h4 data-number="8.1.1.3" class="anchored" data-anchor-id="examples"><span class="header-section-number">8.1.1.3</span> Examples</h4>
+<p>Note the <code>_allow_check_fail</code> parameters support running the examples without data mounted from a server.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> main(variables<span class="op">=</span>(<span class="st">"rainfall"</span>, <span class="st">"tasmin"</span>),</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>...      output_path<span class="op">=</span>test_runs_output_path,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>...      cpm_kwargs<span class="op">=</span><span class="bu">dict</span>(_allow_check_fail<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>...      hads_kwargs<span class="op">=</span><span class="bu">dict</span>(_allow_check_fail<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>... )</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>clim<span class="op">-</span>recal pipeline configurations:</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>ClimRecalConfig(variables_count<span class="op">=</span><span class="dv">2</span>, runs_count<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                 cities_count<span class="op">=</span><span class="dv">1</span>, methods_count<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>                 cpm_folders_count<span class="op">=</span><span class="dv">2</span>, hads_folders_count<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>                 start_index<span class="op">=</span><span class="dv">0</span>, stop_index<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>                 cpus<span class="op">=</span>...)<span class="op">&gt;</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>CPMResamplerManager(variables_count<span class="op">=</span><span class="dv">2</span>, runs_count<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>                     input_paths_count<span class="op">=</span><span class="dv">2</span>)<span class="op">&gt;</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>HADsResamplerManager(variables_count<span class="op">=</span><span class="dv">2</span>, input_paths_count<span class="op">=</span><span class="dv">2</span>)<span class="op">&gt;</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>No steps run. Add <span class="st">'--execute'</span> to run steps.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
-In the `R` subdirectory you can find code for replicating the different data processing and debiasing steps as above, along with comparisons of methods between the two languages.
-- **bias-correction-methods** for bias correction (debiasing) methods available specifically in `R` libraries
-- **comparing-r-and-python** for replication of resampling and reviewing the bias correction methods applied in `python`.
-- **Resampling** for resampling the HADsUK datasets from 1km to 2.2km grid in `R`.
--->
 
-
+</section>
+</section>
+</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->

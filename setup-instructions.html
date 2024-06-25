@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>clim-recal</title>
+<title>clim-recal - clim-recal installation</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,25 +20,59 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../site_libs/quarto-nav/headroom.min.js"></script>
-<script src="../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../">
-<script src="../site_libs/quarto-html/quarto.js"></script>
-<script src="../site_libs/quarto-html/popper.min.js"></script>
-<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -79,7 +113,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../R/README.html">R</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./setup-instructions.html">Install</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -94,7 +128,7 @@ ul.task-list li input[type="checkbox"] {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="../">clim-recal</a> 
+      <a href="./">clim-recal</a> 
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -106,13 +140,13 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../README.html" class="sidebar-item-text sidebar-link">
+  <a href="./README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Summary</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../setup-instructions.html" class="sidebar-item-text sidebar-link">
+  <a href="./setup-instructions.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Install</span></a>
   </div>
 </li>
@@ -127,13 +161,13 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/pipeline_guidance.html" class="sidebar-item-text sidebar-link">
+  <a href="./docs/pipeline_guidance.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Guidance</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/pipeline.html" class="sidebar-item-text sidebar-link">
+  <a href="./docs/pipeline.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Diagram</span></a>
   </div>
 </li>
@@ -141,7 +175,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../R/README.html" class="sidebar-item-text sidebar-link active">
+            <a href="./R/README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">R</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -150,7 +184,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../R/misc/Identifying_Runs.html" class="sidebar-item-text sidebar-link">
+  <a href="./R/misc/Identifying_Runs.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Identifying Runs</span></a>
   </div>
 </li>
@@ -165,7 +199,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.html" class="sidebar-item-text sidebar-link">
+  <a href="./R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">WIP Comparing HADs grids</span></a>
   </div>
 </li>
@@ -175,7 +209,7 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../python/README.html" class="sidebar-item-text sidebar-link">
+            <a href="./python/README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">python</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -184,7 +218,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../docs/reference/index.html" class="sidebar-item-text sidebar-link">
+            <a href="./docs/reference/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Reference</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -193,31 +227,31 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.pipeline.html" class="sidebar-item-text sidebar-link">
+  <a href="./docs/reference/clim_recal.pipeline.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Pipeline</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.config.html" class="sidebar-item-text sidebar-link">
+  <a href="./docs/reference/clim_recal.config.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Configure</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.ceda_ftp_download.html" class="sidebar-item-text sidebar-link">
+  <a href="./docs/reference/clim_recal.ceda_ftp_download.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">CEDA Data Access</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.data_loader.html" class="sidebar-item-text sidebar-link">
+  <a href="./docs/reference/clim_recal.data_loader.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data Loading</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.resample.html" class="sidebar-item-text sidebar-link">
+  <a href="./docs/reference/clim_recal.resample.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data Resampling</span></a>
   </div>
 </li>
@@ -232,7 +266,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.debiasing.debias_wrapper.html" class="sidebar-item-text sidebar-link">
+  <a href="./docs/reference/clim_recal.debiasing.debias_wrapper.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Wrapper</span></a>
   </div>
 </li>
@@ -249,25 +283,25 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.utils.core.html" class="sidebar-item-text sidebar-link">
+  <a href="./docs/reference/clim_recal.utils.core.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">core</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.utils.server.html" class="sidebar-item-text sidebar-link">
+  <a href="./docs/reference/clim_recal.utils.server.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">server</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.utils.xarray.html" class="sidebar-item-text sidebar-link">
+  <a href="./docs/reference/clim_recal.utils.xarray.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">xarray</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.utils.data.html" class="sidebar-item-text sidebar-link">
+  <a href="./docs/reference/clim_recal.utils.data.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">data</span></a>
   </div>
 </li>
@@ -279,13 +313,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/docker-configurations.html" class="sidebar-item-text sidebar-link">
+  <a href="./docs/docker-configurations.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Docker</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/contributing.html" class="sidebar-item-text sidebar-link">
+  <a href="./docs/contributing.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Contributing</span></a>
   </div>
 </li>
@@ -299,31 +333,162 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#methods-implemented-in-r" id="toc-methods-implemented-in-r" class="nav-link active" data-scroll-target="#methods-implemented-in-r"><span class="header-section-number">1</span> Methods implemented in R</a></li>
+  <li><a href="#quickstart" id="toc-quickstart" class="nav-link active" data-scroll-target="#quickstart"><span class="header-section-number">1</span> Quickstart</a></li>
+  <li><a href="#python" id="toc-python" class="nav-link" data-scroll-target="#python"><span class="header-section-number">2</span> Python</a>
+  <ul class="collapse">
+  <li><a href="#conda-mamba" id="toc-conda-mamba" class="nav-link" data-scroll-target="#conda-mamba"><span class="header-section-number">2.1</span> <code>Conda</code> / <code>Mamba</code></a></li>
+  <li><a href="#conda-lock" id="toc-conda-lock" class="nav-link" data-scroll-target="#conda-lock"><span class="header-section-number">2.2</span> <code>conda-lock</code></a></li>
+  </ul></li>
+  <li><a href="#docker" id="toc-docker" class="nav-link" data-scroll-target="#docker"><span class="header-section-number">3</span> Docker</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><code>clim-recal</code> installation</h1>
+</div>
 
 
 
-<section id="methods-implemented-in-r" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> Methods implemented in R</h1>
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><code>clim-recal</code> is a set of tools to manage UK climate data and projections, and running a range of correction methods in <code>python</code> and <code>R</code>. For ease of installation and use, we focus primarily on the <code>python</code> portion, but in principal the <a href="R/"><code>R</code> notebooks</a> should be useable via <code>RStudio</code>, which suggests packages necessary to install. We also provide <a href="https://www.docker.com/"><code>docker</code></a> installation options which include both <code>R</code> and <code>python</code> dependencies.</p>
+<section id="quickstart" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Quickstart</h1>
+<p>For users who already have <code>conda</code> (or <code>mamba</code>) installed:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/alan-turing-institute/clim-recal</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> clim-recal</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install conda-lock</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">conda-lock</span> install <span class="at">--name</span> clim-recal conda-lock.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For <code>docker</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/alan-turing-institute/clim-recal</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> clim-recal</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose up</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Python</h1>
+<section id="conda-mamba" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="conda-mamba"><span class="header-section-number">2.1</span> <code>Conda</code> / <code>Mamba</code></h2>
+<p>At present either <code>conda</code> or <code>mamba</code> are needed to use <code>clim-recal</code>. Installation instructions for these are available:</p>
 <ul>
-<li><strong>/Resampling</strong> - code for Resampling data to different extents (grid sizes)</li>
-<li><strong>/bias-correction-methods</strong> - bias correction methods implemented in R</li>
-<li><strong>/comparing-r-and-python</strong> - Comparing various pipeline aspects between R and python</li>
+<li><code>conda</code>: <a href="https://conda.io/projects/conda/en/latest/user-guide/install/index.html" class="uri">https://conda.io/projects/conda/en/latest/user-guide/install/index.html</a></li>
+<li><code>mamba</code>: <a href="https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html" class="uri">https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html</a></li>
 </ul>
 <!--
-### R
-
-In the `R` subdirectory you can find code for replicating the different data processing and debiasing steps as above, along with comparisons of methods between the two languages.
-- **bias-correction-methods** for bias correction (debiasing) methods available specifically in `R` libraries
-- **comparing-r-and-python** for replication of resampling and reviewing the bias correction methods applied in `python`.
-- **Resampling** for resampling the HADsUK datasets from 1km to 2.2km grid in `R`.
+We support two main options for installing the `python` components:
+    - [`conda-lock`](https://conda.github.io/conda-lock/)
+    - [`pip`](https://pdm-project.org/latest/)
+[`conda-lock`](https://conda.github.io/conda-lock/) is the most comprehensive configuration, including geospatial elements.
+ `pip` (or `pipx`) are enough to manage some of the basic `python` elements, but not the geospatial components.
 -->
+</section>
+<section id="conda-lock" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="conda-lock"><span class="header-section-number">2.2</span> <code>conda-lock</code></h2>
+<p><code>conda-lock</code> provides a means of managing dependencies for <code>conda</code>/<code>mamba</code> environments on precise, reproducible levels, and can incorporated local <code>pyproject.toml</code> configurations.</p>
+<p>There are many ways to install <code>conda-lock</code> (for most up to date options see <a href="https://github.com/conda/conda-lock?tab=readme-ov-file#installation"><code>README.md</code></a>):</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true" aria-current="page"><code>pipx</code></a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false"><code>pip</code></a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false"><code>conda</code></a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-4" role="tab" aria-controls="tabset-1-4" aria-selected="false"><code>mamba</code></a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pipx</span> install conda-lock</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install conda-lock</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-1-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-3-tab">
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> install <span class="at">--channel</span><span class="op">=</span>conda-forge <span class="at">--name</span><span class="op">=</span>base conda-lock</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-1-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-4-tab">
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> install <span class="at">--channel</span><span class="op">=</span>conda-forge <span class="at">--name</span><span class="op">=</span>base conda-lock</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+<p>Once <code>conda-lock</code> is installed, <code>clim-recal</code> can be installed via</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true"><code>pipx</code></a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false"><code>pip</code></a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-3" role="tab" aria-controls="tabset-2-3" aria-selected="false"><code>conda</code></a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-4" role="tab" aria-controls="tabset-2-4" aria-selected="false"><code>mamba</code></a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> <span class="kw">`</span><span class="ex">clim-recal</span><span class="kw">`</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda-lock</span> install conda-lock.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> <span class="kw">`</span><span class="ex">clim-recal</span><span class="kw">`</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda-lock</span> install conda-lock.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-2-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-3-tab">
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> <span class="kw">`</span><span class="ex">clim-recal</span><span class="kw">`</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate base</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">conda-lock</span> install conda-lock.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-2-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-4-tab">
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> <span class="kw">`</span><span class="ex">clim-recal</span><span class="kw">`</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> activate base</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ex">conda-lock</span> install conda-lock.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="docker" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Docker</h1>
+<p>It can take some time to build, but the following will build 3 <code>docker</code> <code>volumes</code> for</p>
+<ul>
+<li><code>jupyter</code>: a <code>python</code> environment</li>
+<li><code>RServer</code>: an <code>R</code> environment</li>
+<li><code>quarto</code>: documentation</li>
+</ul>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" role="tab" aria-controls="tabset-3-1" aria-selected="true">All</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" role="tab" aria-controls="tabset-3-2" aria-selected="false"><code>Jupyter</code> (<code>python</code> specific)</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-3" role="tab" aria-controls="tabset-3-3" aria-selected="false"><code>RStudio</code> (<code>R</code> specific)</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-4" role="tab" aria-controls="tabset-3-4" aria-selected="false"><code>quarto</code> (documentation)</a></li></ul>
+<div class="tab-content">
+<div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> clim-recal</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose build</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> clim-recal</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose build jupyter</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-3-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-3-tab">
+<div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> clim-recal</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose build rstudio</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-3-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-4-tab">
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> clim-recal</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose build quarto</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+<p>Once built, the environments built can be run via</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" role="tab" aria-controls="tabset-4-1" aria-selected="true">All</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" role="tab" aria-controls="tabset-4-2" aria-selected="false"><code>Jupyter</code></a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-3" role="tab" aria-controls="tabset-4-3" aria-selected="false"><code>RStudio</code></a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-4" role="tab" aria-controls="tabset-4-4" aria-selected="false"><code>quarto</code></a></li></ul>
+<div class="tab-content">
+<div id="tabset-4-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-4-1-tab">
+<div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose up</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-4-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-2-tab">
+<div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose jupyter up</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-4-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-3-tab">
+<div class="sourceCode" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose rstudio up</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="tabset-4-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-4-tab">
+<div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose quarto up</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
 
 
 </section>
