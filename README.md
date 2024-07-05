@@ -11,6 +11,10 @@ Welcome to `clim-recal`, a specialized resource designed to tackle systematic er
 - Was developed in partnership with the MetOffice to ensure the propriety, quality, and usability of our work
 - Provides a framework for open additions of new software libraries/bias correction methods (in planning)
 
+## Data results and documentation updates
+
+*WARNING*: The documentation below is out of date in some cases, and we are in the process of updating this. In the meantime, see our [Exported Datasets](/docs/datasets.qmd) page for updates on datasets released for three UK cities.
+
 ## Table of Contents
 
 1. [Overview: Bias Correction Pipeline](#overview-bias-correction-pipeline)

@@ -1,0 +1,7 @@
+---
+title: Exported Datasets
+---
+Thanks for your interest in the `clim-recal` data and metrics. We plan to release a set of combined observation and simulation datasets for three cities in the UK and invite authors of bias correction methods to benchmark their methods for those cities.
+
+We are still completing this work. As soon as the data are ready for publication, we will update this page with information on how to access them - check back soon.
+In the meantime, please check [our blog article](https://urban-analytics-technology-platform.github.io/blog/platform_v2_release/) describing this work.

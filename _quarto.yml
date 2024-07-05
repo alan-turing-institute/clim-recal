@@ -15,6 +15,7 @@ project:
     - "docs/reference"
     - "docs/pipeline.qmd"
     - "docs/contributing.md"
+    - "docs/datasets.qmd"
     - "docs/pipeline_guidance.qmd"
     - "docs/docker-configurations.qmd"
     - "python/README.md"
@@ -40,6 +41,8 @@ website:
         href: "README.md"
       - text: "Install"
         href: "setup-instructions.md"
+      - text: "Exported Datasets"
+        href: "docs/datasets.qmd"
       - section: "Pipeline"
         contents:
           - text: "Guidance"
