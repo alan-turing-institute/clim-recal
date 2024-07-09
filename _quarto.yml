@@ -15,6 +15,7 @@ project:
     - "docs/reference"
     # - "docs/pipeline.qmd"
     - "docs/contributing.md"
+    - "docs/datasets.qmd"
     - "docs/pipeline_guidance.qmd"
     - "docs/docker-configurations.qmd"
     - "python/README.md"
