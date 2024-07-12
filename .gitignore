@@ -296,3 +296,4 @@ python/debiasing/python-cmethods
 python/clim_recal/debiasing/python-cmethods
 /python/output
 /python/tests/data
+/python/scripts/trail_reprojection_outputs

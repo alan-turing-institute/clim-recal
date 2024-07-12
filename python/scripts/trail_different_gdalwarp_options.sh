@@ -17,18 +17,31 @@ echo $source_cpm
 # I have not tested how will the time dimension is handled by these options. If needed this might be improved by using the `-doo` options and creation options described here https://gdal.org/drivers/raster/netcdf.html#raster-netcdf
 
 
-# Used with GDAL 3.8.3, released 2024/01/04
-gdalwarp --version
+# # Used with GDAL 3.8.3, released 2024/01/04
+# gdalwarp --version
 
-# Reproject - No regridding
-gdalwarp -t_srs 'EPSG:27700' -r near $source_cpm $outdir/cpm_27700_no_regrid.nc -oo VARIABLES_AS_BANDS=YES -oo GDAL_NETCDF_VERIFY_DIMS=STRICT
+# # Reproject - No regridding
+# gdalwarp -t_srs 'EPSG:27700' -r near $source_cpm $outdir/cpm_27700_no_regrid.nc -oo VARIABLES_AS_BANDS=YES -oo GDAL_NETCDF_VERIFY_DIMS=STRICT
 
-# Reproject - with regridding
-gdalwarp -t_srs 'EPSG:27700' -tr 2200 2200 -r near $source_cpm $outdir/cpm_27700_regridded.nc -oo VARIABLES_AS_BANDS=YES -oo GDAL_NETCDF_VERIFY_DIMS=STRICT
+# # Reproject - with regridding
+# gdalwarp -t_srs 'EPSG:27700' -tr 2200 2200 -r near $source_cpm $outdir/cpm_27700_regridded.nc -oo VARIABLES_AS_BANDS=YES -oo GDAL_NETCDF_VERIFY_DIMS=STRICT
 
-# Transform - Just rotate axis to a sphere
-gdalwarp -t_srs 'ESRI:104047' -r near $source_cpm $outdir/cpm_104047_no_regrid.nc -oo VARIABLES_AS_BANDS=YES -oo GDAL_NETCDF_VERIFY_DIMS=STRICT
+# # Transform - Just rotate axis to a sphere
+# gdalwarp -t_srs 'ESRI:104047' -r near $source_cpm $outdir/cpm_104047_no_regrid.nc -oo VARIABLES_AS_BANDS=YES -oo GDAL_NETCDF_VERIFY_DIMS=STRICT
 
-# Minimal reprojection - just to WGS1984
-gdalwarp -t_srs 'EPSG:4326'  -r near -r near $source_cpm $outdir/cpm_4326_no_regrid.nc -oo VARIABLES_AS_BANDS=YES -oo GDAL_NETCDF_VERIFY_DIMS=STRICT
+# # Minimal reprojection - just to WGS1984
+# gdalwarp -t_srs 'EPSG:4326'  -r near -r near $source_cpm $outdir/cpm_4326_no_regrid.nc -oo VARIABLES_AS_BANDS=YES -oo GDAL_NETCDF_VERIFY_DIMS=STRICT
 
+
+# # # Reproject via a virtual layer
+# # THIS IS SLLOOOWWWWW (~2.5 hours)
+# # But the output is correct
+# # - Algins correctly with the vector boundary files and the HADs data
+# # - CRS is automatically reckonised by QGIS.
+# # - Bands appear in the same ways as the original file
+gdalwarp -t_srs 'EPSG:27700' -tr 2200 2200 -r near -of VRT  $source_cpm $outdir/tempfile.vrt -oo VARIABLES_AS_BANDS=YES -oo GDAL_NETCDF_VERIFY_DIMS=STRICT
+gdal_translate -of netCDF $outdir/tempfile.vrt $outdir/two_step_cpm_27700_regridded.nc
+
+
+# Now try doing the temporal resampling, on the reprojected file
+python process_cpm_single_file.py --cpm-file $outdir/two_step_cpm_27700_regridded.nc --output-path $outdir/cpm_27700_regridded_365_days.nc
