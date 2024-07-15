@@ -12,8 +12,9 @@ from matplotlib import pyplot as plt
 from numpy import ndarray
 from numpy.typing import NDArray
 from osgeo.gdal import Dataset as GDALDataset
-from osgeo.gdal import GDALWarpAppOptions, Warp, WarpOptions
+from osgeo.gdal import GDALWarpAppOptions, Translate, Warp, WarpOptions
 from pandas import DatetimeIndex, date_range
+from tqdm import tqdm
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import (
@@ -43,7 +44,13 @@ from .data import (
     ConvertCalendarAlignOptions,
     XArrayEngineType,
 )
-from .gdal_formats import NETCDF_EXTENSION_STR, GDALFormatsType, GDALGeoTiffFormatStr
+from .gdal_formats import (
+    NETCDF_EXTENSION_STR,
+    VIRTUAL_EXTENSION_STR,
+    GDALFormatsType,
+    GDALNetCDFFormatStr,
+    GDALVirtualFormatStr,
+)
 
 logger = getLogger(__name__)
 
@@ -160,6 +167,7 @@ def cpm_reproject_with_standard_calendar(
     variable_name: str | None = None,
     x_dim_name: str = CPM_RAW_X_COLUMN_NAME,
     y_dim_name: str = CPM_RAW_Y_COLUMN_NAME,
+    temp_path: PathLike = "temp_cpm_projection",
 ) -> T_Dataset:
     """Convert raw `cpm_xr_time_series` to an 365/366 days and 27700 coords.
 
@@ -207,12 +215,59 @@ def cpm_reproject_with_standard_calendar(
     >>> tasmax_cpm_1980_365_day.dims
     FrozenMappingWarningOnValuesAccess({'x': 529, 'y': 653, 'time': 365})
     """
-    cpm_xr_time_series, variable_name = check_xarray_path_and_var_name(
-        cpm_xr_time_series, variable_name
+    # _, variable_name = check_xarray_path_and_var_name(
+    #     cpm_xr_time_series, variable_name
+    # )
+    # cpm_xr_time_series, variable_name = check_xarray_path_and_var_name(
+    #     cpm_xr_time_series, variable_name
+    # )
+    # cpm_xr_time_series
+    # temp_output = Path(temp_path) / ((variable_name or 'var') + '_projected.' + NETCDF_EXTENSION_STR)
+    # temp_output = Path(temp_path) / ((variable_name or 'var') + '_projected.' + TIF_EXTENSION_STR)
+    temp_output = Path(temp_path) / (
+        (variable_name or "var") + "_projected." + VIRTUAL_EXTENSION_STR
     )
+    temp_output.parent.mkdir(exist_ok=True, parents=True)
+    if isinstance(cpm_xr_time_series, Dataset):
+        xr_time_series_instance: T_Dataset = cpm_xr_time_series
+        cpm_xr_time_series = temp_output.parent / (
+            (variable_name or "var") + "_copy." + NETCDF_EXTENSION_STR
+        )
+        # cpm_xr_time_series = temp_output.parent / ((variable_name or 'var') + '_copy.' + TIF_EXTENSION_STR)
+
+        xr_time_series_instance.to_netcdf(cpm_xr_time_series)
+        # xr_time_series_instance.to_raster(cpm_xr_time_series)
+    assert isinstance(cpm_xr_time_series, PathLike)
+    # tmp_output = Path(temp_cpm_projection) / ((variable_name or 'var') + NETCDF_EXTENSION_STR)
+    # tmp_output.parent.mkdir(exist_ok=True, parents=True)
+    reprojected_path: Path = gdal_warp_wrapper(
+        cpm_xr_time_series,
+        output_path=temp_output,
+        format=GDALVirtualFormatStr,
+        # format=GDALNetCDFFormatStr,
+        # format=GDALGeoTiffFormatStr,
+    )
+    # translated_result_path: Path =
+    translated_path = Path(temp_path) / (
+        (variable_name or "var") + "_translated-prog-bar." + NETCDF_EXTENSION_STR
+    )
+    assert False
+    translated_results: GDALDataset | Path = gdal_translate_wrapper(
+        input_path=reprojected_path,
+        output_path=translated_path,
+        return_path=False,
+        format=GDALNetCDFFormatStr,
+    )
+    # translated_results = Translate(
+    #     destName=translated_temp_path,
+    #     srcDS=reprojected_path,
+    #     format=GDALNetCDFFormatStr)
+    # reprojected_cpm_xr_time_series, check_variable_name = check_xarray_path_and_var_name(
+    #     reprojected_path, variable_name
+    # )
 
     standard_calendar_ts: T_Dataset = cpm_xarray_to_standard_calendar(
-        cpm_xr_time_series
+        reprojected_cpm_xr_time_series
     )
     subset_within_ensemble: T_Dataset = Dataset(
         {variable_name: standard_calendar_ts[variable_name][0]}
@@ -815,6 +870,41 @@ def interpolate_xr_ts_nans(
         return interpolated_ts
 
 
+DEFAULT_WARP_DICT_OPTIONS: dict[str, str | float] = {
+    "VARIABLES_AS_BANDS": "YES",
+    "GDAL_NETCDF_VERIFY_DIMS": "STRICT",
+}
+
+
+def _gen_progress_bar() -> tuple[tqdm, Callable[float, ...]]:
+    progress_bar: tqdm = tqdm(total=100)
+
+    def _tqdm_progress_callback_func(progress: float, *args) -> None:
+        progress_bar.update(progress * 100 - progress_bar.n)
+
+    return progress_bar, _tqdm_progress_callback_func
+
+
+def gdal_translate_wrapper(
+    input_path: PathLike,
+    output_path: PathLike,
+    return_path: bool = True,
+    translate_format: GDALFormatsType | str = GDALNetCDFFormatStr,
+    use_tqdm_progress_bar: bool = True,
+    **kwargs,
+) -> Path | GDALDataset:
+    if use_tqdm_progress_bar:
+        progress_bar, progress_callback = _gen_progress_bar()
+        kwargs["callback"] = progress_callback
+    translation: GDALDataset = Translate(
+        destName=output_path, srcDS=input_path, format=translate_format, **kwargs
+    )
+    if use_tqdm_progress_bar:
+        progress_bar.close()
+    assert translation is not None
+    return Path(output_path) if return_path else translation
+
+
 def gdal_warp_wrapper(
     input_path: PathLike,
     output_path: PathLike,
@@ -823,8 +913,10 @@ def gdal_warp_wrapper(
     output_y_resolution: int | None = None,
     copy_metadata: bool = True,
     return_path: bool = True,
-    format: GDALFormatsType | str | None = GDALGeoTiffFormatStr,
+    format: GDALFormatsType | str | None = GDALNetCDFFormatStr,
     multithread: bool = True,
+    warp_dict_options: dict[str, str | float] | None = DEFAULT_WARP_DICT_OPTIONS,
+    use_tqdm_progress_bar: bool = True,
     **kwargs,
 ) -> Path | GDALDataset:
     """Execute the `gdalwrap` function within `python`.
@@ -846,9 +938,8 @@ def gdal_warp_wrapper(
         Path with `CPRUK` files to resample. `srcDSOrSrcDSTab` in
         `Warp`.
     output_path
-        Path to save resampled `input_path` file(s) to. If equal to
-        `input_path` then the `overwrite` parameter is called.
-        `destNameOrDestDS` in `Warp`.
+        Path to save resampled `input_path` file(s) to `destNameOrDestDS`
+        in `Warp`.
     output_crs
         Coordinate system to convert `input_path` file(s) to.
         `dstSRS` in `WarpOptions`.
@@ -872,24 +963,42 @@ def gdal_warp_wrapper(
         Any additional parameters to pass to `WarpOption`.
     """
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    if use_tqdm_progress_bar:
+        progress_bar = tqdm(total=100)
+
+        def _tqdm_progress_callback_func(progress: float, *args) -> None:
+            progress_bar.update(progress * 100 - progress_bar.n)
+
     try:
         assert not Path(output_path).is_dir()
     except AssertionError:
         raise FileExistsError(f"Path exists as a directory: {output_path}")
-    if input_path == output_path:
-        kwargs["overwrite"] = True
-    warp_options: GDALWarpAppOptions = WarpOptions(
+    # if input_path == output_path:
+    #     kwargs["overwrite"] = True
+    # warp_dict_options: dict[str, Any] = {
+    #     'VARIABLES_AS_BANDS': 'YES',
+    #     'GDAL_NETCDF_VERIFY_DIMS': 'STRICT',
+    # }
+    # -oo VARIABLES_AS_BANDS=YES -oo GDAL_NETCDF_VERIFY_DIMS=STRICT
+    warp_config: GDALWarpAppOptions = WarpOptions(
         dstSRS=output_crs,
         format=format,
         xRes=output_x_resolution,
         yRes=output_y_resolution,
         copyMetadata=copy_metadata,
         multithread=multithread,
+        warpOptions=warp_dict_options,
+        callback=_tqdm_progress_callback_func if use_tqdm_progress_bar else None,
         **kwargs,
     )
+    # assert False
     projection: GDALDataset = Warp(
-        destNameOrDestDS=output_path, srcDSOrSrcDSTab=input_path, options=warp_options
+        destNameOrDestDS=output_path, srcDSOrSrcDSTab=input_path, options=warp_config
     )
+    projection.FlushCache()
+    if use_tqdm_progress_bar:
+        progress_bar.close()
+
     assert projection is not None
     return output_path if return_path else projection
 
@@ -929,12 +1038,17 @@ def apply_geo_func(
         `GDALDataset` (the latter if `gdal_warp_wrapper` is used).
     **kwargs
         Other parameters passed to `func` call.
+
+    Returns
+    -------
+       Either a `Path` to generated file or converted `xarray` object.
     """
     if not source_path:
         raise ValueError(
             f"Source path must be a folder, currently '{source_path}'. "
             f"May need to mount drive."
         )
+    # Generate export_path following source_path name
     export_path: Path = Path(source_path)
     if new_path_name_func:
         export_path = new_path_name_func(export_path)
@@ -1031,6 +1145,7 @@ def generate_360_to_standard(array_to_expand: T_DataArray) -> T_DataArray:
 
     Examples
     --------
+    >>>
     """
     initial_days: int = len(array_to_expand)
     assert initial_days == 360
@@ -1114,3 +1229,124 @@ def cftime_range_gen(time_data_array: T_DataArray, **kwargs) -> NDArray:
 #     clip_box = transform(project, clip_box)
 #     clipped = grid.rio.clip([clip_box])
 #     return clipped
+
+
+# @dataclass
+# class IntermediateCPMFilesManager:
+#
+#     """Manage intermediate files and paths for CPM calendar projection.
+#     Parameters
+#     ----------
+#     variable_name
+#         Name of variable (e.g. `tasmax`). Included in file names.
+#     output_path
+#         Folder to save results to.
+#     subfolder_path
+#         Path to place intermediate files relative to output_path.
+#     time_series_start
+#         Start of time series covered to include in file name.
+#     time_series_end
+#         End of time series covered to include in file name.
+#     file_name_prefix
+#         str to add at the start of the output file names (after integers).
+#     subfolder_time_stamp
+#         Whether to include a time stamp in the subfolder file name.
+#     Examples
+#     --------
+#     >>> test_path = getfixture('tmp_path')
+#     >>> intermedate_files_manager: IntermediateCPMFilesManager = IntermediateCPMFilesManager(
+#     ...     file_name_prefix="test-1980",
+#     ...     variable_name="tasmax",
+#     ...     output_path=test_path / 'intermediate_test_folder',
+#     ...     subfolder_path='test_subfolder',
+#     ...     time_series_start=date(1980, 12, 1),
+#     ...     time_series_end=date(1981, 11, 30),
+#     ... )
+#     >>> str(intermedate_files_manager.output_path)
+#     '.../intermediate_test_folder'
+#     >>> str(intermedate_files_manager.intermediate_files_folder)
+#     '.../test_subfolder'
+#     >>> str(intermedate_files_manager.final_nc_path)
+#     '.../test_subfolder/3-test-1980-tasmax-19801201-19811130-cpm-365-or-366-27700-final.nc'
+#     """
+#
+#     variable_name: str
+#     output_path: Path | None
+#     time_series_start: datetime | date | Datetime360Day | DatetimeGregorian
+#     time_series_end: datetime | date | Datetime360Day | DatetimeGregorian
+#     subfolder_path: Path # = CPM_LOCAL_INTERMEDIATE_PATH
+#     file_name_prefix: str = ""
+#     subfolder_time_stamp: bool = False
+#
+#     def __post_init__(self) -> None:
+#         """Ensure `output_path`, `time_series_start/end` are set correctly."""
+#         self.output_path = Path(self.output_path) if self.output_path else Path()
+#         if self.output_path.suffix[1:] in GDALFormatExtensions.values():
+#             logger.info(
+#                 f"Output path is: '{str(self.output_path)}'\n"
+#                 "Putting intermediate files in parent directory."
+#             )
+#             self._passed_output_path = self.output_path
+#             self.output_path = self.output_path.parent
+#         if isinstance(self.time_series_start, Datetime360Day):
+#             self.time_series_start = cftime360_to_date(self.time_series_start)
+#         if isinstance(self.time_series_end, Datetime360Day):
+#             self.time_series_end = cftime360_to_date(self.time_series_end)
+#
+#     def __repr__(self):
+#         """Summary of config."""
+#         return (
+#             f"<IntermediateCPMFilesManager(output_path='{self.output_path}', "
+#             f"intermediate_files_folder='{self.intermediate_files_folder}')>"
+#         )
+#
+#     @property
+#     def date_range_to_str(self) -> str:
+#         return date_range_to_str(self.time_series_start, self.time_series_end)
+#
+#     @property
+#     def prefix_var_name_and_date(self) -> str:
+#         prefix: str = f"{self.variable_name}-{self.date_range_to_str}-"
+#         if self.file_name_prefix:
+#             return f"{self.file_name_prefix}-{prefix}"
+#         else:
+#             return prefix
+#
+#     @property
+#     def subfolder(self) -> Path:
+#         if self.subfolder_time_stamp:
+#             return Path(Path(self.subfolder_path).name + f"-{time_str()}")
+#         else:
+#             return self.subfolder_path
+#
+#     @property
+#     def intermediate_files_folder(self) -> Path:
+#         assert self.output_path
+#         path: Path = self.output_path / self.subfolder
+#         path.mkdir(exist_ok=True, parents=True)
+#         assert path.is_dir()
+#         return path
+#
+#     @property
+#     def intermediate_nc_path(self) -> Path:
+#         return self.intermediate_files_folder / (
+#             "0-" + self.prefix_var_name_and_date + CPM_365_OR_366_INTERMEDIATE_NC
+#         )
+#
+#     @property
+#     def simplified_nc_path(self) -> Path:
+#         return self.intermediate_files_folder / (
+#             "1-" + self.prefix_var_name_and_date + CPM_365_OR_366_SIMPLIFIED_NC
+#         )
+#
+#     @property
+#     def intermediate_warp_path(self) -> Path:
+#         return self.intermediate_files_folder / (
+#             "2-" + self.prefix_var_name_and_date + CPM_365_OR_366_27700_TIF
+#         )
+#
+#     @property
+#     def final_nc_path(self) -> Path:
+#         return self.intermediate_files_folder / (
+#             "3-" + self.prefix_var_name_and_date + CPM_365_OR_366_27700_FINAL
+#         )

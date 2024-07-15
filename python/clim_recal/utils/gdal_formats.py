@@ -1,4 +1,4 @@
-from typing import Final, Literal
+from typing import Final, Literal, get_args
 
 CPM_RAW_PROJ4: Final[
     str
@@ -159,13 +159,16 @@ GDALFormatsType = Literal[
     "HTTP",
 ]
 
-GDALGeoTiffFormatStr: Final[str] = "GTiff"
-GDALNetCDFFormatStr: Final[str] = "netCDF"
+GDALGeoTiffFormatStr: Final[str] = get_args(GDALFormatsType)[2]
+GDALNetCDFFormatStr: Final[str] = get_args(GDALFormatsType)[42]
+GDALVirtualFormatStr: Final[str] = get_args(GDALFormatsType)[0]
 
 TIF_EXTENSION_STR: Final[str] = "tif"
 NETCDF_EXTENSION_STR: Final[str] = "nc"
+VIRTUAL_EXTENSION_STR: Final[str] = "vrt"
 
 GDALFormatExtensions: Final[dict[str, str]] = {
     GDALGeoTiffFormatStr: TIF_EXTENSION_STR,
     GDALNetCDFFormatStr: NETCDF_EXTENSION_STR,
+    GDALVirtualFormatStr: VIRTUAL_EXTENSION_STR,
 }

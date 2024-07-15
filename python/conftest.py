@@ -285,7 +285,7 @@ def pytest_addoption(parser):
         "--use-async",
         action=BooleanOptionalAction,
         default=False,
-        help="Use asyc if --sync-all is used",
+        help="If --sync-all, use async calls",
     )
     parser.addoption(
         "--keep-results",

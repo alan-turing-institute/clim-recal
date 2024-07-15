@@ -34,6 +34,7 @@ from clim_recal.utils.core import (
     results_path,
 )
 from clim_recal.utils.data import HadUKGrid, UKCPLocalProjections
+from clim_recal.utils.gdal_formats import NETCDF_EXTENSION_STR
 from clim_recal.utils.xarray import (
     FINAL_RESAMPLE_LAT_COL,
     FINAL_RESAMPLE_LON_COL,
@@ -447,18 +448,33 @@ def test_cpm_xarray_to_standard_calendar(
 @pytest.mark.mount
 @pytest.mark.slow
 def test_cpm_reproject_with_standard_calendar(
-    tasmax_cpm_1980_raw: T_Dataset,
+    tasmax_cpm_1980_raw_path: Path,
     test_runs_output_path: Path,
     variable_name: str = "tasmax",
 ) -> None:
     """Test all steps around calendar and warping CPM RAW data."""
+    # output_path: Path = results_path(
+    #     "test-cpm-warp", path=test_runs_output_path, mkdir=True, extension=TIF_EXTENSION_STR
+    # )
     output_path: Path = results_path(
-        "test-cpm-warp", path=test_runs_output_path, mkdir=True, extension="nc"
+        "test-cpm-warp",
+        path=test_runs_output_path,
+        mkdir=True,
+        extension=NETCDF_EXTENSION_STR,
     )
     plot_path: Path = output_path.parent / (output_path.stem + ".png")
+    # coords_reprojected: Path = gdal_warp_wrapper(
+    #     input_path=tasmax_cpm_1980_raw_path,
+    #     output_path=output_path,
+    #     format=GDALGeoTiffFormatStr)
+    # coords_reprojected: Path = gdal_warp_wrapper(
+    #     input_path=tasmax_cpm_1980_raw_path,
+    #     output_path=output_path,
+    #     format=GDALNetCDFFormatStr)
     projected: T_Dataset = cpm_reproject_with_standard_calendar(
-        tasmax_cpm_1980_raw,
+        tasmax_cpm_1980_raw_path,
     )
+    assert False
     assert projected.rio.crs == BRITISH_NATIONAL_GRID_EPSG
     projected.to_netcdf(output_path)
     results: T_Dataset = open_dataset(output_path, decode_coords="all")
