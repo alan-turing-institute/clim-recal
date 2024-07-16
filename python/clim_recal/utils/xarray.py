@@ -240,6 +240,7 @@ def cpm_reproject_with_standard_calendar(
     assert isinstance(cpm_xr_time_series, PathLike)
     # tmp_output = Path(temp_cpm_projection) / ((variable_name or 'var') + NETCDF_EXTENSION_STR)
     # tmp_output.parent.mkdir(exist_ok=True, parents=True)
+    # assert False
     reprojected_path: Path = gdal_warp_wrapper(
         cpm_xr_time_series,
         output_path=temp_output,
@@ -247,7 +248,7 @@ def cpm_reproject_with_standard_calendar(
         # format=GDALNetCDFFormatStr,
         # format=GDALGeoTiffFormatStr,
     )
-    # translated_result_path: Path =
+    # assert False
     translated_path = Path(temp_path) / (
         (variable_name or "var") + "_translated-prog-bar." + NETCDF_EXTENSION_STR
     )
@@ -256,37 +257,44 @@ def cpm_reproject_with_standard_calendar(
         input_path=reprojected_path,
         output_path=translated_path,
         return_path=False,
-        format=GDALNetCDFFormatStr,
     )
+    # translate_format=GDALNetCDFFormatStr)
     # translated_results = Translate(
     #     destName=translated_temp_path,
     #     srcDS=reprojected_path,
     #     format=GDALNetCDFFormatStr)
-    # reprojected_cpm_xr_time_series, check_variable_name = check_xarray_path_and_var_name(
-    #     reprojected_path, variable_name
+    reprojected_cpm_xr_time_series, _ = check_xarray_path_and_var_name(
+        translated_path, variable_name
+    )
+
+    standard_calendar_ts: T_Dataset = convert_xr_calendar(
+        reprojected_cpm_xr_time_series, interpolate_na=True
+    )
+    return standard_calendar_ts
+    # subset_within_ensemble: T_Dataset = Dataset(
+    #     {variable_name: standard_calendar_ts[variable_name][0]}
     # )
 
-    standard_calendar_ts: T_Dataset = cpm_xarray_to_standard_calendar(
-        reprojected_cpm_xr_time_series
-    )
-    subset_within_ensemble: T_Dataset = Dataset(
-        {variable_name: standard_calendar_ts[variable_name][0]}
-    )
-
-    subset_in_epsg_27700: T_DataArray = xr_reproject_crs(
-        subset_within_ensemble,
-        variable_name=variable_name,
-        x_dim_name=x_dim_name,
-        y_dim_name=y_dim_name,
-        resolution=(CPM_RESOLUTION_METERS, CPM_RESOLUTION_METERS),
-    )
-    try:
-        assert (subset_in_epsg_27700.time == standard_calendar_ts.time).all()
-    except:
-        raise ValueError(
-            f"Time series of 'standard_calendar_ts' does not match time series of projection to {BRITISH_NATIONAL_GRID_EPSG}."
-        )
-    return subset_in_epsg_27700
+    # subset_in_epsg_27700: T_DataArray = xr_reproject_crs(
+    #     subset_within_ensemble,
+    #     variable_name=variable_name,
+    #     x_dim_name=x_dim_name,
+    #     y_dim_name=y_dim_name,
+    #     resolution=(CPM_RESOLUTION_METERS, CPM_RESOLUTION_METERS),
+    # )
+    # try:
+    #     assert (subset_in_epsg_27700.time == standard_calendar_ts.time).all()
+    # except:
+    #     raise ValueError(
+    #         f"Time series of 'standard_calendar_ts' does not match time series of projection to {BRITISH_NATIONAL_GRID_EPSG}."
+    #     )
+    # try:
+    #     assert (subset_in_epsg_27700.time == standard_calendar_ts.time).all()
+    # except:
+    #     raise ValueError(
+    #         f"Time series of 'standard_calendar_ts' does not match time series of projection to {BRITISH_NATIONAL_GRID_EPSG}."
+    #     )
+    # return subset_in_epsg_27700
 
 
 def xr_reproject_crs(
@@ -875,6 +883,10 @@ DEFAULT_WARP_DICT_OPTIONS: dict[str, str | float] = {
     "GDAL_NETCDF_VERIFY_DIMS": "STRICT",
 }
 
+DEFAULT_TRANSLATE_DICT_OPTIONS: dict[str, str | float] = {
+    "GDAL_CACHEMAX": "20%",
+}
+
 
 def _gen_progress_bar() -> tuple[tqdm, Callable[float, ...]]:
     progress_bar: tqdm = tqdm(total=100)
@@ -889,6 +901,8 @@ def gdal_translate_wrapper(
     input_path: PathLike,
     output_path: PathLike,
     return_path: bool = True,
+    metadat_options_dict: dict[str, str | float]
+    | None = DEFAULT_TRANSLATE_DICT_OPTIONS,
     translate_format: GDALFormatsType | str = GDALNetCDFFormatStr,
     use_tqdm_progress_bar: bool = True,
     **kwargs,
@@ -897,9 +911,14 @@ def gdal_translate_wrapper(
         progress_bar, progress_callback = _gen_progress_bar()
         kwargs["callback"] = progress_callback
     translation: GDALDataset = Translate(
-        destName=output_path, srcDS=input_path, format=translate_format, **kwargs
+        destName=output_path,
+        srcDS=input_path,
+        format=translate_format,
+        metadataOptions=metadat_options_dict,
+        **kwargs,
     )
     if use_tqdm_progress_bar:
+        translation.FlushCache()
         progress_bar.close()
     assert translation is not None
     return Path(output_path) if return_path else translation
