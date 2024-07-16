@@ -71,8 +71,8 @@ CALENDAR_CONVERTED_CPM_HEIGHT: Final[int] = 606
 
 # FINAL_CONVERTED_CPM_WIDTH: Final[int] = 410
 # FINAL_CONVERTED_CPM_HEIGHT: Final[int] = 660
-FINAL_CONVERTED_CPM_WIDTH: Final[int] = 529
-FINAL_CONVERTED_CPM_HEIGHT: Final[int] = 653
+FINAL_CONVERTED_CPM_WIDTH: Final[int] = 493
+FINAL_CONVERTED_CPM_HEIGHT: Final[int] = 607
 
 FINAL_CONVERTED_HADS_WIDTH: Final[int] = 410
 FINAL_CONVERTED_HADS_HEIGHT: Final[int] = 660
@@ -474,7 +474,6 @@ def test_cpm_reproject_with_standard_calendar(
     projected: T_Dataset = cpm_reproject_with_standard_calendar(
         tasmax_cpm_1980_raw_path,
     )
-    assert False
     assert projected.rio.crs == BRITISH_NATIONAL_GRID_EPSG
     projected.to_netcdf(output_path)
     results: T_Dataset = open_dataset(output_path, decode_coords="all")
@@ -482,6 +481,7 @@ def test_cpm_reproject_with_standard_calendar(
     assert results.dims == {
         FINAL_RESAMPLE_LON_COL: FINAL_CONVERTED_CPM_WIDTH,
         FINAL_RESAMPLE_LAT_COL: FINAL_CONVERTED_CPM_HEIGHT,
+        "ensemble_member": 1,
         "time": 365,
     }
     assert results.rio.crs == BRITISH_NATIONAL_GRID_EPSG

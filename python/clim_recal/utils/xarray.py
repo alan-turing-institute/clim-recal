@@ -46,10 +46,10 @@ from .data import (
 )
 from .gdal_formats import (
     NETCDF_EXTENSION_STR,
-    VIRTUAL_EXTENSION_STR,
+    TIF_EXTENSION_STR,
     GDALFormatsType,
+    GDALGeoTiffFormatStr,
     GDALNetCDFFormatStr,
-    GDALVirtualFormatStr,
 )
 
 logger = getLogger(__name__)
@@ -225,7 +225,7 @@ def cpm_reproject_with_standard_calendar(
     # temp_output = Path(temp_path) / ((variable_name or 'var') + '_projected.' + NETCDF_EXTENSION_STR)
     # temp_output = Path(temp_path) / ((variable_name or 'var') + '_projected.' + TIF_EXTENSION_STR)
     temp_output = Path(temp_path) / (
-        (variable_name or "var") + "_projected." + VIRTUAL_EXTENSION_STR
+        (variable_name or "var") + "_projected." + TIF_EXTENSION_STR
     )
     temp_output.parent.mkdir(exist_ok=True, parents=True)
     if isinstance(cpm_xr_time_series, Dataset):
@@ -244,15 +244,14 @@ def cpm_reproject_with_standard_calendar(
     reprojected_path: Path = gdal_warp_wrapper(
         cpm_xr_time_series,
         output_path=temp_output,
-        format=GDALVirtualFormatStr,
+        # format=GDALVirtualFormatStr,
         # format=GDALNetCDFFormatStr,
-        # format=GDALGeoTiffFormatStr,
+        format=GDALGeoTiffFormatStr,
     )
     # assert False
     translated_path = Path(temp_path) / (
         (variable_name or "var") + "_translated-prog-bar." + NETCDF_EXTENSION_STR
     )
-    assert False
     translated_results: GDALDataset | Path = gdal_translate_wrapper(
         input_path=reprojected_path,
         output_path=translated_path,
@@ -883,10 +882,6 @@ DEFAULT_WARP_DICT_OPTIONS: dict[str, str | float] = {
     "GDAL_NETCDF_VERIFY_DIMS": "STRICT",
 }
 
-DEFAULT_TRANSLATE_DICT_OPTIONS: dict[str, str | float] = {
-    "GDAL_CACHEMAX": "20%",
-}
-
 
 def _gen_progress_bar() -> tuple[tqdm, Callable[float, ...]]:
     progress_bar: tqdm = tqdm(total=100)
@@ -901,8 +896,6 @@ def gdal_translate_wrapper(
     input_path: PathLike,
     output_path: PathLike,
     return_path: bool = True,
-    metadat_options_dict: dict[str, str | float]
-    | None = DEFAULT_TRANSLATE_DICT_OPTIONS,
     translate_format: GDALFormatsType | str = GDALNetCDFFormatStr,
     use_tqdm_progress_bar: bool = True,
     **kwargs,
@@ -914,7 +907,6 @@ def gdal_translate_wrapper(
         destName=output_path,
         srcDS=input_path,
         format=translate_format,
-        metadataOptions=metadat_options_dict,
         **kwargs,
     )
     if use_tqdm_progress_bar:
