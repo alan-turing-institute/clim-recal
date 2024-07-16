@@ -118,18 +118,18 @@ FINAL_HADS_JAN_10_430_X_230_250_Y: Final[NDArray] = np.array(
 )
 
 
-FINAL_CPM_DEC_10_5_X_0_10_Y: Final[NDArray] = np.array(
+FINAL_CPM_DEC_10_X_2_Y_200_210: Final[NDArray] = np.array(
     (
         np.nan,
         np.nan,
-        np.nan,
-        np.nan,
-        np.nan,
-        np.nan,
-        5.131494,
-        5.091943,
-        5.091943,
-        5.057275,
+        9.637598,
+        9.646631,
+        9.636621,
+        9.622217,
+        9.625147,
+        9.640039,
+        9.6349125,
+        9.509668,
     )
 )
 
@@ -453,9 +453,6 @@ def test_cpm_reproject_with_standard_calendar(
     variable_name: str = "tasmax",
 ) -> None:
     """Test all steps around calendar and warping CPM RAW data."""
-    # output_path: Path = results_path(
-    #     "test-cpm-warp", path=test_runs_output_path, mkdir=True, extension=TIF_EXTENSION_STR
-    # )
     output_path: Path = results_path(
         "test-cpm-warp",
         path=test_runs_output_path,
@@ -463,14 +460,6 @@ def test_cpm_reproject_with_standard_calendar(
         extension=NETCDF_EXTENSION_STR,
     )
     plot_path: Path = output_path.parent / (output_path.stem + ".png")
-    # coords_reprojected: Path = gdal_warp_wrapper(
-    #     input_path=tasmax_cpm_1980_raw_path,
-    #     output_path=output_path,
-    #     format=GDALGeoTiffFormatStr)
-    # coords_reprojected: Path = gdal_warp_wrapper(
-    #     input_path=tasmax_cpm_1980_raw_path,
-    #     output_path=output_path,
-    #     format=GDALNetCDFFormatStr)
     projected: T_Dataset = cpm_reproject_with_standard_calendar(
         tasmax_cpm_1980_raw_path,
     )
@@ -481,12 +470,13 @@ def test_cpm_reproject_with_standard_calendar(
     assert results.dims == {
         FINAL_RESAMPLE_LON_COL: FINAL_CONVERTED_CPM_WIDTH,
         FINAL_RESAMPLE_LAT_COL: FINAL_CONVERTED_CPM_HEIGHT,
-        "ensemble_member": 1,
         "time": 365,
     }
     assert results.rio.crs == BRITISH_NATIONAL_GRID_EPSG
     assert len(results.data_vars) == 1
-    assert_allclose(results[variable_name][10][5][:10], FINAL_CPM_DEC_10_5_X_0_10_Y)
+    assert_allclose(
+        results[variable_name][10][2][200:210], FINAL_CPM_DEC_10_X_2_Y_200_210
+    )
     plot_xarray(results.tasmax[0], plot_path, time_stamp=True)
 
 

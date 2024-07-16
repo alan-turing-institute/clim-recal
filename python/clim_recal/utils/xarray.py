@@ -215,15 +215,6 @@ def cpm_reproject_with_standard_calendar(
     >>> tasmax_cpm_1980_365_day.dims
     FrozenMappingWarningOnValuesAccess({'x': 529, 'y': 653, 'time': 365})
     """
-    # _, variable_name = check_xarray_path_and_var_name(
-    #     cpm_xr_time_series, variable_name
-    # )
-    # cpm_xr_time_series, variable_name = check_xarray_path_and_var_name(
-    #     cpm_xr_time_series, variable_name
-    # )
-    # cpm_xr_time_series
-    # temp_output = Path(temp_path) / ((variable_name or 'var') + '_projected.' + NETCDF_EXTENSION_STR)
-    # temp_output = Path(temp_path) / ((variable_name or 'var') + '_projected.' + TIF_EXTENSION_STR)
     temp_output = Path(temp_path) / (
         (variable_name or "var") + "_projected." + TIF_EXTENSION_STR
     )
@@ -238,9 +229,6 @@ def cpm_reproject_with_standard_calendar(
         xr_time_series_instance.to_netcdf(cpm_xr_time_series)
         # xr_time_series_instance.to_raster(cpm_xr_time_series)
     assert isinstance(cpm_xr_time_series, PathLike)
-    # tmp_output = Path(temp_cpm_projection) / ((variable_name or 'var') + NETCDF_EXTENSION_STR)
-    # tmp_output.parent.mkdir(exist_ok=True, parents=True)
-    # assert False
     reprojected_path: Path = gdal_warp_wrapper(
         cpm_xr_time_series,
         output_path=temp_output,
@@ -257,43 +245,17 @@ def cpm_reproject_with_standard_calendar(
         output_path=translated_path,
         return_path=False,
     )
-    # translate_format=GDALNetCDFFormatStr)
-    # translated_results = Translate(
-    #     destName=translated_temp_path,
-    #     srcDS=reprojected_path,
-    #     format=GDALNetCDFFormatStr)
     reprojected_cpm_xr_time_series, _ = check_xarray_path_and_var_name(
         translated_path, variable_name
     )
+    reprojected_dropped_ensemble_member = reprojected_cpm_xr_time_series.squeeze(
+        "ensemble_member"
+    ).drop("ensemble_member")
 
     standard_calendar_ts: T_Dataset = convert_xr_calendar(
-        reprojected_cpm_xr_time_series, interpolate_na=True
+        reprojected_dropped_ensemble_member, interpolate_na=True
     )
     return standard_calendar_ts
-    # subset_within_ensemble: T_Dataset = Dataset(
-    #     {variable_name: standard_calendar_ts[variable_name][0]}
-    # )
-
-    # subset_in_epsg_27700: T_DataArray = xr_reproject_crs(
-    #     subset_within_ensemble,
-    #     variable_name=variable_name,
-    #     x_dim_name=x_dim_name,
-    #     y_dim_name=y_dim_name,
-    #     resolution=(CPM_RESOLUTION_METERS, CPM_RESOLUTION_METERS),
-    # )
-    # try:
-    #     assert (subset_in_epsg_27700.time == standard_calendar_ts.time).all()
-    # except:
-    #     raise ValueError(
-    #         f"Time series of 'standard_calendar_ts' does not match time series of projection to {BRITISH_NATIONAL_GRID_EPSG}."
-    #     )
-    # try:
-    #     assert (subset_in_epsg_27700.time == standard_calendar_ts.time).all()
-    # except:
-    #     raise ValueError(
-    #         f"Time series of 'standard_calendar_ts' does not match time series of projection to {BRITISH_NATIONAL_GRID_EPSG}."
-    #     )
-    # return subset_in_epsg_27700
 
 
 def xr_reproject_crs(
