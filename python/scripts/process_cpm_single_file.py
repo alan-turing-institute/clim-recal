@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy.typing import NDArray
 import argparse
+from tempfile import TemporaryDirectory
+import subprocess
 
 from xarray import cftime_range, CFTimeIndex
 from xarray.coding.calendar_ops import convert_calendar
@@ -19,28 +21,43 @@ from xarray.core.types import (
     T_Dataset,
 )
 
-def reproject_time_corrected_cpm_to_british_grid(xr_data, variable_name):
-    # Original (from Stuart's snippet) 
+def reproject_using_gdal(input_file, temp_dir):
 
-    xr_data = xr_data.rio.set_spatial_dims("grid_longitude","grid_latitude",True)
+    # Reproject using GDAL
+    reprojected_tiff_file = str(Path(temp_dir) / "reprojected_tiff_file.tif")
+    reprojected_nc_file = str(Path(temp_dir) / "reprojected_nc_file.nc")
+    print(f"Reprojecting {input_file}\n  to {reprojected_tiff_file}\n and {reprojected_nc_file}")
 
-    coords = {
-        "time": xr_data["time"],
-        "grid_latitude": xr_data["grid_latitude"],
-        "grid_longitude": xr_data["grid_longitude"],
-    }
+    try:
+        # Reproject using GDALWarp
+        gdalwarp_cmd = ["gdalwarp", "-t_srs", "EPSG:27700",
+                        "-tr", "2200", "2200",
+                        "-ovr", "NONE", "-r", "near", "-of", "GTiff", 
+                        "-oo", "VARIABLES_AS_BANDS=YES",
+                        "-oo", "GDAL_NETCDF_VERIFY_DIMS=STRICT",
+                        input_file, reprojected_tiff_file]
 
-    # Single ensemble member
-    variable_data = xr_data[variable_name][0]
+        result1 = subprocess.run(gdalwarp_cmd, check=True, capture_output=True)
+        print("gdalwarp output:")
+        print(result1.stdout)
 
-    without_attributes = xr.DataArray(
-        data=variable_data.to_numpy(), 
-        coords=coords,
-        name=variable_name
-    )
-    without_attributes = without_attributes.rio.write_crs(xr_data.rio.crs)
-    without_attributes = without_attributes.rio.reproject("EPSG:27700", resolution=[2200,2200])
-    return without_attributes
+        # Now convert the tiff file back to netcdf
+        # gdal_translate_cmd = ["gdal_translate", "-of", "netCDF", reprojected_tiff_file, reprojected_nc_file]    
+        gdal_translate_cmd = ["gdal_translate", reprojected_tiff_file, reprojected_nc_file]    
+        result2 = subprocess.run(gdal_translate_cmd, check=True, capture_output=True)
+        print("gdal_translate output:")
+        print(result2.stdout)
+        print(f"Reprojected file saved to {reprojected_nc_file}")
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error reprojecting file:\n"
+              f"returncode: {e.returncode}\n"
+              f"output: {e.output}\n"
+              f"stdout: {e.stdout}\n"
+              f"stderr: {e.stderr}\n")
+        exit(1)
+
+    return reprojected_nc_file
 
 
 def print_xr_data_info(xr_data, logging_title: str = None):
@@ -55,10 +72,10 @@ def print_xr_data_info(xr_data, logging_title: str = None):
 # These have been mostly taken from `xarray.py` and then partially simplified.
 def cpm_xarray_to_standard_calendar(cpm_xr_time_series: PathLike):
     cpm_xr_time_series = xr.open_dataset(cpm_xr_time_series, decode_coords="all")
-    print_xr_data_info(cpm_xr_time_series, "As loaded from file")
+    # print_xr_data_info(cpm_xr_time_series, "As loaded from file")
 
     cpm_to_std_calendar: T_Dataset = convert_xr_calendar(cpm_xr_time_series)
-    print_xr_data_info(cpm_xr_time_series, "After convert_xr_calendar")
+    # print_xr_data_info(cpm_to_std_calendar, "After convert_xr_calendar")
 
     # For now, we'll not fix other calendar variables
     if False:
@@ -150,6 +167,20 @@ def get_variable_name_from_filename(f_path: Path):
     return f_path.stem.split("_")[0] 
 
 
+def main(raw_cpm_file, output_cpm_file):
+    with TemporaryDirectory() as temp_dir:
+        raw_cpm_file = str(raw_cpm_file)
+
+        # Reproject the CPM file
+        reproject_file_path = reproject_using_gdal(raw_cpm_file, temp_dir)
+        # Convert a CPM file to a standard calendar
+        temporal_resampled_cpm = cpm_xarray_to_standard_calendar(reproject_file_path)
+
+    print_xr_data_info(temporal_resampled_cpm, "After temporal resampling")
+    print(f"Saving to {output_cpm_file}")
+    temporal_resampled_cpm.to_netcdf(output_cpm_file, mode="w")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process a single CPM file")
     parser.add_argument("--cpm-file", type=Path, required=True, help="Path to the CPM file to process")
@@ -177,16 +208,4 @@ if __name__ == "__main__":
         print(f"Would process `{raw_cpm_file}`, with variable `{cpm_variable_name}` and save to `{output_cpm_file}`")
         exit(0)
 
-
-    raw_xr = xr.open_dataset(raw_cpm_file, decode_coords="all")
-    print_xr_data_info(raw_xr, "As loaded from SOURCE CPM file")
-
-    # Convert a CPM file to a standard calendar
-    temporal_resampled_cpm = cpm_xarray_to_standard_calendar(raw_cpm_file)
-    
-    # Skip reprojecting using xarray
-    if False:
-        converted_cpm_xr = reproject_time_corrected_cpm_to_british_grid(raw_xr, variable_name=cpm_variable_name)
-
-    print(f"Saving to {output_cpm_file}")
-    temporal_resampled_cpm.to_netcdf(output_cpm_file, mode="w")
+    main(raw_cpm_file, output_cpm_file)
