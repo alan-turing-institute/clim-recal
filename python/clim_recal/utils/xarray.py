@@ -2,6 +2,7 @@ from datetime import date, datetime, timedelta
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
+from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
 from typing import Any, Callable, Final
 
 import numpy as np
@@ -77,6 +78,12 @@ CPM_RAW_Y_COLUMN_NAME: Final[str] = "grid_latitude"
 # TODO: CHECK IF THESE ARE BACKWARDS
 FINAL_RESAMPLE_LON_COL: Final[str] = "x"
 FINAL_RESAMPLE_LAT_COL: Final[str] = "y"
+
+
+DEFAULT_WARP_DICT_OPTIONS: dict[str, str | float] = {
+    "VARIABLES_AS_BANDS": "YES",
+    "GDAL_NETCDF_VERIFY_DIMS": "STRICT",
+}
 
 
 def cpm_xarray_to_standard_calendar(
@@ -165,9 +172,7 @@ def check_xarray_path_and_var_name(
 def cpm_reproject_with_standard_calendar(
     cpm_xr_time_series: T_Dataset | PathLike,
     variable_name: str | None = None,
-    x_dim_name: str = CPM_RAW_X_COLUMN_NAME,
-    y_dim_name: str = CPM_RAW_Y_COLUMN_NAME,
-    temp_path: PathLike = "temp_cpm_projection",
+    close_temp_paths: bool = True,
 ) -> T_Dataset:
     """Convert raw `cpm_xr_time_series` to an 365/366 days and 27700 coords.
 
@@ -197,15 +202,24 @@ def cpm_reproject_with_standard_calendar(
     ...     cpm_xr_time_series=tasmax_cpm_1980_raw,
     ...     variable_name="tasmax")
     >>> tasmax_cpm_1980_365_day
-    <xarray.Dataset> Size: 504MB
-    Dimensions:      (x: 529, y: 653, time: 365)
+    <xarray.Dataset>...
+    Dimensions:              (time: 365, x: 493, y: 607)
     Coordinates:
-      * x            (x) float64 4kB -3.129e+05 -3.107e+05 ... 8.465e+05 8.487e+05
-      * y            (y) float64 5kB 1.197e+06 1.195e+06 ... -2.353e+05 -2.375e+05
-      * time         (time) datetime64[ns] 3kB 1980-12-01T12:00:00 ... 1981-11-30...
-        spatial_ref  int64 8B 0
+      * time                 (time) datetime64[ns] 1980-12-01T12:00:00 ... 1981-1...
+      * x                    (x) float64 -3.136e+05 -3.112e+05 ... 8.513e+05
+      * y                    (y) float64 -2.371e+05 -2.348e+05 ... 1.198e+06
+        transverse_mercator  |S1 ...
+        spatial_ref          int64 0
     Data variables:
-        tasmax       (time, y, x) float32 504MB 3.403e+38 3.403e+38 ... 3.403e+38
+        tasmax               (time, y, x) float32 nan nan nan nan ... nan nan nan
+    Attributes: (12/18)
+        GDAL_AREA_OR_POINT:  Area
+        collection:          land-cpm
+        contact:             ukcpproject@metoffice.gov.uk
+        Conventions:         CF-1.7
+        creation_date:       2021-05-11T14:06:30
+        domain:              uk
+        ...                  ...
     >>> tasmax_cpm_1980_raw.dims
     FrozenMappingWarningOnValuesAccess({'ensemble_member': 1,
                                         'time': 360,
@@ -213,40 +227,31 @@ def cpm_reproject_with_standard_calendar(
                                         'grid_longitude': 484,
                                         'bnds': 2})
     >>> tasmax_cpm_1980_365_day.dims
-    FrozenMappingWarningOnValuesAccess({'x': 529, 'y': 653, 'time': 365})
+    FrozenMappingWarningOnValuesAccess({'time': 365, 'x': 493, 'y': 607})
     """
-    temp_output = Path(temp_path) / (
-        (variable_name or "var") + "_projected." + TIF_EXTENSION_STR
+    temp_cpm: _TemporaryFileWrapper = NamedTemporaryFile(
+        suffix="." + NETCDF_EXTENSION_STR
     )
-    temp_output.parent.mkdir(exist_ok=True, parents=True)
+    temp_tif: _TemporaryFileWrapper = NamedTemporaryFile(suffix="." + TIF_EXTENSION_STR)
+    temp_translated_ncf: _TemporaryFileWrapper = NamedTemporaryFile(
+        suffix="." + NETCDF_EXTENSION_STR
+    )
     if isinstance(cpm_xr_time_series, Dataset):
         xr_time_series_instance: T_Dataset = cpm_xr_time_series
-        cpm_xr_time_series = temp_output.parent / (
-            (variable_name or "var") + "_copy." + NETCDF_EXTENSION_STR
-        )
-        # cpm_xr_time_series = temp_output.parent / ((variable_name or 'var') + '_copy.' + TIF_EXTENSION_STR)
-
+        cpm_xr_time_series = temp_cpm.name
         xr_time_series_instance.to_netcdf(cpm_xr_time_series)
-        # xr_time_series_instance.to_raster(cpm_xr_time_series)
     assert isinstance(cpm_xr_time_series, PathLike)
-    reprojected_path: Path = gdal_warp_wrapper(
+    gdal_warp_wrapper(
         cpm_xr_time_series,
-        output_path=temp_output,
-        # format=GDALVirtualFormatStr,
-        # format=GDALNetCDFFormatStr,
+        output_path=Path(temp_tif.name),
         format=GDALGeoTiffFormatStr,
     )
-    # assert False
-    translated_path = Path(temp_path) / (
-        (variable_name or "var") + "_translated-prog-bar." + NETCDF_EXTENSION_STR
-    )
-    translated_results: GDALDataset | Path = gdal_translate_wrapper(
-        input_path=reprojected_path,
-        output_path=translated_path,
-        return_path=False,
+    gdal_translate_wrapper(
+        input_path=Path(temp_tif.name),
+        output_path=Path(temp_translated_ncf.name),
     )
     reprojected_cpm_xr_time_series, _ = check_xarray_path_and_var_name(
-        translated_path, variable_name
+        Path(temp_translated_ncf.name), variable_name
     )
     reprojected_dropped_ensemble_member = reprojected_cpm_xr_time_series.squeeze(
         "ensemble_member"
@@ -255,6 +260,10 @@ def cpm_reproject_with_standard_calendar(
     standard_calendar_ts: T_Dataset = convert_xr_calendar(
         reprojected_dropped_ensemble_member, interpolate_na=True
     )
+    if close_temp_paths:
+        temp_cpm.close()
+        temp_tif.close()
+        temp_translated_ncf.close()
     return standard_calendar_ts
 
 
@@ -839,12 +848,6 @@ def interpolate_xr_ts_nans(
         return interpolated_ts
 
 
-DEFAULT_WARP_DICT_OPTIONS: dict[str, str | float] = {
-    "VARIABLES_AS_BANDS": "YES",
-    "GDAL_NETCDF_VERIFY_DIMS": "STRICT",
-}
-
-
 def _gen_progress_bar() -> tuple[tqdm, Callable[float, ...]]:
     progress_bar: tqdm = tqdm(total=100)
 
@@ -946,13 +949,6 @@ def gdal_warp_wrapper(
         assert not Path(output_path).is_dir()
     except AssertionError:
         raise FileExistsError(f"Path exists as a directory: {output_path}")
-    # if input_path == output_path:
-    #     kwargs["overwrite"] = True
-    # warp_dict_options: dict[str, Any] = {
-    #     'VARIABLES_AS_BANDS': 'YES',
-    #     'GDAL_NETCDF_VERIFY_DIMS': 'STRICT',
-    # }
-    # -oo VARIABLES_AS_BANDS=YES -oo GDAL_NETCDF_VERIFY_DIMS=STRICT
     warp_config: GDALWarpAppOptions = WarpOptions(
         dstSRS=output_crs,
         format=format,
@@ -964,7 +960,6 @@ def gdal_warp_wrapper(
         callback=_tqdm_progress_callback_func if use_tqdm_progress_bar else None,
         **kwargs,
     )
-    # assert False
     projection: GDALDataset = Warp(
         destNameOrDestDS=output_path, srcDSOrSrcDSTab=input_path, options=warp_config
     )
@@ -1192,134 +1187,3 @@ def cftime_range_gen(time_data_array: T_DataArray, **kwargs) -> NDArray:
     )
     time_bnds_fix_range_end: CFTimeIndex = time_bnds_fix_range_start + timedelta(days=1)
     return np.array((time_bnds_fix_range_start, time_bnds_fix_range_end)).T
-
-
-# def tansform_lat_lng_bounding_box(bbox: tuple[float, float] | BoundsTupleType):
-#     # clip_box = box(*bbox)
-#     wgs84 = pyproj.CRS('EPSG:4326')
-#     brit_grid = pyproj.CRS('EPSG:27700')
-#     project = pyproj.Transformer.from_crs(wgs84, brit_grid, always_xy=True).transform
-#     clip_box = transform(project, clip_box)
-#     clipped = grid.rio.clip([clip_box])
-#     return clipped
-
-
-# @dataclass
-# class IntermediateCPMFilesManager:
-#
-#     """Manage intermediate files and paths for CPM calendar projection.
-#     Parameters
-#     ----------
-#     variable_name
-#         Name of variable (e.g. `tasmax`). Included in file names.
-#     output_path
-#         Folder to save results to.
-#     subfolder_path
-#         Path to place intermediate files relative to output_path.
-#     time_series_start
-#         Start of time series covered to include in file name.
-#     time_series_end
-#         End of time series covered to include in file name.
-#     file_name_prefix
-#         str to add at the start of the output file names (after integers).
-#     subfolder_time_stamp
-#         Whether to include a time stamp in the subfolder file name.
-#     Examples
-#     --------
-#     >>> test_path = getfixture('tmp_path')
-#     >>> intermedate_files_manager: IntermediateCPMFilesManager = IntermediateCPMFilesManager(
-#     ...     file_name_prefix="test-1980",
-#     ...     variable_name="tasmax",
-#     ...     output_path=test_path / 'intermediate_test_folder',
-#     ...     subfolder_path='test_subfolder',
-#     ...     time_series_start=date(1980, 12, 1),
-#     ...     time_series_end=date(1981, 11, 30),
-#     ... )
-#     >>> str(intermedate_files_manager.output_path)
-#     '.../intermediate_test_folder'
-#     >>> str(intermedate_files_manager.intermediate_files_folder)
-#     '.../test_subfolder'
-#     >>> str(intermedate_files_manager.final_nc_path)
-#     '.../test_subfolder/3-test-1980-tasmax-19801201-19811130-cpm-365-or-366-27700-final.nc'
-#     """
-#
-#     variable_name: str
-#     output_path: Path | None
-#     time_series_start: datetime | date | Datetime360Day | DatetimeGregorian
-#     time_series_end: datetime | date | Datetime360Day | DatetimeGregorian
-#     subfolder_path: Path # = CPM_LOCAL_INTERMEDIATE_PATH
-#     file_name_prefix: str = ""
-#     subfolder_time_stamp: bool = False
-#
-#     def __post_init__(self) -> None:
-#         """Ensure `output_path`, `time_series_start/end` are set correctly."""
-#         self.output_path = Path(self.output_path) if self.output_path else Path()
-#         if self.output_path.suffix[1:] in GDALFormatExtensions.values():
-#             logger.info(
-#                 f"Output path is: '{str(self.output_path)}'\n"
-#                 "Putting intermediate files in parent directory."
-#             )
-#             self._passed_output_path = self.output_path
-#             self.output_path = self.output_path.parent
-#         if isinstance(self.time_series_start, Datetime360Day):
-#             self.time_series_start = cftime360_to_date(self.time_series_start)
-#         if isinstance(self.time_series_end, Datetime360Day):
-#             self.time_series_end = cftime360_to_date(self.time_series_end)
-#
-#     def __repr__(self):
-#         """Summary of config."""
-#         return (
-#             f"<IntermediateCPMFilesManager(output_path='{self.output_path}', "
-#             f"intermediate_files_folder='{self.intermediate_files_folder}')>"
-#         )
-#
-#     @property
-#     def date_range_to_str(self) -> str:
-#         return date_range_to_str(self.time_series_start, self.time_series_end)
-#
-#     @property
-#     def prefix_var_name_and_date(self) -> str:
-#         prefix: str = f"{self.variable_name}-{self.date_range_to_str}-"
-#         if self.file_name_prefix:
-#             return f"{self.file_name_prefix}-{prefix}"
-#         else:
-#             return prefix
-#
-#     @property
-#     def subfolder(self) -> Path:
-#         if self.subfolder_time_stamp:
-#             return Path(Path(self.subfolder_path).name + f"-{time_str()}")
-#         else:
-#             return self.subfolder_path
-#
-#     @property
-#     def intermediate_files_folder(self) -> Path:
-#         assert self.output_path
-#         path: Path = self.output_path / self.subfolder
-#         path.mkdir(exist_ok=True, parents=True)
-#         assert path.is_dir()
-#         return path
-#
-#     @property
-#     def intermediate_nc_path(self) -> Path:
-#         return self.intermediate_files_folder / (
-#             "0-" + self.prefix_var_name_and_date + CPM_365_OR_366_INTERMEDIATE_NC
-#         )
-#
-#     @property
-#     def simplified_nc_path(self) -> Path:
-#         return self.intermediate_files_folder / (
-#             "1-" + self.prefix_var_name_and_date + CPM_365_OR_366_SIMPLIFIED_NC
-#         )
-#
-#     @property
-#     def intermediate_warp_path(self) -> Path:
-#         return self.intermediate_files_folder / (
-#             "2-" + self.prefix_var_name_and_date + CPM_365_OR_366_27700_TIF
-#         )
-#
-#     @property
-#     def final_nc_path(self) -> Path:
-#         return self.intermediate_files_folder / (
-#             "3-" + self.prefix_var_name_and_date + CPM_365_OR_366_27700_FINAL
-#         )
