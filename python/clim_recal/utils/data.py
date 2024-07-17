@@ -2,9 +2,10 @@ from dataclasses import dataclass, field
 from typing import Collection, Union, Callable, Any, Literal, Final, Iterable
 from os import PathLike
 from datetime import date
-from enum import auto
+from enum import auto, IntEnum
 from pathlib import Path
 
+from rasterio.enums import Resampling
 from xarray.backends.api import ENGINES
 
 from .core import StrEnumReprName
@@ -127,11 +128,42 @@ GLASGOW_GEOM_LOCAL_PATH: Final[Path] = Path(
 )
 
 class VariableOptions(StrEnumReprName):
-    """Supported options for variables"""
+    """Supported variables options and related configuration."""
 
     TASMAX = auto()
     RAINFALL = auto()
     TASMIN = auto()
+
+    @classmethod
+    def _method_dict(cls) -> dict[str, IntEnum]:
+        """Return the preferred aggregation method for each option."""
+        return {
+            cls.TASMAX: Resampling.max,
+            cls.RAINFALL: Resampling.max,
+            cls.TASMIN: Resampling.min,
+        }
+
+    @classmethod
+    def resampling_method(cls, variable: str) -> IntEnum:
+        """Return resampling method for `variable`.
+        
+        Parameters
+        ----------
+        variable
+            `VariableOptions` attribute to query resampling method from.
+
+        Returns
+        -------
+        Value to access related resampling method.
+
+        Examples
+        --------
+        >>> VariableOptions.resampling_method('rainfall')
+        <Resampling.max: 8>
+        >>> VariableOptions.resampling_method('tasmin')
+        <Resampling.min: 9>
+        """
+        return cls._method_dict()[variable.lower()]
 
     @classmethod
     def cpm_value(cls, variable: str) -> str:
