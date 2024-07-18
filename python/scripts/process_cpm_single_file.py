@@ -21,7 +21,7 @@ from xarray.core.types import (
     T_Dataset,
 )
 
-def reproject_using_gdal(input_file, temp_dir):
+def reproject_using_gdal(input_file, temp_dir, resample_method_name):
 
     # Reproject using GDAL
     reprojected_tiff_file = str(Path(temp_dir) / "reprojected_tiff_file.tif")
@@ -32,7 +32,7 @@ def reproject_using_gdal(input_file, temp_dir):
         # Reproject using GDALWarp
         gdalwarp_cmd = ["gdalwarp", "-t_srs", "EPSG:27700",
                         "-tr", "2200", "2200",
-                        "-ovr", "NONE", "-r", "near", "-of", "GTiff", 
+                        "-ovr", "NONE", "-r", resample_method_name, "-of", "GTiff", 
                         "-oo", "VARIABLES_AS_BANDS=YES",
                         "-oo", "GDAL_NETCDF_VERIFY_DIMS=STRICT",
                         input_file, reprojected_tiff_file]
@@ -166,13 +166,26 @@ def get_variable_name_from_filename(f_path: Path):
     # for both CPM and HADs files, it is the first part of the filename, upto the first underscore
     return f_path.stem.split("_")[0] 
 
+def get_resample_method(variable_name: str):
+    resample_methods = {
+        "tasmax" : "max",
+        "tasmin" : "min",
+        "pr" : "med",
+        "rainfall" : "med",
+    }
+
+    try:
+        return resample_methods[variable_name]
+    except KeyError as ke:
+        raise ValueError(f"No reampling method defined for unknown climate variable name: {variable_name}") from ke
 
 def main(raw_cpm_file, output_cpm_file):
     with TemporaryDirectory() as temp_dir:
-        raw_cpm_file = str(raw_cpm_file)
+        reprojection_resampling_method_name = get_resample_method(get_variable_name_from_filename(raw_cpm_file))
 
         # Reproject the CPM file
-        reproject_file_path = reproject_using_gdal(raw_cpm_file, temp_dir)
+        raw_cpm_file = str(raw_cpm_file)
+        reproject_file_path = reproject_using_gdal(raw_cpm_file, temp_dir, reprojection_resampling_method_name)
         # Convert a CPM file to a standard calendar
         temporal_resampled_cpm = cpm_xarray_to_standard_calendar(reproject_file_path)
 
