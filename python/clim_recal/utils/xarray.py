@@ -13,10 +13,18 @@ from matplotlib import pyplot as plt
 from numpy import ndarray
 from numpy.typing import NDArray
 from osgeo.gdal import Dataset as GDALDataset
-from osgeo.gdal import GDALWarpAppOptions, Translate, Warp, WarpOptions
+from osgeo.gdal import (
+    GDALTranslateOptions,
+    GDALWarpAppOptions,
+    Translate,
+    TranslateOptions,
+    Warp,
+    WarpOptions,
+)
+from osgeo.gdal import config_option as config_GDAL_option
 from pandas import DatetimeIndex, date_range
 from rasterio.enums import Resampling
-from tqdm import tqdm
+from tqdm.rich import tqdm
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import (
@@ -87,6 +95,8 @@ DEFAULT_WARP_DICT_OPTIONS: dict[str, str | float] = {
     "VARIABLES_AS_BANDS": "YES",
     "GDAL_NETCDF_VERIFY_DIMS": "STRICT",
 }
+
+TQDM_FILE_NAME_PRINT_CHARS_INDEX: Final[int] = -7
 
 
 def cpm_xarray_to_standard_calendar(
@@ -204,6 +214,8 @@ def cpm_reproject_with_standard_calendar(
     >>> tasmax_cpm_1980_365_day: T_Dataset = cpm_reproject_with_standard_calendar(
     ...     cpm_xr_time_series=tasmax_cpm_1980_raw,
     ...     variable_name="tasmax")
+    Warp:      ...nc 100% ...
+    Translate: ...tif 100% ...
     >>> tasmax_cpm_1980_365_day
     <xarray.Dataset>
     Dimensions:              (time: 365, x: 493, y: 607)
@@ -869,10 +881,17 @@ def interpolate_xr_ts_nans(
         return interpolated_ts
 
 
-def _gen_progress_bar() -> tuple[tqdm, Callable[float, ...]]:
-    progress_bar: tqdm = tqdm(
-        total=100, bar_format="{desc}: {percentage:3.2f}%|{bar}{r_bar}"
-    )
+def _progress_bar_file_description(
+    input_path: PathLike,
+    prefix: str = "",
+    tqdm_file_name_chars: int = TQDM_FILE_NAME_PRINT_CHARS_INDEX,
+    suffix: str = "",
+) -> str:
+    return f"{prefix}{Path(input_path).name[tqdm_file_name_chars:]}{suffix}"
+
+
+def _gen_progress_bar(description: str = "") -> tuple[tqdm, Callable[..., None]]:
+    progress_bar: tqdm = tqdm(total=100, desc=description)
 
     def _tqdm_progress_callback_func(progress: float, *args) -> None:
         progress_bar.update(progress * 100 - progress_bar.n)
@@ -886,19 +905,38 @@ def gdal_translate_wrapper(
     return_path: bool = True,
     translate_format: GDALFormatsType | str = GDALNetCDFFormatStr,
     use_tqdm_progress_bar: bool = True,
+    tqdm_file_name_chars: int = TQDM_FILE_NAME_PRINT_CHARS_INDEX,
     resampling_method: Resampling | None = None,
+    supress_warnings: bool = True,
     **kwargs,
 ) -> Path | GDALDataset:
     if use_tqdm_progress_bar:
-        progress_bar, progress_callback = _gen_progress_bar()
+        description: str = _progress_bar_file_description(
+            input_path=input_path,
+            prefix="Translate: ",
+            tqdm_file_name_chars=tqdm_file_name_chars,
+        )
+        progress_bar, progress_callback = _gen_progress_bar(description=description)
         kwargs["callback"] = progress_callback
-    translation: GDALDataset = Translate(
-        destName=output_path,
-        srcDS=input_path,
+    translate_options: GDALTranslateOptions = TranslateOptions(
         format=translate_format,
         resampleAlg=_ensure_resample_method_name(resampling_method),
         **kwargs,
     )
+    translation: GDALDataset
+    if supress_warnings:
+        with config_GDAL_option("CPL_LOG", "gdal_warnings.log"):
+            translation = Translate(
+                destName=output_path,
+                srcDS=input_path,
+                options=translate_options,
+            )
+    else:
+        translation = Translate(
+            destName=output_path,
+            srcDS=input_path,
+            options=translate_options,
+        )
     if use_tqdm_progress_bar:
         translation.FlushCache()
         progress_bar.close()
@@ -918,7 +956,9 @@ def gdal_warp_wrapper(
     multithread: bool = True,
     warp_dict_options: dict[str, str | float] | None = DEFAULT_WARP_DICT_OPTIONS,
     use_tqdm_progress_bar: bool = True,
+    tqdm_file_name_chars: int = TQDM_FILE_NAME_PRINT_CHARS_INDEX,
     resampling_method: Resampling | None = None,
+    supress_warnings: bool = True,
     **kwargs,
 ) -> Path | GDALDataset:
     """Execute the `gdalwrap` function within `python`.
@@ -966,10 +1006,13 @@ def gdal_warp_wrapper(
     """
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     if use_tqdm_progress_bar:
-        progress_bar = tqdm(total=100)
-
-        def _tqdm_progress_callback_func(progress: float, *args) -> None:
-            progress_bar.update(progress * 100 - progress_bar.n)
+        description: str = _progress_bar_file_description(
+            input_path=input_path,
+            prefix="Warp:      ",
+            tqdm_file_name_chars=tqdm_file_name_chars,
+        )
+        progress_bar, progress_callback = _gen_progress_bar(description=description)
+        kwargs["callback"] = progress_callback
 
     try:
         assert not Path(output_path).is_dir()
@@ -984,12 +1027,22 @@ def gdal_warp_wrapper(
         multithread=multithread,
         warpOptions=warp_dict_options,
         resampleAlg=_ensure_resample_method_name(resampling_method),
-        callback=_tqdm_progress_callback_func if use_tqdm_progress_bar else None,
         **kwargs,
     )
-    projection: GDALDataset = Warp(
-        destNameOrDestDS=output_path, srcDSOrSrcDSTab=input_path, options=warp_config
-    )
+    projection: GDALDataset
+    if supress_warnings:
+        with config_GDAL_option("CPL_LOG", "gdal_warnings.log"):
+            projection = Warp(
+                destNameOrDestDS=output_path,
+                srcDSOrSrcDSTab=input_path,
+                options=warp_config,
+            )
+    else:
+        projection = Warp(
+            destNameOrDestDS=output_path,
+            srcDSOrSrcDSTab=input_path,
+            options=warp_config,
+        )
     projection.FlushCache()
     if use_tqdm_progress_bar:
         progress_bar.close()
