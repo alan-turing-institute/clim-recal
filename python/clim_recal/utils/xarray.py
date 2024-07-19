@@ -15,6 +15,7 @@ from numpy.typing import NDArray
 from osgeo.gdal import Dataset as GDALDataset
 from osgeo.gdal import GDALWarpAppOptions, Translate, Warp, WarpOptions
 from pandas import DatetimeIndex, date_range
+from rasterio.enums import Resampling
 from tqdm import tqdm
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
@@ -37,12 +38,14 @@ from .data import (
     DEFAULT_CALENDAR_ALIGN,
     DEFAULT_INTERPOLATION_METHOD,
     DEFAULT_RELATIVE_GRID_DATA_PATH,
+    DEFAULT_RESAMPLING_METHOD,
     GLASGOW_GEOM_LOCAL_PATH,
     NETCDF4_XARRAY_ENGINE,
     TIME_COLUMN_NAME,
     BoundingBoxCoords,
     CFCalendarSTANDARD,
     ConvertCalendarAlignOptions,
+    VariableOptions,
     XArrayEngineType,
 )
 from .gdal_formats import (
@@ -245,10 +248,14 @@ def cpm_reproject_with_standard_calendar(
         cpm_xr_time_series,
         output_path=Path(temp_tif.name),
         format=GDALGeoTiffFormatStr,
+        # Leaving this if further projection is needed
+        # resampling_method=VariableOptions.resampling_method(variable=variable_name).name,
     )
     gdal_translate_wrapper(
         input_path=Path(temp_tif.name),
         output_path=Path(temp_translated_ncf.name),
+        # Leaving this if further projection is needed
+        # resampling_method=VariableOptions.resampling_method(variable=variable_name).name,
     )
     reprojected_cpm_xr_time_series, _ = check_xarray_path_and_var_name(
         Path(temp_translated_ncf.name), variable_name
@@ -277,6 +284,7 @@ def xr_reproject_crs(
     match_xr_time_series: T_Dataset | PathLike | None = None,
     match_xr_time_series_load_func: Callable | None = None,
     match_xr_time_series_load_kwargs: dict[str, Any] | None = None,
+    resampling_method: Resampling = DEFAULT_RESAMPLING_METHOD,
     **kwargs,
 ) -> T_Dataset:
     """Reproject `source_xr` to `target_xr` coordinate structure.
@@ -296,6 +304,8 @@ def xr_reproject_crs(
         Inferred if `None` assuming only one `data_var` attribute.
     final_crs
         Coordinate system `str` to project `xr_time_series` to.
+    resampling_method
+        `rasterio` resampling method to apply.
 
     Examples
     --------
@@ -369,13 +379,35 @@ def xr_reproject_crs(
             else:
                 raise ValueError("Can't match dim names.")
         without_attributes_reprojected = without_attributes.rio.reproject_match(
-            match_xr_time_series, **kwargs
+            match_xr_time_series, resampling=resampling_method.name, **kwargs
         )
     else:
         without_attributes_reprojected: T_DataArray = without_attributes.rio.reproject(
-            final_crs, **kwargs
+            final_crs, resampling=resampling_method.name, **kwargs
         )
     return Dataset({variable_name: without_attributes_reprojected})
+
+
+def _ensure_resample_method_name(
+    method: str | Resampling, allow_none: bool = True
+) -> str | None:
+    """Ensure the correct method name `str` is returned."""
+
+    def error_message(method: str) -> str:
+        return f"Method '{method}' not a valid GDAL 'Resampling' method."
+
+    if isinstance(method, str):
+        try:
+            assert method in Resampling.__members__
+        except KeyError:
+            raise KeyError(error_message(method))
+        return method
+    elif isinstance(method, Resampling):
+        return method.name
+    elif method is None:
+        return None
+    else:
+        raise ValueError(error_message(method))
 
 
 def interpolate_coords(
@@ -489,6 +521,7 @@ def hads_resample_and_reproject(
         y_dim_name=y_dim_name,
         match_xr_time_series=cpm_to_match,
         match_xr_time_series_load_func=cpm_to_match_func,
+        resampling_method=VariableOptions.resampling_method(variable_name)
         # match_xr_time_series_load_kwargs=dict(variable_name=variable_name),
     )
     return epsg_277000_2_2km
@@ -863,6 +896,7 @@ def gdal_translate_wrapper(
     return_path: bool = True,
     translate_format: GDALFormatsType | str = GDALNetCDFFormatStr,
     use_tqdm_progress_bar: bool = True,
+    resampling_method: Resampling | None = None,
     **kwargs,
 ) -> Path | GDALDataset:
     if use_tqdm_progress_bar:
@@ -872,6 +906,7 @@ def gdal_translate_wrapper(
         destName=output_path,
         srcDS=input_path,
         format=translate_format,
+        resampleAlg=_ensure_resample_method_name(resampling_method),
         **kwargs,
     )
     if use_tqdm_progress_bar:
@@ -893,6 +928,7 @@ def gdal_warp_wrapper(
     multithread: bool = True,
     warp_dict_options: dict[str, str | float] | None = DEFAULT_WARP_DICT_OPTIONS,
     use_tqdm_progress_bar: bool = True,
+    resampling_method: Resampling | None = None,
     **kwargs,
 ) -> Path | GDALDataset:
     """Execute the `gdalwrap` function within `python`.
@@ -957,6 +993,7 @@ def gdal_warp_wrapper(
         copyMetadata=copy_metadata,
         multithread=multithread,
         warpOptions=warp_dict_options,
+        resampleAlg=_ensure_resample_method_name(resampling_method),
         callback=_tqdm_progress_callback_func if use_tqdm_progress_bar else None,
         **kwargs,
     )

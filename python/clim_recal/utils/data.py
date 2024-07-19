@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Collection, Union, Callable, Any, Literal, Final, Iterable
 from os import PathLike
 from datetime import date
-from enum import auto, IntEnum
+from enum import auto
 from pathlib import Path
 
 from rasterio.enums import Resampling
@@ -13,6 +13,8 @@ from .core import StrEnumReprName
 
 BRITISH_NATION_GRID_COORDS_NUMBER: Final[int] = 27700
 BRITISH_NATIONAL_GRID_EPSG: Final[str] = f"EPSG:{BRITISH_NATION_GRID_COORDS_NUMBER}"
+
+DEFAULT_RESAMPLING_METHOD: Final[Resampling] = Resampling.bilinear
 
 AuthorshipType = Union[
     str | tuple[str, ...], dict[str, str] |
@@ -135,17 +137,25 @@ class VariableOptions(StrEnumReprName):
     TASMIN = auto()
 
     @classmethod
-    def _method_dict(cls) -> dict[str, IntEnum]:
+    def default_resample_method(cls) -> Resampling:
+        """Default resampling method."""
+        return DEFAULT_RESAMPLING_METHOD
+
+
+    @classmethod
+    def _method_dict(cls) -> dict[str, Resampling]:
         """Return the preferred aggregation method for each option."""
         return {
-            cls.TASMAX: Resampling.max,
+            cls.TASMAX: Resampling.near,
             cls.RAINFALL: Resampling.max,
             cls.TASMIN: Resampling.min,
         }
 
     @classmethod
-    def resampling_method(cls, variable: str) -> IntEnum:
+    def resampling_method(cls, variable: str | None) -> Resampling:
         """Return resampling method for `variable`.
+
+        For details see: https://rasterio.readthedocs.io/en/stable/api/rasterio.enums.html#rasterio.enums.Resampling
         
         Parameters
         ----------
@@ -162,8 +172,10 @@ class VariableOptions(StrEnumReprName):
         <Resampling.max: 8>
         >>> VariableOptions.resampling_method('tasmin')
         <Resampling.min: 9>
+        >>> VariableOptions.resampling_method(None)
+        <Resampling.bilinear: 1>
         """
-        return cls._method_dict()[variable.lower()]
+        return cls._method_dict()[variable.lower()] if variable else cls.default_resample_method()
 
     @classmethod
     def cpm_value(cls, variable: str) -> str:
