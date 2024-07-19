@@ -146,8 +146,8 @@ class VariableOptions(StrEnumReprName):
     def _method_dict(cls) -> dict[str, Resampling]:
         """Return the preferred aggregation method for each option."""
         return {
-            cls.TASMAX: Resampling.near,
-            cls.RAINFALL: Resampling.max,
+            cls.TASMAX: Resampling.max,
+            cls.RAINFALL: Resampling.bilinear,
             cls.TASMIN: Resampling.min,
         }
 
