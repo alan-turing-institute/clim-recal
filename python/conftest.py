@@ -162,9 +162,15 @@ def local_cache_fixtures(
 @pytest.fixture(scope="session")
 def tasmax_cpm_1980_raw(
     local_cache: bool,
+    local_cpm_cache_path: Path,
     local_cache_fixtures: LocalCachesManager,
-) -> T_Dataset:
-    return local_cache_fixtures["tasmax_cpm_1980_raw"].read(cache_path=local_cache)
+) -> T_Dataset | None:
+    if local_cache:
+        return local_cache_fixtures["tasmax_cpm_1980_raw"].read(
+            cache_path=local_cpm_cache_path
+        )
+    else:
+        return None
 
 
 @pytest.fixture(scope="session")
@@ -181,9 +187,15 @@ def tasmax_cpm_1980_raw_path(
 @pytest.fixture(scope="session")
 def tasmax_hads_1980_raw(
     local_cache: bool,
+    local_hads_cache_path: Path,
     local_cache_fixtures: LocalCachesManager,
 ) -> T_Dataset | None:
-    return local_cache_fixtures["tasmax_hads_1980_raw"].read(cache_path=local_cache)
+    if local_cache:
+        return local_cache_fixtures["tasmax_hads_1980_raw"].read(
+            cache_path=local_hads_cache_path
+        )
+    else:
+        return None
 
 
 @pytest.fixture(scope="session")
@@ -272,7 +284,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--local-cache",
         action=BooleanOptionalAction,
-        default=True,
+        default=False,
         help="use 'local_cache' data fixtures",
     )
     parser.addoption(

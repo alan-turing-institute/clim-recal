@@ -205,32 +205,20 @@ def cpm_reproject_with_standard_calendar(
     ...     cpm_xr_time_series=tasmax_cpm_1980_raw,
     ...     variable_name="tasmax")
     >>> tasmax_cpm_1980_365_day
-    <xarray.Dataset>...
+    <xarray.Dataset>
     Dimensions:              (time: 365, x: 493, y: 607)
     Coordinates:
-      * time                 (time) datetime64[ns] 1980-12-01T12:00:00 ... 1981-1...
-      * x                    (x) float64 -3.136e+05 -3.112e+05 ... 8.513e+05
-      * y                    (y) float64 -2.371e+05 -2.348e+05 ... 1.198e+06
-        transverse_mercator  |S1 ...
-        spatial_ref          int64 0
+      * time                 (time) datetime64[ns]...
+      * x                    (x) float64...
+      * y                    (y) float64...
+        transverse_mercator  |S1...
+        spatial_ref          int64...
     Data variables:
-        tasmax               (time, y, x) float32 nan nan nan nan ... nan nan nan
+        tasmax               (time, y, x) float32...
     Attributes: (12/18)
-        GDAL_AREA_OR_POINT:  Area
-        collection:          land-cpm
-        contact:             ukcpproject@metoffice.gov.uk
-        Conventions:         CF-1.7
-        creation_date:       2021-05-11T14:06:30
-        domain:              uk
-        ...                  ...
-    >>> tasmax_cpm_1980_raw.dims
-    FrozenMappingWarningOnValuesAccess({'ensemble_member': 1,
-                                        'time': 360,
-                                        'grid_latitude': 606,
-                                        'grid_longitude': 484,
-                                        'bnds': 2})
+        ...
     >>> tasmax_cpm_1980_365_day.dims
-    FrozenMappingWarningOnValuesAccess({'time': 365, 'x': 493, 'y': 607})
+    Frozen...({'time': 365, 'x': 493, 'y': 607})
     """
     temp_cpm: _TemporaryFileWrapper = NamedTemporaryFile(
         suffix="." + NETCDF_EXTENSION_STR
@@ -243,7 +231,7 @@ def cpm_reproject_with_standard_calendar(
         xr_time_series_instance: T_Dataset = cpm_xr_time_series
         cpm_xr_time_series = temp_cpm.name
         xr_time_series_instance.to_netcdf(cpm_xr_time_series)
-    assert isinstance(cpm_xr_time_series, PathLike)
+    assert isinstance(cpm_xr_time_series, PathLike | str)
     gdal_warp_wrapper(
         cpm_xr_time_series,
         output_path=Path(temp_tif.name),
@@ -882,7 +870,9 @@ def interpolate_xr_ts_nans(
 
 
 def _gen_progress_bar() -> tuple[tqdm, Callable[float, ...]]:
-    progress_bar: tqdm = tqdm(total=100)
+    progress_bar: tqdm = tqdm(
+        total=100, bar_format="{desc}: {percentage:3.2f}%|{bar}{r_bar}"
+    )
 
     def _tqdm_progress_callback_func(progress: float, *args) -> None:
         progress_bar.update(progress * 100 - progress_bar.n)

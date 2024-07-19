@@ -50,6 +50,7 @@ def pipeline(
     skip_hads_projection: Annotated[
         bool, typer.Option("--skip-hads-projection")
     ] = False,
+    skip_cropping: Annotated[bool, typer.Option("--skip-cropping")] = True,
     execute: Annotated[bool, typer.Option("--execute")] = False,
     start_index: Annotated[int, typer.Option("--start-index", "-s", min=0)] = 0,
     total: Annotated[int, typer.Option("--total-from-index", "-t", min=0)] = 0,
@@ -69,6 +70,7 @@ def pipeline(
         execute=execute,
         skip_cpm_standard_calendar_projection=skip_cpm_projection,
         skip_hads_spatial_2k_projection=skip_hads_projection,
+        skip_cropping=skip_cropping,
         start_index=start_index,
         total=total,
         multiprocess=multiprocess,
