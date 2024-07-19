@@ -70,7 +70,7 @@ jobs:
 
       - name: Run Python Tests
         run: |
-          mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest -m "not darwin and not mount and not localcache"
+          mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest -m "not darwin and not mount"
 
       - name: Copy test coverage results
         run: |
