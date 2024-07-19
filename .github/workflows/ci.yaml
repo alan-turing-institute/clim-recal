@@ -5,7 +5,7 @@ env:
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
   CONDA_ENV_NAME: clim-recal
-  CONDA_ENV_PATH: .conda-linux-64.lock
+  CONDA_ENV_PATH: conda-lock.yml
   MIN_PYTHON_VERSION: 3.12
   PYTHON_MODULE_FOLDER: python/
   COVERAGE_SVG_FOLDER: docs/assets/
@@ -60,17 +60,30 @@ jobs:
         uses: actions/checkout@main
 
       - name: Build Conda Environment
-        uses: conda-incubator/setup-miniconda@v3
+        uses: mamba-org/setup-micromamba@v1
         with:
-          auto-update-conda: false
-          activate-environment: ${{ env.CONDA_ENV_NAME }}
+          # auto-update-conda: false
+          # activate-environment: ${{ env.CONDA_ENV_NAME }}
           environment-file: ${{ env.CONDA_ENV_PATH }}
-          miniforge-version: latest
-          use-mamba: true
+          environment-name: ${{ env.CONDA_ENV_NAME }}
+          generate-run-shell: true
+          # create-args: >-
+          #   pytest-cov
+          #   pytest-xdist
+          #   coverage-badge
+          create-args: >-
+            --dev-dependencies
+          # custom-args: >-
+          #   --dev-dependencies
+          # miniforge-version: latest
+          # use-mamba: true
 
       - name: Run Python Tests
         run: |
-          mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest -m "not darwin and not mount"
+          cd python
+          pytest -m "not darwin and not mount"
+        # shell: bash -el {0}
+        shell: micromamba-shell {0}
 
       - name: Copy test coverage results
         run: |
