@@ -169,7 +169,7 @@ class VariableOptions(StrEnumReprName):
         Examples
         --------
         >>> VariableOptions.resampling_method('rainfall')
-        <Resampling.max: 8>
+        <Resampling.bilinear: 1>
         >>> VariableOptions.resampling_method('tasmin')
         <Resampling.min: 9>
         >>> VariableOptions.resampling_method(None)
