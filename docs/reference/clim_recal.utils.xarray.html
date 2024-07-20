@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.54">
+<meta name="generator" content="quarto-1.5.55">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -318,17 +318,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#python.clim_recal.utils.xarray" id="toc-python.clim_recal.utils.xarray" class="nav-link active" data-scroll-target="#python.clim_recal.utils.xarray"><span class="header-section-number">1</span> clim_recal.utils.xarray</a>
   <ul class="collapse">
-  <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes"><span class="header-section-number">1.1</span> Attributes</a></li>
-  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes"><span class="header-section-number">1.2</span> Classes</a>
+  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions"><span class="header-section-number">1.1</span> Functions</a>
   <ul class="collapse">
-  <li><a href="#python.clim_recal.utils.xarray.IntermediateCPMFilesManager" id="toc-python.clim_recal.utils.xarray.IntermediateCPMFilesManager" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.IntermediateCPMFilesManager"><span class="header-section-number">1.2.1</span> IntermediateCPMFilesManager</a></li>
-  </ul></li>
-  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions"><span class="header-section-number">1.3</span> Functions</a>
-  <ul class="collapse">
-  <li><a href="#python.clim_recal.utils.xarray.apply_geo_func" id="toc-python.clim_recal.utils.xarray.apply_geo_func" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.apply_geo_func"><span class="header-section-number">1.3.1</span> apply_geo_func</a></li>
-  <li><a href="#python.clim_recal.utils.xarray.cftime360_to_date" id="toc-python.clim_recal.utils.xarray.cftime360_to_date" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.cftime360_to_date"><span class="header-section-number">1.3.2</span> cftime360_to_date</a></li>
-  <li><a href="#python.clim_recal.utils.xarray.cftime_range_gen" id="toc-python.clim_recal.utils.xarray.cftime_range_gen" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.cftime_range_gen"><span class="header-section-number">1.3.3</span> cftime_range_gen</a></li>
-  <li><a href="#python.clim_recal.utils.xarray.convert_xr_calendar" id="toc-python.clim_recal.utils.xarray.convert_xr_calendar" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.convert_xr_calendar"><span class="header-section-number">1.3.4</span> convert_xr_calendar</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.apply_geo_func" id="toc-python.clim_recal.utils.xarray.apply_geo_func" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.apply_geo_func"><span class="header-section-number">1.1.1</span> apply_geo_func</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.cftime360_to_date" id="toc-python.clim_recal.utils.xarray.cftime360_to_date" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.cftime360_to_date"><span class="header-section-number">1.1.2</span> cftime360_to_date</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.cftime_range_gen" id="toc-python.clim_recal.utils.xarray.cftime_range_gen" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.cftime_range_gen"><span class="header-section-number">1.1.3</span> cftime_range_gen</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.check_xarray_path_and_var_name" id="toc-python.clim_recal.utils.xarray.check_xarray_path_and_var_name" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.check_xarray_path_and_var_name"><span class="header-section-number">1.1.4</span> check_xarray_path_and_var_name</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.convert_xr_calendar" id="toc-python.clim_recal.utils.xarray.convert_xr_calendar" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.convert_xr_calendar"><span class="header-section-number">1.1.5</span> convert_xr_calendar</a></li>
   </ul></li>
   </ul></li>
   <li><a href="#note-a-new-doctest-needs-to-be-written-to-deal" id="toc-note-a-new-doctest-needs-to-be-written-to-deal" class="nav-link" data-scroll-target="#note-a-new-doctest-needs-to-be-written-to-deal"><span class="header-section-number">2</span> Note a new doctest needs to be written to deal</a></li>
@@ -337,14 +333,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#python.clim_recal.utils.xarray.correct_int_time_datafile" id="toc-python.clim_recal.utils.xarray.correct_int_time_datafile" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.correct_int_time_datafile"><span class="header-section-number">3.0.1</span> correct_int_time_datafile</a></li>
   <li><a href="#python.clim_recal.utils.xarray.cpm_reproject_with_standard_calendar" id="toc-python.clim_recal.utils.xarray.cpm_reproject_with_standard_calendar" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.cpm_reproject_with_standard_calendar"><span class="header-section-number">3.0.2</span> cpm_reproject_with_standard_calendar</a></li>
   <li><a href="#python.clim_recal.utils.xarray.cpm_xarray_to_standard_calendar" id="toc-python.clim_recal.utils.xarray.cpm_xarray_to_standard_calendar" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.cpm_xarray_to_standard_calendar"><span class="header-section-number">3.0.3</span> cpm_xarray_to_standard_calendar</a></li>
-  <li><a href="#python.clim_recal.utils.xarray.crop_nc" id="toc-python.clim_recal.utils.xarray.crop_nc" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.crop_nc"><span class="header-section-number">3.0.4</span> crop_nc</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.crop_xarray" id="toc-python.clim_recal.utils.xarray.crop_xarray" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.crop_xarray"><span class="header-section-number">3.0.4</span> crop_xarray</a></li>
   <li><a href="#python.clim_recal.utils.xarray.ensure_xr_dataset" id="toc-python.clim_recal.utils.xarray.ensure_xr_dataset" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.ensure_xr_dataset"><span class="header-section-number">3.0.5</span> ensure_xr_dataset</a></li>
   <li><a href="#python.clim_recal.utils.xarray.file_name_to_start_end_dates" id="toc-python.clim_recal.utils.xarray.file_name_to_start_end_dates" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.file_name_to_start_end_dates"><span class="header-section-number">3.0.6</span> file_name_to_start_end_dates</a></li>
   <li><a href="#python.clim_recal.utils.xarray.gdal_warp_wrapper" id="toc-python.clim_recal.utils.xarray.gdal_warp_wrapper" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.gdal_warp_wrapper"><span class="header-section-number">3.0.7</span> gdal_warp_wrapper</a></li>
   <li><a href="#python.clim_recal.utils.xarray.generate_360_to_standard" id="toc-python.clim_recal.utils.xarray.generate_360_to_standard" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.generate_360_to_standard"><span class="header-section-number">3.0.8</span> generate_360_to_standard</a></li>
-  <li><a href="#python.clim_recal.utils.xarray.interpolate_coords" id="toc-python.clim_recal.utils.xarray.interpolate_coords" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.interpolate_coords"><span class="header-section-number">3.0.9</span> interpolate_coords</a></li>
-  <li><a href="#python.clim_recal.utils.xarray.interpolate_xr_ts_nans" id="toc-python.clim_recal.utils.xarray.interpolate_xr_ts_nans" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.interpolate_xr_ts_nans"><span class="header-section-number">3.0.10</span> interpolate_xr_ts_nans</a></li>
-  <li><a href="#python.clim_recal.utils.xarray.xarray_example" id="toc-python.clim_recal.utils.xarray.xarray_example" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.xarray_example"><span class="header-section-number">3.0.11</span> xarray_example</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.hads_resample_and_reproject" id="toc-python.clim_recal.utils.xarray.hads_resample_and_reproject" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.hads_resample_and_reproject"><span class="header-section-number">3.0.9</span> hads_resample_and_reproject</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.interpolate_coords" id="toc-python.clim_recal.utils.xarray.interpolate_coords" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.interpolate_coords"><span class="header-section-number">3.0.10</span> interpolate_coords</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.interpolate_xr_ts_nans" id="toc-python.clim_recal.utils.xarray.interpolate_xr_ts_nans" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.interpolate_xr_ts_nans"><span class="header-section-number">3.0.11</span> interpolate_xr_ts_nans</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.plot_xarray" id="toc-python.clim_recal.utils.xarray.plot_xarray" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.plot_xarray"><span class="header-section-number">3.0.12</span> plot_xarray</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.xr_reproject_crs" id="toc-python.clim_recal.utils.xarray.xr_reproject_crs" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.13</span> xr_reproject_crs</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -358,152 +356,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="python.clim_recal.utils.xarray" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> clim_recal.utils.xarray</h1>
 <p><code>clim_recal.utils.xarray</code></p>
-<section id="attributes" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="attributes"><span class="header-section-number">1.1</span> Attributes</h2>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><a href="#python.clim_recal.utils.xarray.BoundsTupleType">BoundsTupleType</a></td>
-<td><code>GeoPandas</code> bounds: (<code>minx</code>, <code>miny</code>, <code>maxx</code>, <code>maxy</code>).</td>
-</tr>
-<tr class="even">
-<td><a href="#python.clim_recal.utils.xarray.ChangeDayType">ChangeDayType</a></td>
-<td>A <code>set</code> of tuples of month and day numbers for <code>enforce_date_changes</code>.</td>
-</tr>
-<tr class="odd">
-<td><a href="#python.clim_recal.utils.xarray.DEFAULT_INTERPOLATION_METHOD">DEFAULT_INTERPOLATION_METHOD</a></td>
-<td>Default method to infer missing estimates in a time series.</td>
-</tr>
-<tr class="even">
-<td><a href="#python.clim_recal.utils.xarray.MONTH_DAY_XARRAY_LEAP_YEAR_DROP">MONTH_DAY_XARRAY_LEAP_YEAR_DROP</a></td>
-<td>A <code>set</code> of month and day tuples dropped for <code>xarray.day_360</code> leap years.</td>
-</tr>
-<tr class="odd">
-<td><a href="#python.clim_recal.utils.xarray.MONTH_DAY_XARRAY_NO_LEAP_YEAR_DROP">MONTH_DAY_XARRAY_NO_LEAP_YEAR_DROP</a></td>
-<td>A <code>set</code> of month and day tuples dropped for <code>xarray.day_360</code> non leap years.</td>
-</tr>
-<tr class="even">
-<td><a href="#python.clim_recal.utils.xarray.THREE_CITY_CENTRE_COORDS">THREE_CITY_CENTRE_COORDS</a></td>
-<td>City centre <code>(lon, lat)</code> <code>tuple</code> coords of <code>Glasgow</code>, <code>Manchester</code> and <code>London</code>.</td>
-</tr>
-<tr class="odd">
-<td><a href="#python.clim_recal.utils.xarray.XArrayEngineType">XArrayEngineType</a></td>
-<td>Engine types supported by <code>xarray</code> as <code>str</code>.</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="classes" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="classes"><span class="header-section-number">1.2</span> Classes</h2>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><a href="#python.clim_recal.utils.xarray.IntermediateCPMFilesManager">IntermediateCPMFilesManager</a></td>
-<td>Manage intermediate files and paths for CPM calendar projection.</td>
-</tr>
-</tbody>
-</table>
-<section id="python.clim_recal.utils.xarray.IntermediateCPMFilesManager" class="level3" data-number="1.2.1">
-<h3 data-number="1.2.1" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.IntermediateCPMFilesManager"><span class="header-section-number">1.2.1</span> IntermediateCPMFilesManager</h3>
-<p><code>clim_recal.utils.xarray.IntermediateCPMFilesManager(self, variable_name, output_path, time_series_start, time_series_end, subfolder_path=CPM_LOCAL_INTERMEDIATE_PATH, file_name_prefix='', subfolder_time_stamp=False)</code></p>
-<p>Manage intermediate files and paths for CPM calendar projection.</p>
-<section id="parameters" class="level4" data-number="1.2.1.1">
-<h4 data-number="1.2.1.1" class="anchored" data-anchor-id="parameters"><span class="header-section-number">1.2.1.1</span> Parameters</h4>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 12%">
-<col style="width: 35%">
-<col style="width: 35%">
-<col style="width: 16%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>variable_name</code></td>
-<td>str</td>
-<td>Name of variable (e.g.&nbsp;<code>tasmax</code>). Included in file names.</td>
-<td><em>required</em></td>
-</tr>
-<tr class="even">
-<td><code>output_path</code></td>
-<td>pathlib.Path | None</td>
-<td>Folder to save results to.</td>
-<td><em>required</em></td>
-</tr>
-<tr class="odd">
-<td><code>subfolder_path</code></td>
-<td>pathlib.Path</td>
-<td>Path to place intermediate files relative to output_path.</td>
-<td><code>CPM_LOCAL_INTERMEDIATE_PATH</code></td>
-</tr>
-<tr class="even">
-<td><code>time_series_start</code></td>
-<td>datetime.datetime | datetime.date | cftime._cftime.Datetime360Day</td>
-<td>Start of time series covered to include in file name.</td>
-<td><em>required</em></td>
-</tr>
-<tr class="odd">
-<td><code>time_series_end</code></td>
-<td>datetime.datetime | datetime.date | cftime._cftime.Datetime360Day</td>
-<td>End of time series covered to include in file name.</td>
-<td><em>required</em></td>
-</tr>
-<tr class="even">
-<td><code>file_name_prefix</code></td>
-<td>str</td>
-<td>str to add at the start of the output file names (after integers).</td>
-<td><code>''</code></td>
-</tr>
-<tr class="odd">
-<td><code>subfolder_time_stamp</code></td>
-<td>bool</td>
-<td>Whether to include a time stamp in the subfolder file name.</td>
-<td><code>False</code></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="examples" class="level4" data-number="1.2.1.2">
-<h4 data-number="1.2.1.2" class="anchored" data-anchor-id="examples"><span class="header-section-number">1.2.1.2</span> Examples</h4>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> test_path <span class="op">=</span> getfixture(<span class="st">'tmp_path'</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> intermedate_files_manager: IntermediateCPMFilesManager <span class="op">=</span> IntermediateCPMFilesManager(</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>...     file_name_prefix<span class="op">=</span><span class="st">"test-1980"</span>,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>...     variable_name<span class="op">=</span><span class="st">"tasmax"</span>,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>...     output_path<span class="op">=</span>test_path <span class="op">/</span> <span class="st">'intermediate_test_folder'</span>,</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>...     subfolder_path<span class="op">=</span><span class="st">'test_subfolder'</span>,</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>...     time_series_start<span class="op">=</span>date(<span class="dv">1980</span>, <span class="dv">12</span>, <span class="dv">1</span>),</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>...     time_series_end<span class="op">=</span>date(<span class="dv">1981</span>, <span class="dv">11</span>, <span class="dv">30</span>),</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>... )</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">str</span>(intermedate_files_manager.output_path)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">'.../intermediate_test_folder'</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">str</span>(intermedate_files_manager.intermediate_files_folder)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">'.../test_subfolder'</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">str</span>(intermedate_files_manager.final_nc_path)</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">'.../test_subfolder/3-test-1980-tasmax-19801201-19811130-cpm-365-or-366-27700-final.nc'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-</section>
-</section>
-<section id="functions" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="functions"><span class="header-section-number">1.3</span> Functions</h2>
+<section id="functions" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="functions"><span class="header-section-number">1.1</span> Functions</h2>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -525,40 +379,48 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Convert a banded time index a banded standard (Gregorian).</td>
 </tr>
 <tr class="even">
+<td><a href="#python.clim_recal.utils.xarray.check_xarray_path_and_var_name">check_xarray_path_and_var_name</a></td>
+<td>Check and return a <code>T_Dataset</code> instances and included variable name.</td>
+</tr>
+<tr class="odd">
 <td><a href="#python.clim_recal.utils.xarray.convert_xr_calendar">convert_xr_calendar</a></td>
 <td>Convert cpm 360 day time series to a standard 365/366 day time series.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#python.clim_recal.utils.xarray.correct_int_time_datafile">correct_int_time_datafile</a></td>
 <td>Load a <code>Dataset</code> from path and generate <code>time</code> index.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#python.clim_recal.utils.xarray.cpm_reproject_with_standard_calendar">cpm_reproject_with_standard_calendar</a></td>
 <td>Convert raw <code>cpm_xr_time_series</code> to an 365/366 days and 27700 coords.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#python.clim_recal.utils.xarray.cpm_xarray_to_standard_calendar">cpm_xarray_to_standard_calendar</a></td>
 <td>Convert a CPM <code>nc</code> file of 360 day calendars to standard calendar.</td>
 </tr>
-<tr class="even">
-<td><a href="#python.clim_recal.utils.xarray.crop_nc">crop_nc</a></td>
+<tr class="odd">
+<td><a href="#python.clim_recal.utils.xarray.crop_xarray">crop_xarray</a></td>
 <td>Crop <code>xr_time_series</code> with <code>crop_path</code> <code>shapefile</code>.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#python.clim_recal.utils.xarray.ensure_xr_dataset">ensure_xr_dataset</a></td>
 <td>Return <code>xr_time_series</code> as a <code>xarray.Dataset</code> instance.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#python.clim_recal.utils.xarray.file_name_to_start_end_dates">file_name_to_start_end_dates</a></td>
 <td>Return dates of file name with <code>date_format</code>-<code>date_format</code> structure.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#python.clim_recal.utils.xarray.gdal_warp_wrapper">gdal_warp_wrapper</a></td>
 <td>Execute the <code>gdalwrap</code> function within <code>python</code>.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#python.clim_recal.utils.xarray.generate_360_to_standard">generate_360_to_standard</a></td>
 <td>Return <code>array_to_expand</code> 360 days expanded to 365 or 366 days.</td>
+</tr>
+<tr class="even">
+<td><a href="#python.clim_recal.utils.xarray.hads_resample_and_reproject">hads_resample_and_reproject</a></td>
+<td>Resample <code>HADs</code> <code>xarray</code> time series to 2.2km.</td>
 </tr>
 <tr class="odd">
 <td><a href="#python.clim_recal.utils.xarray.interpolate_coords">interpolate_coords</a></td>
@@ -569,23 +431,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Interpolate <code>nan</code> values in a <code>Dataset</code> time series.</td>
 </tr>
 <tr class="odd">
-<td><a href="#python.clim_recal.utils.xarray.xarray_example">xarray_example</a></td>
-<td>Generate spatial and temporal <code>xarray</code> objects.</td>
+<td><a href="#python.clim_recal.utils.xarray.plot_xarray">plot_xarray</a></td>
+<td>Plot <code>da</code> with <code>**kwargs</code> to <code>path</code>.</td>
+</tr>
+<tr class="even">
+<td><a href="#python.clim_recal.utils.xarray.xr_reproject_crs">xr_reproject_crs</a></td>
+<td>Reproject <code>source_xr</code> to <code>target_xr</code> coordinate structure.</td>
 </tr>
 </tbody>
 </table>
-<section id="python.clim_recal.utils.xarray.apply_geo_func" class="level3" data-number="1.3.1">
-<h3 data-number="1.3.1" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.apply_geo_func"><span class="header-section-number">1.3.1</span> apply_geo_func</h3>
+<section id="python.clim_recal.utils.xarray.apply_geo_func" class="level3" data-number="1.1.1">
+<h3 data-number="1.1.1" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.apply_geo_func"><span class="header-section-number">1.1.1</span> apply_geo_func</h3>
 <p><code>clim_recal.utils.xarray.apply_geo_func(source_path, func, export_folder, new_path_name_func=None, to_netcdf=True, to_raster=False, export_path_as_output_path_kwarg=False, return_results=False, **kwargs)</code></p>
 <p>Apply a <code>Callable</code> to <code>netcdf_source</code> file and export via <code>to_netcdf</code>.</p>
-<section id="parameters-1" class="level4" data-number="1.3.1.1">
-<h4 data-number="1.3.1.1" class="anchored" data-anchor-id="parameters-1"><span class="header-section-number">1.3.1.1</span> Parameters</h4>
+<section id="parameters" class="level4" data-number="1.1.1.1">
+<h4 data-number="1.1.1.1" class="anchored" data-anchor-id="parameters"><span class="header-section-number">1.1.1.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 16%">
-<col style="width: 32%">
-<col style="width: 44%">
-<col style="width: 7%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 58%">
+<col style="width: 5%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -598,69 +464,119 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>source_path</code></td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td><code>netcdf</code> file to apply <code>func</code> to.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td><code>func</code></td>
-<td>typing.Callable[[xarray.Dataset], xarray.Dataset]</td>
+<td>ReprojectFuncType</td>
 <td><code>Callable</code> to modify <code>netcdf</code>.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="odd">
 <td><code>export_folder</code></td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td>Where to save results.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
-<td><code>path_name_replace_tuple</code></td>
-<td></td>
-<td>Optional replacement <code>str</code> to apply to <code>source_path.name</code> when exporting</td>
-<td><em>required</em></td>
+<td><code>new_path_name_func</code></td>
+<td>Callable[[Path], Path] | None</td>
+<td><code>Callabe</code> to generate new path to save to.</td>
+<td><code>None</code></td>
 </tr>
 <tr class="odd">
 <td><code>to_netcdf</code></td>
 <td>bool</td>
-<td>Whether to call <code>to_netcdf</code> method on <code>results</code> <code>Dataset</code>.</td>
+<td>Whether to call <code>to_netcdf()</code> method on <code>results</code> <code>Dataset</code>.</td>
 <td><code>True</code></td>
+</tr>
+<tr class="even">
+<td><code>to_raster</code></td>
+<td>bool</td>
+<td>Whether to call <code>rio.to_raster()</code> on <code>results</code> <code>Dataset</code>.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="odd">
+<td><code>export_path_as_output_path_kwarg</code></td>
+<td>bool</td>
+<td>Whether to add <code>output_path = export_path</code> to <code>kwargs</code> passed to <code>func</code>. Meant for cases calling <code>gdal_warp_wrapper</code>.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="even">
+<td><code>return_results</code></td>
+<td>bool</td>
+<td>Whether to return results, which would be a <code>Dataset</code> or <code>GDALDataset</code> (the latter if <code>gdal_warp_wrapper</code> is used).</td>
+<td><code>False</code></td>
+</tr>
+<tr class="odd">
+<td><code>**kwargs</code></td>
+<td></td>
+<td>Other parameters passed to <code>func</code> call.</td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level4" data-number="1.1.1.2">
+<h4 data-number="1.1.1.2" class="anchored" data-anchor-id="returns"><span class="header-section-number">1.1.1.2</span> Returns</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 81%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Either a <code>Path</code> to generated file or converted <code>xarray</code> object.</td>
+<td></td>
 </tr>
 </tbody>
 </table>
 </section>
 </section>
-<section id="python.clim_recal.utils.xarray.cftime360_to_date" class="level3" data-number="1.3.2">
-<h3 data-number="1.3.2" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.cftime360_to_date"><span class="header-section-number">1.3.2</span> cftime360_to_date</h3>
+<section id="python.clim_recal.utils.xarray.cftime360_to_date" class="level3" data-number="1.1.2">
+<h3 data-number="1.1.2" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.cftime360_to_date"><span class="header-section-number">1.1.2</span> cftime360_to_date</h3>
 <p><code>clim_recal.utils.xarray.cftime360_to_date(cf_360)</code></p>
 <p>Convert a <code>Datetime360Day</code> into a <code>date</code>.</p>
-<section id="examples-1" class="level4" data-number="1.3.2.1">
-<h4 data-number="1.3.2.1" class="anchored" data-anchor-id="examples-1"><span class="header-section-number">1.3.2.1</span> Examples</h4>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cftime360_to_date(Datetime360Day(<span class="dv">1980</span>, <span class="dv">1</span>, <span class="dv">1</span>))</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>datetime.date(<span class="dv">1980</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="examples" class="level4" data-number="1.1.2.1">
+<h4 data-number="1.1.2.1" class="anchored" data-anchor-id="examples"><span class="header-section-number">1.1.2.1</span> Examples</h4>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cftime360_to_date(Datetime360Day(<span class="dv">1980</span>, <span class="dv">1</span>, <span class="dv">1</span>))</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>datetime.date(<span class="dv">1980</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
-<section id="python.clim_recal.utils.xarray.cftime_range_gen" class="level3" data-number="1.3.3">
-<h3 data-number="1.3.3" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.cftime_range_gen"><span class="header-section-number">1.3.3</span> cftime_range_gen</h3>
+<section id="python.clim_recal.utils.xarray.cftime_range_gen" class="level3" data-number="1.1.3">
+<h3 data-number="1.1.3" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.cftime_range_gen"><span class="header-section-number">1.1.3</span> cftime_range_gen</h3>
 <p><code>clim_recal.utils.xarray.cftime_range_gen(time_data_array, **kwargs)</code></p>
 <p>Convert a banded time index a banded standard (Gregorian).</p>
 </section>
-<section id="python.clim_recal.utils.xarray.convert_xr_calendar" class="level3" data-number="1.3.4">
-<h3 data-number="1.3.4" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.convert_xr_calendar"><span class="header-section-number">1.3.4</span> convert_xr_calendar</h3>
+<section id="python.clim_recal.utils.xarray.check_xarray_path_and_var_name" class="level3" data-number="1.1.4">
+<h3 data-number="1.1.4" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.check_xarray_path_and_var_name"><span class="header-section-number">1.1.4</span> check_xarray_path_and_var_name</h3>
+<p><code>clim_recal.utils.xarray.check_xarray_path_and_var_name(xr_time_series, variable_name)</code></p>
+<p>Check and return a <code>T_Dataset</code> instances and included variable name.</p>
+</section>
+<section id="python.clim_recal.utils.xarray.convert_xr_calendar" class="level3" data-number="1.1.5">
+<h3 data-number="1.1.5" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.convert_xr_calendar"><span class="header-section-number">1.1.5</span> convert_xr_calendar</h3>
 <p><code>clim_recal.utils.xarray.convert_xr_calendar(xr_time_series, align_on=DEFAULT_CALENDAR_ALIGN, calendar=CFCalendarSTANDARD, use_cftime=False, missing_value=np.nan, interpolate_na=False, ensure_output_type_is_dataset=False, interpolate_method=DEFAULT_INTERPOLATION_METHOD, keep_crs=True, keep_attrs=True, limit=1, engine=NETCDF4_XARRAY_ENGINE, extrapolate_fill_value=True, check_cftime_cols=None, cftime_range_gen_kwargs=None, **kwargs)</code></p>
 <p>Convert cpm 360 day time series to a standard 365/366 day time series.</p>
-<section id="notes" class="level4" data-number="1.3.4.1">
-<h4 data-number="1.3.4.1" class="anchored" data-anchor-id="notes"><span class="header-section-number">1.3.4.1</span> Notes</h4>
+<section id="notes" class="level4" data-number="1.1.5.1">
+<h4 data-number="1.1.5.1" class="anchored" data-anchor-id="notes"><span class="header-section-number">1.1.5.1</span> Notes</h4>
 <p>Short time examples (like 2 skipped out of 8 days) raises: <code>ValueError("date_range_like was unable to generate a range as the source frequency was not inferable."</code>)</p>
 </section>
-<section id="parameters-2" class="level4" data-number="1.3.4.2">
-<h4 data-number="1.3.4.2" class="anchored" data-anchor-id="parameters-2"><span class="header-section-number">1.3.4.2</span> Parameters</h4>
+<section id="parameters-1" class="level4" data-number="1.1.5.2">
+<h4 data-number="1.1.5.2" class="anchored" data-anchor-id="parameters-1"><span class="header-section-number">1.1.5.2</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 7%">
-<col style="width: 16%">
-<col style="width: 67%">
-<col style="width: 8%">
+<col style="width: 10%">
+<col style="width: 72%">
+<col style="width: 9%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -673,19 +589,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>xr_time_series</code></td>
-<td>xarray.DataArray | xarray.Dataset | os.PathLike</td>
+<td>T_DataArray | T_Dataset | PathLike</td>
 <td>A <code>DataArray</code> or <code>Dataset</code> to convert to <code>calendar</code> time.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td><code>align_on</code></td>
-<td>python.clim_recal.utils.xarray.ConvertCalendarAlignOptions</td>
+<td>ConvertCalendarAlignOptions</td>
 <td>Whether and how to align <code>calendar</code> types.</td>
 <td><code>DEFAULT_CALENDAR_ALIGN</code></td>
 </tr>
 <tr class="odd">
 <td><code>calendar</code></td>
-<td>xarray.core.types.CFCalendar</td>
+<td>CFCalendar</td>
 <td>Type of calendar to convert <code>xr_time_series</code> to.</td>
 <td><code>CFCalendarSTANDARD</code></td>
 </tr>
@@ -697,7 +613,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td><code>missing_value</code></td>
-<td>typing.Any | None</td>
+<td>Any | None</td>
 <td>Missing value to populate missing date interpolations with.</td>
 <td><code>np.nan</code></td>
 </tr>
@@ -715,7 +631,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td><code>interpolate_method</code></td>
-<td>xarray.core.types.InterpOptions</td>
+<td>InterpOptions</td>
 <td>Which <code>InterpOptions</code> method to apply if <code>interpolate_na</code> is <code>True</code>.</td>
 <td><code>DEFAULT_INTERPOLATION_METHOD</code></td>
 </tr>
@@ -733,7 +649,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td><code>engine</code></td>
-<td>python.clim_recal.utils.xarray.XArrayEngineType</td>
+<td>XArrayEngineType</td>
 <td>Which <code>XArrayEngineType</code> to use in parsing files and operations.</td>
 <td><code>NETCDF4_XARRAY_ENGINE</code></td>
 </tr>
@@ -751,7 +667,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td><code>cftime_range_gen_kwargs</code></td>
-<td>dict[str, typing.Any] | None</td>
+<td>dict[str, Any] | None</td>
 <td>Any <code>kwargs</code> to pass to <code>cftime_range_gen</code></td>
 <td><code>None</code></td>
 </tr>
@@ -764,8 +680,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="raises" class="level4" data-number="1.3.4.3">
-<h4 data-number="1.3.4.3" class="anchored" data-anchor-id="raises"><span class="header-section-number">1.3.4.3</span> Raises</h4>
+<section id="raises" class="level4" data-number="1.1.5.3">
+<h4 data-number="1.1.5.3" class="anchored" data-anchor-id="raises"><span class="header-section-number">1.1.5.3</span> Raises</h4>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -781,12 +697,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="returns" class="level4" data-number="1.3.4.4">
-<h4 data-number="1.3.4.4" class="anchored" data-anchor-id="returns"><span class="header-section-number">1.3.4.4</span> Returns</h4>
+<section id="returns-1" class="level4" data-number="1.1.5.4">
+<h4 data-number="1.1.5.4" class="anchored" data-anchor-id="returns-1"><span class="header-section-number">1.1.5.4</span> Returns</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 30%">
-<col style="width: 69%">
+<col style="width: 18%">
+<col style="width: 81%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -796,18 +712,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td>xarray.Dataset | xarray.DataArray</td>
+<td>T_DataArrayOrSet</td>
 <td>Converted <code>xr_time_series</code> to specified <code>calendar</code> with optional interpolation.</td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="notes-1" class="level4" data-number="1.3.4.5">
-<h4 data-number="1.3.4.5" class="anchored" data-anchor-id="notes-1"><span class="header-section-number">1.3.4.5</span> Notes</h4>
+<section id="notes-1" class="level4" data-number="1.1.5.5">
+<h4 data-number="1.1.5.5" class="anchored" data-anchor-id="notes-1"><span class="header-section-number">1.1.5.5</span> Notes</h4>
 <p>Certain values may fail to interpolate in cases of 360 -&gt; 365/366 (Gregorian) calendar. Examples include projecting CPM data, which is able to fill in measurement values (e.g.&nbsp;<code>tasmax</code>) but the <code>year</code> and <code>month_number</code> variables have <code>nan</code> values</p>
 </section>
-<section id="examples-2" class="level4" data-number="1.3.4.6">
-<h4 data-number="1.3.4.6" class="anchored" data-anchor-id="examples-2"><span class="header-section-number">1.3.4.6</span> Examples</h4>
+<section id="examples-1" class="level4" data-number="1.1.5.6">
+<h4 data-number="1.1.5.6" class="anchored" data-anchor-id="examples-1"><span class="header-section-number">1.1.5.6</span> Examples</h4>
 </section>
 </section>
 </section>
@@ -817,29 +733,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="with-default-year-vs-date-parameters" class="level1" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> with default <code>year</code> vs <code>date</code> parameters</h1>
-<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> xr_360_to_365_datetime64: Dataset <span class="op">=</span> convert_xr_calendar(</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>...     xarray_spatial_4_years_360_day, align_on<span class="op">=</span><span class="st">"date"</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> xr_360_to_365_datetime64.sel(</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>...     time<span class="op">=</span><span class="bu">slice</span>(<span class="st">"1981-01-30"</span>, <span class="st">"1981-02-01"</span>),</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>...     space<span class="op">=</span><span class="st">"Glasgow"</span>).day_360</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>xarray.DataArray <span class="st">'day_360'</span> (time: <span class="dv">3</span>)<span class="op">&gt;</span>...</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>Coordinates:</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="op">*</span> time     (time) datetime64[ns] ..<span class="fl">.1981</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span><span class="op">-</span><span class="dv">30</span> <span class="dv">1981</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span><span class="op">-</span><span class="dv">31</span> <span class="dv">1981</span><span class="op">-</span><span class="dv">0</span><span class="er">2</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    space    <span class="op">&lt;</span>U10 ...<span class="st">'Glasgow'</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> xr_360_to_365_datetime64_interp: Dataset <span class="op">=</span> convert_xr_calendar(</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>...     xarray_spatial_4_years_360_day, interpolate_na<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> xr_360_to_365_datetime64_interp.sel(</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>...     time<span class="op">=</span><span class="bu">slice</span>(<span class="st">"1981-01-30"</span>, <span class="st">"1981-02-01"</span>),</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>...     space<span class="op">=</span><span class="st">"Glasgow"</span>).day_360</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>xarray.DataArray <span class="st">'day_360'</span> (time: <span class="dv">3</span>)<span class="op">&gt;</span>...</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.23789282</span>, <span class="fl">0.5356328</span> , <span class="fl">0.311945</span>  ])</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>Coordinates:</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="op">*</span> time     (time) datetime64[ns] ..<span class="fl">.1981</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span><span class="op">-</span><span class="dv">30</span> <span class="dv">1981</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span><span class="op">-</span><span class="dv">31</span> <span class="dv">1981</span><span class="op">-</span><span class="dv">0</span><span class="er">2</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    space    <span class="op">&lt;</span>U10 ...<span class="st">'Glasgow'</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> convert_xr_calendar(xarray_spatial_6_days_2_skipped)</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>Traceback (most recent call last):</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>   ...</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="pp">ValueError</span>: `date_range_like` was unable to generate a <span class="bu">range</span> <span class="im">as</span> the source frequency was <span class="kw">not</span> inferable.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> xr_360_to_365_datetime64: T_Dataset <span class="op">=</span> convert_xr_calendar(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>...     xarray_spatial_4_years_360_day, align_on<span class="op">=</span><span class="st">"date"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> xr_360_to_365_datetime64.sel(</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>...     time<span class="op">=</span><span class="bu">slice</span>(<span class="st">"1981-01-30"</span>, <span class="st">"1981-02-01"</span>),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>...     space<span class="op">=</span><span class="st">"Glasgow"</span>).day_360</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>xarray.DataArray <span class="st">'day_360'</span> (time: <span class="dv">3</span>)<span class="op">&gt;</span>...</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>Coordinates:</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="op">*</span> time     (time) datetime64[ns] ..<span class="fl">.1981</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span><span class="op">-</span><span class="dv">30</span> <span class="dv">1981</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span><span class="op">-</span><span class="dv">31</span> <span class="dv">1981</span><span class="op">-</span><span class="dv">0</span><span class="er">2</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    space    <span class="op">&lt;</span>U10 ...<span class="st">'Glasgow'</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> xr_360_to_365_datetime64_interp: T_Dataset <span class="op">=</span> convert_xr_calendar(</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>...     xarray_spatial_4_years_360_day, interpolate_na<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> xr_360_to_365_datetime64_interp.sel(</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>...     time<span class="op">=</span><span class="bu">slice</span>(<span class="st">"1981-01-30"</span>, <span class="st">"1981-02-01"</span>),</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>...     space<span class="op">=</span><span class="st">"Glasgow"</span>).day_360</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>xarray.DataArray <span class="st">'day_360'</span> (time: <span class="dv">3</span>)<span class="op">&gt;</span>...</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.23789282</span>, <span class="fl">0.5356328</span> , <span class="fl">0.311945</span>  ])</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>Coordinates:</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  <span class="op">*</span> time     (time) datetime64[ns] ..<span class="fl">.1981</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span><span class="op">-</span><span class="dv">30</span> <span class="dv">1981</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span><span class="op">-</span><span class="dv">31</span> <span class="dv">1981</span><span class="op">-</span><span class="dv">0</span><span class="er">2</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    space    <span class="op">&lt;</span>U10 ...<span class="st">'Glasgow'</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> convert_xr_calendar(xarray_spatial_6_days_2_skipped)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>Traceback (most recent call last):</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>   ...</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="pp">ValueError</span>: `date_range_like` was unable to generate a <span class="bu">range</span> <span class="im">as</span> the source frequency was <span class="kw">not</span> inferable.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <section id="python.clim_recal.utils.xarray.correct_int_time_datafile" class="level3" data-number="3.0.1">
 <h3 data-number="3.0.1" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.correct_int_time_datafile"><span class="header-section-number">3.0.1</span> correct_int_time_datafile</h3>
 <p><code>clim_recal.utils.xarray.correct_int_time_datafile(xr_dataset_path, new_index_name='time', replace_index='band', data_attribute_name='band_data')</code></p>
@@ -848,25 +764,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 data-number="3.0.1.1" class="anchored" data-anchor-id="notes-2"><span class="header-section-number">3.0.1.1</span> Notes</h4>
 <p>This is not finished and may be removed in future.</p>
 </section>
-<section id="examples-3" class="level4" data-number="3.0.1.2">
-<h4 data-number="3.0.1.2" class="anchored" data-anchor-id="examples-3"><span class="header-section-number">3.0.1.2</span> Examples</h4>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pytest.skip(reason<span class="op">=</span><span class="st">"Not finished implementing"</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> rainfall_dataset <span class="op">=</span> correct_int_time_datafile(</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>...     glasgow_example_cropped_cpm_rainfall_path)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">assert</span> <span class="va">False</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="examples-2" class="level4" data-number="3.0.1.2">
+<h4 data-number="3.0.1.2" class="anchored" data-anchor-id="examples-2"><span class="header-section-number">3.0.1.2</span> Examples</h4>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pytest.skip(reason<span class="op">=</span><span class="st">"Not finished implementing"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> rainfall_dataset <span class="op">=</span> correct_int_time_datafile(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>...     glasgow_example_cropped_cpm_rainfall_path)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">assert</span> <span class="va">False</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="python.clim_recal.utils.xarray.cpm_reproject_with_standard_calendar" class="level3" data-number="3.0.2">
 <h3 data-number="3.0.2" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.cpm_reproject_with_standard_calendar"><span class="header-section-number">3.0.2</span> cpm_reproject_with_standard_calendar</h3>
-<p><code>clim_recal.utils.xarray.cpm_reproject_with_standard_calendar(cpm_xr_time_series, variable_name, output_path, file_name_prefix='', subfolder=CPM_LOCAL_INTERMEDIATE_PATH, subfolder_time_stamp=False, final_x_coord_label=FINAL_RESAMPLE_LON_COL, final_y_coord_label=FINAL_RESAMPLE_LAT_COL)</code></p>
+<p><code>clim_recal.utils.xarray.cpm_reproject_with_standard_calendar(cpm_xr_time_series, variable_name=None, close_temp_paths=True)</code></p>
 <p>Convert raw <code>cpm_xr_time_series</code> to an 365/366 days and 27700 coords.</p>
-<section id="parameters-3" class="level4" data-number="3.0.2.1">
-<h4 data-number="3.0.2.1" class="anchored" data-anchor-id="parameters-3"><span class="header-section-number">3.0.2.1</span> Parameters</h4>
+<section id="notes-3" class="level4" data-number="3.0.2.1">
+<h4 data-number="3.0.2.1" class="anchored" data-anchor-id="notes-3"><span class="header-section-number">3.0.2.1</span> Notes</h4>
+<p>Currently makes UTM coordinate structure</p>
+</section>
+<section id="parameters-2" class="level4" data-number="3.0.2.2">
+<h4 data-number="3.0.2.2" class="anchored" data-anchor-id="parameters-2"><span class="header-section-number">3.0.2.2</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 11%">
-<col style="width: 15%">
-<col style="width: 66%">
+<col style="width: 12%">
+<col style="width: 69%">
 <col style="width: 6%">
 </colgroup>
 <thead>
@@ -880,27 +800,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>cpm_xr_time_series</code></td>
-<td>xarray.Dataset | os.PathLike</td>
+<td>T_Dataset | PathLike</td>
 <td><code>Dataset</code> (or path to load as <code>Dataset</code>) expected to be in raw UKCPM format, with 360 day years and a rotated coordinate system.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
-<td><code>output_folder</code></td>
-<td></td>
-<td>Path to store all intermediary and final projection.</td>
-<td><em>required</em></td>
-</tr>
-<tr class="odd">
-<td><code>file_name_prefix</code></td>
-<td>str</td>
-<td><code>str</code> to prefix all written files with.</td>
-<td><code>''</code></td>
+<td><code>variable_name</code></td>
+<td>str | None</td>
+<td>Name of variable used, usually a measure of climate change like <code>tasmax</code> and <code>tasmin</code>.</td>
+<td><code>None</code></td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="returns-1" class="level4" data-number="3.0.2.2">
-<h4 data-number="3.0.2.2" class="anchored" data-anchor-id="returns-1"><span class="header-section-number">3.0.2.2</span> Returns</h4>
+<section id="returns-2" class="level4" data-number="3.0.2.3">
+<h4 data-number="3.0.2.3" class="anchored" data-anchor-id="returns-2"><span class="header-section-number">3.0.2.3</span> Returns</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 80%">
@@ -920,18 +834,44 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
+<section id="examples-3" class="level4" data-number="3.0.2.4">
+<h4 data-number="3.0.2.4" class="anchored" data-anchor-id="examples-3"><span class="header-section-number">3.0.2.4</span> Examples</h4>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_cpm_1980_raw <span class="op">=</span> getfixture(<span class="st">'tasmax_cpm_1980_raw'</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> tasmax_cpm_1980_raw:</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_or_cache_doctest_skip_message)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_cpm_1980_365_day: T_Dataset <span class="op">=</span> cpm_reproject_with_standard_calendar(</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>...     cpm_xr_time_series<span class="op">=</span>tasmax_cpm_1980_raw,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>...     variable_name<span class="op">=</span><span class="st">"tasmax"</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>Warp:      ...nc <span class="dv">100</span><span class="op">%</span> ...</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>Translate: ...tif <span class="dv">100</span><span class="op">%</span> ...</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_cpm_1980_365_day</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>xarray.Dataset<span class="op">&gt;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>Dimensions:              (time: <span class="dv">365</span>, x: <span class="dv">493</span>, y: <span class="dv">607</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>Coordinates:</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="op">*</span> time                 (time) datetime64[ns]...</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="op">*</span> x                    (x) float64...</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="op">*</span> y                    (y) float64...</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    transverse_mercator  <span class="op">|</span>S1...</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    spatial_ref          int64...</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>Data variables:</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    tasmax               (time, y, x) float32...</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>Attributes: (<span class="dv">12</span><span class="op">/</span><span class="dv">18</span>)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    ...</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_cpm_1980_365_day.dims</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>Frozen...({<span class="st">'time'</span>: <span class="dv">365</span>, <span class="st">'x'</span>: <span class="dv">493</span>, <span class="st">'y'</span>: <span class="dv">607</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
 </section>
 <section id="python.clim_recal.utils.xarray.cpm_xarray_to_standard_calendar" class="level3" data-number="3.0.3">
 <h3 data-number="3.0.3" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.cpm_xarray_to_standard_calendar"><span class="header-section-number">3.0.3</span> cpm_xarray_to_standard_calendar</h3>
 <p><code>clim_recal.utils.xarray.cpm_xarray_to_standard_calendar(cpm_xr_time_series, include_bnds_index=False)</code></p>
 <p>Convert a CPM <code>nc</code> file of 360 day calendars to standard calendar.</p>
-<section id="parameters-4" class="level4" data-number="3.0.3.1">
-<h4 data-number="3.0.3.1" class="anchored" data-anchor-id="parameters-4"><span class="header-section-number">3.0.3.1</span> Parameters</h4>
+<section id="parameters-3" class="level4" data-number="3.0.3.1">
+<h4 data-number="3.0.3.1" class="anchored" data-anchor-id="parameters-3"><span class="header-section-number">3.0.3.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 18%">
-<col style="width: 25%">
-<col style="width: 45%">
+<col style="width: 19%">
+<col style="width: 20%">
+<col style="width: 49%">
 <col style="width: 10%">
 </colgroup>
 <thead>
@@ -945,7 +885,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>cpm_xr_time_series</code></td>
-<td>xarray.Dataset | os.PathLike</td>
+<td>T_Dataset | PathLike</td>
 <td>A raw <code>xarray</code> of the form provided by CPM.</td>
 <td><em>required</em></td>
 </tr>
@@ -958,8 +898,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="returns-2" class="level4" data-number="3.0.3.2">
-<h4 data-number="3.0.3.2" class="anchored" data-anchor-id="returns-2"><span class="header-section-number">3.0.3.2</span> Returns</h4>
+<section id="returns-3" class="level4" data-number="3.0.3.2">
+<h4 data-number="3.0.3.2" class="anchored" data-anchor-id="returns-3"><span class="header-section-number">3.0.3.2</span> Returns</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 78%">
@@ -980,130 +920,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 </section>
-<section id="python.clim_recal.utils.xarray.crop_nc" class="level3" data-number="3.0.4">
-<h3 data-number="3.0.4" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.crop_nc"><span class="header-section-number">3.0.4</span> crop_nc</h3>
-<p><code>clim_recal.utils.xarray.crop_nc(xr_time_series, crop_geom, invert=False, final_crs=BRITISH_NATIONAL_GRID_EPSG, initial_clip_box=False, enforce_xarray_spatial_dims=True, xr_spatial_xdim='grid_longitude', xr_spatial_ydim='grid_latitude', **kwargs)</code></p>
+<section id="python.clim_recal.utils.xarray.crop_xarray" class="level3" data-number="3.0.4">
+<h3 data-number="3.0.4" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.crop_xarray"><span class="header-section-number">3.0.4</span> crop_xarray</h3>
+<p><code>clim_recal.utils.xarray.crop_xarray(xr_time_series, crop_box, **kwargs)</code></p>
 <p>Crop <code>xr_time_series</code> with <code>crop_path</code> <code>shapefile</code>.</p>
-<section id="parameters-5" class="level4" data-number="3.0.4.1">
-<h4 data-number="3.0.4.1" class="anchored" data-anchor-id="parameters-5"><span class="header-section-number">3.0.4.1</span> Parameters</h4>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 10%">
-<col style="width: 12%">
-<col style="width: 67%">
-<col style="width: 9%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>xr_time_series</code></td>
-<td>xarray.Dataset | os.PathLike</td>
-<td><code>Dataset</code> or path to <code>netcdf</code> file to load and crop.</td>
-<td><em>required</em></td>
-</tr>
-<tr class="even">
-<td><code>crop_geom</code></td>
-<td>os.PathLike | geopandas.GeoDataFrame</td>
-<td><code>GeoDataFrame</code> or <code>Path</code> of file to crop with.</td>
-<td><em>required</em></td>
-</tr>
-<tr class="odd">
-<td><code>invert</code></td>
-<td></td>
-<td>Whether to invert the <code>crop_geom</code> coordinates.</td>
-<td><code>False</code></td>
-</tr>
-<tr class="even">
-<td><code>final_crs</code></td>
-<td>str</td>
-<td>Final coordinate system to return cropped <code>xr_time_series</code> in.</td>
-<td><code>BRITISH_NATIONAL_GRID_EPSG</code></td>
-</tr>
-<tr class="odd">
-<td><code>initial_clip_box</code></td>
-<td>bool</td>
-<td>Whether to initially clip <code>xr_time_series</code> via <code>crop_geom</code> boundaries. For more details on chained clip approaches see https://corteva.github.io/rioxarray/html/examples/clip_geom.html#Clipping-larger-rasters</td>
-<td><code>False</code></td>
-</tr>
-<tr class="even">
-<td><code>enforce_xarray_spatial_dims</code></td>
-<td>bool</td>
-<td>Whether to use <code>set_spatial_dims</code> on <code>xr_time_series</code> prior to <code>clip</code>.</td>
-<td><code>True</code></td>
-</tr>
-<tr class="odd">
-<td><code>xr_spatial_xdim</code></td>
-<td>str</td>
-<td>Column parameter to pass as <code>xdim</code> to <code>set_spatial_dims</code> if used.</td>
-<td><code>'grid_longitude'</code></td>
-</tr>
-<tr class="even">
-<td><code>xr_spatial_ydim</code></td>
-<td>str</td>
-<td>Column parameter to pass as <code>ydim</code> to <code>set_spatial_dims</code> if used.</td>
-<td><code>'grid_latitude'</code></td>
-</tr>
-<tr class="odd">
-<td><code>kwargs</code></td>
-<td></td>
-<td>Any additional parameters to pass to <code>clip</code></td>
-<td><code>{}</code></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="returns-3" class="level4" data-number="3.0.4.2">
-<h4 data-number="3.0.4.2" class="anchored" data-anchor-id="returns-3"><span class="header-section-number">3.0.4.2</span> Returns</h4>
+<section id="parameters-4" class="level4" data-number="3.0.4.1">
+<h4 data-number="3.0.4.1" class="anchored" data-anchor-id="parameters-4"><span class="header-section-number">3.0.4.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 16%">
-<col style="width: 83%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>xarray.Dataset</td>
-<td>Spatially cropped <code>xr_time_series</code> <code>Dataset</code> with <code>final_crs</code> spatial coords.</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="examples-4" class="level4" data-number="3.0.4.3">
-<h4 data-number="3.0.4.3" class="anchored" data-anchor-id="examples-4"><span class="header-section-number">3.0.4.3</span> Examples</h4>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pytest.skip(<span class="st">'Refactor needed, may be removed.'</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> is_data_mounted:</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_doctest_skip_message)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cropped <span class="op">=</span> crop_nc(</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>...     RAW_CPM_TASMAX_PATH <span class="op">/</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc'</span>,</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>...     crop_geom<span class="op">=</span>glasgow_shape_file_path, invert<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cropped.rio.bounds() <span class="op">==</span> glasgow_epsg_27700_bounds</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="va">True</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-</section>
-<section id="python.clim_recal.utils.xarray.ensure_xr_dataset" class="level3" data-number="3.0.5">
-<h3 data-number="3.0.5" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.ensure_xr_dataset"><span class="header-section-number">3.0.5</span> ensure_xr_dataset</h3>
-<p><code>clim_recal.utils.xarray.ensure_xr_dataset(xr_time_series, default_name='to_convert')</code></p>
-<p>Return <code>xr_time_series</code> as a <code>xarray.Dataset</code> instance.</p>
-<section id="parameters-6" class="level4" data-number="3.0.5.1">
-<h4 data-number="3.0.5.1" class="anchored" data-anchor-id="parameters-6"><span class="header-section-number">3.0.5.1</span> Parameters</h4>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 13%">
-<col style="width: 26%">
-<col style="width: 49%">
+<col style="width: 21%">
+<col style="width: 50%">
 <col style="width: 11%">
 </colgroup>
 <thead>
@@ -1117,7 +944,93 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>xr_time_series</code></td>
-<td>xarray.Dataset | xarray.DataArray</td>
+<td>T_Dataset | PathLike</td>
+<td><code>Dataset</code> or path to <code>netcdf</code> file to load and crop.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>crop_box</code></td>
+<td>BoundingBoxCoords</td>
+<td>Instance of <code>BoundingBoxCoords</code> with coords.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td><code>kwargs</code></td>
+<td></td>
+<td>Any additional parameters to pass to <code>clip</code></td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-4" class="level4" data-number="3.0.4.2">
+<h4 data-number="3.0.4.2" class="anchored" data-anchor-id="returns-4"><span class="header-section-number">3.0.4.2</span> Returns</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 87%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>T_Dataset</td>
+<td>Spatially cropped <code>xr_time_series</code> <code>Dataset</code> with <code>final_crs</code> spatial coords.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-4" class="level4" data-number="3.0.4.3">
+<h4 data-number="3.0.4.3" class="anchored" data-anchor-id="examples-4"><span class="header-section-number">3.0.4.3</span> Examples</h4>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> clim_recal.utils.data <span class="im">import</span> GlasgowCoordsEPSG27700</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> numpy.testing <span class="im">import</span> assert_allclose</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_cpm_1980_raw <span class="op">=</span> getfixture(<span class="st">'tasmax_cpm_1980_raw'</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> tasmax_cpm_1980_raw:</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_or_cache_doctest_skip_message)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_cpm_1980_365_day: T_Dataset <span class="op">=</span> cpm_reproject_with_standard_calendar(</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>...     cpm_xr_time_series<span class="op">=</span>tasmax_cpm_1980_raw,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>...     variable_name<span class="op">=</span><span class="st">"tasmax"</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cropped <span class="op">=</span> crop_xarray(</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>...     tasmax_cpm_1980_365_day,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>...     crop_box<span class="op">=</span>GlasgowCoordsEPSG27700)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> assert_allclose(cropped.rio.bounds(),</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>...                 GlasgowCoordsEPSG27700.as_rioxarray_tuple(),</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>...                 rtol<span class="op">=</span><span class="fl">.01</span>)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_cpm_1980_365_day.sizes</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>Frozen({<span class="st">'x'</span>: <span class="dv">529</span>, <span class="st">'y'</span>: <span class="dv">653</span>, <span class="st">'time'</span>: <span class="dv">365</span>})</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cropped.sizes</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>Frozen({<span class="st">'x'</span>: <span class="dv">10</span>, <span class="st">'y'</span>: <span class="dv">8</span>, <span class="st">'time'</span>: <span class="dv">365</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="python.clim_recal.utils.xarray.ensure_xr_dataset" class="level3" data-number="3.0.5">
+<h3 data-number="3.0.5" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.ensure_xr_dataset"><span class="header-section-number">3.0.5</span> ensure_xr_dataset</h3>
+<p><code>clim_recal.utils.xarray.ensure_xr_dataset(xr_time_series, default_name='to_convert')</code></p>
+<p>Return <code>xr_time_series</code> as a <code>xarray.Dataset</code> instance.</p>
+<section id="parameters-5" class="level4" data-number="3.0.5.1">
+<h4 data-number="3.0.5.1" class="anchored" data-anchor-id="parameters-5"><span class="header-section-number">3.0.5.1</span> Parameters</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 56%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>xr_time_series</code></td>
+<td>T_DataArrayOrSet</td>
 <td>Instance to check and if necessary to convert to <code>Dataset</code>.</td>
 <td><em>required</em></td>
 </tr>
@@ -1130,8 +1043,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="returns-4" class="level4" data-number="3.0.5.2">
-<h4 data-number="3.0.5.2" class="anchored" data-anchor-id="returns-4"><span class="header-section-number">3.0.5.2</span> Returns</h4>
+<section id="returns-5" class="level4" data-number="3.0.5.2">
+<h4 data-number="3.0.5.2" class="anchored" data-anchor-id="returns-5"><span class="header-section-number">3.0.5.2</span> Returns</h4>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -1141,7 +1054,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td>xarray.Dataset</td>
+<td>T_Dataset</td>
 <td>Converted (or original) <code>Dataset</code>.</td>
 </tr>
 </tbody>
@@ -1163,14 +1076,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 data-number="3.0.6" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.file_name_to_start_end_dates"><span class="header-section-number">3.0.6</span> file_name_to_start_end_dates</h3>
 <p><code>clim_recal.utils.xarray.file_name_to_start_end_dates(path, date_format=CLI_DATE_FORMAT_STR)</code></p>
 <p>Return dates of file name with <code>date_format</code>-<code>date_format</code> structure.</p>
-<section id="parameters-7" class="level4" data-number="3.0.6.1">
-<h4 data-number="3.0.6.1" class="anchored" data-anchor-id="parameters-7"><span class="header-section-number">3.0.6.1</span> Parameters</h4>
+<section id="parameters-6" class="level4" data-number="3.0.6.1">
+<h4 data-number="3.0.6.1" class="anchored" data-anchor-id="parameters-6"><span class="header-section-number">3.0.6.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 18%">
-<col style="width: 15%">
-<col style="width: 37%">
-<col style="width: 28%">
+<col style="width: 12%">
+<col style="width: 39%">
+<col style="width: 29%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1183,7 +1096,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>path</code></td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td>Path to file</td>
 <td><em>required</em></td>
 </tr>
@@ -1228,7 +1141,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.utils.xarray.gdal_warp_wrapper" class="level3" data-number="3.0.7">
 <h3 data-number="3.0.7" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.gdal_warp_wrapper"><span class="header-section-number">3.0.7</span> gdal_warp_wrapper</h3>
-<p><code>clim_recal.utils.xarray.gdal_warp_wrapper(input_path, output_path, output_crs=BRITISH_NATIONAL_GRID_EPSG, output_x_resolution=None, output_y_resolution=None, copy_metadata=True, return_path=True, format=GDALGeoTiffFormatStr, multithread=True, **kwargs)</code></p>
+<p><code>clim_recal.utils.xarray.gdal_warp_wrapper(input_path, output_path, output_crs=BRITISH_NATIONAL_GRID_EPSG, output_x_resolution=None, output_y_resolution=None, copy_metadata=True, return_path=True, format=GDALNetCDFFormatStr, multithread=True, warp_dict_options=DEFAULT_WARP_DICT_OPTIONS, use_tqdm_progress_bar=True, tqdm_file_name_chars=TQDM_FILE_NAME_PRINT_CHARS_INDEX, resampling_method=None, supress_warnings=True, **kwargs)</code></p>
 <p>Execute the <code>gdalwrap</code> function within <code>python</code>.</p>
 <p>This is following a script in the <code>bash/</code> folder that uses this programme:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="va">f</span><span class="op">=</span><span class="va">$1</span> <span class="co"># The first argument is the file to reproject</span></span>
@@ -1236,14 +1149,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="va">folder</span><span class="op">=</span><span class="kw">`</span><span class="fu">dirname</span> <span class="va">$fn</span><span class="kw">`</span> <span class="co"># Get the folder name</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> <span class="va">$folder</span> <span class="co"># Create the folder if it doesn't exist</span></span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="ex">gdalwarp</span> <span class="at">-t_srs</span> <span class="st">'EPSG:27700'</span> <span class="at">-tr</span> 2200 2200 <span class="at">-r</span> near <span class="at">-overwrite</span> <span class="va">$f</span> <span class="st">"</span><span class="va">${fn</span><span class="op">%</span>.nc<span class="va">}</span><span class="st">.tif"</span> <span class="co"># Reproject the file</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<section id="parameters-8" class="level4" data-number="3.0.7.1">
-<h4 data-number="3.0.7.1" class="anchored" data-anchor-id="parameters-8"><span class="header-section-number">3.0.7.1</span> Parameters</h4>
+<section id="parameters-7" class="level4" data-number="3.0.7.1">
+<h4 data-number="3.0.7.1" class="anchored" data-anchor-id="parameters-7"><span class="header-section-number">3.0.7.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 8%">
-<col style="width: 23%">
-<col style="width: 55%">
-<col style="width: 11%">
+<col style="width: 13%">
+<col style="width: 18%">
+<col style="width: 51%">
+<col style="width: 17%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1256,14 +1169,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>input_path</code></td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td>Path with <code>CPRUK</code> files to resample. <code>srcDSOrSrcDSTab</code> in <code>Warp</code>.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td><code>output_path</code></td>
-<td>os.PathLike</td>
-<td>Path to save resampled <code>input_path</code> file(s) to. If equal to <code>input_path</code> then the <code>overwrite</code> parameter is called. <code>destNameOrDestDS</code> in <code>Warp</code>.</td>
+<td>PathLike</td>
+<td>Path to save resampled <code>input_path</code> file(s) to <code>destNameOrDestDS</code> in <code>Warp</code>.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="odd">
@@ -1274,9 +1187,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td><code>format</code></td>
-<td>python.clim_recal.utils.gdal_formats.GDALFormatsType | None</td>
+<td>GDALFormatsType | str | None</td>
 <td>Format to convert <code>input_path</code> to in <code>output_path</code>.</td>
-<td><code>GDALGeoTiffFormatStr</code></td>
+<td><code>GDALNetCDFFormatStr</code></td>
 </tr>
 <tr class="odd">
 <td><code>output_x_resolution</code></td>
@@ -1303,10 +1216,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><code>True</code></td>
 </tr>
 <tr class="odd">
-<td><code>resampling_method</code></td>
+<td><code>format</code></td>
+<td>GDALFormatsType | str | None</td>
+<td>Format to write new file to.</td>
+<td><code>GDALNetCDFFormatStr</code></td>
+</tr>
+<tr class="even">
+<td><code>multithread</code></td>
+<td>bool</td>
+<td>Whether to use <code>multithread</code> to speed up calculations.</td>
+<td><code>True</code></td>
+</tr>
+<tr class="odd">
+<td><code>kwargs</code></td>
 <td></td>
-<td>Sampling method. <code>resampleAlg</code> in <code>WarpOption</code>. See other options in: <code>https://gdal.org/programs/gdalwarp.html#cmdoption-gdalwarp-r</code>.</td>
-<td><em>required</em></td>
+<td>Any additional parameters to pass to <code>WarpOption</code>.</td>
+<td><code>{}</code></td>
 </tr>
 </tbody>
 </table>
@@ -1319,33 +1244,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This may be dropped if <code>cpm_reproject_with_standard_calendar</code> is successful.</p>
 <section id="examples-7" class="level4" data-number="3.0.8.1">
 <h4 data-number="3.0.8.1" class="anchored" data-anchor-id="examples-7"><span class="header-section-number">3.0.8.1</span> Examples</h4>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
-<section id="python.clim_recal.utils.xarray.interpolate_coords" class="level3" data-number="3.0.9">
-<h3 data-number="3.0.9" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.interpolate_coords"><span class="header-section-number">3.0.9</span> interpolate_coords</h3>
-<p><code>clim_recal.utils.xarray.interpolate_coords(xr_time_series, variable_name, x_grid, y_grid, xr_time_series_x_column_name=FINAL_RESAMPLE_LON_COL, xr_time_series_y_column_name=FINAL_RESAMPLE_LAT_COL, method='linear', engine=NETCDF4_XARRAY_ENGINE, **kwargs)</code></p>
+<section id="python.clim_recal.utils.xarray.hads_resample_and_reproject" class="level3" data-number="3.0.9">
+<h3 data-number="3.0.9" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.hads_resample_and_reproject"><span class="header-section-number">3.0.9</span> hads_resample_and_reproject</h3>
+<p><code>clim_recal.utils.xarray.hads_resample_and_reproject(hads_xr_time_series, variable_name, cpm_to_match, cpm_to_match_func=cpm_reproject_with_standard_calendar, x_dim_name=HADS_RAW_X_COLUMN_NAME, y_dim_name=HADS_RAW_Y_COLUMN_NAME)</code></p>
+<p>Resample <code>HADs</code> <code>xarray</code> time series to 2.2km.</p>
+</section>
+<section id="python.clim_recal.utils.xarray.interpolate_coords" class="level3" data-number="3.0.10">
+<h3 data-number="3.0.10" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.interpolate_coords"><span class="header-section-number">3.0.10</span> interpolate_coords</h3>
+<p><code>clim_recal.utils.xarray.interpolate_coords(xr_time_series, variable_name, x_grid=None, y_grid=None, x_coord_column_name=HADS_RAW_X_COLUMN_NAME, y_coord_column_name=HADS_RAW_Y_COLUMN_NAME, reference_coords=DEFAULT_RELATIVE_GRID_DATA_PATH, reference_coord_x_column_name=HADS_RAW_X_COLUMN_NAME, reference_coord_y_column_name=HADS_RAW_Y_COLUMN_NAME, method='linear', engine=NETCDF4_XARRAY_ENGINE, use_reference_grid=True, **kwargs)</code></p>
 <p>Reproject <code>xr_time_series</code> to <code>x_resolution</code>/<code>y_resolution</code>.</p>
-<section id="notes-3" class="level4" data-number="3.0.9.1">
-<h4 data-number="3.0.9.1" class="anchored" data-anchor-id="notes-3"><span class="header-section-number">3.0.9.1</span> Notes</h4>
+<section id="notes-4" class="level4" data-number="3.0.10.1">
+<h4 data-number="3.0.10.1" class="anchored" data-anchor-id="notes-4"><span class="header-section-number">3.0.10.1</span> Notes</h4>
 <p>The <code>rio.reproject</code> approach commented out below raises <code>ValueError: IndexVariable objects must be 1-dimensional</code> See https://github.com/corteva/rioxarray/discussions/762</p>
 </section>
 </section>
-<section id="python.clim_recal.utils.xarray.interpolate_xr_ts_nans" class="level3" data-number="3.0.10">
-<h3 data-number="3.0.10" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.interpolate_xr_ts_nans"><span class="header-section-number">3.0.10</span> interpolate_xr_ts_nans</h3>
+<section id="python.clim_recal.utils.xarray.interpolate_xr_ts_nans" class="level3" data-number="3.0.11">
+<h3 data-number="3.0.11" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.interpolate_xr_ts_nans"><span class="header-section-number">3.0.11</span> interpolate_xr_ts_nans</h3>
 <p><code>clim_recal.utils.xarray.interpolate_xr_ts_nans(xr_ts, original_xr_ts=None, check_cftime_cols=None, interpolate_method=DEFAULT_INTERPOLATION_METHOD, keep_crs=True, keep_attrs=True, limit=1, cftime_range_gen_kwargs=None, **kwargs)</code></p>
 <p>Interpolate <code>nan</code> values in a <code>Dataset</code> time series.</p>
-<section id="notes-4" class="level4" data-number="3.0.10.1">
-<h4 data-number="3.0.10.1" class="anchored" data-anchor-id="notes-4"><span class="header-section-number">3.0.10.1</span> Notes</h4>
+<section id="notes-5" class="level4" data-number="3.0.11.1">
+<h4 data-number="3.0.11.1" class="anchored" data-anchor-id="notes-5"><span class="header-section-number">3.0.11.1</span> Notes</h4>
 <p>For details and details of <code>keep_attrs</code>, <code>limit</code> and <code>**kwargs</code> parameters see: https://docs.xarray.dev/en/stable/generated/xarray.DataArray.interpolate_na.html</p>
 </section>
-<section id="parameters-9" class="level4" data-number="3.0.10.2">
-<h4 data-number="3.0.10.2" class="anchored" data-anchor-id="parameters-9"><span class="header-section-number">3.0.10.2</span> Parameters</h4>
+<section id="parameters-8" class="level4" data-number="3.0.11.2">
+<h4 data-number="3.0.11.2" class="anchored" data-anchor-id="parameters-8"><span class="header-section-number">3.0.11.2</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 57%">
 <col style="width: 16%">
-<col style="width: 55%">
-<col style="width: 15%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1358,13 +1289,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>xr_ts</code></td>
-<td>xarray.Dataset</td>
+<td>T_Dataset</td>
 <td><code>Dataset</code> to interpolate via <code>interpolate_na</code>. Requires a <code>time</code> coordinate.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td><code>original_xr_ts</code></td>
-<td>xarray.Dataset | None</td>
+<td>T_Dataset | None</td>
 <td>A <code>Dataset</code> to compare the conversion process with. If not provided, set to the original <code>xr_ts</code> as a reference.</td>
 <td><code>None</code></td>
 </tr>
@@ -1376,7 +1307,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td><code>interpolate_method</code></td>
-<td>xarray.core.types.InterpOptions</td>
+<td>InterpOptions</td>
 <td>Which of the <code>xarray</code> interpolation methods to use.</td>
 <td><code>DEFAULT_INTERPOLATION_METHOD</code></td>
 </tr>
@@ -1400,15 +1331,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td><code>cftime_range_gen_kwargs</code></td>
-<td>dict[str, typing.Any] | None</td>
+<td>dict[str, Any] | None</td>
 <td>Any <code>cftime_range_gen</code> arguments to use with <code>check_cftime_cols</code> calls.</td>
 <td><code>None</code></td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="returns-5" class="level4" data-number="3.0.10.3">
-<h4 data-number="3.0.10.3" class="anchored" data-anchor-id="returns-5"><span class="header-section-number">3.0.10.3</span> Returns</h4>
+<section id="returns-6" class="level4" data-number="3.0.11.3">
+<h4 data-number="3.0.11.3" class="anchored" data-anchor-id="returns-6"><span class="header-section-number">3.0.11.3</span> Returns</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 86%">
@@ -1429,18 +1360,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 </section>
-<section id="python.clim_recal.utils.xarray.xarray_example" class="level3" data-number="3.0.11">
-<h3 data-number="3.0.11" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.xarray_example"><span class="header-section-number">3.0.11</span> xarray_example</h3>
-<p><code>clim_recal.utils.xarray.xarray_example(start_date=XARRAY_EXAMPLE_START_DATE_STR, end_date=XARRAY_EXAMPLE_END_DATE_4_YEARS, coordinates=THREE_CITY_CENTRE_COORDS, skip_dates=None, random_seed_int=XARRAY_EXAMPLE_RANDOM_SEED, name=None, as_dataset=False, **kwargs)</code></p>
-<p>Generate spatial and temporal <code>xarray</code> objects.</p>
-<section id="parameters-10" class="level4" data-number="3.0.11.1">
-<h4 data-number="3.0.11.1" class="anchored" data-anchor-id="parameters-10"><span class="header-section-number">3.0.11.1</span> Parameters</h4>
+<section id="python.clim_recal.utils.xarray.plot_xarray" class="level3" data-number="3.0.12">
+<h3 data-number="3.0.12" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.plot_xarray"><span class="header-section-number">3.0.12</span> plot_xarray</h3>
+<p><code>clim_recal.utils.xarray.plot_xarray(da, path, time_stamp=False, **kwargs)</code></p>
+<p>Plot <code>da</code> with <code>**kwargs</code> to <code>path</code>.</p>
+<section id="parameters-9" class="level4" data-number="3.0.12.1">
+<h4 data-number="3.0.12.1" class="anchored" data-anchor-id="parameters-9"><span class="header-section-number">3.0.12.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 8%">
-<col style="width: 25%">
-<col style="width: 45%">
-<col style="width: 20%">
+<col style="width: 12%">
+<col style="width: 16%">
+<col style="width: 60%">
+<col style="width: 10%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1452,83 +1383,139 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>start_date</code></td>
-<td>python.clim_recal.utils.core.DateType</td>
-<td>Start of time series.</td>
-<td><code>XARRAY_EXAMPLE_START_DATE_STR</code></td>
+<td><code>da</code></td>
+<td>T_DataArrayOrSet</td>
+<td><code>xarray</code> objec to plot.</td>
+<td><em>required</em></td>
 </tr>
 <tr class="even">
-<td><code>end_date</code></td>
-<td>python.clim_recal.utils.core.DateType</td>
-<td>End of time series (by default not inclusive).</td>
-<td><code>XARRAY_EXAMPLE_END_DATE_4_YEARS</code></td>
+<td><code>path</code></td>
+<td>PathLike</td>
+<td>File to write plot to.</td>
+<td><em>required</em></td>
 </tr>
 <tr class="odd">
-<td><code>coordinates</code></td>
-<td>dict[str, tuple[float, float]]</td>
-<td>A <code>dict</code> of region name <code>str</code> to <code>tuple</code> of <code>(lon, lat)</code> form.</td>
-<td><code>THREE_CITY_CENTRE_COORDS</code></td>
-</tr>
-<tr class="even">
-<td><code>skip_dates</code></td>
-<td>typing.Iterable[datetime.date] | None</td>
-<td>A list of <code>date</code> objects to drop/skip between <code>start_date</code> and <code>end_date</code>.</td>
-<td><code>None</code></td>
-</tr>
-<tr class="odd">
-<td><code>as_dataset</code></td>
+<td><code>time_stamp</code></td>
 <td>bool</td>
-<td>Convert output to <code>Dataset</code>.</td>
+<td>Whather to add a <code>datetime</code> <code>str</code> of time of writing in file name.</td>
 <td><code>False</code></td>
 </tr>
 <tr class="even">
-<td><code>name</code></td>
-<td>str | None</td>
-<td>Name of returned <code>DataArray</code> and <code>Dataset</code>.</td>
-<td><code>None</code></td>
-</tr>
-<tr class="odd">
 <td><code>kwargs</code></td>
 <td></td>
-<td>Additional parameters to pass to <code>date_range_generator</code>.</td>
+<td>Additional parameters to pass to <code>plot</code>.</td>
 <td><code>{}</code></td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="returns-6" class="level4" data-number="3.0.11.2">
-<h4 data-number="3.0.11.2" class="anchored" data-anchor-id="returns-6"><span class="header-section-number">3.0.11.2</span> Returns</h4>
+<section id="examples-8" class="level4" data-number="3.0.12.2">
+<h4 data-number="3.0.12.2" class="anchored" data-anchor-id="examples-8"><span class="header-section-number">3.0.12.2</span> Examples</h4>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> example_path: Path <span class="op">=</span> (</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>...     getfixture(<span class="st">'tmp_path'</span>) <span class="op">/</span> <span class="st">'test-path/example.png'</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> image_path: Path <span class="op">=</span> plot_xarray(</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>...     xarray_spatial_4_days, example_path)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> example_path <span class="op">==</span> image_path</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="va">True</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> example_time_stamped: Path <span class="op">=</span> (</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>...      example_path.parent <span class="op">/</span> <span class="st">'example-stamped.png'</span>)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> timed_image_path: Path <span class="op">=</span> plot_xarray(</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>...     xarray_spatial_4_days, example_time_stamped,</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>...     time_stamp<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> example_time_stamped <span class="op">!=</span> timed_image_path</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="va">True</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(timed_image_path)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="op">/</span>...<span class="op">/</span>test<span class="op">-</span>path<span class="op">/</span>example<span class="op">-</span>stamped_...<span class="op">-</span>...<span class="op">-</span>..._...png</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="python.clim_recal.utils.xarray.xr_reproject_crs" class="level3" data-number="3.0.13">
+<h3 data-number="3.0.13" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.13</span> xr_reproject_crs</h3>
+<p><code>clim_recal.utils.xarray.xr_reproject_crs(xr_time_series, x_dim_name=CPM_RAW_X_COLUMN_NAME, y_dim_name=CPM_RAW_Y_COLUMN_NAME, time_dim_name=TIME_COLUMN_NAME, variable_name=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, match_xr_time_series=None, match_xr_time_series_load_func=None, match_xr_time_series_load_kwargs=None, resampling_method=DEFAULT_RESAMPLING_METHOD, **kwargs)</code></p>
+<p>Reproject <code>source_xr</code> to <code>target_xr</code> coordinate structure.</p>
+<section id="parameters-10" class="level4" data-number="3.0.13.1">
+<h4 data-number="3.0.13.1" class="anchored" data-anchor-id="parameters-10"><span class="header-section-number">3.0.13.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 20%">
-<col style="width: 79%">
+<col style="width: 10%">
+<col style="width: 11%">
+<col style="width: 62%">
+<col style="width: 15%">
 </colgroup>
 <thead>
 <tr class="header">
+<th>Name</th>
 <th>Type</th>
 <th>Description</th>
+<th>Default</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>xarray.DataArray | xarray.Dataset</td>
-<td>A <code>DataArray</code> of <code>start_date</code> to <code>end_date</code> date range a random variable for coordinates regions (Glasgow, Manchester and London as default).</td>
+<td><code>xr_time_series</code></td>
+<td>T_Dataset | PathLike</td>
+<td><code>Dataset</code> or <code>PathLike</code> to load and reproject.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>x_dim_name</code></td>
+<td>str</td>
+<td><code>str</code> name of <code>x</code> spatial dimension in <code>xr_time_series</code>. Default matches CPM UK projections.</td>
+<td><code>CPM_RAW_X_COLUMN_NAME</code></td>
+</tr>
+<tr class="odd">
+<td><code>y_dim_name</code></td>
+<td>str</td>
+<td><code>str</code> name of <code>y</code> spatial dimension in <code>xr_time_series</code>. Default matches CPM UK projections.</td>
+<td><code>CPM_RAW_Y_COLUMN_NAME</code></td>
+</tr>
+<tr class="even">
+<td><code>time_dim_name</code></td>
+<td>str</td>
+<td><code>str</code> name of <code>time</code> dimension in <code>xr_time_series</code>.</td>
+<td><code>TIME_COLUMN_NAME</code></td>
+</tr>
+<tr class="odd">
+<td><code>variable_name</code></td>
+<td>str | None</td>
+<td>Name of datset to apply projection to within <code>xr_time_series</code>. Inferred if <code>None</code> assuming only one <code>data_var</code> attribute.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td><code>final_crs</code></td>
+<td>str</td>
+<td>Coordinate system <code>str</code> to project <code>xr_time_series</code> to.</td>
+<td><code>BRITISH_NATIONAL_GRID_EPSG</code></td>
+</tr>
+<tr class="odd">
+<td><code>resampling_method</code></td>
+<td>Resampling</td>
+<td><code>rasterio</code> resampling method to apply.</td>
+<td><code>DEFAULT_RESAMPLING_METHOD</code></td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="examples-8" class="level4" data-number="3.0.11.3">
-<h4 data-number="3.0.11.3" class="anchored" data-anchor-id="examples-8"><span class="header-section-number">3.0.11.3</span> Examples</h4>
-<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> xarray_example(<span class="st">'1980-11-30'</span>, <span class="st">'1980-12-5'</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>xarray.DataArray <span class="st">'xa_template'</span> (time: <span class="dv">5</span>, space: <span class="dv">3</span>)<span class="op">&gt;</span>...</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>array([[..., ..., ...],</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>       [..., ..., ...],</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>       [..., ..., ...],</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>       [..., ..., ...],</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>       [..., ..., ...]])</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>Coordinates:</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="op">*</span> time     (time) datetime64[ns] ..<span class="fl">.1980</span><span class="op">-</span><span class="dv">11</span><span class="op">-</span><span class="dv">30</span> ... <span class="dv">1980</span><span class="op">-</span><span class="dv">12</span><span class="op">-</span><span class="dv">0</span><span class="er">4</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="op">*</span> space    (space) <span class="op">&lt;</span>U10 ...<span class="st">'Glasgow'</span> <span class="st">'Manchester'</span> <span class="st">'London'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="examples-9" class="level4" data-number="3.0.13.2">
+<h4 data-number="3.0.13.2" class="anchored" data-anchor-id="examples-9"><span class="header-section-number">3.0.13.2</span> Examples</h4>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_hads_1980_raw <span class="op">=</span> getfixture(<span class="st">'tasmax_hads_1980_raw'</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> tasmax_hads_1980_raw:</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_or_cache_doctest_skip_message)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_hads_1980_raw.dims</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>FrozenMappingWarningOnValuesAccess({<span class="st">'time'</span>: <span class="dv">31</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">'projection_y_coordinate'</span>: <span class="dv">1450</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">'projection_x_coordinate'</span>: <span class="dv">900</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">'bnds'</span>: <span class="dv">2</span>})</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_hads_2_2km: T_Dataset <span class="op">=</span> xr_reproject_crs(</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>...     tasmax_hads_1980_raw,</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>...     variable_name<span class="op">=</span><span class="st">"tasmax"</span>,</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>...     x_dim_name<span class="op">=</span>HADS_RAW_X_COLUMN_NAME,</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>...     y_dim_name<span class="op">=</span>HADS_RAW_Y_COLUMN_NAME,</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>...     resolution<span class="op">=</span>(CPM_RESOLUTION_METERS,</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>...                 CPM_RESOLUTION_METERS),)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_hads_2_2km.dims</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>FrozenMappingWarningOnValuesAccess({<span class="st">'x'</span>: <span class="dv">410</span>,</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">'y'</span>: <span class="dv">660</span>,</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">'time'</span>: <span class="dv">31</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>

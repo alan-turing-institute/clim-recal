@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.54">
+<meta name="generator" content="quarto-1.5.55">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -763,10 +763,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 data-number="1.2.5.1" class="anchored" data-anchor-id="parameters-3"><span class="header-section-number">1.2.5.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 14%">
 <col style="width: 15%">
-<col style="width: 54%">
-<col style="width: 14%">
+<col style="width: 12%">
+<col style="width: 56%">
+<col style="width: 15%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -779,7 +779,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>path</code></td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td><code>CSV</code> file <code>Path</code>.</td>
 <td><em>required</em></td>
 </tr>
@@ -820,10 +820,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 data-number="1.2.6.1" class="anchored" data-anchor-id="parameters-4"><span class="header-section-number">1.2.6.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 11%">
-<col style="width: 48%">
-<col style="width: 29%">
-<col style="width: 10%">
+<col style="width: 16%">
+<col style="width: 27%">
+<col style="width: 41%">
+<col style="width: 14%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -836,13 +836,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>start_date</code></td>
-<td>python.clim_recal.utils.core.DateType</td>
+<td>DateType</td>
 <td><code>DateType</code> at start of time series.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td><code>end_date</code></td>
-<td>python.clim_recal.utils.core.DateType</td>
+<td>DateType</td>
 <td><code>DateType</code> at end of time series.</td>
 <td><em>required</em></td>
 </tr>
@@ -854,7 +854,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td><code>skip_dates</code></td>
-<td>typing.Iterable[python.clim_recal.utils.core.DateType] | python.clim_recal.utils.core.DateType | None</td>
+<td>Iterable[DateType] | DateType | None</td>
 <td>Dates to skip between <code>start_date</code> and <code>end_date</code>.</td>
 <td><code>None</code></td>
 </tr>
@@ -884,7 +884,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td><code>yield_type</code></td>
-<td>type[datetime.date] | type[str]</td>
+<td>type[date] | type[str]</td>
 <td>Whether which date type to return in <code>tuple</code> (<code>date</code> or <code>str</code>).</td>
 <td><code>date</code></td>
 </tr>
@@ -895,8 +895,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 data-number="1.2.6.2" class="anchored" data-anchor-id="returns-2"><span class="header-section-number">1.2.6.2</span> Returns</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 46%">
-<col style="width: 53%">
+<col style="width: 25%">
+<col style="width: 75%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -906,7 +906,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td>typing.Iterator[python.clim_recal.utils.core.DateType]</td>
+<td>Iterator[DateType]</td>
 <td>A <code>tuple</code> of <code>date</code> or <code>str</code> objects (only one type throughout).</td>
 </tr>
 </tbody>
@@ -948,10 +948,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 data-number="1.2.7.1" class="anchored" data-anchor-id="parameters-5"><span class="header-section-number">1.2.7.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 12%">
-<col style="width: 28%">
-<col style="width: 41%">
-<col style="width: 17%">
+<col style="width: 16%">
+<col style="width: 9%">
+<col style="width: 51%">
+<col style="width: 22%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -964,13 +964,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>start_date</code></td>
-<td>python.clim_recal.utils.core.DateType</td>
+<td>DateType</td>
 <td>First date in range.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td><code>end_date</code></td>
-<td>python.clim_recal.utils.core.DateType</td>
+<td>DateType</td>
 <td>Last date in range</td>
 <td><em>required</em></td>
 </tr>
@@ -1034,10 +1034,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 data-number="1.2.8.1" class="anchored" data-anchor-id="parameters-6"><span class="header-section-number">1.2.8.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 11%">
-<col style="width: 24%">
-<col style="width: 50%">
-<col style="width: 14%">
+<col style="width: 13%">
+<col style="width: 7%">
+<col style="width: 61%">
+<col style="width: 17%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1050,7 +1050,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>date_obj</code></td>
-<td>python.clim_recal.utils.core.DateType</td>
+<td>DateType</td>
 <td>A <code>datetime.date</code> or <code>str</code> object to convert.</td>
 <td><em>required</em></td>
 </tr>
@@ -1102,10 +1102,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 data-number="1.2.9.1" class="anchored" data-anchor-id="parameters-7"><span class="header-section-number">1.2.9.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 12%">
-<col style="width: 28%">
-<col style="width: 42%">
-<col style="width: 16%">
+<col style="width: 15%">
+<col style="width: 9%">
+<col style="width: 54%">
+<col style="width: 21%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1118,7 +1118,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>date_to_check</code></td>
-<td>python.clim_recal.utils.core.DateType</td>
+<td>DateType</td>
 <td>Date or <code>str</code> to ensure is a <code>date</code>.</td>
 <td><em>required</em></td>
 </tr>
@@ -1178,10 +1178,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 data-number="1.2.12.1" class="anchored" data-anchor-id="parameters-8"><span class="header-section-number">1.2.12.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 9%">
-<col style="width: 32%">
-<col style="width: 47%">
-<col style="width: 9%">
+<col style="width: 11%">
+<col style="width: 24%">
+<col style="width: 53%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1194,13 +1194,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>iter_var</code></td>
-<td>typing.Iterable[typing.Any]</td>
+<td>Iterable[Any]</td>
 <td>Iterable of objects that can be converted into <code>strs</code>.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td><code>func</code></td>
-<td>typing.Callable[[typing.Any], str]</td>
+<td>Callable[[Any], str]</td>
 <td>Callable to convert each <code>obj</code> in <code>iter_val</code> to a <code>str</code>.</td>
 <td><code>str</code></td>
 </tr>
@@ -1247,9 +1247,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <table class="caption-top table">
 <colgroup>
 <col style="width: 13%">
-<col style="width: 15%">
-<col style="width: 61%">
-<col style="width: 10%">
+<col style="width: 11%">
+<col style="width: 63%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1262,7 +1262,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>iter</code></td>
-<td>typing.Sequence</td>
+<td>Sequence</td>
 <td><code>Sequence</code> of instances to iterate over calling <code>method_name</code> from.</td>
 <td><em>required</em></td>
 </tr>
@@ -1307,9 +1307,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <table class="caption-top table">
 <colgroup>
 <col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 64%">
 <col style="width: 13%">
-<col style="width: 62%">
-<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1322,7 +1322,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>path</code></td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td><code>Path</code> to folder to iterate through.</td>
 <td><em>required</em></td>
 </tr>
@@ -1360,8 +1360,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 data-number="1.2.14.3" class="anchored" data-anchor-id="returns-7"><span class="header-section-number">1.2.14.3</span> Returns</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 51%">
-<col style="width: 48%">
+<col style="width: 40%">
+<col style="width: 59%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1371,7 +1371,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td>typing.Generator[typing.Optional[pathlib.Path], None, None]</td>
+<td>Generator[Optional[Path], None, None]</td>
 <td><code>None</code> if <code>FileNotFoundError</code> error and <code>strict</code> is <code>False</code>.</td>
 </tr>
 </tbody>
@@ -1416,7 +1416,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.utils.core.results_path" class="level3" data-number="1.2.16">
 <h3 data-number="1.2.16" class="anchored" data-anchor-id="python.clim_recal.utils.core.results_path"><span class="header-section-number">1.2.16</span> results_path</h3>
-<p><code>clim_recal.utils.core.results_path(name, path=None, time=None, extension=None, mkdir=False)</code></p>
+<p><code>clim_recal.utils.core.results_path(name, path=None, time=None, extension=None, mkdir=False, dot_pre_extension=True)</code></p>
 <p>Return <code>Path</code>: <code>path</code>/<code>name</code>_<code>time</code>.<code>extension</code>.</p>
 <section id="examples-14" class="level4" data-number="1.2.16.1">
 <h4 data-number="1.2.16.1" class="anchored" data-anchor-id="examples-14"><span class="header-section-number">1.2.16.1</span> Examples</h4>
@@ -1492,10 +1492,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 data-number="1.2.18.1" class="anchored" data-anchor-id="parameters-12"><span class="header-section-number">1.2.18.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 9%">
-<col style="width: 19%">
-<col style="width: 60%">
 <col style="width: 10%">
+<col style="width: 12%">
+<col style="width: 64%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1508,7 +1508,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>time</code></td>
-<td>datetime.date | datetime.datetime | None</td>
+<td>date | datetime | None</td>
 <td>Time to format. Will be set to current time if <code>None</code> is passed, and add current time if a <code>date</code> is passed to convert to a <code>datetime</code>.</td>
 <td><code>None</code></td>
 </tr>

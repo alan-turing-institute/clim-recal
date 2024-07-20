@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.54">
+<meta name="generator" content="quarto-1.5.55">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -341,8 +341,8 @@ ul.task-list li input[type="checkbox"] {
 <table class="caption-top table">
 <colgroup>
 <col style="width: 9%">
-<col style="width: 12%">
-<col style="width: 69%">
+<col style="width: 8%">
+<col style="width: 73%">
 <col style="width: 8%">
 </colgroup>
 <thead>
@@ -356,7 +356,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>xa</code></td>
-<td>xarray.DataArray</td>
+<td>DataArray</td>
 <td>xArray containing a given variable (e.g.&nbsp;rainfall)</td>
 <td><em>required</em></td>
 </tr>
@@ -386,7 +386,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>xarray.DataArray</td>
+<td>DataArray</td>
 <td>A clipped xarray dataset</td>
 </tr>
 </tbody>
@@ -398,16 +398,16 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="python.clim_recal.data_loader.load_and_merge" class="level3" data-number="1.1.2">
 <h3 data-number="1.1.2" class="anchored" data-anchor-id="python.clim_recal.data_loader.load_and_merge"><span class="header-section-number">1.1.2</span> load_and_merge</h3>
-<p><code>clim_recal.data_loader.load_and_merge(date_range, files, variable, write_crs_format=BritishNationalGridCoordinates)</code></p>
+<p><code>clim_recal.data_loader.load_and_merge(date_range, files, variable, write_crs_format=BRITISH_NATIONAL_GRID_EPSG)</code></p>
 <p>Load files into xarrays, select a time range and a variable and merge into a sigle xarray.</p>
 <section id="parameters-1" class="level4" data-number="1.1.2.1">
 <h4 data-number="1.1.2.1" class="anchored" data-anchor-id="parameters-1"><span class="header-section-number">1.1.2.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 10%">
-<col style="width: 30%">
-<col style="width: 49%">
-<col style="width: 9%">
+<col style="width: 13%">
+<col style="width: 12%">
+<col style="width: 62%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -420,7 +420,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>date_range</code></td>
-<td>python.clim_recal.utils.core.DateRange</td>
+<td>DateRange</td>
 <td>A tuple of datetime objects representing the start and end date</td>
 <td><em>required</em></td>
 </tr>
@@ -450,7 +450,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>xarray.DataArray</td>
+<td>DataArray</td>
 <td>An xarray containing all loaded and merged data</td>
 </tr>
 </tbody>
@@ -466,9 +466,9 @@ ul.task-list li input[type="checkbox"] {
 <h4 data-number="1.1.3.1" class="anchored" data-anchor-id="parameters-2"><span class="header-section-number">1.1.3.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 9%">
-<col style="width: 11%">
-<col style="width: 75%">
+<col style="width: 10%">
+<col style="width: 4%">
+<col style="width: 81%">
 <col style="width: 3%">
 </colgroup>
 <thead>
@@ -488,7 +488,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="even">
 <td><code>date_range</code></td>
-<td>python.clim_recal.utils.core.DateRange</td>
+<td>DateRange</td>
 <td>A tuple of datetime objects representing the start and end date</td>
 <td><em>required</em></td>
 </tr>
@@ -541,8 +541,8 @@ ul.task-list li input[type="checkbox"] {
 <h4 data-number="1.1.3.2" class="anchored" data-anchor-id="returns-2"><span class="header-section-number">1.1.3.2</span> Returns</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 22%">
-<col style="width: 77%">
+<col style="width: 14%">
+<col style="width: 85%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -552,7 +552,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>xarray.DataArray</td>
+<td>DataArray</td>
 <td>A DataArray containing all loaded and merged and clipped data</td>
 </tr>
 </tbody>
@@ -561,7 +561,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="python.clim_recal.data_loader.reformat_file" class="level3" data-number="1.1.4">
 <h3 data-number="1.1.4" class="anchored" data-anchor-id="python.clim_recal.data_loader.reformat_file"><span class="header-section-number">1.1.4</span> reformat_file</h3>
-<p><code>clim_recal.data_loader.reformat_file(file, variable, spatial_config=BritishNationalGridCoordinates)</code></p>
+<p><code>clim_recal.data_loader.reformat_file(file, variable, spatial_config=BRITISH_NATIONAL_GRID_EPSG)</code></p>
 <p>Load tif file and reformat xarray into expected format.</p>
 <section id="parameters-3" class="level4" data-number="1.1.4.1">
 <h4 data-number="1.1.4.1" class="anchored" data-anchor-id="parameters-3"><span class="header-section-number">1.1.4.1</span> Parameters</h4>
@@ -569,8 +569,8 @@ ul.task-list li input[type="checkbox"] {
 <colgroup>
 <col style="width: 16%">
 <col style="width: 7%">
-<col style="width: 45%">
-<col style="width: 30%">
+<col style="width: 47%">
+<col style="width: 28%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -597,7 +597,7 @@ ul.task-list li input[type="checkbox"] {
 <td><code>spatial_config</code></td>
 <td>str</td>
 <td>Spatial coordinate configuration for export.</td>
-<td><code>BritishNationalGridCoordinates</code></td>
+<td><code>BRITISH_NATIONAL_GRID_EPSG</code></td>
 </tr>
 </tbody>
 </table>
@@ -613,7 +613,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>xarray.DataArray</td>
+<td>DataArray</td>
 <td>A formatted xarray</td>
 </tr>
 </tbody>

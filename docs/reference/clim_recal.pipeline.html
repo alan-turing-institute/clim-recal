@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.54">
+<meta name="generator" content="quarto-1.5.55">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -400,7 +400,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>If installed via <code>pipx</code>/<code>pip</code> etc. on your local path (or within <code>Docker</code>) clim-recal should be a command line function</p>
 <pre class="console"><code>$ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written
 clim-recal pipeline configurations:
-&lt;ClimRecalConfig(variables_count=3, runs_count=4, cities_count=1, methods_count=1,
+&lt;ClimRecalConfig(variables_count=3, runs_count=4, regions_count=1, methods_count=1,
                  cpm_folders_count=12, hads_folders_count=3, start_index=0,
                  stop_index=None, cpus=2)&gt;
 &lt;CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)&gt;
@@ -417,7 +417,7 @@ $ pdm run clim-recal --all-variables --default-runs --output-path /where/results
 <p>Regardless of your route, once you’re confident with the configuration, add the <code>--execute</code> parameter to run. For example, assuming a local install:</p>
 <pre class="console"><code>$ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written --execute
 clim-recal pipeline configurations:
-&lt;ClimRecalConfig(variables_count=3, runs_count=4, cities_count=1, methods_count=1,
+&lt;ClimRecalConfig(variables_count=3, runs_count=4, regions_count=1, methods_count=1,
                  cpm_folders_count=12, hads_folders_count=3, start_index=0,
                  stop_index=None, cpus=2)&gt;
 &lt;CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)&gt;
@@ -479,16 +479,16 @@ Running CPM Standard Calendar projection...
 </table>
 <section id="python.clim_recal.pipeline.main" class="level3" data-number="8.1.1">
 <h3 data-number="8.1.1" class="anchored" data-anchor-id="python.clim_recal.pipeline.main"><span class="header-section-number">8.1.1</span> main</h3>
-<p><code>clim_recal.pipeline.main(execute=False, output_path=DEFAULT_OUTPUT_PATH, variables=(VariableOptions.default()), cities=(CityOptions.default()), runs=(RunOptions.default()), methods=(MethodOptions.default()), all_variables=False, all_cities=False, default_runs=False, all_runs=False, all_methods=False, skip_cpm_standard_calendar_projection=False, skip_hads_spatial_2k_projection=False, cpus=None, multiprocess=False, start_index=0, stop_index=None, total=None, print_range_length=5, **kwargs)</code></p>
+<p><code>clim_recal.pipeline.main(execute=False, output_path=DEFAULT_OUTPUT_PATH, variables=(VariableOptions.default()), regions=(RegionOptions.default()), runs=(RunOptions.default()), methods=(MethodOptions.default()), all_variables=False, all_regions=False, default_runs=False, all_runs=False, all_methods=False, skip_cpm_standard_calendar_projection=False, skip_hads_spatial_2k_projection=False, skip_cropping=True, crop_cpm=False, crop_hads=False, cpus=None, multiprocess=False, start_index=0, stop_index=None, total=None, print_range_length=5, **kwargs)</code></p>
 <p>Run all elements of the pipeline.</p>
 <section id="parameters" class="level4" data-number="8.1.1.1">
 <h4 data-number="8.1.1.1" class="anchored" data-anchor-id="parameters"><span class="header-section-number">8.1.1.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 7%">
-<col style="width: 33%">
-<col style="width: 44%">
-<col style="width: 14%">
+<col style="width: 8%">
+<col style="width: 22%">
+<col style="width: 51%">
+<col style="width: 16%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -501,31 +501,31 @@ Running CPM Standard Calendar projection...
 <tbody>
 <tr class="odd">
 <td><code>variables</code></td>
-<td>typing.Sequence[python.clim_recal.config.VariableOptions | str]</td>
+<td>Sequence[VariableOptions | str]</td>
 <td>Variables to include in the model, eg. <code>tasmax</code>, <code>tasmin</code>.</td>
 <td><code>(VariableOptions.default())</code></td>
 </tr>
 <tr class="even">
 <td><code>runs</code></td>
-<td>typing.Sequence[python.clim_recal.config.RunOptions | str]</td>
+<td>Sequence[RunOptions | str]</td>
 <td>Which model runs to include, eg. “01”, “08”, “11”.</td>
 <td><code>(RunOptions.default())</code></td>
 </tr>
 <tr class="odd">
-<td><code>cities</code></td>
-<td>typing.Sequence[python.clim_recal.config.CityOptions | str] | None</td>
-<td>Which cities to crop data to. Future plans facilitate skipping to run for entire UK.</td>
-<td><code>(CityOptions.default())</code></td>
+<td><code>regions</code></td>
+<td>Sequence[RegionOptions | str] | None</td>
+<td>Which regions to crop data to. Future plans facilitate skipping to run for entire UK.</td>
+<td><code>(RegionOptions.default())</code></td>
 </tr>
 <tr class="even">
 <td><code>methods</code></td>
-<td>typing.Sequence[python.clim_recal.config.MethodOptions | str]</td>
+<td>Sequence[MethodOptions | str]</td>
 <td>Which debiasing methods to apply.</td>
 <td><code>(MethodOptions.default())</code></td>
 </tr>
 <tr class="odd">
 <td><code>output_path</code></td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td><code>Path</code> to save intermediate and final results to.</td>
 <td><code>DEFAULT_OUTPUT_PATH</code></td>
 </tr>
@@ -576,7 +576,7 @@ Running CPM Standard Calendar projection...
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>... )</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>clim<span class="op">-</span>recal pipeline configurations:</span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>ClimRecalConfig(variables_count<span class="op">=</span><span class="dv">2</span>, runs_count<span class="op">=</span><span class="dv">1</span>,</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                 cities_count<span class="op">=</span><span class="dv">1</span>, methods_count<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                 regions_count<span class="op">=</span><span class="dv">1</span>, methods_count<span class="op">=</span><span class="dv">1</span>,</span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>                 cpm_folders_count<span class="op">=</span><span class="dv">2</span>, hads_folders_count<span class="op">=</span><span class="dv">2</span>,</span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>                 start_index<span class="op">=</span><span class="dv">0</span>, stop_index<span class="op">=</span><span class="va">None</span>,</span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>                 cpus<span class="op">=</span>...)<span class="op">&gt;</span></span>

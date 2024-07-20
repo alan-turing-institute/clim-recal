@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.54">
+<meta name="generator" content="quarto-1.5.55">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -364,12 +364,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <section id="python.clim_recal.debiasing.debias_wrapper.BaseRunConfig" class="level3" data-number="1.1.1">
 <h3 data-number="1.1.1" class="anchored" data-anchor-id="python.clim_recal.debiasing.debias_wrapper.BaseRunConfig"><span class="header-section-number">1.1.1</span> BaseRunConfig</h3>
-<p><code>clim_recal.debiasing.debias_wrapper.BaseRunConfig(self, command_dir=COMMAND_DIR_DEFAULT, run_prefix=RUN_PREFIX_DEFAULT, preprocess_data_file=PREPROCESS_FILE_NAME, run_cmethods_file=CMETHODS_FILE_NAME, data_path=DATA_PATH_DEFAULT, mod_folder=MOD_FOLDER_DEFAULT, obs_folder=OBS_FOLDER_DEFAULT, preprocess_out_folder=PREPROCESS_OUT_FOLDER_DEFAULT, cmethods_out_folder=CMETHODS_OUT_FOLDER_DEFAULT, calib_date_start=CALIB_DATE_START_DEFAULT, calib_date_end=CALIB_DATE_END_DEFAULT, valid_date_start=VALID_DATE_START_DEFAULT, valid_date_end=VALID_DATE_END_DEFAULT, processors=PROCESSESORS_DEFAULT, date_format_str=CLI_DATE_FORMAT_STR, date_split_str=DATE_FORMAT_SPLIT_STR)</code></p>
+<p><code>clim_recal.debiasing.debias_wrapper.BaseRunConfig(self, command_dir=COMMAND_DIR_DEFAULT, run_prefix=RUN_PREFIX_DEFAULT, preprocess_data_file=PREPROCESS_FILE_NAME, run_cmethods_file=CMETHODS_FILE_NAME, data_path=DATA_PATH_DEFAULT, mod_folder=MOD_FOLDER_DEFAULT, obs_folder=OBS_FOLDER_DEFAULT, preprocess_out_folder=PREPROCESS_OUT_FOLDER_DEFAULT, cmethods_out_folder=CMETHODS_OUT_FOLDER_DEFAULT, calib_date_start=CALIB_DATE_START_DEFAULT, calib_date_end=CALIB_DATE_END_DEFAULT, valid_date_start=VALID_DATE_START_DEFAULT, valid_date_end=VALID_DATE_END_DEFAULT, processors=PROCESSORS_DEFAULT, date_format_str=CLI_DATE_FORMAT_STR, date_split_str=DATE_FORMAT_SPLIT_STR)</code></p>
 <p>Manage creating command line scripts to run <code>debiasing</code> <code>cli</code>.</p>
 </section>
 <section id="python.clim_recal.debiasing.debias_wrapper.RunConfig" class="level3" data-number="1.1.2">
 <h3 data-number="1.1.2" class="anchored" data-anchor-id="python.clim_recal.debiasing.debias_wrapper.RunConfig"><span class="header-section-number">1.1.2</span> RunConfig</h3>
-<p><code>clim_recal.debiasing.debias_wrapper.RunConfig(self, command_dir=COMMAND_DIR_DEFAULT, run_prefix=RUN_PREFIX_DEFAULT, preprocess_data_file=PREPROCESS_FILE_NAME, run_cmethods_file=CMETHODS_FILE_NAME, data_path=DATA_PATH_DEFAULT, mod_folder=MOD_FOLDER_DEFAULT, obs_folder=OBS_FOLDER_DEFAULT, preprocess_out_folder=PREPROCESS_OUT_FOLDER_DEFAULT, cmethods_out_folder=CMETHODS_OUT_FOLDER_DEFAULT, calib_date_start=CALIB_DATE_START_DEFAULT, calib_date_end=CALIB_DATE_END_DEFAULT, valid_date_start=VALID_DATE_START_DEFAULT, valid_date_end=VALID_DATE_END_DEFAULT, processors=PROCESSESORS_DEFAULT, date_format_str=CLI_DATE_FORMAT_STR, date_split_str=DATE_FORMAT_SPLIT_STR, variable=VariableOptions.default(), run=RunOptions.default(), city=CityOptions.default(), method=MethodOptions.default())</code></p>
+<p><code>clim_recal.debiasing.debias_wrapper.RunConfig(self, command_dir=COMMAND_DIR_DEFAULT, run_prefix=RUN_PREFIX_DEFAULT, preprocess_data_file=PREPROCESS_FILE_NAME, run_cmethods_file=CMETHODS_FILE_NAME, data_path=DATA_PATH_DEFAULT, mod_folder=MOD_FOLDER_DEFAULT, obs_folder=OBS_FOLDER_DEFAULT, preprocess_out_folder=PREPROCESS_OUT_FOLDER_DEFAULT, cmethods_out_folder=CMETHODS_OUT_FOLDER_DEFAULT, calib_date_start=CALIB_DATE_START_DEFAULT, calib_date_end=CALIB_DATE_END_DEFAULT, valid_date_start=VALID_DATE_START_DEFAULT, valid_date_end=VALID_DATE_END_DEFAULT, processors=PROCESSORS_DEFAULT, date_format_str=CLI_DATE_FORMAT_STR, date_split_str=DATE_FORMAT_SPLIT_STR, variable=VariableOptions.default(), run=RunOptions.default(), region=RegionOptions.default(), method=MethodOptions.default())</code></p>
 <p>Manage creating command line scripts to run <code>debiasing</code> <code>cli</code>.</p>
 <section id="attributes" class="level4" data-number="1.1.2.1">
 <h4 data-number="1.1.2.1" class="anchored" data-anchor-id="attributes"><span class="header-section-number">1.1.2.1</span> Attributes</h4>
@@ -412,11 +412,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td><a href="#python.clim_recal.debiasing.debias_wrapper.RunConfig.mod_path">mod_path</a></td>
-<td>Return city estimates path.</td>
+<td>Return region estimates path.</td>
 </tr>
 <tr class="even">
 <td><a href="#python.clim_recal.debiasing.debias_wrapper.RunConfig.obs_path">obs_path</a></td>
-<td>Return city observations path.</td>
+<td>Return region observations path.</td>
 </tr>
 <tr class="odd">
 <td><a href="#python.clim_recal.debiasing.debias_wrapper.RunConfig.preprocess_out_path">preprocess_out_path</a></td>
@@ -481,21 +481,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.debiasing.debias_wrapper.RunConfig.cmethods_out_path" class="level5" data-number="1.1.2.2.2">
 <h5 data-number="1.1.2.2.2" class="anchored" data-anchor-id="python.clim_recal.debiasing.debias_wrapper.RunConfig.cmethods_out_path"><span class="header-section-number">1.1.2.2.2</span> cmethods_out_path</h5>
-<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.cmethods_out_path(city=None, run=None)</code></p>
+<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.cmethods_out_path(region=None, run=None)</code></p>
 <p>Return path to save cmethods results.</p>
 <section id="examples-1" class="level6" data-number="1.1.2.2.2.1">
 <h6 data-number="1.1.2.2.2.1" class="anchored" data-anchor-id="examples-1"><span class="header-section-number">1.1.2.2.2.1</span> Examples</h6>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> config: RunConfig <span class="op">=</span> RunConfig()</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> config.cmethods_out_path()</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>PosixPath(<span class="st">'/.../ClimateData/Debiased/three.cities.cropped/Manchester/05'</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> config.cmethods_out_path(city<span class="op">=</span><span class="st">'Glasgow'</span>, run<span class="op">=</span><span class="st">'07'</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> config.cmethods_out_path(region<span class="op">=</span><span class="st">'Glasgow'</span>, run<span class="op">=</span><span class="st">'07'</span>)</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>PosixPath(<span class="st">'/.../ClimateData/Debiased/three.cities.cropped/Glasgow/07'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="python.clim_recal.debiasing.debias_wrapper.RunConfig.mod_path" class="level5" data-number="1.1.2.2.3">
 <h5 data-number="1.1.2.2.3" class="anchored" data-anchor-id="python.clim_recal.debiasing.debias_wrapper.RunConfig.mod_path"><span class="header-section-number">1.1.2.2.3</span> mod_path</h5>
-<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.mod_path(city=None)</code></p>
-<p>Return city estimates path.</p>
+<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.mod_path(region=None)</code></p>
+<p>Return region estimates path.</p>
 <section id="examples-2" class="level6" data-number="1.1.2.2.3.1">
 <h6 data-number="1.1.2.2.3.1" class="anchored" data-anchor-id="examples-2"><span class="header-section-number">1.1.2.2.3.1</span> Examples</h6>
 <div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> is_data_mounted:</span>
@@ -509,8 +509,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.debiasing.debias_wrapper.RunConfig.obs_path" class="level5" data-number="1.1.2.2.4">
 <h5 data-number="1.1.2.2.4" class="anchored" data-anchor-id="python.clim_recal.debiasing.debias_wrapper.RunConfig.obs_path"><span class="header-section-number">1.1.2.2.4</span> obs_path</h5>
-<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.obs_path(city=None)</code></p>
-<p>Return city observations path.</p>
+<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.obs_path(region=None)</code></p>
+<p>Return region observations path.</p>
 <section id="examples-3" class="level6" data-number="1.1.2.2.4.1">
 <h6 data-number="1.1.2.2.4.1" class="anchored" data-anchor-id="examples-3"><span class="header-section-number">1.1.2.2.4.1</span> Examples</h6>
 <div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> is_data_mounted:</span>
@@ -524,7 +524,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.debiasing.debias_wrapper.RunConfig.preprocess_out_path" class="level5" data-number="1.1.2.2.5">
 <h5 data-number="1.1.2.2.5" class="anchored" data-anchor-id="python.clim_recal.debiasing.debias_wrapper.RunConfig.preprocess_out_path"><span class="header-section-number">1.1.2.2.5</span> preprocess_out_path</h5>
-<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.preprocess_out_path(city=None, run=None, variable=None)</code></p>
+<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.preprocess_out_path(region=None, run=None, variable=None)</code></p>
 <p>Return path to save results.</p>
 <section id="examples-4" class="level6" data-number="1.1.2.2.5.1">
 <h6 data-number="1.1.2.2.5.1" class="anchored" data-anchor-id="examples-4"><span class="header-section-number">1.1.2.2.5.1</span> Examples</h6>
@@ -533,13 +533,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> config: RunConfig <span class="op">=</span> RunConfig()</span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> config.preprocess_out_path()</span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>PosixPath(<span class="st">'.../ClimateData/Cropped/three.cities/Preprocessed/Manchester/05/tasmax'</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> config.preprocess_out_path(city<span class="op">=</span><span class="st">'Glasgow'</span>, run<span class="op">=</span><span class="st">'07'</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> config.preprocess_out_path(region<span class="op">=</span><span class="st">'Glasgow'</span>, run<span class="op">=</span><span class="st">'07'</span>)</span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>PosixPath(<span class="st">'.../ClimateData/Cropped/three.cities/Preprocessed/Glasgow/07/tasmax'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="python.clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_preprocess_str" class="level5" data-number="1.1.2.2.6">
 <h5 data-number="1.1.2.2.6" class="anchored" data-anchor-id="python.clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_preprocess_str"><span class="header-section-number">1.1.2.2.6</span> to_cli_preprocess_str</h5>
-<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_preprocess_str(variable=None, run=None, city=None, calib_start=None, calib_end=None, valid_start=None, valid_end=None)</code></p>
+<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_preprocess_str(variable=None, run=None, region=None, calib_start=None, calib_end=None, valid_start=None, valid_end=None)</code></p>
 <p>Generate a command line interface str as a test example.</p>
 <section id="examples-5" class="level6" data-number="1.1.2.2.6.1">
 <h6 data-number="1.1.2.2.6.1" class="anchored" data-anchor-id="examples-5"><span class="header-section-number">1.1.2.2.6.1</span> Examples</h6>
@@ -552,7 +552,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_preprocess_tuple" class="level5" data-number="1.1.2.2.7">
 <h5 data-number="1.1.2.2.7" class="anchored" data-anchor-id="python.clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_preprocess_tuple"><span class="header-section-number">1.1.2.2.7</span> to_cli_preprocess_tuple</h5>
-<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_preprocess_tuple(variable=None, run=None, city=None, calib_start=None, calib_end=None, valid_start=None, valid_end=None)</code></p>
+<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_preprocess_tuple(variable=None, run=None, region=None, calib_start=None, calib_end=None, valid_start=None, valid_end=None)</code></p>
 <p>Generate a <code>tuple</code> of <code>str</code> for a command line command.</p>
 <p>This will leave <code>Path</code> objects uncoverted. See <code>self.to_cli_preprocess_tuple_strs</code> for passing to a terminal.</p>
 <section id="examples-6" class="level6" data-number="1.1.2.2.7.1">
@@ -564,7 +564,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_preprocess_tuple_strs" class="level5" data-number="1.1.2.2.8">
 <h5 data-number="1.1.2.2.8" class="anchored" data-anchor-id="python.clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_preprocess_tuple_strs"><span class="header-section-number">1.1.2.2.8</span> to_cli_preprocess_tuple_strs</h5>
-<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_preprocess_tuple_strs(variable=None, run=None, city=None, calib_start=None, calib_end=None, valid_start=None, valid_end=None)</code></p>
+<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_preprocess_tuple_strs(variable=None, run=None, region=None, calib_start=None, calib_end=None, valid_start=None, valid_end=None)</code></p>
 <p>Generate a command line interface <code>str</code> <code>tuple</code> a test example.</p>
 <section id="examples-7" class="level6" data-number="1.1.2.2.8.1">
 <h6 data-number="1.1.2.2.8.1" class="anchored" data-anchor-id="examples-7"><span class="header-section-number">1.1.2.2.8.1</span> Examples</h6>
@@ -575,7 +575,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_run_cmethods_str" class="level5" data-number="1.1.2.2.9">
 <h5 data-number="1.1.2.2.9" class="anchored" data-anchor-id="python.clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_run_cmethods_str"><span class="header-section-number">1.1.2.2.9</span> to_cli_run_cmethods_str</h5>
-<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_run_cmethods_str(city=None, run=None, variable=None, method=None, input_data_path=None, cmethods_out_path=None, processors=None)</code></p>
+<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_run_cmethods_str(region=None, run=None, variable=None, method=None, input_data_path=None, cmethods_out_path=None, processors=None)</code></p>
 <p>Generate a command line interface str as a test example.</p>
 <section id="examples-8" class="level6" data-number="1.1.2.2.9.1">
 <h6 data-number="1.1.2.2.9.1" class="anchored" data-anchor-id="examples-8"><span class="header-section-number">1.1.2.2.9.1</span> Examples</h6>
@@ -588,7 +588,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_run_cmethods_tuple" class="level5" data-number="1.1.2.2.10">
 <h5 data-number="1.1.2.2.10" class="anchored" data-anchor-id="python.clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_run_cmethods_tuple"><span class="header-section-number">1.1.2.2.10</span> to_cli_run_cmethods_tuple</h5>
-<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_run_cmethods_tuple(city=None, run=None, variable=None, method=None, input_data_path=None, cmethods_out_path=None, processors=None)</code></p>
+<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_run_cmethods_tuple(region=None, run=None, variable=None, method=None, input_data_path=None, cmethods_out_path=None, processors=None)</code></p>
 <p>Generate a <code>tuple</code> of <code>str</code> for a command line command.</p>
 <p>This will leave <code>Path</code> objects uncoverted. See <code>self.to_cli_run_cmethods_tuple_strs</code> for passing to a terminal.</p>
 <section id="examples-9" class="level6" data-number="1.1.2.2.10.1">
@@ -600,7 +600,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_run_cmethods_tuple_strs" class="level5" data-number="1.1.2.2.11">
 <h5 data-number="1.1.2.2.11" class="anchored" data-anchor-id="python.clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_run_cmethods_tuple_strs"><span class="header-section-number">1.1.2.2.11</span> to_cli_run_cmethods_tuple_strs</h5>
-<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_run_cmethods_tuple_strs(city=None, run=None, variable=None, method=None, input_data_path=None, cmethods_out_path=None, processors=None)</code></p>
+<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.to_cli_run_cmethods_tuple_strs(region=None, run=None, variable=None, method=None, input_data_path=None, cmethods_out_path=None, processors=None)</code></p>
 <p>Generate a command line interface <code>str</code> <code>tuple</code> a test example.</p>
 <section id="examples-10" class="level6" data-number="1.1.2.2.11.1">
 <h6 data-number="1.1.2.2.11.1" class="anchored" data-anchor-id="examples-10"><span class="header-section-number">1.1.2.2.11.1</span> Examples</h6>
@@ -626,7 +626,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.debiasing.debias_wrapper.RunConfig.yield_mod_folder" class="level5" data-number="1.1.2.2.13">
 <h5 data-number="1.1.2.2.13" class="anchored" data-anchor-id="python.clim_recal.debiasing.debias_wrapper.RunConfig.yield_mod_folder"><span class="header-section-number">1.1.2.2.13</span> yield_mod_folder</h5>
-<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.yield_mod_folder(city=None)</code></p>
+<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.yield_mod_folder(region=None)</code></p>
 <p><code>Iterable</code> of all <code>Path</code>s in <code>self.mod_folder</code>.</p>
 <section id="examples-12" class="level6" data-number="1.1.2.2.13.1">
 <h6 data-number="1.1.2.2.13.1" class="anchored" data-anchor-id="examples-12"><span class="header-section-number">1.1.2.2.13.1</span> Examples</h6>
@@ -639,7 +639,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.debiasing.debias_wrapper.RunConfig.yield_obs_folder" class="level5" data-number="1.1.2.2.14">
 <h5 data-number="1.1.2.2.14" class="anchored" data-anchor-id="python.clim_recal.debiasing.debias_wrapper.RunConfig.yield_obs_folder"><span class="header-section-number">1.1.2.2.14</span> yield_obs_folder</h5>
-<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.yield_obs_folder(city=None)</code></p>
+<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.yield_obs_folder(region=None)</code></p>
 <p><code>Iterable</code> of all <code>Path</code>s in <code>self.obs_folder</code>.</p>
 <section id="examples-13" class="level6" data-number="1.1.2.2.14.1">
 <h6 data-number="1.1.2.2.14.1" class="anchored" data-anchor-id="examples-13"><span class="header-section-number">1.1.2.2.14.1</span> Examples</h6>
@@ -652,7 +652,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.debiasing.debias_wrapper.RunConfig.yield_preprocess_out_folder" class="level5" data-number="1.1.2.2.15">
 <h5 data-number="1.1.2.2.15" class="anchored" data-anchor-id="python.clim_recal.debiasing.debias_wrapper.RunConfig.yield_preprocess_out_folder"><span class="header-section-number">1.1.2.2.15</span> yield_preprocess_out_folder</h5>
-<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.yield_preprocess_out_folder(city=None, run=None, variable=None)</code></p>
+<p><code>clim_recal.debiasing.debias_wrapper.RunConfig.yield_preprocess_out_folder(region=None, run=None, variable=None)</code></p>
 <p><code>Iterable</code> of all <code>Path</code>s in <code>self.preprocess_out_folder</code>.</p>
 <section id="examples-14" class="level6" data-number="1.1.2.2.15.1">
 <h6 data-number="1.1.2.2.15.1" class="anchored" data-anchor-id="examples-14"><span class="header-section-number">1.1.2.2.15.1</span> Examples</h6>

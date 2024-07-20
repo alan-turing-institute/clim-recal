@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.54">
+<meta name="generator" content="quarto-1.5.55">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -358,15 +358,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <section id="python.clim_recal.config.ClimRecalConfig" class="level3" data-number="1.1.1">
 <h3 data-number="1.1.1" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalConfig"><span class="header-section-number">1.1.1</span> ClimRecalConfig</h3>
-<p><code>clim_recal.config.ClimRecalConfig(self, command_dir=COMMAND_DIR_DEFAULT, run_prefix=RUN_PREFIX_DEFAULT, preprocess_data_file=PREPROCESS_FILE_NAME, run_cmethods_file=CMETHODS_FILE_NAME, data_path=DATA_PATH_DEFAULT, mod_folder=MOD_FOLDER_DEFAULT, obs_folder=OBS_FOLDER_DEFAULT, preprocess_out_folder=PREPROCESS_OUT_FOLDER_DEFAULT, cmethods_out_folder=CMETHODS_OUT_FOLDER_DEFAULT, calib_date_start=CALIB_DATE_START_DEFAULT, calib_date_end=CALIB_DATE_END_DEFAULT, valid_date_start=VALID_DATE_START_DEFAULT, valid_date_end=VALID_DATE_END_DEFAULT, processors=PROCESSESORS_DEFAULT, date_format_str=CLI_DATE_FORMAT_STR, date_split_str=DATE_FORMAT_SPLIT_STR, variables=(VariableOptions.default()), runs=(RunOptions.default()), cities=(CityOptions.default()), methods=(MethodOptions.default()), multiprocess=False, cpus=DEFAULT_CPUS, output_path=DEFAULT_OUTPUT_PATH, resample_folder=DEFAULT_RESAMPLE_FOLDER, hads_folder=HADS_OUTPUT_LOCAL_PATH, cpm_folder=CPM_OUTPUT_LOCAL_PATH, cpm_kwargs=dict(), hads_kwargs=dict(), start_index=0, stop_index=None, add_local_dated_results_path=True, local_dated_results_path_prefix='run')</code></p>
+<p><code>clim_recal.config.ClimRecalConfig(self, command_dir=COMMAND_DIR_DEFAULT, run_prefix=RUN_PREFIX_DEFAULT, preprocess_data_file=PREPROCESS_FILE_NAME, run_cmethods_file=CMETHODS_FILE_NAME, data_path=DATA_PATH_DEFAULT, mod_folder=MOD_FOLDER_DEFAULT, obs_folder=OBS_FOLDER_DEFAULT, preprocess_out_folder=PREPROCESS_OUT_FOLDER_DEFAULT, cmethods_out_folder=CMETHODS_OUT_FOLDER_DEFAULT, calib_date_start=CALIB_DATE_START_DEFAULT, calib_date_end=CALIB_DATE_END_DEFAULT, valid_date_start=VALID_DATE_START_DEFAULT, valid_date_end=VALID_DATE_END_DEFAULT, processors=PROCESSORS_DEFAULT, date_format_str=CLI_DATE_FORMAT_STR, date_split_str=DATE_FORMAT_SPLIT_STR, variables=(VariableOptions.default()), runs=(RunOptions.default()), regions=(RegionOptions.default()), methods=(MethodOptions.default()), multiprocess=False, cpus=DEFAULT_CPUS, output_path=DEFAULT_OUTPUT_PATH, resample_folder=DEFAULT_RESAMPLE_FOLDER, hads_folder=HADS_OUTPUT_LOCAL_PATH, cpm_folder=CPM_OUTPUT_LOCAL_PATH, cpm_kwargs=dict(), hads_kwargs=dict(), start_index=0, stop_index=None, add_local_dated_results_path=True, local_dated_results_path_prefix='run')</code></p>
 <p>Manage creating command line scripts to run <code>debiasing</code> <code>cli</code>.</p>
 <section id="attributes" class="level4" data-number="1.1.1.1">
 <h4 data-number="1.1.1.1" class="anchored" data-anchor-id="attributes"><span class="header-section-number">1.1.1.1</span> Attributes</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 9%">
-<col style="width: 44%">
-<col style="width: 46%">
+<col style="width: 12%">
+<col style="width: 25%">
+<col style="width: 62%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -378,22 +378,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td>variables</td>
-<td>typing.Sequence[python.clim_recal.utils.data.VariableOptions]</td>
+<td>Sequence[VariableOptions]</td>
 <td>Variables to include in the model, eg. <code>tasmax</code>, <code>tasmin</code>.</td>
 </tr>
 <tr class="even">
 <td>runs</td>
-<td>typing.Sequence[python.clim_recal.utils.data.RunOptions]</td>
+<td>Sequence[RunOptions]</td>
 <td>Which model runs to include, eg. “01”, “08”, “11”.</td>
 </tr>
 <tr class="odd">
-<td>cities</td>
-<td>typing.Sequence[python.clim_recal.debiasing.debias_wrapper.CityOptions] | None</td>
-<td>Which cities to crop data to. Future plans facilitate skipping to run for entire UK.</td>
+<td>regions</td>
+<td>Sequence[RegionOptions] | None</td>
+<td>Which regions to crop data to. Future plans facilitate skipping to run for entire UK.</td>
 </tr>
 <tr class="even">
 <td>methods</td>
-<td>typing.Sequence[python.clim_recal.debiasing.debias_wrapper.MethodOptions]</td>
+<td>Sequence[MethodOptions]</td>
 <td>Which debiasing methods to apply.</td>
 </tr>
 <tr class="odd">
@@ -408,22 +408,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td>output_path</td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td><code>Path</code> to save all intermediate and final results to.</td>
 </tr>
 <tr class="even">
 <td>resample_folder</td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td><code>Path</code> to append to <code>output_path</code> for resampling result files.</td>
 </tr>
 <tr class="odd">
 <td>hads_folder</td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td><code>Path</code> to append to <code>output_path</code> / <code>resample_folder</code> for resampling <code>HADs</code> files.</td>
 </tr>
 <tr class="even">
 <td>cpm_folder</td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td><code>Path</code> to append to <code>output_path</code> / <code>resample_folder</code> for resampling <code>CPM</code> files.</td>
 </tr>
 <tr class="odd">
@@ -444,11 +444,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> is_data_mounted:</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_doctest_skip_message)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> run_config: ClimRecalConfig <span class="op">=</span> ClimRecalConfig(</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>...     cities<span class="op">=</span>(<span class="st">'Manchester'</span>, <span class="st">'Glasgow'</span>),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>...     regions<span class="op">=</span>(<span class="st">'Manchester'</span>, <span class="st">'Glasgow'</span>),</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>...     output_path<span class="op">=</span>test_runs_output_path,</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>...     cpus<span class="op">=</span><span class="dv">1</span>)</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> run_config</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>ClimRecalConfig(variables_count<span class="op">=</span><span class="dv">1</span>, runs_count<span class="op">=</span><span class="dv">1</span>, cities_count<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>ClimRecalConfig(variables_count<span class="op">=</span><span class="dv">1</span>, runs_count<span class="op">=</span><span class="dv">1</span>, regions_count<span class="op">=</span><span class="dv">2</span>,</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                 methods_count<span class="op">=</span><span class="dv">1</span>, cpm_folders_count<span class="op">=</span><span class="dv">1</span>,</span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                 hads_folders_count<span class="op">=</span><span class="dv">1</span>, start_index<span class="op">=</span><span class="dv">0</span>,</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                 stop_index<span class="op">=</span><span class="va">None</span>, cpus<span class="op">=</span><span class="dv">1</span>)<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>

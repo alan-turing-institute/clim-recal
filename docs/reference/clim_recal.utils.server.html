@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.54">
+<meta name="generator" content="quarto-1.5.55">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -368,9 +368,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 data-number="1.1.1.1" class="anchored" data-anchor-id="attributes"><span class="header-section-number">1.1.1.1</span> Attributes</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 13%">
-<col style="width: 22%">
-<col style="width: 64%">
+<col style="width: 14%">
+<col style="width: 16%">
+<col style="width: 68%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -382,12 +382,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td>conda_file_path</td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td>Path to write <code>conda-lock</code> file to.</td>
 </tr>
 <tr class="even">
 <td>env_paths</td>
-<td>typing.Sequence[os.PathLike]</td>
+<td>Sequence[PathLike]</td>
 <td>Paths of configs to combine. For supported formats see: https://conda.github.io/conda-lock/</td>
 </tr>
 <tr class="odd">
@@ -402,12 +402,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td>legacy_name_prefix</td>
-<td>os.PathLike | str</td>
+<td>PathLike | str</td>
 <td><code>str</code> to precede <code>legacy_arch</code> export file if <code>run_legacy_mv()</code> is run.</td>
 </tr>
 <tr class="even">
 <td>default_kwargs</td>
-<td>dict[str, typing.Any]</td>
+<td>dict[str, Any]</td>
 <td><code>kwargs</code> to pass to <code>self.run_conda_lock()</code>.</td>
 </tr>
 </tbody>
@@ -917,10 +917,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 data-number="1.2.2.1" class="anchored" data-anchor-id="parameters-5"><span class="header-section-number">1.2.2.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 13%">
-<col style="width: 10%">
-<col style="width: 54%">
-<col style="width: 21%">
+<col style="width: 14%">
+<col style="width: 7%">
+<col style="width: 55%">
+<col style="width: 22%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -945,13 +945,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td><code>code_path</code></td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td><code>Path</code> to copy code from to <code>user</code> home directory.</td>
 <td><code>RSTUDIO_DOCKER_USER_PATH</code></td>
 </tr>
 <tr class="even">
 <td><code>user_home_path</code></td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td>Path that <code>user</code> folder will be in, often <code>Path('/home')</code> in <code>linux</code>.</td>
 <td><code>DEBIAN_HOME_PATH</code></td>
 </tr>
@@ -969,7 +969,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td>pathlib.Path</td>
+<td>Path</td>
 <td>Full path to generated <code>user</code> home folder.</td>
 </tr>
 </tbody>
@@ -999,10 +999,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 data-number="1.2.3.1" class="anchored" data-anchor-id="parameters-6"><span class="header-section-number">1.2.3.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 13%">
 <col style="width: 14%">
-<col style="width: 60%">
-<col style="width: 10%">
+<col style="width: 9%">
+<col style="width: 64%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1015,7 +1015,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>file_path</code></td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td><code>Path</code> to collumned file including user names and passwords per row.</td>
 <td><em>required</em></td>
 </tr>
@@ -1033,7 +1033,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td><code>file_reader</code></td>
-<td>typing.Callable</td>
+<td>Callable</td>
 <td>Callable (function) to read <code>file_path</code>.</td>
 <td><em>required</em></td>
 </tr>
@@ -1083,8 +1083,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <table class="caption-top table">
 <colgroup>
 <col style="width: 15%">
-<col style="width: 11%">
-<col style="width: 56%">
+<col style="width: 8%">
+<col style="width: 57%">
 <col style="width: 17%">
 </colgroup>
 <thead>
@@ -1104,7 +1104,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td><code>user_home_path</code></td>
-<td>os.PathLike</td>
+<td>PathLike</td>
 <td>Parent path of <code>user</code> folder name.</td>
 <td><code>DEBIAN_HOME_PATH</code></td>
 </tr>
@@ -1152,8 +1152,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <table class="caption-top table">
 <colgroup>
 <col style="width: 11%">
-<col style="width: 11%">
-<col style="width: 66%">
+<col style="width: 7%">
+<col style="width: 68%">
 <col style="width: 11%">
 </colgroup>
 <thead>
@@ -1167,7 +1167,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><code>instance</code></td>
-<td>typing.Any</td>
+<td>Any</td>
 <td>An object to modify.</td>
 <td><em>required</em></td>
 </tr>
@@ -1184,8 +1184,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 data-number="1.2.5.2" class="anchored" data-anchor-id="returns-7"><span class="header-section-number">1.2.5.2</span> Returns</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 31%">
-<col style="width: 68%">
+<col style="width: 24%">
+<col style="width: 75%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1195,7 +1195,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td>dict[str, typing.Any]</td>
+<td>dict[str, Any]</td>
 <td>Any remaining <code>kwargs</code> not used to modify <code>instance</code>.</td>
 </tr>
 </tbody>
