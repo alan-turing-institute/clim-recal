@@ -54,11 +54,12 @@ all = true
 dev = [
     "pytest-cov<5.0.0,>=4.1.0",
     "pytest-sugar<2.0.0,>=1.0.0",
-    "quartodoc<1.0.0,>=0.7.2",
+    "quartodoc>=0.7.5",
     "pre-commit<4.0.0,>=3.6.2",
     "coverage-badge<2.0.0,>=1.1.0",
     "pytest-xdist>=3.5.0",
     "sysrsync>=1.1.1",
+    "pydantic>=2.8.2",
 ]
 
 [tool.pdm.build]
