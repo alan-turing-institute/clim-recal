@@ -2,86 +2,86 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/docs/reference/clim_recal.utils.data.html</loc>
-    <lastmod>2024-07-20T23:50:02.125Z</lastmod>
+    <lastmod>2024-07-21T14:55:30.965Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/docs/reference/clim_recal.resample.html</loc>
-    <lastmod>2024-07-20T23:50:01.897Z</lastmod>
+    <lastmod>2024-07-21T14:55:30.745Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/docs/reference/clim_recal.data_loader.html</loc>
-    <lastmod>2024-07-20T23:50:01.837Z</lastmod>
+    <lastmod>2024-07-21T14:55:30.685Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/docs/reference/clim_recal.pipeline.html</loc>
-    <lastmod>2024-07-20T23:50:01.821Z</lastmod>
+    <lastmod>2024-07-21T14:55:30.665Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/docs/reference/clim_recal.config.html</loc>
-    <lastmod>2024-07-20T23:50:01.849Z</lastmod>
+    <lastmod>2024-07-21T14:55:30.697Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/docs/reference/clim_recal.utils.server.html</loc>
-    <lastmod>2024-07-20T23:50:02.029Z</lastmod>
+    <lastmod>2024-07-21T14:55:30.873Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/docs/datasets.html</loc>
-    <lastmod>2024-07-20T23:49:08.973Z</lastmod>
+    <lastmod>2024-07-21T14:54:36.121Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/python/README.html</loc>
-    <lastmod>2024-07-20T23:49:09.013Z</lastmod>
+    <lastmod>2024-07-21T14:54:36.161Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.html</loc>
-    <lastmod>2024-07-20T23:49:08.729Z</lastmod>
+    <lastmod>2024-07-21T14:54:35.877Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/R/README.html</loc>
-    <lastmod>2024-07-20T23:49:08.729Z</lastmod>
+    <lastmod>2024-07-21T14:54:35.877Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/README.html</loc>
-    <lastmod>2024-07-20T23:49:08.749Z</lastmod>
+    <lastmod>2024-07-21T14:54:35.893Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/setup-instructions.html</loc>
-    <lastmod>2024-07-20T23:49:09.017Z</lastmod>
+    <lastmod>2024-07-21T14:54:36.169Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/R/misc/Identifying_Runs.html</loc>
-    <lastmod>2024-07-20T23:49:08.733Z</lastmod>
+    <lastmod>2024-07-21T14:54:35.881Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/docs/contributing.html</loc>
-    <lastmod>2024-07-20T23:49:08.973Z</lastmod>
+    <lastmod>2024-07-21T14:54:36.121Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/docs/reference/clim_recal.debiasing.debias_wrapper.html</loc>
-    <lastmod>2024-07-20T23:50:01.937Z</lastmod>
+    <lastmod>2024-07-21T14:55:30.781Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/docs/docker-configurations.html</loc>
-    <lastmod>2024-07-20T23:49:08.973Z</lastmod>
+    <lastmod>2024-07-21T14:54:36.121Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/docs/pipeline_guidance.html</loc>
-    <lastmod>2024-07-20T23:49:08.973Z</lastmod>
+    <lastmod>2024-07-21T14:54:36.121Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/docs/reference/clim_recal.utils.core.html</loc>
-    <lastmod>2024-07-20T23:50:01.993Z</lastmod>
+    <lastmod>2024-07-21T14:55:30.837Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/docs/reference/clim_recal.utils.xarray.html</loc>
-    <lastmod>2024-07-20T23:50:02.089Z</lastmod>
+    <lastmod>2024-07-21T14:55:30.933Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/docs/reference/clim_recal.ceda_ftp_download.html</loc>
-    <lastmod>2024-07-20T23:50:01.825Z</lastmod>
+    <lastmod>2024-07-21T14:55:30.669Z</lastmod>
   </url>
   <url>
     <loc>https://alan-turing-institute.github.io/clim-recal/docs/reference/index.html</loc>
-    <lastmod>2024-07-20T23:50:01.801Z</lastmod>
+    <lastmod>2024-07-21T14:55:30.649Z</lastmod>
   </url>
 </urlset>
