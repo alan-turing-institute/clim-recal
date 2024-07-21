@@ -24,7 +24,7 @@ from osgeo.gdal import (
 from osgeo.gdal import config_option as config_GDAL_option
 from pandas import DatetimeIndex, date_range
 from rasterio.enums import Resampling
-from tqdm.rich import tqdm
+from tqdm import tqdm
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import (
@@ -214,8 +214,8 @@ def cpm_reproject_with_standard_calendar(
     >>> tasmax_cpm_1980_365_day: T_Dataset = cpm_reproject_with_standard_calendar(
     ...     cpm_xr_time_series=tasmax_cpm_1980_raw,
     ...     variable_name="tasmax")
-    Warp:      ...nc 100% ...
-    Translate: ...tif 100% ...
+    Warp:      ...nc ...100%...
+    Translate: ...tif ...100%...
     >>> tasmax_cpm_1980_365_day
     <xarray.Dataset>
     Dimensions:              (time: 365, x: 493, y: 607)
