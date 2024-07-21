@@ -1,4 +1,5 @@
 """Utility functions."""
+
 import sys
 import warnings
 from collections.abc import KeysView
@@ -205,6 +206,10 @@ def multiprocess_execute(
     else:
         logger.warning(f"'total_cpus' not checkable, running with 'cpus': {cpus}")
     params_tuples: list[tuple[Any, str]] = [(item, method_name) for item in iter]
+    # Had build errors when generating a wheel,
+    # Followed solution here:
+    # https://stackoverflow.com/questions/45720153/python-multiprocessing-error-attributeerror-module-main-has-no-attribute
+    __spec__ = None
     with Pool(processes=cpus) as pool:
         results = list(
             tqdm(pool.starmap(run_callable_attr, params_tuples), total=len(iter))
