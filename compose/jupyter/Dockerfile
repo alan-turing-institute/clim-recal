@@ -27,6 +27,8 @@ RUN \
 # Needed for write permission
 USER root
 
+RUN sudo apt-get update && sudo apt-get install -y build-essential
+
 # First line changes a startup hook, which will activate the custom environment
 RUN \
     echo conda activate "${env_name}" >> /usr/local/bin/before-notebook.d/10activate-conda-env.sh && \
@@ -36,6 +38,10 @@ RUN \
 RUN chown -R ${NB_USER} /home/${NB_USER}
 
 USER ${NB_UID}
+
+
+RUN conda update -n ${env_name} -y --all && \
+    conda install -n ${env_name} -y pysqlite3
 
 COPY . .
 
