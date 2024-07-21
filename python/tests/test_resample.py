@@ -405,9 +405,9 @@ def test_cpm_xarray_to_standard_calendar(
     Indexing differs between `include_bnds_index` ``bool`.
     ```
     """
-    CORRECT_PROJ4: Final[
-        str
-    ] = "+proj=ob_tran +o_proj=longlat +o_lon_p=0 +o_lat_p=37.5 +lon_0=357.5 +R=6371229 +no_defs=True"
+    CORRECT_PROJ4: Final[str] = (
+        "+proj=ob_tran +o_proj=longlat +o_lon_p=0 +o_lat_p=37.5 +lon_0=357.5 +R=6371229 +no_defs=True"
+    )
     test_converted = cpm_xarray_to_standard_calendar(
         tasmax_cpm_1980_raw, include_bnds_index=include_bnds_index
     )
@@ -810,9 +810,9 @@ def test_execute_resample_configs(
         output_paths=tmp_path,
         stop_index=1,
     )
-    resamplers: tuple[
-        HADsResampler | CPMResampler, ...
-    ] = test_config.execute_resample_configs(multiprocess=multiprocess)
+    resamplers: tuple[HADsResampler | CPMResampler, ...] = (
+        test_config.execute_resample_configs(multiprocess=multiprocess)
+    )
     export: T_Dataset = open_dataset(resamplers[0][0])
     assert len(export.time) == 31
     assert not np.isnan(export.tasmax[0][200:300].values).all()

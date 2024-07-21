@@ -136,9 +136,9 @@ CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str | Path, ...]] = (
     VALID_DATES_STR_DEFAULT,
 )
 
-CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT: Final[
-    tuple[str, ...]
-] = iter_to_tuple_strs(CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT)
+CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT: Final[tuple[str, ...]] = (
+    iter_to_tuple_strs(CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT)
+)
 
 CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = " ".join(
     CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
@@ -164,9 +164,9 @@ CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str | Path | int, ...]] 
     PROCESSORS_DEFAULT,
 )
 
-CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT: Final[
-    tuple[str, ...]
-] = iter_to_tuple_strs(CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT)
+CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT: Final[tuple[str, ...]] = (
+    iter_to_tuple_strs(CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT)
+)
 
 CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = " ".join(
     CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
@@ -177,8 +177,7 @@ OBS_FOLDER_FILES_COUNT_CORRECT: Final[int] = MOD_FOLDER_FILES_COUNT_CORRECT
 PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT: Final[int] = 4
 
 
-class StandardWith360DayError(Exception):
-    ...
+class StandardWith360DayError(Exception): ...
 
 
 def year_days_count(
@@ -325,7 +324,6 @@ SyncedLog = TypedDict("SyncedLog", {"time": datetime | None, "path": Path})
 
 @dataclass
 class LocalCache:
-
     """Manager for caching files locally.
 
     Attributes
@@ -513,7 +511,6 @@ class LocalCache:
 
 @dataclass
 class LocalCachesManager(UserDict):
-
     """Manager for a set of local caches.
 
     Attributes

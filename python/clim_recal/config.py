@@ -33,7 +33,6 @@ DEFAULT_CPUS: Final[int] = 2
 
 
 class ClimRecalRunsConfigType(TypedDict):
-
     """Lists of parameters to generate `RunConfigType` instances."""
 
     regions: Sequence[RegionOptions] | None
@@ -47,7 +46,6 @@ ClimRecalRunResultsType = dict[RunConfig, dict[str, subprocess.CompletedProcess]
 
 @dataclass
 class ClimRecalConfig(BaseRunConfig):
-
     """Manage creating command line scripts to run `debiasing` `cli`.
 
     Attributes

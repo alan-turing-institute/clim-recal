@@ -131,6 +131,7 @@ New approach:
 
 
 """
+
 from os import PathLike
 from pathlib import Path
 from typing import Final, Sequence
@@ -273,20 +274,20 @@ def main(
             print("Skipping CPM Strandard Calendar projection.")
         else:
             print("Running CPM Standard Calendar projection...")
-            cpm_resamplers: tuple[
-                CPMResampler, ...
-            ] = config.cpm_manager.execute_resample_configs(
-                multiprocess=multiprocess, cpus=cpus
+            cpm_resamplers: tuple[CPMResampler, ...] = (
+                config.cpm_manager.execute_resample_configs(
+                    multiprocess=multiprocess, cpus=cpus
+                )
             )
             print(cpm_resamplers[:print_range_length])
         if skip_hads_spatial_2k_projection:
             print("Skipping HADs aggregation to 2.2km spatial units.")
         else:
             print("Running HADs aggregation to 2.2km spatial units...")
-            hads_resamplers: tuple[
-                HADsResampler, ...
-            ] = config.hads_manager.execute_resample_configs(
-                multiprocess=multiprocess, cpus=cpus
+            hads_resamplers: tuple[HADsResampler, ...] = (
+                config.hads_manager.execute_resample_configs(
+                    multiprocess=multiprocess, cpus=cpus
+                )
             )
             print(hads_resamplers[:print_range_length])
         if skip_cropping or (not crop_cpm and not crop_hads):
@@ -296,10 +297,10 @@ def main(
                 print("Skipping cropping CPM Standard Calendar projections.")
             else:
                 print(f"Cropping CPMs to regions {config.regions}: ...")
-                cropped_cpm_resamplers: tuple[
-                    CPMResampler, ...
-                ] = config.cpm_manager.execute_crop_resamples(
-                    multiprocess=multiprocess, cpus=cpus
+                cropped_cpm_resamplers: tuple[CPMResampler, ...] = (
+                    config.cpm_manager.execute_crop_resamples(
+                        multiprocess=multiprocess, cpus=cpus
+                    )
                 )
                 print(cropped_cpm_resamplers[:print_range_length])
             if skip_cpm_standard_calendar_projection and not crop_hads:
@@ -308,10 +309,10 @@ def main(
                 print(
                     f"Cropping HADS 2.2km projections to regions {config.regions}: ..."
                 )
-                cropped_hads_resamplers: tuple[
-                    CPMResampler, ...
-                ] = config.hands_manager.execute_crop_resamples(
-                    multiprocess=multiprocess, cpus=cpus
+                cropped_hads_resamplers: tuple[CPMResampler, ...] = (
+                    config.hands_manager.execute_crop_resamples(
+                        multiprocess=multiprocess, cpus=cpus
+                    )
                 )
                 print(cropped_hads_resamplers[:print_range_length])
     else:

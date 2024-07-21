@@ -1,4 +1,5 @@
 """Wrapper for running `preprocess_data.py` and `run_cmethods.py`"""
+
 from dataclasses import dataclass
 from datetime import date
 from os import PathLike
@@ -63,7 +64,6 @@ class RunConfigType(TypedDict):
 
 @dataclass
 class BaseRunConfig:
-
     """Manage creating command line scripts to run `debiasing` `cli`."""
 
     command_dir: Path = COMMAND_DIR_DEFAULT
@@ -91,7 +91,6 @@ class BaseRunConfig:
 
 @dataclass
 class RunConfig(BaseRunConfig):
-
     """Manage creating command line scripts to run `debiasing` `cli`."""
 
     variable: VariableOptions | str = VariableOptions.default()

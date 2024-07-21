@@ -119,10 +119,10 @@ def cpm_xarray_to_standard_calendar(
     cpm_to_std_calendar: T_Dataset = convert_xr_calendar(
         cpm_xr_time_series, interpolate_na=True, check_cftime_cols=("time_bnds",)
     )
-    cpm_to_std_calendar[
-        "month_number"
-    ] = cpm_to_std_calendar.month_number.interpolate_na(
-        "time", fill_value="extrapolate"
+    cpm_to_std_calendar["month_number"] = (
+        cpm_to_std_calendar.month_number.interpolate_na(
+            "time", fill_value="extrapolate"
+        )
     )
     cpm_to_std_calendar["year"] = cpm_to_std_calendar.year.interpolate_na(
         "time", fill_value="extrapolate"
@@ -521,7 +521,7 @@ def hads_resample_and_reproject(
         y_dim_name=y_dim_name,
         match_xr_time_series=cpm_to_match,
         match_xr_time_series_load_func=cpm_to_match_func,
-        resampling_method=VariableOptions.resampling_method(variable_name)
+        resampling_method=VariableOptions.resampling_method(variable_name),
         # match_xr_time_series_load_kwargs=dict(variable_name=variable_name),
     )
     return epsg_277000_2_2km

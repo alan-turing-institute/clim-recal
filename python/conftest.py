@@ -49,9 +49,9 @@ from tests.utils import (
 )
 
 MOUNT_DOCTEST_SKIP_MESSAGE: Final[str] = "requires external data mounted"
-MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE: Final[
-    str
-] = "requires external data mounted or cached"
+MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE: Final[str] = (
+    "requires external data mounted or cached"
+)
 
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
 CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData")
@@ -455,29 +455,29 @@ def doctest_auto_fixtures(
     clim_runner: ClimRecalConfig,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
-    doctest_namespace[
-        "CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT"
-    ] = CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT
-    doctest_namespace[
-        "CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT"
-    ] = CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
-    doctest_namespace[
-        "CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT"
-    ] = CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
+    doctest_namespace["CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT"] = (
+        CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT
+    )
+    doctest_namespace["CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT"] = (
+        CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
+    )
+    doctest_namespace["CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT"] = (
+        CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
+    )
     doctest_namespace["MOD_FOLDER_FILES_COUNT_CORRECT"] = MOD_FOLDER_FILES_COUNT_CORRECT
     doctest_namespace["OBS_FOLDER_FILES_COUNT_CORRECT"] = OBS_FOLDER_FILES_COUNT_CORRECT
-    doctest_namespace[
-        "PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT"
-    ] = preprocess_out_folder_files_count_correct
-    doctest_namespace[
-        "CLI_CMEHTODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT"
-    ] = CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
-    doctest_namespace[
-        "CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT"
-    ] = CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT
-    doctest_namespace[
-        "CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT"
-    ] = CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
+    doctest_namespace["PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT"] = (
+        preprocess_out_folder_files_count_correct
+    )
+    doctest_namespace["CLI_CMEHTODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT"] = (
+        CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
+    )
+    doctest_namespace["CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT"] = (
+        CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT
+    )
+    doctest_namespace["CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT"] = (
+        CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
+    )
     doctest_namespace["TEST_AUTH_CSV_PATH"] = TEST_AUTH_CSV_FILE_NAME
     doctest_namespace["is_platform_darwin"] = is_platform_darwin()
     doctest_namespace["is_data_mounted"] = is_data_mounted
@@ -485,9 +485,9 @@ def doctest_auto_fixtures(
     doctest_namespace["pprint"] = pprint
     doctest_namespace["pytest"] = pytest
     doctest_namespace["xarray_spatial_4_days"] = xarray_spatial_4_days
-    doctest_namespace[
-        "xarray_spatial_6_days_2_skipped"
-    ] = xarray_spatial_6_days_2_skipped
+    doctest_namespace["xarray_spatial_6_days_2_skipped"] = (
+        xarray_spatial_6_days_2_skipped
+    )
     doctest_namespace["xarray_spatial_8_days"] = xarray_spatial_8_days
     doctest_namespace["xarray_spatial_4_years"] = xarray_spatial_4_years
     doctest_namespace["xarray_spatial_4_years_360_day"] = xarray_spatial_4_years_360_day
@@ -500,12 +500,12 @@ def doctest_auto_fixtures(
     doctest_namespace["resample_test_hads_output_path"] = resample_test_hads_output_path
     doctest_namespace["resample_test_cpm_output_path"] = resample_test_cpm_output_path
     doctest_namespace["mount_doctest_skip_message"] = MOUNT_DOCTEST_SKIP_MESSAGE
-    doctest_namespace[
-        "mount_or_cache_doctest_skip_message"
-    ] = MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE
-    doctest_namespace[
-        "glasgow_example_cropped_cpm_rainfall_path"
-    ] = glasgow_example_cropped_cpm_rainfall_path
+    doctest_namespace["mount_or_cache_doctest_skip_message"] = (
+        MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE
+    )
+    doctest_namespace["glasgow_example_cropped_cpm_rainfall_path"] = (
+        glasgow_example_cropped_cpm_rainfall_path
+    )
     doctest_namespace["clim_runner"] = clim_runner
 
 

@@ -102,7 +102,6 @@ def reproject_2_2km_filename(path: Path) -> Path:
 
 @dataclass(kw_only=True)
 class ResamblerBase:
-
     """Base class to inherit for `HADs` and `CPM`."""
 
     input_path: PathLike | None = RAW_HADS_TASMAX_PATH
@@ -641,7 +640,6 @@ class CPMResampler(ResamblerBase):
 
 @dataclass(kw_only=True)
 class HADsResamplerManager:
-
     """Class to manage processing HADs resampling.
 
     Attributes
@@ -863,7 +861,6 @@ class HADsResamplerManager:
 
 @dataclass(kw_only=True, repr=False)
 class CPMResamplerManager(HADsResamplerManager):
-
     """Class to manage processing CPM resampling.
 
     Examples
