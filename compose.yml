@@ -12,8 +12,8 @@ services:
       - NB_GID=100
       - NB_GROUP=users
       - CHOWN_HOME=yes
-      - CHOWN_HOME_OPTS=-R
-      - JUPYTER_ENABLE_LAB=yes
+      # - CHOWN_HOME_OPTS=-R
+      # - JUPYTER_ENABLE_LAB=yes
     volumes:
       - .:/home/jovyan:rw
 

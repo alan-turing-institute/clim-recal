@@ -92,28 +92,43 @@ PROJECTED_CPM_TASMAX_1980_DEC_31_FIRST_5: np.array = np.array(
 )
 
 
-FINAL_HADS_JAN_10_430_X_230_250_Y: Final[NDArray] = np.array(
+# FINAL_HADS_JAN_10_430_X_230_250_Y: Final[NDArray] = np.array(
+#     (
+#         np.nan,
+#         np.nan,
+#         np.nan,
+#         np.nan,
+#         np.nan,
+#         np.nan,
+#         np.nan,
+#         np.nan,
+#         np.nan,
+#         np.nan,
+#         np.nan,
+#         3.61614943,
+#         3.22494448,
+#         2.87045363,
+#         2.62269053,
+#         2.79705005,
+#         2.73883926,
+#         2.48555346,
+#         2.46462528,
+#         2.61303118,
+#     )
+# )
+
+FINAL_HADS_JAN_10_430_X_200_210_Y: Final[NDArray] = np.array(
     (
         np.nan,
         np.nan,
         np.nan,
         np.nan,
-        np.nan,
-        np.nan,
-        np.nan,
-        np.nan,
-        np.nan,
-        np.nan,
-        np.nan,
-        3.61614943,
-        3.22494448,
-        2.87045363,
-        2.62269053,
-        2.79705005,
-        2.73883926,
-        2.48555346,
-        2.46462528,
-        2.61303118,
+        7.57977839,
+        7.47138044,
+        7.27587694,
+        7.27587694,
+        7.07294578,
+        7.04533059,
     )
 )
 
@@ -688,8 +703,8 @@ def test_interpolate_coords(
         )
         assert reprojected_xr_time_series.dims["time"] == 31
         assert_allclose(
-            reprojected_xr_time_series.tasmax[10][430][230:250],
-            FINAL_HADS_JAN_10_430_X_230_250_Y,
+            reprojected_xr_time_series.tasmax[10][430][200:210],
+            FINAL_HADS_JAN_10_430_X_200_210_Y,
         )
         if use_reference_grid:
             assert reprojected_xr_time_series.rio.crs == BRITISH_NATIONAL_GRID_EPSG
@@ -717,6 +732,7 @@ def test_interpolate_coords(
     assert reprojected_xr_time_series.dims[y_col_name] == 651
 
 
+@pytest.mark.slow
 @pytest.mark.localcache
 @pytest.mark.mount
 def test_hads_resample_and_reproject(
@@ -754,7 +770,7 @@ def test_hads_resample_and_reproject(
         time_stamp=True,
     )
     assert_allclose(
-        read_from_export.tasmax[10][430][230:250], FINAL_HADS_JAN_10_430_X_230_250_Y
+        read_from_export.tasmax[10][430][200:210], FINAL_HADS_JAN_10_430_X_200_210_Y
     )
     assert read_from_export.dims["time"] == 31
     assert (
@@ -768,8 +784,8 @@ def test_hads_resample_and_reproject(
     assert all(cpm_to_match.x == read_from_export.x)
     assert all(cpm_to_match.y == read_from_export.y)
     assert (
-        read_from_export.spatial_ref.attrs["GeoTransform"]
-        == cpm_to_match.spatial_ref.attrs["GeoTransform"]
+        read_from_export.spatial_ref.attrs["spatial_ref"]
+        == cpm_to_match.spatial_ref.attrs["spatial_ref"]
     )
 
 

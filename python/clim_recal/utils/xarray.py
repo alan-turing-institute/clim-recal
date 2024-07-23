@@ -73,6 +73,7 @@ ReprojectFuncType = Callable[[T_Dataset], T_Dataset]
 GLASGOW_GEOM_ABSOLUTE_PATH: Final[Path] = (
     climate_data_mount_path() / GLASGOW_GEOM_LOCAL_PATH
 )
+HADS_MIN_NULL: float = -1000000
 
 # MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
 # """A `set` of tuples of month and day numbers for `enforce_date_changes`."""
@@ -285,6 +286,7 @@ def xr_reproject_crs(
     match_xr_time_series_load_func: Callable | None = None,
     match_xr_time_series_load_kwargs: dict[str, Any] | None = None,
     resampling_method: Resampling = DEFAULT_RESAMPLING_METHOD,
+    nodata: float = np.nan,
     **kwargs,
 ) -> T_Dataset:
     """Reproject `source_xr` to `target_xr` coordinate structure.
@@ -371,7 +373,7 @@ def xr_reproject_crs(
             )
             if {"x", "y"} < match_xr_time_series.dims.keys():
                 logger.debug(
-                    "Renaming dims: '{x_dim_name}' -> 'x', '{y_dim_name}' -> 'y'"
+                    f"Renaming dims: '{x_dim_name}' -> 'x', '{y_dim_name}' -> 'y'"
                 )
                 without_attributes = without_attributes.rename(
                     {x_dim_name: "x", y_dim_name: "y"}
@@ -379,11 +381,11 @@ def xr_reproject_crs(
             else:
                 raise ValueError("Can't match dim names.")
         without_attributes_reprojected = without_attributes.rio.reproject_match(
-            match_xr_time_series, resampling=resampling_method.name, **kwargs
+            match_xr_time_series, resampling=resampling_method, nodata=nodata, **kwargs
         )
     else:
         without_attributes_reprojected: T_DataArray = without_attributes.rio.reproject(
-            final_crs, resampling=resampling_method.name, **kwargs
+            final_crs, resampling=resampling_method, nodata=nodata, **kwargs
         )
     return Dataset({variable_name: without_attributes_reprojected})
 
@@ -511,7 +513,6 @@ def hads_resample_and_reproject(
     y_dim_name: str = HADS_RAW_Y_COLUMN_NAME,
 ) -> T_Dataset:
     """Resample `HADs` `xarray` time series to 2.2km."""
-
     if isinstance(cpm_to_match, Dataset) and {"x", "y"} < cpm_to_match.dims.keys():
         cpm_to_match_func = None
     epsg_277000_2_2km: T_Dataset = xr_reproject_crs(
@@ -524,7 +525,17 @@ def hads_resample_and_reproject(
         resampling_method=VariableOptions.resampling_method(variable_name),
         # match_xr_time_series_load_kwargs=dict(variable_name=variable_name),
     )
-    return epsg_277000_2_2km
+
+    # Check if the minimum values should be NULL
+    min_value: float = epsg_277000_2_2km[variable_name].min()
+    if min_value < HADS_MIN_NULL:
+        logger.info(f"Setting '{variable_name}' values less than {min_value} as `nan`")
+        return epsg_277000_2_2km.where(epsg_277000_2_2km[variable_name] > min_value)
+    else:
+        logger.debug(
+            f"'{variable_name}' values less than {min_value} kept. 'HADS_MIN_NULL': {HADS_MIN_NULL}"
+        )
+        return epsg_277000_2_2km
 
 
 def plot_xarray(

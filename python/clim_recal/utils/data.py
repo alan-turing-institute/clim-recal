@@ -147,7 +147,7 @@ class VariableOptions(StrEnumReprName):
         """Return the preferred aggregation method for each option."""
         return {
             cls.TASMAX: Resampling.max,
-            cls.RAINFALL: Resampling.bilinear,
+            cls.RAINFALL: Resampling.average,
             cls.TASMIN: Resampling.min,
         }
 
