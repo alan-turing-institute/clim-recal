@@ -8,6 +8,7 @@ dependencies:
   - python=3.12
   - gdal=3.8.5
   - parallel
+  - rsync
 platforms:
   - osx-arm64
   - linux-64

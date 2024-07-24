@@ -1,12 +1,12 @@
 exclude: "data"
 repos:
   - repo: https://github.com/psf/black
-    rev: "23.12.1"
+    rev: "24.4.2"
     hooks:
       - id: black-jupyter
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -27,7 +27,7 @@ repos:
       - id: rst-inline-touching-normal
 
   - repo: https://github.com/pdm-project/pdm
-    rev: 2.12.4 # a PDM release exposing the hook
+    rev: 2.17.1 # a PDM release exposing the hook
     hooks:
       - id: pdm-lock-check
         args: [--lockfile, python/pdm.lock]

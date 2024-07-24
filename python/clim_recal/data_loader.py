@@ -1,16 +1,13 @@
 import glob
 import os
 from datetime import datetime
-from typing import Final
 
 from geopandas import read_file
 from rioxarray import open_rasterio
 from xarray import DataArray, cftime_range, concat, open_dataset
 
 from .utils.core import DateRange
-
-BritishNationalGridCoordsNum: Final[int] = 27700
-BritishNationalGridCoordinates: Final[str] = f'epsg:{BritishNationalGridCoordsNum}'
+from .utils.xarray import BRITISH_NATIONAL_GRID_EPSG
 
 
 def load_data(
@@ -169,7 +166,7 @@ def clip_dataset(xa: DataArray, variable: str, shapefile: str) -> DataArray:
 def reformat_file(
     file: str,
     variable: str,
-    spatial_config: str = BritishNationalGridCoordinates
+    spatial_config: str = BRITISH_NATIONAL_GRID_EPSG
 ) -> DataArray:
     """Load tif file and reformat xarray into expected format.
 
@@ -230,7 +227,7 @@ def load_and_merge(
     date_range: DateRange,
     files: list[str],
     variable: str,
-    write_crs_format: str = BritishNationalGridCoordinates,
+    write_crs_format: str = BRITISH_NATIONAL_GRID_EPSG,
 ) -> DataArray:
     """
     Load files into xarrays, select a time range and a variable and merge into a sigle xarray.

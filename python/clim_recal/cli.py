@@ -7,9 +7,9 @@ import typer
 from .config import (
     DEFAULT_CPUS,
     DEFAULT_OUTPUT_PATH,
-    CityOptions,
     ClimRecalRunResultsType,
     MethodOptions,
+    RegionOptions,
     RunOptions,
     VariableOptions,
 )
@@ -32,8 +32,8 @@ def pipeline(
     variable: Annotated[list[VariableOptions], typer.Option("--variable", "-v")] = [
         VariableOptions.default()
     ],
-    city: Annotated[list[CityOptions], typer.Option("--city", "-c")] = [
-        CityOptions.default()
+    region: Annotated[list[RegionOptions], typer.Option("--region", "-c")] = [
+        RegionOptions.default()
     ],
     run: Annotated[list[RunOptions], typer.Option("--run", "-r")] = [
         RunOptions.default()
@@ -42,7 +42,7 @@ def pipeline(
         MethodOptions.default()
     ],
     all_variables: Annotated[bool, typer.Option("--all-variables")] = False,
-    all_cities: Annotated[bool, typer.Option("--all-cities")] = False,
+    all_regions: Annotated[bool, typer.Option("--all-regions")] = False,
     all_runs: Annotated[bool, typer.Option("--all-runs")] = False,
     default_runs: Annotated[bool, typer.Option("--default-runs")] = False,
     all_methods: Annotated[bool, typer.Option("--all-methods")] = False,
@@ -50,6 +50,9 @@ def pipeline(
     skip_hads_projection: Annotated[
         bool, typer.Option("--skip-hads-projection")
     ] = False,
+    skip_cropping: Annotated[bool, typer.Option("--skip-cropping")] = False,
+    crop_cpm: Annotated[bool, typer.Option("--crop-cpm")] = True,
+    crop_hads: Annotated[bool, typer.Option("--crop-hads")] = True,
     execute: Annotated[bool, typer.Option("--execute")] = False,
     start_index: Annotated[int, typer.Option("--start-index", "-s", min=0)] = 0,
     total: Annotated[int, typer.Option("--total-from-index", "-t", min=0)] = 0,
@@ -62,18 +65,21 @@ def pipeline(
     results: ClimRecalRunResultsType = main(
         variables=variable,
         runs=run,
-        cities=city,
+        regions=region,
         methods=method,
         output_path=output_path,
+        crop_cpm=crop_cpm,
+        crop_hads=crop_hads,
         cpus=cpus,
         execute=execute,
         skip_cpm_standard_calendar_projection=skip_cpm_projection,
         skip_hads_spatial_2k_projection=skip_hads_projection,
+        skip_cropping=skip_cropping,
         start_index=start_index,
         total=total,
         multiprocess=multiprocess,
         all_variables=all_variables,
-        all_cities=all_cities,
+        all_regions=all_regions,
         all_runs=all_runs,
         default_runs=default_runs,
         all_methods=all_methods,

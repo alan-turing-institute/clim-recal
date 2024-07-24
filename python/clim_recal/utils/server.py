@@ -1,4 +1,5 @@
 """Utility functions."""
+
 import subprocess
 from copy import deepcopy
 from dataclasses import dataclass, field
@@ -52,9 +53,11 @@ def kwargs_to_cli_str(space_prefix: bool = True, **kwargs) -> str:
     """
     if kwargs:
         cmd_str: str = " ".join(
-            f"{'--' + key.replace('_', '-')} {val}"
-            if type(val) != bool
-            else f"{'--' + key if val else '--not-' + key}"
+            (
+                f"{'--' + key.replace('_', '-')} {val}"
+                if type(val) != bool
+                else f"{'--' + key if val else '--not-' + key}"
+            )
             for key, val in kwargs.items()
         )
         return cmd_str if not space_prefix else " " + cmd_str
@@ -97,7 +100,6 @@ def set_and_pop_attr_kwargs(instance: Any, **kwargs) -> dict[str, Any]:
 
 @dataclass
 class CondaLockFileManager:
-
     """Run `conda_lock` `install` to generate `conda` `yml`.
 
     Attributes
