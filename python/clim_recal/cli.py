@@ -50,7 +50,7 @@ def pipeline(
     skip_hads_projection: Annotated[
         bool, typer.Option("--skip-hads-projection")
     ] = False,
-    skip_cropping: Annotated[bool, typer.Option("--skip-cropping")] = True,
+    skip_cropping: Annotated[bool, typer.Option("--skip-cropping")] = False,
     execute: Annotated[bool, typer.Option("--execute")] = False,
     start_index: Annotated[int, typer.Option("--start-index", "-s", min=0)] = 0,
     total: Annotated[int, typer.Option("--total-from-index", "-t", min=0)] = 0,
