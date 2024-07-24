@@ -298,8 +298,8 @@ def main(
             else:
                 print(f"Cropping CPMs to regions {config.regions}: ...")
                 cropped_cpm_resamplers: tuple[CPMResampler, ...] = (
-                    config.cpm_manager.execute_crop_resamples(
-                        multiprocess=multiprocess, cpus=cpus
+                    config.cpm_manager.range_crop_projection(
+                        # multiprocess=multiprocess, cpus=cpus
                     )
                 )
                 print(cropped_cpm_resamplers[:print_range_length])
@@ -310,8 +310,8 @@ def main(
                     f"Cropping HADS 2.2km projections to regions {config.regions}: ..."
                 )
                 cropped_hads_resamplers: tuple[CPMResampler, ...] = (
-                    config.hands_manager.execute_crop_resamples(
-                        multiprocess=multiprocess, cpus=cpus
+                    config.hads_manager.range_crop_projection(
+                        # multiprocess=multiprocess, cpus=cpus
                     )
                 )
                 print(cropped_hads_resamplers[:print_range_length])
