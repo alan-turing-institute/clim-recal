@@ -249,12 +249,14 @@ def cpm_reproject_with_standard_calendar(
         cpm_xr_time_series,
         output_path=Path(temp_tif.name),
         format=GDALGeoTiffFormatStr,
+        use_tqdm_progress_bar=False,
         # Leaving this if further projection is needed
         # resampling_method=VariableOptions.resampling_method(variable=variable_name).name,
     )
     gdal_translate_wrapper(
         input_path=Path(temp_tif.name),
         output_path=Path(temp_translated_ncf.name),
+        use_tqdm_progress_bar=False,
         # Leaving this if further projection is needed
         # resampling_method=VariableOptions.resampling_method(variable=variable_name).name,
     )
