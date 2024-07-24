@@ -168,8 +168,8 @@ def main(
     skip_cpm_standard_calendar_projection: bool = False,
     skip_hads_spatial_2k_projection: bool = False,
     skip_cropping: bool = True,
-    crop_cpm: bool = False,
-    crop_hads: bool = False,
+    crop_cpm: bool = True,
+    crop_hads: bool = True,
     cpus: int | None = None,
     multiprocess: bool = False,
     start_index: int = 0,
@@ -290,7 +290,7 @@ def main(
                 )
             )
             print(hads_resamplers[:print_range_length])
-        if skip_cropping or (not crop_cpm and not crop_hads):
+        if skip_cropping or not crop_cpm or not crop_hads:
             print("Skipping cropping.")
         else:
             if skip_cpm_standard_calendar_projection and not crop_cpm:
