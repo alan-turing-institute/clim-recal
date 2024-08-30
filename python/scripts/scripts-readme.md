@@ -29,10 +29,10 @@ This has to be done before the HADs data.
 
 TODO:
 
-- [ ] In `process_cpm_all.sh` update the `default_path` based on your system.
-- [ ] In `process_cpm_all.sh` confirm whether to use the `parallel` command or just use a loop
-- [ ] In `process_single_cpm_wrapper.sh` update the `file_new` variable with your choice of output directory.
-- [ ] In `process_single_cpm_wrapper.sh` remove the `--dry-run` flag when your ready.
+- [x] In `process_cpm_all.sh` update the `default_path` based on your system.
+- [x] In `process_cpm_all.sh` confirm whether to use the `parallel` command or just use a loop
+- [x] In `process_single_cpm_wrapper.sh` update the `file_new` variable with your choice of output directory.
+- [x] In `process_single_cpm_wrapper.sh` remove the `--dry-run` flag when your ready.
 
 # Processing HADs data
 
@@ -40,10 +40,13 @@ This has to be done after the CPM data, as it requires a reference to a processe
 
 TODO:
 
-- [ ] In `process_hads_all.sh` update the `default_path` based on your system.
-- [ ] In `process_hads_all.sh` confirm whether to use the `parallel` command or just use a loop.
-- [ ] In `process_single_hads_wrapper.sh` update the `file_new` variable with your choice of output directory.
-- [ ] In `process_single_hads_wrapper.sh` update the `reference_file` variable with the path to the CPM file you want to use as a reference. (This will be opened multiple times, so it may be worth copying it to a local directory first).
+- [x] In `process_hads_all.sh` update the `default_path` based on your system.
+- [x] In `process_hads_all.sh` confirm whether to use the `parallel` command or just use a loop.
+     - No because of accessing the reference file. Some earlier tests suggested that there might not be the level of locking required even when opening files to lock them. Therefore, I've opted to run in serial and not risk it.
+- [x] In `process_single_hads_wrapper.sh` update the `file_new` variable with your choice of output directory.
+- [x] In `process_single_hads_wrapper.sh` update the `reference_file` variable with the path to the CPM file you want to use as a reference. (This will be opened multiple times, so it may be worth copying it to a local directory first).
+    (Copied from `/mnt/vmfileshare/ClimateData/processed_2024_june/UKCP2.2/pr/01/latest/pr_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc`)
+
 - [ ] In `process_single_hads_wrapper.sh` remove the `--dry-run` flag when your ready.
 
 

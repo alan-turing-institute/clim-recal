@@ -8,6 +8,7 @@ services:
       - "8888:8888"
     volumes:
       - .:/home/jovyan:rw
+      - /mnt/vmfileshare:/mnt/vmfileshare:rw
 
   docs:
     build:
