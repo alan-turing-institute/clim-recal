@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.55">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -504,15 +504,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.resample.CPMResamplerManager" class="level3" data-number="1.2.2">
 <h3 data-number="1.2.2" class="anchored" data-anchor-id="python.clim_recal.resample.CPMResamplerManager"><span class="header-section-number">1.2.2</span> CPMResamplerManager</h3>
-<p><code>clim_recal.resample.CPMResamplerManager(self, *, input_paths=RAW_CPM_PATH, output_paths=RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_LOCAL_PATH, variables=(VariableOptions.default()), sub_path=Path('latest'), start_index=0, stop_index=None, start_date=CPM_START_DATE, end_date=CPM_END_DATE, configs=list(), config_default_kwargs=dict(), resampler_class=CPMResampler, cpus=None, _var_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False, runs=RunOptions.preferred())</code></p>
+<p><code>clim_recal.resample.CPMResamplerManager(self, *, input_paths=RAW_CPM_PATH, resample_paths=RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_LOCAL_PATH, variables=(VariableOptions.default()), crop_regions=RegionOptions.all(), crop_paths=RESAMPLING_OUTPUT_PATH / CPM_CROP_OUTPUT_LOCAL_PATH, sub_path=Path('latest'), start_index=0, stop_index=None, start_date=CPM_START_DATE, end_date=CPM_END_DATE, configs=list(), config_default_kwargs=dict(), resampler_class=CPMResampler, cpus=None, _var_path_dict=dict(), _var_resampled_path_dict=dict(), _var_cropped_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False, runs=RunOptions.preferred())</code></p>
 <p>Class to manage processing CPM resampling.</p>
 <section id="examples-1" class="level4" data-number="1.2.2.1">
 <h4 data-number="1.2.2.1" class="anchored" data-anchor-id="examples-1"><span class="header-section-number">1.2.2.1</span> Examples</h4>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> is_data_mounted:</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_doctest_skip_message)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cpm_resampler_manager: CPMResamplerManager <span class="op">=</span> CPMResamplerManager(</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>...     stop_index<span class="op">=</span><span class="dv">10</span>,</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>...     output_paths<span class="op">=</span>resample_test_cpm_output_path,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>...     stop_index<span class="op">=</span><span class="dv">9</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>...     resample_paths<span class="op">=</span>resample_test_cpm_output_path,</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>...     )</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cpm_resampler_manager</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>CPMResamplerManager(variables_count<span class="op">=</span><span class="dv">1</span>, runs_count<span class="op">=</span><span class="dv">4</span>,</span>
@@ -640,15 +640,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.resample.HADsResamplerManager" class="level3" data-number="1.2.4">
 <h3 data-number="1.2.4" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager"><span class="header-section-number">1.2.4</span> HADsResamplerManager</h3>
-<p><code>clim_recal.resample.HADsResamplerManager(self, *, input_paths=RAW_HADS_PATH, output_paths=RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH, variables=(VariableOptions.default()), sub_path=Path('day'), start_index=0, stop_index=None, start_date=HADS_START_DATE, end_date=HADS_END_DATE, configs=list(), config_default_kwargs=dict(), resampler_class=HADsResampler, cpus=None, _var_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False)</code></p>
+<p><code>clim_recal.resample.HADsResamplerManager(self, *, input_paths=RAW_HADS_PATH, resample_paths=RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH, variables=(VariableOptions.default()), crop_regions=RegionOptions.all(), crop_paths=RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH, sub_path=Path('day'), start_index=0, stop_index=None, start_date=HADS_START_DATE, end_date=HADS_END_DATE, configs=list(), config_default_kwargs=dict(), resampler_class=HADsResampler, cpus=None, _var_path_dict=dict(), _var_resampled_path_dict=dict(), _var_cropped_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False)</code></p>
 <p>Class to manage processing HADs resampling.</p>
 <section id="attributes-3" class="level4" data-number="1.2.4.1">
 <h4 data-number="1.2.4.1" class="anchored" data-anchor-id="attributes-3"><span class="header-section-number">1.2.4.1</span> Attributes</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 8%">
+<col style="width: 9%">
 <col style="width: 22%">
-<col style="width: 68%">
+<col style="width: 67%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -664,7 +664,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><code>Path</code> or <code>Paths</code> to <code>CPM</code> files to process. If <code>Path</code>, will be propegated with files matching</td>
 </tr>
 <tr class="even">
-<td>output_paths</td>
+<td>resample_paths</td>
 <td>PathLike | Sequence[PathLike]</td>
 <td><code>Path</code> or <code>Paths</code> to to save processed <code>CPM</code> files to. If <code>Path</code> will be propagated to match <code>input_paths</code>.</td>
 </tr>
@@ -692,7 +692,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_doctest_skip_message)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> hads_resampler_manager: HADsResamplerManager <span class="op">=</span> HADsResamplerManager(</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>...     variables<span class="op">=</span>VariableOptions.<span class="bu">all</span>(),</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>...     output_paths<span class="op">=</span>resample_test_hads_output_path,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>...     resample_paths<span class="op">=</span>resample_test_hads_output_path,</span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>...     )</span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> hads_resampler_manager</span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>HADsResamplerManager(variables_count<span class="op">=</span><span class="dv">3</span>, input_paths_count<span class="op">=</span><span class="dv">3</span>)<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -734,31 +734,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Check if all <code>self.input_paths</code> exist.</td>
 </tr>
 <tr class="even">
+<td><a href="#python.clim_recal.resample.HADsResamplerManager.execute_crop_configs">execute_crop_configs</a></td>
+<td>Run all resampler configurations</td>
+</tr>
+<tr class="odd">
 <td><a href="#python.clim_recal.resample.HADsResamplerManager.execute_resample_configs">execute_resample_configs</a></td>
 <td>Run all resampler configurations</td>
+</tr>
+<tr class="even">
+<td><a href="#python.clim_recal.resample.HADsResamplerManager.set_crop_paths">set_crop_paths</a></td>
+<td>Propagate <code>self.resample_paths</code> if needed.</td>
 </tr>
 <tr class="odd">
 <td><a href="#python.clim_recal.resample.HADsResamplerManager.set_input_paths">set_input_paths</a></td>
 <td>Propagate <code>self.input_paths</code> if needed.</td>
 </tr>
 <tr class="even">
-<td><a href="#python.clim_recal.resample.HADsResamplerManager.set_output_paths">set_output_paths</a></td>
-<td>Propagate <code>self.output_paths</code> if needed.</td>
+<td><a href="#python.clim_recal.resample.HADsResamplerManager.set_resample_paths">set_resample_paths</a></td>
+<td>Propagate <code>self.resample_paths</code> if needed.</td>
 </tr>
 <tr class="odd">
 <td><a href="#python.clim_recal.resample.HADsResamplerManager.yield_configs">yield_configs</a></td>
+<td>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</td>
+</tr>
+<tr class="even">
+<td><a href="#python.clim_recal.resample.HADsResamplerManager.yield_crop_configs">yield_crop_configs</a></td>
 <td>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</td>
 </tr>
 </tbody>
 </table>
 <section id="python.clim_recal.resample.HADsResamplerManager.check_paths" class="level5" data-number="1.2.4.4.1">
 <h5 data-number="1.2.4.4.1" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.check_paths"><span class="header-section-number">1.2.4.4.1</span> check_paths</h5>
-<p><code>clim_recal.resample.HADsResamplerManager.check_paths(run_set_data_paths=True)</code></p>
+<p><code>clim_recal.resample.HADsResamplerManager.check_paths(run_set_data_paths=True, run_set_crop_paths=True)</code></p>
 <p>Check if all <code>self.input_paths</code> exist.</p>
 </section>
-<section id="python.clim_recal.resample.HADsResamplerManager.execute_resample_configs" class="level5" data-number="1.2.4.4.2">
-<h5 data-number="1.2.4.4.2" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.execute_resample_configs"><span class="header-section-number">1.2.4.4.2</span> execute_resample_configs</h5>
-<p><code>clim_recal.resample.HADsResamplerManager.execute_resample_configs(multiprocess=False, cpus=None)</code></p>
+<section id="python.clim_recal.resample.HADsResamplerManager.execute_crop_configs" class="level5" data-number="1.2.4.4.2">
+<h5 data-number="1.2.4.4.2" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.execute_crop_configs"><span class="header-section-number">1.2.4.4.2</span> execute_crop_configs</h5>
+<p><code>clim_recal.resample.HADsResamplerManager.execute_crop_configs(multiprocess=False, cpus=None)</code></p>
 <p>Run all resampler configurations</p>
 <section id="parameters" class="level6" data-number="1.2.4.4.2.1">
 <h6 data-number="1.2.4.4.2.1" class="anchored" data-anchor-id="parameters"><span class="header-section-number">1.2.4.4.2.1</span> Parameters</h6>
@@ -794,19 +806,67 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 </section>
-<section id="python.clim_recal.resample.HADsResamplerManager.set_input_paths" class="level5" data-number="1.2.4.4.3">
-<h5 data-number="1.2.4.4.3" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.set_input_paths"><span class="header-section-number">1.2.4.4.3</span> set_input_paths</h5>
+<section id="python.clim_recal.resample.HADsResamplerManager.execute_resample_configs" class="level5" data-number="1.2.4.4.3">
+<h5 data-number="1.2.4.4.3" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.execute_resample_configs"><span class="header-section-number">1.2.4.4.3</span> execute_resample_configs</h5>
+<p><code>clim_recal.resample.HADsResamplerManager.execute_resample_configs(multiprocess=False, cpus=None)</code></p>
+<p>Run all resampler configurations</p>
+<section id="parameters-1" class="level6" data-number="1.2.4.4.3.1">
+<h6 data-number="1.2.4.4.3.1" class="anchored" data-anchor-id="parameters-1"><span class="header-section-number">1.2.4.4.3.1</span> Parameters</h6>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 11%">
+<col style="width: 65%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>multiprocess</code></td>
+<td>bool</td>
+<td>If <code>True</code> run parameters in <code>resample_configs</code> with <code>multiprocess_execute</code>.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="even">
+<td><code>cpus</code></td>
+<td>int | None</td>
+<td>Number of <code>cpus</code> to pass to <code>multiprocess_execute</code>.</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="python.clim_recal.resample.HADsResamplerManager.set_crop_paths" class="level5" data-number="1.2.4.4.4">
+<h5 data-number="1.2.4.4.4" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.set_crop_paths"><span class="header-section-number">1.2.4.4.4</span> set_crop_paths</h5>
+<p><code>clim_recal.resample.HADsResamplerManager.set_crop_paths()</code></p>
+<p>Propagate <code>self.resample_paths</code> if needed.</p>
+</section>
+<section id="python.clim_recal.resample.HADsResamplerManager.set_input_paths" class="level5" data-number="1.2.4.4.5">
+<h5 data-number="1.2.4.4.5" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.set_input_paths"><span class="header-section-number">1.2.4.4.5</span> set_input_paths</h5>
 <p><code>clim_recal.resample.HADsResamplerManager.set_input_paths()</code></p>
 <p>Propagate <code>self.input_paths</code> if needed.</p>
 </section>
-<section id="python.clim_recal.resample.HADsResamplerManager.set_output_paths" class="level5" data-number="1.2.4.4.4">
-<h5 data-number="1.2.4.4.4" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.set_output_paths"><span class="header-section-number">1.2.4.4.4</span> set_output_paths</h5>
-<p><code>clim_recal.resample.HADsResamplerManager.set_output_paths()</code></p>
-<p>Propagate <code>self.output_paths</code> if needed.</p>
+<section id="python.clim_recal.resample.HADsResamplerManager.set_resample_paths" class="level5" data-number="1.2.4.4.6">
+<h5 data-number="1.2.4.4.6" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.set_resample_paths"><span class="header-section-number">1.2.4.4.6</span> set_resample_paths</h5>
+<p><code>clim_recal.resample.HADsResamplerManager.set_resample_paths()</code></p>
+<p>Propagate <code>self.resample_paths</code> if needed.</p>
 </section>
-<section id="python.clim_recal.resample.HADsResamplerManager.yield_configs" class="level5" data-number="1.2.4.4.5">
-<h5 data-number="1.2.4.4.5" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.yield_configs"><span class="header-section-number">1.2.4.4.5</span> yield_configs</h5>
+<section id="python.clim_recal.resample.HADsResamplerManager.yield_configs" class="level5" data-number="1.2.4.4.7">
+<h5 data-number="1.2.4.4.7" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.yield_configs"><span class="header-section-number">1.2.4.4.7</span> yield_configs</h5>
 <p><code>clim_recal.resample.HADsResamplerManager.yield_configs()</code></p>
+<p>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</p>
+</section>
+<section id="python.clim_recal.resample.HADsResamplerManager.yield_crop_configs" class="level5" data-number="1.2.4.4.8">
+<h5 data-number="1.2.4.4.8" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.yield_crop_configs"><span class="header-section-number">1.2.4.4.8</span> yield_crop_configs</h5>
+<p><code>clim_recal.resample.HADsResamplerManager.yield_crop_configs()</code></p>
 <p>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</p>
 </section>
 </section>
@@ -851,14 +911,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Run all steps for processing</td>
 </tr>
 <tr class="odd">
+<td><a href="#python.clim_recal.resample.ResamblerBase.execute_crops">execute_crops</a></td>
+<td>Run all specified crops.</td>
+</tr>
+<tr class="even">
 <td><a href="#python.clim_recal.resample.ResamblerBase.set_grid">set_grid</a></td>
 <td>Set check and set (if necessary) <code>grid</code> attribute of <code>self</code>.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#python.clim_recal.resample.ResamblerBase.set_grid_x_y">set_grid_x_y</a></td>
 <td>Set the <code>x</code> <code>y</code> values via <code>grid_x_column_name</code> and <code>grid_y_column_name</code>.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#python.clim_recal.resample.ResamblerBase.set_input_files">set_input_files</a></td>
 <td>Replace <code>self.input</code> and process <code>self.input_files</code>.</td>
 </tr>
@@ -874,16 +938,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>clim_recal.resample.ResamblerBase.execute(skip_spatial=False, **kwargs)</code></p>
 <p>Run all steps for processing</p>
 </section>
-<section id="python.clim_recal.resample.ResamblerBase.set_grid" class="level5" data-number="1.2.5.2.3">
-<h5 data-number="1.2.5.2.3" class="anchored" data-anchor-id="python.clim_recal.resample.ResamblerBase.set_grid"><span class="header-section-number">1.2.5.2.3</span> set_grid</h5>
+<section id="python.clim_recal.resample.ResamblerBase.execute_crops" class="level5" data-number="1.2.5.2.3">
+<h5 data-number="1.2.5.2.3" class="anchored" data-anchor-id="python.clim_recal.resample.ResamblerBase.execute_crops"><span class="header-section-number">1.2.5.2.3</span> execute_crops</h5>
+<p><code>clim_recal.resample.ResamblerBase.execute_crops(skip_crop=False, **kwargs)</code></p>
+<p>Run all specified crops.</p>
+</section>
+<section id="python.clim_recal.resample.ResamblerBase.set_grid" class="level5" data-number="1.2.5.2.4">
+<h5 data-number="1.2.5.2.4" class="anchored" data-anchor-id="python.clim_recal.resample.ResamblerBase.set_grid"><span class="header-section-number">1.2.5.2.4</span> set_grid</h5>
 <p><code>clim_recal.resample.ResamblerBase.set_grid(new_grid_data_path=None)</code></p>
 <p>Set check and set (if necessary) <code>grid</code> attribute of <code>self</code>.</p>
-<section id="notes-1" class="level6" data-number="1.2.5.2.3.1">
-<h6 data-number="1.2.5.2.3.1" class="anchored" data-anchor-id="notes-1"><span class="header-section-number">1.2.5.2.3.1</span> Notes</h6>
+<section id="notes-1" class="level6" data-number="1.2.5.2.4.1">
+<h6 data-number="1.2.5.2.4.1" class="anchored" data-anchor-id="notes-1"><span class="header-section-number">1.2.5.2.4.1</span> Notes</h6>
 <p>To be depricated.</p>
 </section>
-<section id="parameters-1" class="level6" data-number="1.2.5.2.3.2">
-<h6 data-number="1.2.5.2.3.2" class="anchored" data-anchor-id="parameters-1"><span class="header-section-number">1.2.5.2.3.2</span> Parameters</h6>
+<section id="parameters-2" class="level6" data-number="1.2.5.2.4.2">
+<h6 data-number="1.2.5.2.4.2" class="anchored" data-anchor-id="parameters-2"><span class="header-section-number">1.2.5.2.4.2</span> Parameters</h6>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 25%">
@@ -910,12 +979,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 </section>
-<section id="python.clim_recal.resample.ResamblerBase.set_grid_x_y" class="level5" data-number="1.2.5.2.4">
-<h5 data-number="1.2.5.2.4" class="anchored" data-anchor-id="python.clim_recal.resample.ResamblerBase.set_grid_x_y"><span class="header-section-number">1.2.5.2.4</span> set_grid_x_y</h5>
+<section id="python.clim_recal.resample.ResamblerBase.set_grid_x_y" class="level5" data-number="1.2.5.2.5">
+<h5 data-number="1.2.5.2.5" class="anchored" data-anchor-id="python.clim_recal.resample.ResamblerBase.set_grid_x_y"><span class="header-section-number">1.2.5.2.5</span> set_grid_x_y</h5>
 <p><code>clim_recal.resample.ResamblerBase.set_grid_x_y(grid_x_column_name=None, grid_y_column_name=None)</code></p>
 <p>Set the <code>x</code> <code>y</code> values via <code>grid_x_column_name</code> and <code>grid_y_column_name</code>.</p>
-<section id="parameters-2" class="level6" data-number="1.2.5.2.4.1">
-<h6 data-number="1.2.5.2.4.1" class="anchored" data-anchor-id="parameters-2"><span class="header-section-number">1.2.5.2.4.1</span> Parameters</h6>
+<section id="parameters-3" class="level6" data-number="1.2.5.2.5.1">
+<h6 data-number="1.2.5.2.5.1" class="anchored" data-anchor-id="parameters-3"><span class="header-section-number">1.2.5.2.5.1</span> Parameters</h6>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 13%">
@@ -948,8 +1017,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 </section>
-<section id="python.clim_recal.resample.ResamblerBase.set_input_files" class="level5" data-number="1.2.5.2.5">
-<h5 data-number="1.2.5.2.5" class="anchored" data-anchor-id="python.clim_recal.resample.ResamblerBase.set_input_files"><span class="header-section-number">1.2.5.2.5</span> set_input_files</h5>
+<section id="python.clim_recal.resample.ResamblerBase.set_input_files" class="level5" data-number="1.2.5.2.6">
+<h5 data-number="1.2.5.2.6" class="anchored" data-anchor-id="python.clim_recal.resample.ResamblerBase.set_input_files"><span class="header-section-number">1.2.5.2.6</span> set_input_files</h5>
 <p><code>clim_recal.resample.ResamblerBase.set_input_files(new_input_path=None)</code></p>
 <p>Replace <code>self.input</code> and process <code>self.input_files</code>.</p>
 </section>
