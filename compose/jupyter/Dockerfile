@@ -44,11 +44,8 @@ USER ${NB_UID}
 
 # pysqlite3 may no longer be included in the jupyter stack
 # adding to fix, worth checking if necessary in future
-RUN conda update -n ${env_name} -y --all && \
-    conda install -n ${env_name} -y pysqlite3
-
-# Automate installing `pdm` dependencies
-# RUN cd python && conda run -n ${env_name} pdm install
+# RUN conda update -n ${env_name} -y --all && \
+#     conda install -n ${env_name} -y pysqlite3
 
 # This makes the custom environment default in Jupyter Terminals for already existing NB_USER
 # Note this *doesn't* apply if simply using sh -c

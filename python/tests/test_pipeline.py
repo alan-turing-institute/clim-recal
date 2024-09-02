@@ -35,15 +35,19 @@ def test_climate_data_mount_path() -> None:
 )
 @pytest.mark.parametrize("multiprocess", (True, False))
 @pytest.mark.parametrize("variables", (("rainfall",), ("rainfall", "tasmax")))
+@pytest.mark.parametrize("regions", ("Glasgow", None))
 def test_main(
     execute: bool,
     variables: tuple[str],
     test_runs_output_path: Path,
     multiprocess: bool,
+    regions: str | tuple[str] | None,
     capsys,
 ) -> None:
     """Test running pipeline configurations."""
-    run_folder_name: str = f"{'-'.join(variables)}-multi-{multiprocess}"
+    run_folder_name: str = (
+        f"{'-'.join(variables)}" f"-multi-{multiprocess}" f"-crop-regions-{regions}"
+    )
     if execute:
         run_folder_name = "executed-" + run_folder_name
     output_path: Path = test_runs_output_path / run_folder_name
@@ -52,8 +56,9 @@ def test_main(
         execute=execute,
         variables=variables,
         output_path=output_path,
-        skip_hads_spatial_2k_projection=True,
-        skip_cpm_standard_calendar_projection=False,
+        hads_projection=True,
+        cpm_projection=False,
+        regions=regions,
         stop_index=1,
         cpus=2,
         multiprocess=multiprocess,

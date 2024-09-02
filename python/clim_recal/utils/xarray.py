@@ -389,7 +389,8 @@ def xr_reproject_crs(
         without_attributes_reprojected: T_DataArray = without_attributes.rio.reproject(
             final_crs, resampling=resampling_method, nodata=nodata, **kwargs
         )
-    return Dataset({variable_name: without_attributes_reprojected})
+    final_dataset: T_Dataset = Dataset({variable_name: without_attributes_reprojected})
+    return final_dataset.rio.write_crs(BRITISH_NATIONAL_GRID_EPSG)
 
 
 def _ensure_resample_method_name(
@@ -525,19 +526,26 @@ def hads_resample_and_reproject(
         match_xr_time_series=cpm_to_match,
         match_xr_time_series_load_func=cpm_to_match_func,
         resampling_method=VariableOptions.resampling_method(variable_name),
+        # Check if the following line is needed
         # match_xr_time_series_load_kwargs=dict(variable_name=variable_name),
     )
 
+    final_epsg_277000_2_2km: T_Dataset
+
     # Check if the minimum values should be NULL
     min_value: float = epsg_277000_2_2km[variable_name].min()
+
     if min_value < HADS_MIN_NULL:
         logger.info(f"Setting '{variable_name}' values less than {min_value} as `nan`")
-        return epsg_277000_2_2km.where(epsg_277000_2_2km[variable_name] > min_value)
+        final_epsg_277000_2_2km = epsg_277000_2_2km.where(
+            epsg_277000_2_2km[variable_name] > min_value
+        )
     else:
         logger.debug(
-            f"'{variable_name}' values less than {min_value} kept. 'HADS_MIN_NULL': {HADS_MIN_NULL}"
+            f"Keeping '{variable_name}' values less than {min_value}. 'HADS_MIN_NULL': {HADS_MIN_NULL}"
         )
-        return epsg_277000_2_2km
+        final_epsg_277000_2_2km = epsg_277000_2_2km
+    return final_epsg_277000_2_2km.rio.write_crs(BRITISH_NATIONAL_GRID_EPSG)
 
 
 def plot_xarray(
@@ -1203,10 +1211,6 @@ def generate_360_to_standard(array_to_expand: T_DataArray) -> T_DataArray:
     """Return `array_to_expand` 360 days expanded to 365 or 366 days.
 
     This may be dropped if `cpm_reproject_with_standard_calendar` is successful.
-
-    Examples
-    --------
-    >>>
     """
     initial_days: int = len(array_to_expand)
     assert initial_days == 360

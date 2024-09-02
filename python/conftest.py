@@ -1,5 +1,6 @@
 import asyncio
 from argparse import BooleanOptionalAction
+from os import PathLike
 from pathlib import Path
 from pprint import pprint
 from shutil import copytree, rmtree
@@ -381,21 +382,33 @@ def clim_runner(
     tmp_path: Path,
     local_cache: bool,
     local_cache_fixtures: LocalCachesManager,
+    test_runs_output_path: PathLike,
+    local_hads_cache_path: PathLike,
+    local_cpm_cache_path: PathLike,
 ) -> ClimRecalConfig:
     """Return default `ClimRecalConfig`."""
     assert local_cache_fixtures.default_local_cache_path
     assert local_cache_fixtures.check_default_cache_path()
+    regions: tuple[RegionOptions, RegionOptions] = (
+        RegionOptions.GLASGOW,
+        RegionOptions.MANCHESTER,
+    )
     try:
+        # Todo: refactor to more easily specify `local_cache`
+        assert not local_cache
         return ClimRecalConfig(
             preprocess_out_folder=tmp_path,
-            regions=(RegionOptions.GLASGOW, RegionOptions.MANCHESTER),
+            regions=regions,
+            output_path=test_runs_output_path,
         )
-    except FileExistsError:
+    except (FileExistsError, AssertionError):
         return ClimRecalConfig(
             preprocess_out_folder=tmp_path,
-            regions=(RegionOptions.GLASGOW, RegionOptions.MANCHESTER),
-            hads_folder=local_cache_fixtures.default_local_cache_path,
-            cpm_folder=local_cache_fixtures.default_local_cache_path,
+            regions=regions,
+            output_path=test_runs_output_path,
+            hads_input_path=local_hads_cache_path,
+            cpm_input_path=local_cpm_cache_path,
+            # Todo: refactor to use caching to speed up runs
             cpm_kwargs=dict(_allow_check_fail=True),
             hads_kwargs=dict(_allow_check_fail=True),
         )

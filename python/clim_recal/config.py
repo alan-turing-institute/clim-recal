@@ -7,15 +7,12 @@ from typing import Any, Final, Sequence, TypedDict
 
 from tqdm import TqdmExperimentalWarning, tqdm
 
-from .debiasing.debias_wrapper import (
-    BaseRunConfig,
-    RunConfig,
-    RunConfigType,
-    climate_data_mount_path,
-)
+from .debiasing.debias_wrapper import BaseRunConfig, RunConfig, RunConfigType
 from .resample import (
     CPM_OUTPUT_LOCAL_PATH,
     HADS_OUTPUT_LOCAL_PATH,
+    RAW_CPM_PATH,
+    RAW_HADS_PATH,
     CPMResamplerManager,
     HADsResamplerManager,
 )
@@ -24,11 +21,12 @@ from .utils.data import MethodOptions, RegionOptions, RunOptions, VariableOption
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 
-DATA_PATH_DEFAULT: Final[Path] = climate_data_mount_path()
+# DATA_PATH_DEFAULT: Final[Path] = climate_data_mount_path()
 
 
 DEFAULT_OUTPUT_PATH: Final[Path] = Path("clim-recal-runs")
 DEFAULT_RESAMPLE_FOLDER: Final[Path] = Path("resample")
+DEFAULT_CROPS_FOLDER: Final[Path] = Path("crops")
 DEFAULT_CPUS: Final[int] = 2
 
 
@@ -55,7 +53,7 @@ class ClimRecalConfig(BaseRunConfig):
     runs
         Which model runs to include, eg. "01", "08", "11".
     regions
-        Which regions to crop data to. Future plans facilitate skipping to run for entire UK.
+        Which regions to crop both HADs and CPM data to.
     methods
         Which debiasing methods to apply.
     multiprocess
@@ -66,10 +64,12 @@ class ClimRecalConfig(BaseRunConfig):
         `Path` to save all intermediate and final results to.
     resample_folder
         `Path` to append to `output_path` for resampling result files.
-    hads_folder
-        `Path` to append to `output_path` / `resample_folder` for resampling `HADs` files.
-    cpm_folder
-        `Path` to append to `output_path` / `resample_folder` for resampling `CPM` files.
+    crops_folder
+        `Path` to append to `output_path` for cropped resample files.
+    hads_output_folder
+        `Path` to append to `output_path` / `resample_folder` for resampling `HADs` files and to `output_path` / `crop_folder` for crops.
+    cpm_output_folder
+        `Path` to append to `output_path` / `resample_folder` for resampling `CPM` files and to `output_path` / `crop_folder` for crops.
     cpm_kwargs
         A `dict` of parameters to pass to a `CPMResamplerManager`.
     hads_kwargs
@@ -96,21 +96,31 @@ class ClimRecalConfig(BaseRunConfig):
     methods: Sequence[MethodOptions] = (MethodOptions.default(),)
     multiprocess: bool = False
     cpus: int | None = DEFAULT_CPUS
+    hads_input_path: PathLike = RAW_HADS_PATH
+    cpm_input_path: PathLike = RAW_CPM_PATH
     output_path: PathLike = DEFAULT_OUTPUT_PATH
     resample_folder: PathLike = DEFAULT_RESAMPLE_FOLDER
-    hads_folder: PathLike = HADS_OUTPUT_LOCAL_PATH
-    cpm_folder: PathLike = CPM_OUTPUT_LOCAL_PATH
+    crops_folder: PathLike = DEFAULT_CROPS_FOLDER
+    hads_output_folder: PathLike = HADS_OUTPUT_LOCAL_PATH
+    cpm_output_folder: PathLike = CPM_OUTPUT_LOCAL_PATH
     cpm_kwargs: dict = field(default_factory=dict)
     hads_kwargs: dict = field(default_factory=dict)
     start_index: int = 0
     stop_index: int | None = None
     add_local_dated_results_path: bool = True
+    add_local_dated_crops_path: bool = True
     local_dated_results_path_prefix: str = "run"
+    local_dated_crops_path_prefix: str = "crop"
 
     @property
     def resample_path(self) -> Path:
         """The resample_path property."""
         return Path(self.exec_path) / self.resample_folder
+
+    @property
+    def crops_path(self) -> Path:
+        """The resample_path property."""
+        return Path(self.exec_path) / self.crops_folder
 
     @property
     def exec_path(self) -> Path:
@@ -119,10 +129,12 @@ class ClimRecalConfig(BaseRunConfig):
         Examples
         --------
         >>> print(clim_runner.exec_path)
-        clim-recal-runs/run...
+        <BLANKLINE>
+        ...test-run-results.../run...
         >>> clim_runner.add_local_dated_results_path = False
         >>> print(clim_runner.exec_path)
-        clim-recal-runs
+        <BLANKLINE>
+        ...test-run-results...
         """
         if self.add_local_dated_results_path:
             assert self.dated_results_path
@@ -137,7 +149,8 @@ class ClimRecalConfig(BaseRunConfig):
         Examples
         --------
         >>> print(clim_runner.dated_results_path)
-        clim-recal-runs/run...
+        <BLANKLINE>
+        ...test-run-results.../run...
         >>> clim_runner.add_local_dated_results_path = False
         >>> print(clim_runner.dated_results_path)
         None
@@ -150,14 +163,44 @@ class ClimRecalConfig(BaseRunConfig):
             return None
 
     @property
+    def dated_crops_path(self) -> Path | None:
+        """Return a time stamped path if `add_local_dated_crops_path` is `True`.
+
+        Examples
+        --------
+        >>> print(clim_runner.dated_crops_path)
+        <BLANKLINE>
+        ...test-run-results.../crop...
+        >>> clim_runner.add_local_dated_crops_path = False
+        >>> print(clim_runner.dated_crops_path)
+        None
+        """
+        if self.add_local_dated_crops_path:
+            return self.output_path / results_path(
+                self.local_dated_crops_path_prefix, mkdir=True
+            )
+        else:
+            return None
+
+    @property
     def resample_hads_path(self) -> Path:
         """The resample_hads_path property."""
-        return self.resample_path / self.hads_folder
+        return self.resample_path / self.hads_output_folder
 
     @property
     def resample_cpm_path(self) -> Path:
         """The resample_hads_path property."""
-        return self.resample_path / self.cpm_folder
+        return self.resample_path / self.cpm_output_folder
+
+    @property
+    def cropped_hads_path(self) -> Path:
+        """The resample_hads_path property."""
+        return self.crops_path / self.hads_output_folder
+
+    @property
+    def cropped_cpm_path(self) -> Path:
+        """The resample_cpm_path property."""
+        return self.crops_path / self.cpm_output_folder
 
     def __post_init__(self) -> None:
         """Initiate related `HADs` and `CPM` managers.
@@ -166,19 +209,23 @@ class ClimRecalConfig(BaseRunConfig):
         -----
         The variagles passed to `CPMResamplerManager` do not apply
         `VariableOptions.cpm_values()`, that occurs within `CPMResamplerManager`
-        for ease of coparability with HADs.
+        for ease of comparability with HADs.
         """
         self.cpm_manager = CPMResamplerManager(
+            input_paths=self.cpm_input_path,
             variables=self.variables,
             runs=self.runs,
-            output_paths=self.resample_cpm_path,
+            resample_paths=self.resample_cpm_path,
+            crop_paths=self.crops_path,
             start_index=self.start_index,
             stop_index=self.stop_index,
             **self.cpm_kwargs,
         )
         self.hads_manager = HADsResamplerManager(
+            input_paths=self.hads_input_path,
             variables=self.variables,
-            output_paths=self.resample_hads_path,
+            resample_paths=self.resample_hads_path,
+            crop_paths=self.crops_path,
             start_index=self.start_index,
             stop_index=self.stop_index,
             **self.hads_kwargs,

@@ -742,6 +742,7 @@ def test_hads_resample_and_reproject(
     variable_name: str = "tasmax"
     output_path: Path = Path("tests/runs/reample-hads")
     # First index is for month, in this case January 1980
+    # The following could be replaced by a cached fixture
     cpm_to_match: T_Dataset = cpm_reproject_with_standard_calendar(tasmax_cpm_1980_raw)
     plot_xarray(
         tasmax_hads_1980_raw.tasmax[0],
@@ -781,6 +782,12 @@ def test_hads_resample_and_reproject(
     )  # replaces projection_y_coordinate
     assert reprojected.rio.crs == read_from_export.rio.crs == BRITISH_NATIONAL_GRID_EPSG
     # Check projection coordinates match for CPM and HADs
+    assert (
+        reprojected.tasmax.rio.crs
+        == read_from_export.tasmax.rio.crs
+        == BRITISH_NATIONAL_GRID_EPSG
+    )
+    # Check projection coordinates are set at the variable level
     assert all(cpm_to_match.x == read_from_export.x)
     assert all(cpm_to_match.y == read_from_export.y)
     assert (

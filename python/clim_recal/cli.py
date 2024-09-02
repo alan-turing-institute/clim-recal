@@ -14,6 +14,7 @@ from .config import (
     VariableOptions,
 )
 from .pipeline import main
+from .resample import RAW_CPM_PATH, RAW_HADS_PATH
 
 clim_recal = typer.Typer()
 
@@ -23,6 +24,24 @@ MAX_CPUS: Final[int | None] = CPU_COUNT if CPU_COUNT else DEFAULT_CPUS
 
 @clim_recal.command()
 def pipeline(
+    hads_input_path: Annotated[
+        Path,
+        typer.Option(
+            "--hads-input-path",
+            "-d",
+            file_okay=True,
+            dir_okay=True,
+        ),
+    ] = Path(RAW_HADS_PATH),
+    cpm_input_path: Annotated[
+        Path,
+        typer.Option(
+            "--cpm-input-path",
+            "-o",
+            file_okay=True,
+            dir_okay=True,
+        ),
+    ] = Path(RAW_CPM_PATH),
     output_path: Annotated[
         Path,
         typer.Option(
@@ -32,7 +51,7 @@ def pipeline(
     variable: Annotated[list[VariableOptions], typer.Option("--variable", "-v")] = [
         VariableOptions.default()
     ],
-    region: Annotated[list[RegionOptions], typer.Option("--region", "-c")] = [
+    region: Annotated[list[RegionOptions], typer.Option("--region", "-a")] = [
         RegionOptions.default()
     ],
     run: Annotated[list[RunOptions], typer.Option("--run", "-r")] = [
@@ -51,25 +70,25 @@ def pipeline(
         bool, typer.Option("--skip-hads-projection")
     ] = False,
     skip_cropping: Annotated[bool, typer.Option("--skip-cropping")] = False,
-    crop_cpm: Annotated[bool, typer.Option("--crop-cpm")] = True,
-    crop_hads: Annotated[bool, typer.Option("--crop-hads")] = True,
+    cpm_regions: Annotated[bool, typer.Option("--crop-cpm")] = True,
+    hads_regions: Annotated[bool, typer.Option("--crop-hads")] = True,
     execute: Annotated[bool, typer.Option("--execute")] = False,
     start_index: Annotated[int, typer.Option("--start-index", "-s", min=0)] = 0,
     total: Annotated[int, typer.Option("--total-from-index", "-t", min=0)] = 0,
-    cpus: Annotated[
-        int, typer.Option("--cpus", "-p", min=1, max=MAX_CPUS)
-    ] = DEFAULT_CPUS,
+    cpus: Annotated[int, typer.Option("--cpus", min=1, max=MAX_CPUS)] = DEFAULT_CPUS,
     multiprocess: Annotated[bool, typer.Option("--use-multiprocessing")] = False,
 ) -> ClimRecalRunResultsType:
     """Run all or portions of UK climate projection debiasing methods."""
     results: ClimRecalRunResultsType = main(
+        hads_input_path=hads_input_path,
+        cpm_input_path=cpm_input_path,
         variables=variable,
         runs=run,
         regions=region,
         methods=method,
         output_path=output_path,
-        crop_cpm=crop_cpm,
-        crop_hads=crop_hads,
+        cpm_regions=cpm_regions,
+        hads_regions=hads_regions,
         cpus=cpus,
         execute=execute,
         skip_cpm_standard_calendar_projection=skip_cpm_projection,

@@ -14,7 +14,7 @@ from .core import StrEnumReprName
 BRITISH_NATION_GRID_COORDS_NUMBER: Final[int] = 27700
 BRITISH_NATIONAL_GRID_EPSG: Final[str] = f"EPSG:{BRITISH_NATION_GRID_COORDS_NUMBER}"
 
-DEFAULT_RESAMPLING_METHOD: Final[Resampling] = Resampling.bilinear
+DEFAULT_RESAMPLING_METHOD: Final[Resampling] = Resampling.average
 
 AuthorshipType = Union[
     str | tuple[str, ...], dict[str, str] |
@@ -169,11 +169,11 @@ class VariableOptions(StrEnumReprName):
         Examples
         --------
         >>> VariableOptions.resampling_method('rainfall')
-        <Resampling.bilinear: 1>
+        <Resampling.average: 5>
         >>> VariableOptions.resampling_method('tasmin')
         <Resampling.min: 9>
         >>> VariableOptions.resampling_method(None)
-        <Resampling.bilinear: 1>
+        <Resampling.average: 5>
         """
         return cls._method_dict()[variable.lower()] if variable else cls.default_resample_method()
 
