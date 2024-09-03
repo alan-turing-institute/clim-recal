@@ -13,6 +13,10 @@ git clone https://github.com/alan-turing-institute/clim-recal
 cd clim-recal
 pip install conda-lock
 conda-lock install --name clim-recal conda-lock.yml
+conda activate clim-recal
+cd python
+pdm install
+clim-recal --help
 ```
 
 For `docker`:
@@ -20,9 +24,21 @@ For `docker`:
 ```bash
 git clone https://github.com/alan-turing-institute/clim-recal
 cd clim-recal
-docker compose up
+docker compose build jupyter
+docker compose up jupyter
+docker compose run jupyter bash
+cd python
+pdm install
+pdm run clim-recal --help
 ```
+::: {.callout-warning}
+There are cases where `pdm install` raises a `KeyError: '_PYPROJECT_HOOKS_BUILD_BACKEND'`. Thus far, running `pdm install` again works.
+:::
 
+```console
+clim-recal --help
+
+```
 
 # Python
 

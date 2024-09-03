@@ -28,17 +28,14 @@ RUN \
 USER root
 
 # build-essential is needed for pysqlite3 and gdal
-RUN sudo apt-get update && sudo apt-get install -y build-essential
+# RUN sudo apt-get update && sudo apt-get install -y build-essential
 
 # First line changes a startup hook, which will activate the custom environment
-RUN \
-    echo conda activate "${env_name}" >> /usr/local/bin/before-notebook.d/10activate-conda-env.sh && \
-    echo conda activate "${env_name}" >> /etc/skel/.bashrc
-# Above line makes the custom environment default in Jupyter Terminals for all users which might be created later
+# RUN echo conda activate "${env_name}" >> /usr/local/bin/before-notebook.d/10activate-conda-env.sh
 
 COPY . .
 
-RUN chown -R ${NB_USER} /home/${NB_USER}
+RUN chown -R ${NB_USER}:${NB_GID} /home/${NB_USER}
 
 USER ${NB_UID}
 
@@ -46,7 +43,11 @@ USER ${NB_UID}
 # adding to fix, worth checking if necessary in future
 # RUN conda update -n ${env_name} -y --all && \
 #     conda install -n ${env_name} -y pysqlite3
+# RUN conda install -n ${env_name} -y pysqlite3
 
 # This makes the custom environment default in Jupyter Terminals for already existing NB_USER
 # Note this *doesn't* apply if simply using sh -c
 RUN echo conda activate "${env_name}" >> "/home/${NB_USER}/.bashrc"
+# RUN echo export activate "${env_name}" >> "/home/${NB_USER}/.bashrc"
+# RUN export _PYPROJECT_HOOKS_BUILD_BACKEND=/home/${NB_USER}/.local/bin/pdm
+# RUN cd python && conda run -n ${env_name} pdm install -v

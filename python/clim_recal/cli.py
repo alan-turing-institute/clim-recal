@@ -65,21 +65,18 @@ def pipeline(
     all_runs: Annotated[bool, typer.Option("--all-runs")] = False,
     default_runs: Annotated[bool, typer.Option("--default-runs")] = False,
     all_methods: Annotated[bool, typer.Option("--all-methods")] = False,
-    skip_cpm_projection: Annotated[bool, typer.Option("--skip-cpm-projection")] = False,
-    skip_hads_projection: Annotated[
-        bool, typer.Option("--skip-hads-projection")
-    ] = False,
-    skip_cropping: Annotated[bool, typer.Option("--skip-cropping")] = False,
-    cpm_regions: Annotated[bool, typer.Option("--crop-cpm")] = True,
-    hads_regions: Annotated[bool, typer.Option("--crop-hads")] = True,
+    cpm_projection: Annotated[bool, typer.Option("--project-cpm")] = True,
+    hads_projection: Annotated[bool, typer.Option("--project-hads")] = True,
+    crop_hads: Annotated[bool, typer.Option("--crop-cpm")] = True,
+    crop_cpm: Annotated[bool, typer.Option("--crop-hads")] = True,
     execute: Annotated[bool, typer.Option("--execute")] = False,
     start_index: Annotated[int, typer.Option("--start-index", "-s", min=0)] = 0,
     total: Annotated[int, typer.Option("--total-from-index", "-t", min=0)] = 0,
     cpus: Annotated[int, typer.Option("--cpus", min=1, max=MAX_CPUS)] = DEFAULT_CPUS,
     multiprocess: Annotated[bool, typer.Option("--use-multiprocessing")] = False,
-) -> ClimRecalRunResultsType:
-    """Run all or portions of UK climate projection debiasing methods."""
-    results: ClimRecalRunResultsType = main(
+) -> ClimRecalRunResultsType | None:
+    """Crop and align UK climate projections and test debias methods."""
+    results: ClimRecalRunResultsType | None = main(
         hads_input_path=hads_input_path,
         cpm_input_path=cpm_input_path,
         variables=variable,
@@ -87,13 +84,12 @@ def pipeline(
         regions=region,
         methods=method,
         output_path=output_path,
-        cpm_regions=cpm_regions,
-        hads_regions=hads_regions,
         cpus=cpus,
         execute=execute,
-        skip_cpm_standard_calendar_projection=skip_cpm_projection,
-        skip_hads_spatial_2k_projection=skip_hads_projection,
-        skip_cropping=skip_cropping,
+        cpm_projection=cpm_projection,
+        hads_projection=hads_projection,
+        crop_hads=crop_hads,
+        crop_cpm=crop_cpm,
         start_index=start_index,
         total=total,
         multiprocess=multiprocess,
