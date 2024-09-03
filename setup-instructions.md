@@ -26,17 +26,65 @@ git clone https://github.com/alan-turing-institute/clim-recal
 cd clim-recal
 docker compose build jupyter
 docker compose up jupyter
-docker compose run jupyter bash
-cd python
-pdm install
-pdm run clim-recal --help
+clim-recal --help
 ```
 ::: {.callout-warning}
 There are cases where `pdm install` raises a `KeyError: '_PYPROJECT_HOOKS_BUILD_BACKEND'`. Thus far, running `pdm install` again works.
 :::
 
 ```console
-clim-recal --help
+$ clim-recal --help
+
+ Usage: clim-recal [OPTIONS]
+
+ Crop and align UK climate projections and test debias methods.
+
+╭─ Options ──────────────────────────────────────────────────────────────╮
+│ --hads-input-path     -d      PATH                [default:            │
+│                                                   /Volumes/vmfileshar… │
+│ --cpm-input-path      -o      PATH                [default:            │
+│                                                   /Volumes/vmfileshar… │
+│ --output-path         -o      DIRECTORY           [default:            │
+│                                                   clim-recal-runs]     │
+│ --variable            -v      [tasmax|rainfall|t  [default: tasmax]    │
+│                               asmin]                                   │
+│ --region              -a      [Glasgow|Mancheste  [default:            │
+│                               r|London|Scotland]  Manchester]          │
+│ --run                 -r      [01|04|05|06|07|08  [default: 05]        │
+│                               |09|10|11|12|13|14                       │
+│                               |15]                                     │
+│ --method              -m      [quantile_delta_ma  [default:            │
+│                               pping|quantile_map  quantile_delta_mapp… │
+│                               ping|variance_scal                       │
+│                               ing|delta_method]                        │
+│ --all-variables                                                        │
+│ --all-regions                                                          │
+│ --all-runs                                                             │
+│ --default-runs                                                         │
+│ --all-methods                                                          │
+│ --project-cpm                                     [default: True]      │
+│ --project-hads                                    [default: True]      │
+│ --crop-cpm                                        [default: True]      │
+│ --crop-hads                                       [default: True]      │
+│ --execute                                                              │
+│ --start-index         -s      INTEGER RANGE       [default: 0]         │
+│                               [x>=0]                                   │
+│ --total-from-index    -t      INTEGER RANGE       [default: 0]         │
+│                               [x>=0]                                   │
+│ --cpus                        INTEGER RANGE       [default: 2]         │
+│                               [1<=x<=10]                               │
+│ --use-multiprocessi…                                                   │
+│ --install-completion                              Install completion   │
+│                                                   for the current      │
+│                                                   shell.               │
+│ --show-completion                                 Show completion for  │
+│                                                   the current shell,   │
+│                                                   to copy it or        │
+│                                                   customize the        │
+│                                                   installation.        │
+│ --help                                            Show this message    │
+│                                                   and exit.            │
+╰────────────────────────────────────────────────────────────────────────╯
 
 ```
 
