@@ -365,10 +365,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> clim-recal</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose build jupyter</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose up jupyter</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose run jupyter bash</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> python</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">pdm</span> install</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">pdm</span> run clim-recal <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">clim-recal</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -382,7 +379,58 @@ Warning
 <p>There are cases where <code>pdm install</code> raises a <code>KeyError: '_PYPROJECT_HOOKS_BUILD_BACKEND'</code>. Thus far, running <code>pdm install</code> again works.</p>
 </div>
 </div>
-<pre class="console"><code>clim-recal --help
+<pre class="console"><code>$ clim-recal --help
+
+ Usage: clim-recal [OPTIONS]
+
+ Crop and align UK climate projections and test debias methods.
+
+╭─ Options ──────────────────────────────────────────────────────────────╮
+│ --hads-input-path     -d      PATH                [default:            │
+│                                                   /Volumes/vmfileshar… │
+│ --cpm-input-path      -o      PATH                [default:            │
+│                                                   /Volumes/vmfileshar… │
+│ --output-path         -o      DIRECTORY           [default:            │
+│                                                   clim-recal-runs]     │
+│ --variable            -v      [tasmax|rainfall|t  [default: tasmax]    │
+│                               asmin]                                   │
+│ --region              -a      [Glasgow|Mancheste  [default:            │
+│                               r|London|Scotland]  Manchester]          │
+│ --run                 -r      [01|04|05|06|07|08  [default: 05]        │
+│                               |09|10|11|12|13|14                       │
+│                               |15]                                     │
+│ --method              -m      [quantile_delta_ma  [default:            │
+│                               pping|quantile_map  quantile_delta_mapp… │
+│                               ping|variance_scal                       │
+│                               ing|delta_method]                        │
+│ --all-variables                                                        │
+│ --all-regions                                                          │
+│ --all-runs                                                             │
+│ --default-runs                                                         │
+│ --all-methods                                                          │
+│ --project-cpm                                     [default: True]      │
+│ --project-hads                                    [default: True]      │
+│ --crop-cpm                                        [default: True]      │
+│ --crop-hads                                       [default: True]      │
+│ --execute                                                              │
+│ --start-index         -s      INTEGER RANGE       [default: 0]         │
+│                               [x&gt;=0]                                   │
+│ --total-from-index    -t      INTEGER RANGE       [default: 0]         │
+│                               [x&gt;=0]                                   │
+│ --cpus                        INTEGER RANGE       [default: 2]         │
+│                               [1&lt;=x&lt;=10]                               │
+│ --use-multiprocessi…                                                   │
+│ --install-completion                              Install completion   │
+│                                                   for the current      │
+│                                                   shell.               │
+│ --show-completion                                 Show completion for  │
+│                                                   the current shell,   │
+│                                                   to copy it or        │
+│                                                   customize the        │
+│                                                   installation.        │
+│ --help                                            Show this message    │
+│                                                   and exit.            │
+╰────────────────────────────────────────────────────────────────────────╯
 </code></pre>
 </section>
 <section id="python" class="level1" data-number="2">
