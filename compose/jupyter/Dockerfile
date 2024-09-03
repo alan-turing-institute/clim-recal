@@ -28,7 +28,7 @@ RUN \
 USER root
 
 # build-essential is needed for pysqlite3 and gdal
-# RUN sudo apt-get update && sudo apt-get install -y build-essential
+RUN sudo apt-get update && sudo apt-get install -y build-essential
 
 # First line changes a startup hook, which will activate the custom environment
 # RUN echo conda activate "${env_name}" >> /usr/local/bin/before-notebook.d/10activate-conda-env.sh
