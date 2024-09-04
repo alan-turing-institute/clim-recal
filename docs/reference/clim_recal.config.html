@@ -358,7 +358,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <section id="python.clim_recal.config.ClimRecalConfig" class="level3" data-number="1.1.1">
 <h3 data-number="1.1.1" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalConfig"><span class="header-section-number">1.1.1</span> ClimRecalConfig</h3>
-<p><code>clim_recal.config.ClimRecalConfig(self, command_dir=COMMAND_DIR_DEFAULT, run_prefix=RUN_PREFIX_DEFAULT, preprocess_data_file=PREPROCESS_FILE_NAME, run_cmethods_file=CMETHODS_FILE_NAME, data_path=DATA_PATH_DEFAULT, mod_folder=MOD_FOLDER_DEFAULT, obs_folder=OBS_FOLDER_DEFAULT, preprocess_out_folder=PREPROCESS_OUT_FOLDER_DEFAULT, cmethods_out_folder=CMETHODS_OUT_FOLDER_DEFAULT, calib_date_start=CALIB_DATE_START_DEFAULT, calib_date_end=CALIB_DATE_END_DEFAULT, valid_date_start=VALID_DATE_START_DEFAULT, valid_date_end=VALID_DATE_END_DEFAULT, processors=PROCESSORS_DEFAULT, date_format_str=CLI_DATE_FORMAT_STR, date_split_str=DATE_FORMAT_SPLIT_STR, variables=(VariableOptions.default()), runs=(RunOptions.default()), regions=(RegionOptions.default()), methods=(MethodOptions.default()), multiprocess=False, cpus=DEFAULT_CPUS, hads_input_path=RAW_HADS_PATH, cpm_input_path=RAW_CPM_PATH, output_path=DEFAULT_OUTPUT_PATH, resample_folder=DEFAULT_RESAMPLE_FOLDER, crops_folder=DEFAULT_CROPS_FOLDER, hads_output_folder=HADS_OUTPUT_LOCAL_PATH, cpm_output_folder=CPM_OUTPUT_LOCAL_PATH, cpm_kwargs=dict(), hads_kwargs=dict(), start_index=0, stop_index=None, add_local_dated_results_path=True, add_local_dated_crops_path=True, local_dated_results_path_prefix='run', local_dated_crops_path_prefix='crop')</code></p>
+<p><code>clim_recal.config.ClimRecalConfig(self, command_dir=COMMAND_DIR_DEFAULT, run_prefix=RUN_PREFIX_DEFAULT, preprocess_data_file=PREPROCESS_FILE_NAME, run_cmethods_file=CMETHODS_FILE_NAME, data_path=DATA_PATH_DEFAULT, mod_folder=MOD_FOLDER_DEFAULT, obs_folder=OBS_FOLDER_DEFAULT, preprocess_out_folder=PREPROCESS_OUT_FOLDER_DEFAULT, cmethods_out_folder=CMETHODS_OUT_FOLDER_DEFAULT, calib_date_start=CALIB_DATE_START_DEFAULT, calib_date_end=CALIB_DATE_END_DEFAULT, valid_date_start=VALID_DATE_START_DEFAULT, valid_date_end=VALID_DATE_END_DEFAULT, processors=PROCESSORS_DEFAULT, date_format_str=CLI_DATE_FORMAT_STR, date_split_str=DATE_FORMAT_SPLIT_STR, variables=(VariableOptions.default()), runs=(RunOptions.default()), regions=(RegionOptions.default()), methods=(MethodOptions.default()), multiprocess=False, cpus=DEFAULT_CPUS, hads_input_path=RAW_HADS_PATH, cpm_input_path=RAW_CPM_PATH, output_path=DEFAULT_OUTPUT_PATH, resample_folder=DEFAULT_RESAMPLE_FOLDER, crops_folder=DEFAULT_CROPS_FOLDER, hads_output_folder=HADS_OUTPUT_LOCAL_PATH, cpm_output_folder=CPM_OUTPUT_LOCAL_PATH, cpm_kwargs=dict(), hads_kwargs=dict(), start_index=0, stop_index=None, add_local_dated_results_path=True, add_local_dated_crops_path=True, local_dated_results_path_prefix='run', local_dated_crops_path_prefix='crop', debug_mode=False)</code></p>
 <p>Manage creating command line scripts to run <code>debiasing</code> <code>cli</code>.</p>
 <section id="attributes" class="level4" data-number="1.1.1.1">
 <h4 data-number="1.1.1.1" class="anchored" data-anchor-id="attributes"><span class="header-section-number">1.1.1.1</span> Attributes</h4>
@@ -440,6 +440,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>hads_kwargs</td>
 <td>dict</td>
 <td>A <code>dict</code> of parameters to pass to <code>HADsResamplerManager</code>.</td>
+</tr>
+<tr class="even">
+<td>debug_mode</td>
+<td>bool</td>
+<td>Set to <code>True</code> to add more detailed debug logs, including <code>GDAL</code>.</td>
 </tr>
 </tbody>
 </table>

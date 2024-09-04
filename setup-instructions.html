@@ -317,12 +317,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#quickstart" id="toc-quickstart" class="nav-link active" data-scroll-target="#quickstart"><span class="header-section-number">1</span> Quickstart</a></li>
-  <li><a href="#python" id="toc-python" class="nav-link" data-scroll-target="#python"><span class="header-section-number">2</span> Python</a>
+  <li><a href="#options" id="toc-options" class="nav-link" data-scroll-target="#options"><span class="header-section-number">2</span> Options</a></li>
+  <li><a href="#condamamba-python" id="toc-condamamba-python" class="nav-link" data-scroll-target="#condamamba-python"><span class="header-section-number">3</span> Conda/Mamba Python</a>
   <ul class="collapse">
-  <li><a href="#conda-mamba" id="toc-conda-mamba" class="nav-link" data-scroll-target="#conda-mamba"><span class="header-section-number">2.1</span> <code>Conda</code> / <code>Mamba</code></a></li>
-  <li><a href="#conda-lock" id="toc-conda-lock" class="nav-link" data-scroll-target="#conda-lock"><span class="header-section-number">2.2</span> <code>conda-lock</code></a></li>
+  <li><a href="#conda-mamba" id="toc-conda-mamba" class="nav-link" data-scroll-target="#conda-mamba"><span class="header-section-number">3.1</span> <code>Conda</code> / <code>Mamba</code></a></li>
+  <li><a href="#conda-lock" id="toc-conda-lock" class="nav-link" data-scroll-target="#conda-lock"><span class="header-section-number">3.2</span> <code>conda-lock</code></a></li>
   </ul></li>
-  <li><a href="#docker" id="toc-docker" class="nav-link" data-scroll-target="#docker"><span class="header-section-number">3</span> Docker</a></li>
+  <li><a href="#docker" id="toc-docker" class="nav-link" data-scroll-target="#docker"><span class="header-section-number">4</span> Docker</a></li>
   </ul>
 </nav>
     </div>
@@ -379,69 +380,71 @@ Warning
 <p>There are cases where <code>pdm install</code> raises a <code>KeyError: '_PYPROJECT_HOOKS_BUILD_BACKEND'</code>. Thus far, running <code>pdm install</code> again works.</p>
 </div>
 </div>
-<pre class="console"><code>$ clim-recal --help
-
- Usage: clim-recal [OPTIONS]
-
- Crop and align UK climate projections and test debias methods.
-
-╭─ Options ──────────────────────────────────────────────────────────────╮
-│ --hads-input-path     -d      PATH                [default:            │
-│                                                   /Volumes/vmfileshar… │
-│ --cpm-input-path      -o      PATH                [default:            │
-│                                                   /Volumes/vmfileshar… │
-│ --output-path         -o      DIRECTORY           [default:            │
-│                                                   clim-recal-runs]     │
-│ --variable            -v      [tasmax|rainfall|t  [default: tasmax]    │
-│                               asmin]                                   │
-│ --region              -a      [Glasgow|Mancheste  [default:            │
-│                               r|London|Scotland]  Manchester]          │
-│ --run                 -r      [01|04|05|06|07|08  [default: 05]        │
-│                               |09|10|11|12|13|14                       │
-│                               |15]                                     │
-│ --method              -m      [quantile_delta_ma  [default:            │
-│                               pping|quantile_map  quantile_delta_mapp… │
-│                               ping|variance_scal                       │
-│                               ing|delta_method]                        │
-│ --all-variables                                                        │
-│ --all-regions                                                          │
-│ --all-runs                                                             │
-│ --default-runs                                                         │
-│ --all-methods                                                          │
-│ --project-cpm                                     [default: True]      │
-│ --project-hads                                    [default: True]      │
-│ --crop-cpm                                        [default: True]      │
-│ --crop-hads                                       [default: True]      │
-│ --execute                                                              │
-│ --start-index         -s      INTEGER RANGE       [default: 0]         │
-│                               [x&gt;=0]                                   │
-│ --total-from-index    -t      INTEGER RANGE       [default: 0]         │
-│                               [x&gt;=0]                                   │
-│ --cpus                        INTEGER RANGE       [default: 2]         │
-│                               [1&lt;=x&lt;=10]                               │
-│ --use-multiprocessi…                                                   │
-│ --install-completion                              Install completion   │
-│                                                   for the current      │
-│                                                   shell.               │
-│ --show-completion                                 Show completion for  │
-│                                                   the current shell,   │
-│                                                   to copy it or        │
-│                                                   customize the        │
-│                                                   installation.        │
-│ --help                                            Show this message    │
-│                                                   and exit.            │
-╰────────────────────────────────────────────────────────────────────────╯
-</code></pre>
 </section>
-<section id="python" class="level1" data-number="2">
-<h1 data-number="2"><span class="header-section-number">2</span> Python</h1>
-<section id="conda-mamba" class="level2" data-number="2.1">
-<h2 data-number="2.1" class="anchored" data-anchor-id="conda-mamba"><span class="header-section-number">2.1</span> <code>Conda</code> / <code>Mamba</code></h2>
-<p>At present either <code>conda</code> or <code>mamba</code> are needed to use <code>clim-recal</code>. Installation instructions for these are available:</p>
+<section id="options" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Options</h1>
+<p>Once installed the <code>clim-recal</code> command can be run with files. The settings below are specific to a server</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">clim-recal</span> <span class="at">--help</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a> <span class="ex">Usage:</span> clim-recal <span class="pp">[</span><span class="ss">OPTIONS</span><span class="pp">]</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a> <span class="ex">Crop</span> and align UK climate projections and test debias methods.</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="ex">╭─</span> Options ──────────────────────────────────────────────────────────────╮</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--hads-input-path</span>     <span class="at">-d</span>      PATH                [default: .]         │</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--cpm-input-path</span>      <span class="at">-o</span>      PATH                [default: .]         │</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--output-path</span>         <span class="at">-o</span>      DIRECTORY           [default:            │</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                                                   clim-recal-runs]     │</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--variable</span>            <span class="at">-v</span>      [tasmax<span class="kw">|</span><span class="ex">rainfall</span><span class="kw">|</span><span class="ex">t</span>  [default: tasmax]    │</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                               asmin]                                   │</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--region</span>              <span class="at">-a</span>      [Glasgow<span class="kw">|</span><span class="ex">Mancheste</span>  [default:            │</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                               r<span class="kw">|</span><span class="ex">London</span><span class="kw">|</span><span class="ex">Scotland]</span>  Manchester]          │</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--run</span>                 <span class="at">-r</span>      [01<span class="kw">|</span><span class="ex">04</span><span class="kw">|</span><span class="ex">05</span><span class="kw">|</span><span class="ex">06</span><span class="kw">|</span><span class="ex">07</span><span class="kw">|</span><span class="ex">08</span>  [default: 05]        │</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                               <span class="kw">|</span><span class="ex">09</span><span class="kw">|</span><span class="ex">10</span><span class="kw">|</span><span class="ex">11</span><span class="kw">|</span><span class="ex">12</span><span class="kw">|</span><span class="ex">13</span><span class="kw">|</span><span class="ex">14</span>                       │</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                               <span class="kw">|</span><span class="ex">15]</span>                                     │</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--method</span>              <span class="at">-m</span>      [quantile_delta_ma  [default:            │</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                               pping<span class="kw">|</span><span class="ex">quantile_map</span>  quantile_delta_mapp… │</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                               ping<span class="kw">|</span><span class="ex">variance_scal</span>                       │</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                               ing<span class="kw">|</span><span class="ex">delta_method]</span>                        │</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--all-variables</span>                                                        │</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--all-regions</span>                                                          │</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--all-runs</span>                                                             │</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--default-runs</span>                                                         │</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--all-methods</span>                                                          │</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--project-cpm</span>                                     [default: True]      │</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--project-hads</span>                                    [default: True]      │</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--crop-cpm</span>                                        [default: True]      │</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--crop-hads</span>                                       [default: True]      │</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--execute</span>                                                              │</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--start-index</span>         <span class="at">-s</span>      INTEGER RANGE       [default: 0]         │</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                               [x<span class="op">&gt;</span>=0]                                   │</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--total-from-index</span>    <span class="at">-t</span>      INTEGER RANGE       [default: 0]         │</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                               [x<span class="op">&gt;</span>=0]                                   │</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--cpus</span>                        INTEGER RANGE       [default: 2]         │</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                               [1<span class="op">&lt;</span>=x<span class="op">&lt;</span>=10]                               │</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--use-multiprocessi…</span>                                                   │</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--install-completion</span>                              Install completion   │</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                                                   for the current      │</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                                                   shell.               │</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--show-completion</span>                                 Show completion for  │</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                                                   the current shell,   │</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                                                   to copy it or        │</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                                                   customize the        │</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                                                   installation.        │</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span> <span class="at">--help</span>                                            Show this message    │</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>                                                   and exit.            │</span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a><span class="ex">╰────────────────────────────────────────────────────────────────────────╯</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="condamamba-python" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Conda/Mamba Python</h1>
+<section id="conda-mamba" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="conda-mamba"><span class="header-section-number">3.1</span> <code>Conda</code> / <code>Mamba</code></h2>
+<p>More detailed examples using <code>conda</code> or <code>mamba</code> are below. Installation instructions for either these are available:</p>
 <ul>
 <li><code>conda</code>: <a href="https://conda.io/projects/conda/en/latest/user-guide/install/index.html" class="uri">https://conda.io/projects/conda/en/latest/user-guide/install/index.html</a></li>
 <li><code>mamba</code>: <a href="https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html" class="uri">https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html</a></li>
 </ul>
+<p>These options are primarily to ease use of <code>GDAL</code> and optionally <code>rsync</code>.</p>
 <!--
 We support two main options for installing the `python` components:
     - [`conda-lock`](https://conda.github.io/conda-lock/)
@@ -450,8 +453,8 @@ We support two main options for installing the `python` components:
  `pip` (or `pipx`) are enough to manage some of the basic `python` elements, but not the geospatial components.
 -->
 </section>
-<section id="conda-lock" class="level2" data-number="2.2">
-<h2 data-number="2.2" class="anchored" data-anchor-id="conda-lock"><span class="header-section-number">2.2</span> <code>conda-lock</code></h2>
+<section id="conda-lock" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="conda-lock"><span class="header-section-number">3.2</span> <code>conda-lock</code></h2>
 <p><code>conda-lock</code> provides a means of managing dependencies for <code>conda</code>/<code>mamba</code> environments on precise, reproducible levels, and can incorporated local <code>pyproject.toml</code> configurations.</p>
 <p>There are many ways to install <code>conda-lock</code> (for most up to date options see <a href="https://github.com/conda/conda-lock?tab=readme-ov-file#installation"><code>README.md</code></a>):</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
@@ -497,8 +500,8 @@ We support two main options for installing the `python` components:
 </div>
 </section>
 </section>
-<section id="docker" class="level1" data-number="3">
-<h1 data-number="3"><span class="header-section-number">3</span> Docker</h1>
+<section id="docker" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Docker</h1>
 <p>It can take some time to build, but the following will build 3 <code>docker</code> <code>volumes</code> for</p>
 <ul>
 <li><code>jupyter</code>: a <code>python</code> environment</li>
