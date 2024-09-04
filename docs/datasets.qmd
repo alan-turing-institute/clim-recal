@@ -1,5 +1,5 @@
 ---
-title: Exported Datasets
+title: Generated Datasets
 ---
 Thanks for your interest in the `clim-recal` data and metrics. We plan to release a set of combined observation and simulation datasets for three cities in the UK and invite authors of bias correction methods to benchmark their methods for those cities.
 

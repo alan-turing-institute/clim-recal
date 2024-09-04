@@ -8,7 +8,7 @@ ARG EXTERNAL_PORT=$LOCAL_PORT
 # an ARG
 ENV HOST_IP=0.0.0.0
 ENV LOCAL_PORT=${LOCAL_PORT}
-ARG py_ver=3.12
+ARG py_ver=3.15
 ENV DEBIAN_FRONTEND=noninteractive
 
 COPY . /app
@@ -24,7 +24,7 @@ USER root
 
 # Install the local python environment set via
 # `pre-commit` in .conda-linux-64
-RUN micromamba create -f .conda-linux-64.lock -n clim-recal
+RUN micromamba create -n clim-recal gdal=3.8.5 pdm rsync quartodoc jupyter -c conda-forge
 
 
 CMD micromamba run -n clim-recal quartodoc build && \
