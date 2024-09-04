@@ -6,7 +6,7 @@ services:
       dockerfile: ./compose/jupyter/Dockerfile
     ports:
       - "8888:8888"
-    # user: root
+    user: root
     environment:
       - NB_UID=1000
       - NB_GID=100
