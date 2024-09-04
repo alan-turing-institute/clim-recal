@@ -29,21 +29,26 @@ docker compose up jupyter
 clim-recal --help
 ```
 ::: {.callout-warning}
-There are cases where `pdm install` raises a `KeyError: '_PYPROJECT_HOOKS_BUILD_BACKEND'`. Thus far, running `pdm install` again works.
+There are cases where `pdm install` raises a
+`KeyError: '_PYPROJECT_HOOKS_BUILD_BACKEND'`. Thus far, running `pdm install`
+again works.
 :::
 
-```console
-$ clim-recal --help
+# Options
+
+Once installed the `clim-recal` command can be run with files. The settings
+below are specific to a server
+
+```bash
+clim-recal --help
 
  Usage: clim-recal [OPTIONS]
 
  Crop and align UK climate projections and test debias methods.
 
 ╭─ Options ──────────────────────────────────────────────────────────────╮
-│ --hads-input-path     -d      PATH                [default:            │
-│                                                   /Volumes/vmfileshar… │
-│ --cpm-input-path      -o      PATH                [default:            │
-│                                                   /Volumes/vmfileshar… │
+│ --hads-input-path     -d      PATH                [default: .]         │
+│ --cpm-input-path      -o      PATH                [default: .]         │
 │ --output-path         -o      DIRECTORY           [default:            │
 │                                                   clim-recal-runs]     │
 │ --variable            -v      [tasmax|rainfall|t  [default: tasmax]    │
@@ -85,18 +90,18 @@ $ clim-recal --help
 │ --help                                            Show this message    │
 │                                                   and exit.            │
 ╰────────────────────────────────────────────────────────────────────────╯
-
 ```
 
-# Python
+# Conda/Mamba Python
 
 ## `Conda` / `Mamba`
 
-At present either `conda` or `mamba` are needed to use `clim-recal`. Installation instructions for these are available:
+More detailed examples using `conda` or `mamba` are below. Installation instructions for either these are available:
 
 - `conda`: <https://conda.io/projects/conda/en/latest/user-guide/install/index.html>
 - `mamba`: <https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html>
 
+These options are primarily to ease use of `GDAL` and optionally `rsync`.
 
 <!--
 We support two main options for installing the `python` components:

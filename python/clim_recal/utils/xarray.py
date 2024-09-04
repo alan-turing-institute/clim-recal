@@ -1,3 +1,4 @@
+import warnings
 from datetime import date, datetime, timedelta
 from logging import getLogger
 from os import PathLike
@@ -159,7 +160,11 @@ def check_xarray_path_and_var_name(
 ) -> tuple[Dataset, str]:
     """Check and return a `T_Dataset` instances and included variable name."""
     if isinstance(xr_time_series, PathLike):
-        xr_time_series = open_dataset(xr_time_series, decode_coords="all")
+        with warnings.catch_warnings():
+            # Filter repeating warning such as:
+            # UserWarning: Variable(s) referenced in bounds not in variables: ['time_bnds']
+            warnings.simplefilter(action="once", category=UserWarning)
+            xr_time_series = open_dataset(xr_time_series, decode_coords="all")
     try:
         assert isinstance(xr_time_series, Dataset)
     except AssertionError:

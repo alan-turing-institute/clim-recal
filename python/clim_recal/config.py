@@ -5,6 +5,7 @@ from os import PathLike, chdir, cpu_count
 from pathlib import Path
 from typing import Any, Final, Sequence, TypedDict
 
+from osgeo import gdal
 from tqdm import TqdmExperimentalWarning, tqdm
 
 from .debiasing.debias_wrapper import BaseRunConfig, RunConfig, RunConfigType
@@ -74,6 +75,8 @@ class ClimRecalConfig(BaseRunConfig):
         A `dict` of parameters to pass to a `CPMResamplerManager`.
     hads_kwargs
         A `dict` of parameters to pass to `HADsResamplerManager`.
+    debug_mode
+        Set to `True` to add more detailed debug logs, including `GDAL`.
 
     Examples
     --------
@@ -111,6 +114,7 @@ class ClimRecalConfig(BaseRunConfig):
     add_local_dated_crops_path: bool = True
     local_dated_results_path_prefix: str = "run"
     local_dated_crops_path_prefix: str = "crop"
+    debug_mode: bool = False
 
     @property
     def resample_path(self) -> Path:
@@ -211,6 +215,7 @@ class ClimRecalConfig(BaseRunConfig):
         `VariableOptions.cpm_values()`, that occurs within `CPMResamplerManager`
         for ease of comparability with HADs.
         """
+        gdal.UseExceptions() if self.debug_mode else gdal.DontUseExceptions()
         self.cpm_manager = CPMResamplerManager(
             input_paths=self.cpm_input_path,
             variables=self.variables,
