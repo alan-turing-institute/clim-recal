@@ -17,11 +17,11 @@ env:
 
 on:
   pull_request:
-    branches: ['main', 'raw-data-resample', ]
+    branches: ['main', 'cache-cpm-for-hads', ]
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['main', 'raw-data-resample', ]
+    branches: ['main', 'cache-cpm-for-hads', ]
     paths-ignore: ['docs/**']
 
 concurrency:
