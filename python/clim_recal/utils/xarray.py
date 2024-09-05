@@ -156,14 +156,17 @@ def cftime360_to_date(cf_360: Datetime360Day) -> date:
 
 
 def check_xarray_path_and_var_name(
-    xr_time_series: T_Dataset | PathLike, variable_name: str | None
+    xr_time_series: T_Dataset | PathLike,
+    variable_name: str | None,
+    ignore_warnings: bool = True,
 ) -> tuple[Dataset, str]:
     """Check and return a `T_Dataset` instances and included variable name."""
     if isinstance(xr_time_series, PathLike):
         with warnings.catch_warnings():
             # Filter repeating warning such as:
             # UserWarning: Variable(s) referenced in bounds not in variables: ['time_bnds']
-            warnings.simplefilter(action="once", category=UserWarning)
+            if ignore_warnings:
+                warnings.simplefilter(action="ignore", category=UserWarning)
             xr_time_series = open_dataset(xr_time_series, decode_coords="all")
     try:
         assert isinstance(xr_time_series, Dataset)
