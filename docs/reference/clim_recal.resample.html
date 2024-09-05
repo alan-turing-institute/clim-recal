@@ -407,15 +407,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <section id="python.clim_recal.resample.CPMResampler" class="level3" data-number="1.2.1">
 <h3 data-number="1.2.1" class="anchored" data-anchor-id="python.clim_recal.resample.CPMResampler"><span class="header-section-number">1.2.1</span> CPMResampler</h3>
-<p><code>clim_recal.resample.CPMResampler(self, *, input_path=RAW_CPM_TASMAX_PATH, output_path=RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_LOCAL_PATH, variable_name=VariableOptions.default(), grid=DEFAULT_RELATIVE_GRID_DATA_PATH, input_files=None, cpus=None, crop_regions=RegionOptions.all(), crop_path=RESAMPLING_OUTPUT_PATH / CPM_CROP_OUTPUT_LOCAL_PATH, final_crs=BRITISH_NATIONAL_GRID_EPSG, grid_x_column_name=HADS_XDIM, grid_y_column_name=HADS_YDIM, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, resolution_relative_path=HADS_2_2K_RESOLUTION_PATH, input_file_x_column_name=CPRUK_XDIM, input_file_y_column_name=CPRUK_YDIM, start_index=0, stop_index=None, _resample_func=cpm_reproject_with_standard_calendar)</code></p>
+<p><code>clim_recal.resample.CPMResampler(self, *, input_path=RAW_CPM_TASMAX_PATH, output_path=RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_LOCAL_PATH, variable_name=VariableOptions.default(), input_files=None, cpus=None, crop_regions=RegionOptions.all(), crop_path=RESAMPLING_OUTPUT_PATH / CPM_CROP_OUTPUT_LOCAL_PATH, final_crs=BRITISH_NATIONAL_GRID_EPSG, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, resolution_relative_path=HADS_2_2K_RESOLUTION_PATH, input_file_x_column_name=CPRUK_XDIM, input_file_y_column_name=CPRUK_YDIM, start_index=0, stop_index=None, _resample_func=cpm_reproject_with_standard_calendar)</code></p>
 <p>CPM specific changes to HADsResampler.</p>
 <section id="attributes-1" class="level4" data-number="1.2.1.1">
 <h4 data-number="1.2.1.1" class="anchored" data-anchor-id="attributes-1"><span class="header-section-number">1.2.1.1</span> Attributes</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 19%">
+<col style="width: 21%">
 <col style="width: 15%">
-<col style="width: 65%">
+<col style="width: 63%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -471,13 +471,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Coordinate Reference System (CRS) to return final format in.</td>
 </tr>
 <tr class="even">
-<td>grid_x_column_name</td>
-<td></td>
+<td>input_file_x_column_name</td>
+<td>str</td>
 <td>Column name in <code>input_files</code> or <code>input</code> for <code>x</code> coordinates.</td>
 </tr>
 <tr class="odd">
-<td>grid_y_column_name</td>
-<td></td>
+<td>input_file_y_column_name</td>
+<td>str</td>
 <td>Column name in <code>input_files</code> or <code>input</code> for <code>y</code> coordinates.</td>
 </tr>
 <tr class="even">
@@ -543,15 +543,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.resample.HADsResampler" class="level3" data-number="1.2.3">
 <h3 data-number="1.2.3" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResampler"><span class="header-section-number">1.2.3</span> HADsResampler</h3>
-<p><code>clim_recal.resample.HADsResampler(self, *, input_path=RAW_HADS_TASMAX_PATH, output_path=RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH, variable_name=VariableOptions.default(), grid=DEFAULT_RELATIVE_GRID_DATA_PATH, input_files=None, cpus=None, crop_regions=RegionOptions.all(), crop_path=RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH, final_crs=BRITISH_NATIONAL_GRID_EPSG, grid_x_column_name=HADS_XDIM, grid_y_column_name=HADS_YDIM, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, resolution_relative_path=HADS_2_2K_RESOLUTION_PATH, input_file_x_column_name=HADS_XDIM, input_file_y_column_name=HADS_YDIM, start_index=0, stop_index=None, cpm_for_coord_alignment=RAW_CPM_TASMAX_PATH, _resample_func=hads_resample_and_reproject, _use_reference_grid=True)</code></p>
+<p><code>clim_recal.resample.HADsResampler(self, *, input_path=RAW_HADS_TASMAX_PATH, output_path=RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH, variable_name=VariableOptions.default(), input_files=None, cpus=None, crop_regions=RegionOptions.all(), crop_path=RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH, final_crs=BRITISH_NATIONAL_GRID_EPSG, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, resolution_relative_path=HADS_2_2K_RESOLUTION_PATH, input_file_x_column_name=HADS_XDIM, input_file_y_column_name=HADS_YDIM, start_index=0, stop_index=None, grid=DEFAULT_RELATIVE_GRID_DATA_PATH, cpm_for_coord_alignment=RAW_CPM_TASMAX_PATH, _resample_func=hads_resample_and_reproject, _use_reference_grid=True)</code></p>
 <p>Manage resampling HADs datafiles for modelling.</p>
 <section id="attributes-2" class="level4" data-number="1.2.3.1">
 <h4 data-number="1.2.3.1" class="anchored" data-anchor-id="attributes-2"><span class="header-section-number">1.2.3.1</span> Attributes</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 17%">
-<col style="width: 23%">
-<col style="width: 59%">
+<col style="width: 19%">
+<col style="width: 22%">
+<col style="width: 57%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -602,12 +602,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Coordinate Reference System (CRS) to return final format in.</td>
 </tr>
 <tr class="odd">
-<td>grid_x_column_name</td>
+<td>input_file_x_column_name</td>
 <td>str</td>
 <td>Column name in <code>input_files</code> or <code>input</code> for <code>x</code> coordinates.</td>
 </tr>
 <tr class="even">
-<td>grid_y_column_name</td>
+<td>input_file_y_column_name</td>
 <td>str</td>
 <td>Column name in <code>input_files</code> or <code>input</code> for <code>y</code> coordinates.</td>
 </tr>
@@ -871,7 +871,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.resample.ResamblerBase" class="level3" data-number="1.2.5">
 <h3 data-number="1.2.5" class="anchored" data-anchor-id="python.clim_recal.resample.ResamblerBase"><span class="header-section-number">1.2.5</span> ResamblerBase</h3>
-<p><code>clim_recal.resample.ResamblerBase(self, *, input_path=RAW_HADS_TASMAX_PATH, output_path=RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH, variable_name=VariableOptions.default(), grid=DEFAULT_RELATIVE_GRID_DATA_PATH, input_files=None, cpus=None, crop_regions=RegionOptions.all(), crop_path=RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH, final_crs=BRITISH_NATIONAL_GRID_EPSG, grid_x_column_name=HADS_XDIM, grid_y_column_name=HADS_YDIM, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, resolution_relative_path=HADS_2_2K_RESOLUTION_PATH, input_file_x_column_name=HADS_XDIM, input_file_y_column_name=HADS_YDIM, start_index=0, stop_index=None)</code></p>
+<p><code>clim_recal.resample.ResamblerBase(self, *, input_path=RAW_HADS_TASMAX_PATH, output_path=RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH, variable_name=VariableOptions.default(), input_files=None, cpus=None, crop_regions=RegionOptions.all(), crop_path=RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH, final_crs=BRITISH_NATIONAL_GRID_EPSG, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, resolution_relative_path=HADS_2_2K_RESOLUTION_PATH, input_file_x_column_name=HADS_XDIM, input_file_y_column_name=HADS_YDIM, start_index=0, stop_index=None)</code></p>
 <p>Base class to inherit for <code>HADs</code> and <code>CPM</code>.</p>
 <section id="attributes-4" class="level4" data-number="1.2.5.1">
 <h4 data-number="1.2.5.1" class="anchored" data-anchor-id="attributes-4"><span class="header-section-number">1.2.5.1</span> Attributes</h4>
@@ -917,10 +917,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Set check and set (if necessary) <code>grid</code> attribute of <code>self</code>.</td>
 </tr>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.ResamblerBase.set_grid_x_y">set_grid_x_y</a></td>
-<td>Set the <code>x</code> <code>y</code> values via <code>grid_x_column_name</code> and <code>grid_y_column_name</code>.</td>
-</tr>
-<tr class="even">
 <td><a href="#python.clim_recal.resample.ResamblerBase.set_input_files">set_input_files</a></td>
 <td>Replace <code>self.input</code> and process <code>self.input_files</code>.</td>
 </tr>
@@ -977,46 +973,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 </section>
-<section id="python.clim_recal.resample.ResamblerBase.set_grid_x_y" class="level5" data-number="1.2.5.2.5">
-<h5 data-number="1.2.5.2.5" class="anchored" data-anchor-id="python.clim_recal.resample.ResamblerBase.set_grid_x_y"><span class="header-section-number">1.2.5.2.5</span> set_grid_x_y</h5>
-<p><code>clim_recal.resample.ResamblerBase.set_grid_x_y(grid_x_column_name=None, grid_y_column_name=None)</code></p>
-<p>Set the <code>x</code> <code>y</code> values via <code>grid_x_column_name</code> and <code>grid_y_column_name</code>.</p>
-<section id="parameters-3" class="level6" data-number="1.2.5.2.5.1">
-<h6 data-number="1.2.5.2.5.1" class="anchored" data-anchor-id="parameters-3"><span class="header-section-number">1.2.5.2.5.1</span> Parameters</h6>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 13%">
-<col style="width: 7%">
-<col style="width: 72%">
-<col style="width: 6%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>grid_x_column_name</code></td>
-<td>str | None</td>
-<td>Name of column in <code>self.grid</code> <code>Dataset</code> to extract to <code>self.x</code>. If <code>None</code> use <code>self.grid_x_column_name</code>, else overwrite.</td>
-<td><code>None</code></td>
-</tr>
-<tr class="even">
-<td><code>grid_y_column_name</code></td>
-<td>str | None</td>
-<td>Name of column in <code>self.grid</code> <code>Dataset</code> to extract to <code>self.y</code>. If <code>None</code> use <code>self.grid_y_column_name</code>, else overwrite.</td>
-<td><code>None</code></td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="python.clim_recal.resample.ResamblerBase.set_input_files" class="level5" data-number="1.2.5.2.6">
-<h5 data-number="1.2.5.2.6" class="anchored" data-anchor-id="python.clim_recal.resample.ResamblerBase.set_input_files"><span class="header-section-number">1.2.5.2.6</span> set_input_files</h5>
+<section id="python.clim_recal.resample.ResamblerBase.set_input_files" class="level5" data-number="1.2.5.2.5">
+<h5 data-number="1.2.5.2.5" class="anchored" data-anchor-id="python.clim_recal.resample.ResamblerBase.set_input_files"><span class="header-section-number">1.2.5.2.5</span> set_input_files</h5>
 <p><code>clim_recal.resample.ResamblerBase.set_input_files(new_input_path=None)</code></p>
 <p>Replace <code>self.input</code> and process <code>self.input_files</code>.</p>
 </section>
