@@ -23,7 +23,7 @@ COPY . .
 
 RUN chown -R ${NB_USER}:${NB_GID} /home/${NB_USER}
 
-USER ${NB_UID}
+USER ${NB_USER}
 
 RUN conda create -n ${env_name}
 # Todo: either return to an update to environment.yml or document this

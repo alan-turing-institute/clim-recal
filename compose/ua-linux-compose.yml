@@ -1,6 +1,7 @@
 services:
 
   jupyter:
+    user: root
     environment:
       - NB_UID=1001
       - NB_GID=1001
