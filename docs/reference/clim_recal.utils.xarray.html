@@ -345,10 +345,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#python.clim_recal.utils.xarray.gdal_warp_wrapper" id="toc-python.clim_recal.utils.xarray.gdal_warp_wrapper" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.gdal_warp_wrapper"><span class="header-section-number">3.0.7</span> gdal_warp_wrapper</a></li>
   <li><a href="#python.clim_recal.utils.xarray.generate_360_to_standard" id="toc-python.clim_recal.utils.xarray.generate_360_to_standard" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.generate_360_to_standard"><span class="header-section-number">3.0.8</span> generate_360_to_standard</a></li>
   <li><a href="#python.clim_recal.utils.xarray.hads_resample_and_reproject" id="toc-python.clim_recal.utils.xarray.hads_resample_and_reproject" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.hads_resample_and_reproject"><span class="header-section-number">3.0.9</span> hads_resample_and_reproject</a></li>
-  <li><a href="#python.clim_recal.utils.xarray.interpolate_coords" id="toc-python.clim_recal.utils.xarray.interpolate_coords" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.interpolate_coords"><span class="header-section-number">3.0.10</span> interpolate_coords</a></li>
-  <li><a href="#python.clim_recal.utils.xarray.interpolate_xr_ts_nans" id="toc-python.clim_recal.utils.xarray.interpolate_xr_ts_nans" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.interpolate_xr_ts_nans"><span class="header-section-number">3.0.11</span> interpolate_xr_ts_nans</a></li>
-  <li><a href="#python.clim_recal.utils.xarray.plot_xarray" id="toc-python.clim_recal.utils.xarray.plot_xarray" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.plot_xarray"><span class="header-section-number">3.0.12</span> plot_xarray</a></li>
-  <li><a href="#python.clim_recal.utils.xarray.xr_reproject_crs" id="toc-python.clim_recal.utils.xarray.xr_reproject_crs" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.13</span> xr_reproject_crs</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.interpolate_xr_ts_nans" id="toc-python.clim_recal.utils.xarray.interpolate_xr_ts_nans" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.interpolate_xr_ts_nans"><span class="header-section-number">3.0.10</span> interpolate_xr_ts_nans</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.plot_xarray" id="toc-python.clim_recal.utils.xarray.plot_xarray" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.plot_xarray"><span class="header-section-number">3.0.11</span> plot_xarray</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.xr_reproject_crs" id="toc-python.clim_recal.utils.xarray.xr_reproject_crs" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.12</span> xr_reproject_crs</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -429,18 +428,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Resample <code>HADs</code> <code>xarray</code> time series to 2.2km.</td>
 </tr>
 <tr class="odd">
-<td><a href="#python.clim_recal.utils.xarray.interpolate_coords">interpolate_coords</a></td>
-<td>Reproject <code>xr_time_series</code> to <code>x_resolution</code>/<code>y_resolution</code>.</td>
-</tr>
-<tr class="even">
 <td><a href="#python.clim_recal.utils.xarray.interpolate_xr_ts_nans">interpolate_xr_ts_nans</a></td>
 <td>Interpolate <code>nan</code> values in a <code>Dataset</code> time series.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#python.clim_recal.utils.xarray.plot_xarray">plot_xarray</a></td>
 <td>Plot <code>da</code> with <code>**kwargs</code> to <code>path</code>.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#python.clim_recal.utils.xarray.xr_reproject_crs">xr_reproject_crs</a></td>
 <td>Reproject <code>source_xr</code> to <code>target_xr</code> coordinate structure.</td>
 </tr>
@@ -1254,25 +1249,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>clim_recal.utils.xarray.hads_resample_and_reproject(hads_xr_time_series, variable_name, cpm_to_match, cpm_to_match_func=cpm_reproject_with_standard_calendar, x_dim_name=HADS_RAW_X_COLUMN_NAME, y_dim_name=HADS_RAW_Y_COLUMN_NAME)</code></p>
 <p>Resample <code>HADs</code> <code>xarray</code> time series to 2.2km.</p>
 </section>
-<section id="python.clim_recal.utils.xarray.interpolate_coords" class="level3" data-number="3.0.10">
-<h3 data-number="3.0.10" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.interpolate_coords"><span class="header-section-number">3.0.10</span> interpolate_coords</h3>
-<p><code>clim_recal.utils.xarray.interpolate_coords(xr_time_series, variable_name, x_grid=None, y_grid=None, x_coord_column_name=HADS_RAW_X_COLUMN_NAME, y_coord_column_name=HADS_RAW_Y_COLUMN_NAME, reference_coords=DEFAULT_RELATIVE_GRID_DATA_PATH, reference_coord_x_column_name=HADS_RAW_X_COLUMN_NAME, reference_coord_y_column_name=HADS_RAW_Y_COLUMN_NAME, method='linear', engine=NETCDF4_XARRAY_ENGINE, use_reference_grid=True, **kwargs)</code></p>
-<p>Reproject <code>xr_time_series</code> to <code>x_resolution</code>/<code>y_resolution</code>.</p>
-<section id="notes-4" class="level4" data-number="3.0.10.1">
-<h4 data-number="3.0.10.1" class="anchored" data-anchor-id="notes-4"><span class="header-section-number">3.0.10.1</span> Notes</h4>
-<p>The <code>rio.reproject</code> approach commented out below raises <code>ValueError: IndexVariable objects must be 1-dimensional</code> See https://github.com/corteva/rioxarray/discussions/762</p>
-</section>
-</section>
-<section id="python.clim_recal.utils.xarray.interpolate_xr_ts_nans" class="level3" data-number="3.0.11">
-<h3 data-number="3.0.11" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.interpolate_xr_ts_nans"><span class="header-section-number">3.0.11</span> interpolate_xr_ts_nans</h3>
+<section id="python.clim_recal.utils.xarray.interpolate_xr_ts_nans" class="level3" data-number="3.0.10">
+<h3 data-number="3.0.10" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.interpolate_xr_ts_nans"><span class="header-section-number">3.0.10</span> interpolate_xr_ts_nans</h3>
 <p><code>clim_recal.utils.xarray.interpolate_xr_ts_nans(xr_ts, original_xr_ts=None, check_cftime_cols=None, interpolate_method=DEFAULT_INTERPOLATION_METHOD, keep_crs=True, keep_attrs=True, limit=1, cftime_range_gen_kwargs=None, **kwargs)</code></p>
 <p>Interpolate <code>nan</code> values in a <code>Dataset</code> time series.</p>
-<section id="notes-5" class="level4" data-number="3.0.11.1">
-<h4 data-number="3.0.11.1" class="anchored" data-anchor-id="notes-5"><span class="header-section-number">3.0.11.1</span> Notes</h4>
+<section id="notes-4" class="level4" data-number="3.0.10.1">
+<h4 data-number="3.0.10.1" class="anchored" data-anchor-id="notes-4"><span class="header-section-number">3.0.10.1</span> Notes</h4>
 <p>For details and details of <code>keep_attrs</code>, <code>limit</code> and <code>**kwargs</code> parameters see: https://docs.xarray.dev/en/stable/generated/xarray.DataArray.interpolate_na.html</p>
 </section>
-<section id="parameters-8" class="level4" data-number="3.0.11.2">
-<h4 data-number="3.0.11.2" class="anchored" data-anchor-id="parameters-8"><span class="header-section-number">3.0.11.2</span> Parameters</h4>
+<section id="parameters-8" class="level4" data-number="3.0.10.2">
+<h4 data-number="3.0.10.2" class="anchored" data-anchor-id="parameters-8"><span class="header-section-number">3.0.10.2</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 13%">
@@ -1340,8 +1326,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="returns-6" class="level4" data-number="3.0.11.3">
-<h4 data-number="3.0.11.3" class="anchored" data-anchor-id="returns-6"><span class="header-section-number">3.0.11.3</span> Returns</h4>
+<section id="returns-6" class="level4" data-number="3.0.10.3">
+<h4 data-number="3.0.10.3" class="anchored" data-anchor-id="returns-6"><span class="header-section-number">3.0.10.3</span> Returns</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 86%">
@@ -1362,12 +1348,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 </section>
-<section id="python.clim_recal.utils.xarray.plot_xarray" class="level3" data-number="3.0.12">
-<h3 data-number="3.0.12" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.plot_xarray"><span class="header-section-number">3.0.12</span> plot_xarray</h3>
+<section id="python.clim_recal.utils.xarray.plot_xarray" class="level3" data-number="3.0.11">
+<h3 data-number="3.0.11" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.plot_xarray"><span class="header-section-number">3.0.11</span> plot_xarray</h3>
 <p><code>clim_recal.utils.xarray.plot_xarray(da, path, time_stamp=False, **kwargs)</code></p>
 <p>Plot <code>da</code> with <code>**kwargs</code> to <code>path</code>.</p>
-<section id="parameters-9" class="level4" data-number="3.0.12.1">
-<h4 data-number="3.0.12.1" class="anchored" data-anchor-id="parameters-9"><span class="header-section-number">3.0.12.1</span> Parameters</h4>
+<section id="parameters-9" class="level4" data-number="3.0.11.1">
+<h4 data-number="3.0.11.1" class="anchored" data-anchor-id="parameters-9"><span class="header-section-number">3.0.11.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 12%">
@@ -1411,8 +1397,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="examples-7" class="level4" data-number="3.0.12.2">
-<h4 data-number="3.0.12.2" class="anchored" data-anchor-id="examples-7"><span class="header-section-number">3.0.12.2</span> Examples</h4>
+<section id="examples-7" class="level4" data-number="3.0.11.2">
+<h4 data-number="3.0.11.2" class="anchored" data-anchor-id="examples-7"><span class="header-section-number">3.0.11.2</span> Examples</h4>
 <div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> example_path: Path <span class="op">=</span> (</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>...     getfixture(<span class="st">'tmp_path'</span>) <span class="op">/</span> <span class="st">'test-path/example.png'</span>)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> image_path: Path <span class="op">=</span> plot_xarray(</span>
@@ -1430,12 +1416,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="op">/</span>...<span class="op">/</span>test<span class="op">-</span>path<span class="op">/</span>example<span class="op">-</span>stamped_...<span class="op">-</span>...<span class="op">-</span>..._...png</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
-<section id="python.clim_recal.utils.xarray.xr_reproject_crs" class="level3" data-number="3.0.13">
-<h3 data-number="3.0.13" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.13</span> xr_reproject_crs</h3>
+<section id="python.clim_recal.utils.xarray.xr_reproject_crs" class="level3" data-number="3.0.12">
+<h3 data-number="3.0.12" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.12</span> xr_reproject_crs</h3>
 <p><code>clim_recal.utils.xarray.xr_reproject_crs(xr_time_series, x_dim_name=CPM_RAW_X_COLUMN_NAME, y_dim_name=CPM_RAW_Y_COLUMN_NAME, time_dim_name=TIME_COLUMN_NAME, variable_name=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, match_xr_time_series=None, match_xr_time_series_load_func=None, match_xr_time_series_load_kwargs=None, resampling_method=DEFAULT_RESAMPLING_METHOD, nodata=np.nan, **kwargs)</code></p>
 <p>Reproject <code>source_xr</code> to <code>target_xr</code> coordinate structure.</p>
-<section id="parameters-10" class="level4" data-number="3.0.13.1">
-<h4 data-number="3.0.13.1" class="anchored" data-anchor-id="parameters-10"><span class="header-section-number">3.0.13.1</span> Parameters</h4>
+<section id="parameters-10" class="level4" data-number="3.0.12.1">
+<h4 data-number="3.0.12.1" class="anchored" data-anchor-id="parameters-10"><span class="header-section-number">3.0.12.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 10%">
@@ -1497,8 +1483,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="examples-8" class="level4" data-number="3.0.13.2">
-<h4 data-number="3.0.13.2" class="anchored" data-anchor-id="examples-8"><span class="header-section-number">3.0.13.2</span> Examples</h4>
+<section id="examples-8" class="level4" data-number="3.0.12.2">
+<h4 data-number="3.0.12.2" class="anchored" data-anchor-id="examples-8"><span class="header-section-number">3.0.12.2</span> Examples</h4>
 <div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_hads_1980_raw <span class="op">=</span> getfixture(<span class="st">'tasmax_hads_1980_raw'</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> tasmax_hads_1980_raw:</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_or_cache_doctest_skip_message)</span>
