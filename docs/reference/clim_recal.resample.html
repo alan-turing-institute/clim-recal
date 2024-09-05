@@ -510,7 +510,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.resample.CPMResamplerManager" class="level3" data-number="1.2.2">
 <h3 data-number="1.2.2" class="anchored" data-anchor-id="python.clim_recal.resample.CPMResamplerManager"><span class="header-section-number">1.2.2</span> CPMResamplerManager</h3>
-<p><code>clim_recal.resample.CPMResamplerManager(self, *, input_paths=RAW_CPM_PATH, resample_paths=RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_LOCAL_PATH, variables=(VariableOptions.default()), crop_regions=RegionOptions.all(), crop_paths=RESAMPLING_OUTPUT_PATH / CPM_CROP_OUTPUT_LOCAL_PATH, sub_path=Path('latest'), start_index=0, stop_index=None, start_date=CPM_START_DATE, end_date=CPM_END_DATE, configs=list(), config_default_kwargs=dict(), resampler_class=CPMResampler, cpus=None, _var_path_dict=dict(), _var_resampled_path_dict=dict(), _var_cropped_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False, runs=RunOptions.preferred())</code></p>
+<p><code>clim_recal.resample.CPMResamplerManager(self, *, input_paths=RAW_CPM_PATH, resample_paths=RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_LOCAL_PATH, variables=(VariableOptions.default()), crop_regions=RegionOptions.all(), crop_paths=RESAMPLING_OUTPUT_PATH / CPM_CROP_OUTPUT_LOCAL_PATH, sub_path=Path('latest'), start_index=0, stop_index=None, start_date=CPM_START_DATE, end_date=CPM_END_DATE, configs=list(), config_default_kwargs=dict(), resampler_class=CPMResampler, cpus=None, _input_path_dict=dict(), _resampled_path_dict=dict(), _cropped_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False, runs=RunOptions.preferred())</code></p>
 <p>Class to manage processing CPM resampling.</p>
 <section id="examples-1" class="level4" data-number="1.2.2.1">
 <h4 data-number="1.2.2.1" class="anchored" data-anchor-id="examples-1"><span class="header-section-number">1.2.2.1</span> Examples</h4>
@@ -519,25 +519,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cpm_resampler_manager: CPMResamplerManager <span class="op">=</span> CPMResamplerManager(</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>...     stop_index<span class="op">=</span><span class="dv">9</span>,</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>...     resample_paths<span class="op">=</span>resample_test_cpm_output_path,</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>...     )</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cpm_resampler_manager</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>CPMResamplerManager(variables_count<span class="op">=</span><span class="dv">1</span>, runs_count<span class="op">=</span><span class="dv">4</span>,</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                     input_paths_count<span class="op">=</span><span class="dv">4</span>)<span class="op">&gt;</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> configs: <span class="bu">tuple</span>[CPMResampler, ...] <span class="op">=</span> <span class="bu">tuple</span>(</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>...     cpm_resampler_manager.yield_configs())</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pprint(configs)</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>(<span class="op">&lt;</span>CPMResampler(count<span class="op">=</span><span class="dv">10</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>               input_path<span class="op">=</span><span class="st">'.../tasmax/05/latest'</span>,</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>               output_path<span class="op">=</span><span class="st">'.../tasmax/05/latest'</span>)<span class="op">&gt;</span>,</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a> <span class="op">&lt;</span>CPMResampler(count<span class="op">=</span><span class="dv">10</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>               input_path<span class="op">=</span><span class="st">'.../tasmax/06/latest'</span>,</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>               output_path<span class="op">=</span><span class="st">'.../tasmax/06/latest'</span>)<span class="op">&gt;</span>,</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a> <span class="op">&lt;</span>CPMResampler(count<span class="op">=</span><span class="dv">10</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>               input_path<span class="op">=</span><span class="st">'.../tasmax/07/latest'</span>,</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>               output_path<span class="op">=</span><span class="st">'.../tasmax/07/latest'</span>)<span class="op">&gt;</span>,</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a> <span class="op">&lt;</span>CPMResampler(count<span class="op">=</span><span class="dv">10</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>               input_path<span class="op">=</span><span class="st">'.../tasmax/08/latest'</span>,</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>               output_path<span class="op">=</span><span class="st">'.../tasmax/08/latest'</span>)<span class="op">&gt;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>...     crop_paths<span class="op">=</span>resample_test_cpm_output_path,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>...     )</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cpm_resampler_manager</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>CPMResamplerManager(variables_count<span class="op">=</span><span class="dv">1</span>, runs_count<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                     input_paths_count<span class="op">=</span><span class="dv">4</span>)<span class="op">&gt;</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> configs: <span class="bu">tuple</span>[CPMResampler, ...] <span class="op">=</span> <span class="bu">tuple</span>(</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>...     cpm_resampler_manager.yield_configs())</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pprint(configs)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>(<span class="op">&lt;</span>CPMResampler(count<span class="op">=</span><span class="dv">9</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>               input_path<span class="op">=</span><span class="st">'.../tasmax/05/latest'</span>,</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>               output_path<span class="op">=</span><span class="st">'.../cpm/tasmax/05'</span>)<span class="op">&gt;</span>,</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a> <span class="op">&lt;</span>CPMResampler(count<span class="op">=</span><span class="dv">9</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>               input_path<span class="op">=</span><span class="st">'.../tasmax/06/latest'</span>,</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>               output_path<span class="op">=</span><span class="st">'.../cpm/tasmax/06'</span>)<span class="op">&gt;</span>,</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a> <span class="op">&lt;</span>CPMResampler(count<span class="op">=</span><span class="dv">9</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>               input_path<span class="op">=</span><span class="st">'.../tasmax/07/latest'</span>,</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>               output_path<span class="op">=</span><span class="st">'.../cpm/tasmax/07'</span>)<span class="op">&gt;</span>,</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a> <span class="op">&lt;</span>CPMResampler(count<span class="op">=</span><span class="dv">9</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>               input_path<span class="op">=</span><span class="st">'.../tasmax/08/latest'</span>,</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>               output_path<span class="op">=</span><span class="st">'.../cpm/tasmax/08'</span>)<span class="op">&gt;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="python.clim_recal.resample.HADsResampler" class="level3" data-number="1.2.3">
@@ -646,7 +647,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.resample.HADsResamplerManager" class="level3" data-number="1.2.4">
 <h3 data-number="1.2.4" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager"><span class="header-section-number">1.2.4</span> HADsResamplerManager</h3>
-<p><code>clim_recal.resample.HADsResamplerManager(self, *, input_paths=RAW_HADS_PATH, resample_paths=RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH, variables=(VariableOptions.default()), crop_regions=RegionOptions.all(), crop_paths=RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH, sub_path=Path('day'), start_index=0, stop_index=None, start_date=HADS_START_DATE, end_date=HADS_END_DATE, configs=list(), config_default_kwargs=dict(), resampler_class=HADsResampler, cpus=None, _var_path_dict=dict(), _var_resampled_path_dict=dict(), _var_cropped_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False)</code></p>
+<p><code>clim_recal.resample.HADsResamplerManager(self, *, input_paths=RAW_HADS_PATH, resample_paths=RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH, variables=(VariableOptions.default()), crop_regions=RegionOptions.all(), crop_paths=RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH, sub_path=Path('day'), start_index=0, stop_index=None, start_date=HADS_START_DATE, end_date=HADS_END_DATE, configs=list(), config_default_kwargs=dict(), resampler_class=HADsResampler, cpus=None, _input_path_dict=dict(), _resampled_path_dict=dict(), _cropped_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False)</code></p>
 <p>Class to manage processing HADs resampling.</p>
 <section id="attributes-3" class="level4" data-number="1.2.4.1">
 <h4 data-number="1.2.4.1" class="anchored" data-anchor-id="attributes-3"><span class="header-section-number">1.2.4.1</span> Attributes</h4>
@@ -752,18 +753,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Propagate <code>self.resample_paths</code> if needed.</td>
 </tr>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.HADsResamplerManager.set_input_paths">set_input_paths</a></td>
-<td>Propagate <code>self.input_paths</code> if needed.</td>
-</tr>
-<tr class="even">
 <td><a href="#python.clim_recal.resample.HADsResamplerManager.set_resample_paths">set_resample_paths</a></td>
 <td>Propagate <code>self.resample_paths</code> if needed.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#python.clim_recal.resample.HADsResamplerManager.yield_configs">yield_configs</a></td>
 <td>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#python.clim_recal.resample.HADsResamplerManager.yield_crop_configs">yield_crop_configs</a></td>
 <td>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</td>
 </tr>
@@ -855,23 +852,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><code>clim_recal.resample.HADsResamplerManager.set_crop_paths()</code></p>
 <p>Propagate <code>self.resample_paths</code> if needed.</p>
 </section>
-<section id="python.clim_recal.resample.HADsResamplerManager.set_input_paths" class="level5" data-number="1.2.4.4.5">
-<h5 data-number="1.2.4.4.5" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.set_input_paths"><span class="header-section-number">1.2.4.4.5</span> set_input_paths</h5>
-<p><code>clim_recal.resample.HADsResamplerManager.set_input_paths()</code></p>
-<p>Propagate <code>self.input_paths</code> if needed.</p>
-</section>
-<section id="python.clim_recal.resample.HADsResamplerManager.set_resample_paths" class="level5" data-number="1.2.4.4.6">
-<h5 data-number="1.2.4.4.6" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.set_resample_paths"><span class="header-section-number">1.2.4.4.6</span> set_resample_paths</h5>
+<section id="python.clim_recal.resample.HADsResamplerManager.set_resample_paths" class="level5" data-number="1.2.4.4.5">
+<h5 data-number="1.2.4.4.5" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.set_resample_paths"><span class="header-section-number">1.2.4.4.5</span> set_resample_paths</h5>
 <p><code>clim_recal.resample.HADsResamplerManager.set_resample_paths()</code></p>
 <p>Propagate <code>self.resample_paths</code> if needed.</p>
 </section>
-<section id="python.clim_recal.resample.HADsResamplerManager.yield_configs" class="level5" data-number="1.2.4.4.7">
-<h5 data-number="1.2.4.4.7" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.yield_configs"><span class="header-section-number">1.2.4.4.7</span> yield_configs</h5>
+<section id="python.clim_recal.resample.HADsResamplerManager.yield_configs" class="level5" data-number="1.2.4.4.6">
+<h5 data-number="1.2.4.4.6" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.yield_configs"><span class="header-section-number">1.2.4.4.6</span> yield_configs</h5>
 <p><code>clim_recal.resample.HADsResamplerManager.yield_configs()</code></p>
 <p>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</p>
 </section>
-<section id="python.clim_recal.resample.HADsResamplerManager.yield_crop_configs" class="level5" data-number="1.2.4.4.8">
-<h5 data-number="1.2.4.4.8" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.yield_crop_configs"><span class="header-section-number">1.2.4.4.8</span> yield_crop_configs</h5>
+<section id="python.clim_recal.resample.HADsResamplerManager.yield_crop_configs" class="level5" data-number="1.2.4.4.7">
+<h5 data-number="1.2.4.4.7" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.yield_crop_configs"><span class="header-section-number">1.2.4.4.7</span> yield_crop_configs</h5>
 <p><code>clim_recal.resample.HADsResamplerManager.yield_crop_configs()</code></p>
 <p>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</p>
 </section>
