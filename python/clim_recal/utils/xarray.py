@@ -11,7 +11,6 @@ import rioxarray  # nopycln: import
 import seaborn
 from cftime._cftime import Datetime360Day
 from matplotlib import pyplot as plt
-from numpy import ndarray
 from numpy.typing import NDArray
 from osgeo.gdal import Dataset as GDALDataset
 from osgeo.gdal import (
@@ -42,13 +41,16 @@ from .core import (
     climate_data_mount_path,
     results_path,
 )
-from .data import (
+from .data import (  # DEFAULT_RELATIVE_GRID_DATA_PATH,
     BRITISH_NATIONAL_GRID_EPSG,
+    CPM_RAW_X_COLUMN_NAME,
+    CPM_RAW_Y_COLUMN_NAME,
     DEFAULT_CALENDAR_ALIGN,
     DEFAULT_INTERPOLATION_METHOD,
-    DEFAULT_RELATIVE_GRID_DATA_PATH,
     DEFAULT_RESAMPLING_METHOD,
     GLASGOW_GEOM_LOCAL_PATH,
+    HADS_RAW_X_COLUMN_NAME,
+    HADS_RAW_Y_COLUMN_NAME,
     NETCDF4_XARRAY_ENGINE,
     TIME_COLUMN_NAME,
     BoundingBoxCoords,
@@ -80,13 +82,13 @@ HADS_MIN_NULL: float = -1000000
 # """A `set` of tuples of month and day numbers for `enforce_date_changes`."""
 
 
-HADS_RAW_X_COLUMN_NAME: Final[str] = "projection_x_coordinate"
-HADS_RAW_Y_COLUMN_NAME: Final[str] = "projection_y_coordinate"
+# HADS_RAW_X_COLUMN_NAME: Final[str] = "projection_x_coordinate"
+# HADS_RAW_Y_COLUMN_NAME: Final[str] = "projection_y_coordinate"
 HADS_DROP_VARS_AFTER_PROJECTION: Final[tuple[str, ...]] = ("longitude", "latitude")
 
-CPM_RESOLUTION_METERS: Final[int] = 2200
-CPM_RAW_X_COLUMN_NAME: Final[str] = "grid_longitude"
-CPM_RAW_Y_COLUMN_NAME: Final[str] = "grid_latitude"
+# CPM_RESOLUTION_METERS: Final[int] = 2200
+# CPM_RAW_X_COLUMN_NAME: Final[str] = "grid_longitude"
+# CPM_RAW_Y_COLUMN_NAME: Final[str] = "grid_latitude"
 
 # TODO: CHECK IF THESE ARE BACKWARDS
 FINAL_RESAMPLE_LON_COL: Final[str] = "x"
@@ -372,16 +374,16 @@ def xr_reproject_crs(
             match_xr_time_series = match_xr_time_series_load_func(
                 match_xr_time_series, **match_xr_time_series_load_kwargs
             )
-        if not {x_dim_name, y_dim_name} < match_xr_time_series.dims.keys():
+        if not {x_dim_name, y_dim_name} < match_xr_time_series.sizes.keys():
             # If dim name
             # likely x, y indexes from a projection like cpm, need to match
             logger.debug(
                 f"'x_dim_name': {x_dim_name} and "
                 f"'y_dim_name': {y_dim_name} not in "
                 f"'match_xr_time_series' dims: "
-                f"{match_xr_time_series.dims.keys()}."
+                f"{match_xr_time_series.sizes.keys()}."
             )
-            if {"x", "y"} < match_xr_time_series.dims.keys():
+            if {"x", "y"} < match_xr_time_series.sizes.keys():
                 logger.debug(
                     f"Renaming dims: '{x_dim_name}' -> 'x', '{y_dim_name}' -> 'y'"
                 )
@@ -423,96 +425,96 @@ def _ensure_resample_method_name(
         raise ValueError(error_message(method))
 
 
-def interpolate_coords(
-    xr_time_series: T_Dataset,
-    variable_name: str,
-    x_grid: NDArray | None = None,
-    y_grid: NDArray | None = None,
-    x_coord_column_name: str = HADS_RAW_X_COLUMN_NAME,
-    y_coord_column_name: str = HADS_RAW_Y_COLUMN_NAME,
-    reference_coords: T_Dataset | PathLike = DEFAULT_RELATIVE_GRID_DATA_PATH,
-    reference_coord_x_column_name: str = HADS_RAW_X_COLUMN_NAME,
-    reference_coord_y_column_name: str = HADS_RAW_Y_COLUMN_NAME,
-    method: str = "linear",
-    engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
-    use_reference_grid: bool = True,
-    **kwargs,
-) -> T_Dataset:
-    """Reproject `xr_time_series` to `x_resolution`/`y_resolution`.
-
-    Notes
-    -----
-    The `rio.reproject` approach commented out below raises
-    `ValueError: IndexVariable objects must be 1-dimensional`
-    See https://github.com/corteva/rioxarray/discussions/762
-    """
-    if isinstance(xr_time_series, PathLike | str):
-        xr_time_series = open_dataset(
-            xr_time_series, decode_coords="all", engine=engine
-        )
-
-    try:
-        assert isinstance(xr_time_series, Dataset)
-    except:
-        ValueError(f"'xr_time_series' must be an 'xr.Dataset' instance.")
-
-    if use_reference_grid or (x_grid is None or y_grid is None):
-        if isinstance(reference_coords, PathLike | str):
-            reference_coords = open_dataset(
-                reference_coords, decode_coords="all", engine=engine
-            )
-        try:
-            assert isinstance(reference_coords, Dataset)
-        except:
-            ValueError(f"'reference_coords' must be an 'xr.Dataset' instance.")
-        try:
-            assert reference_coord_x_column_name in reference_coords.coords
-            assert reference_coord_y_column_name in reference_coords.coords
-            assert x_coord_column_name in xr_time_series.coords
-            assert y_coord_column_name in xr_time_series.coords
-        except AssertionError:
-            raise ValueError(
-                f"At least one of\n"
-                f"'reference_coord_x_column_name': '{reference_coord_x_column_name}'\n"
-                f"'reference_coord_y_column_name': '{reference_coord_y_column_name}'\n"
-                f"'x_coord_column_name': '{x_coord_column_name}'\n"
-                f"'y_coord_column_name': '{y_coord_column_name}'\n"
-                f"not in 'reference_coords' and/or 'xr_time_series'."
-            )
-
-        x_grid = (
-            reference_coords[reference_coord_x_column_name].values
-            if x_grid is None
-            else x_grid
-        )
-        y_grid = (
-            reference_coords[reference_coord_y_column_name].values
-            if y_grid is None
-            else y_grid
-        )
-        use_reference_grid = True
-
-    try:
-        assert isinstance(x_grid, ndarray)
-        assert isinstance(y_grid, ndarray)
-    except:
-        raise ValueError(
-            f"Both must be 'ndarray' instances.\n"
-            f"'x_grid': {x_grid}\n'y_grid': {y_grid}"
-        )
-    kwargs[x_coord_column_name] = x_grid
-    kwargs[y_coord_column_name] = y_grid
-    reprojected_data_array: T_DataArray = xr_time_series[variable_name].interp(
-        method=method, **kwargs
-    )
-
-    # Ensure original `rio.crs` is kept in returned `Dataset`
-    if use_reference_grid:
-        reprojected_data_array.rio.write_crs(reference_coords.rio.crs, inplace=True)
-    else:
-        reprojected_data_array.rio.write_crs(xr_time_series.rio.crs, inplace=True)
-    reprojected: T_Dataset = Dataset({variable_name: reprojected_data_array})
-    return reprojected
+# def interpolate_coords(
+#     xr_time_series: T_Dataset,
+#     variable_name: str,
+#     x_grid: NDArray | None = None,
+#     y_grid: NDArray | None = None,
+#     x_coord_column_name: str = HADS_RAW_X_COLUMN_NAME,
+#     y_coord_column_name: str = HADS_RAW_Y_COLUMN_NAME,
+#     reference_coords: T_Dataset | PathLike = DEFAULT_RELATIVE_GRID_DATA_PATH,
+#     reference_coord_x_column_name: str = HADS_RAW_X_COLUMN_NAME,
+#     reference_coord_y_column_name: str = HADS_RAW_Y_COLUMN_NAME,
+#     method: str = "linear",
+#     engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
+#     use_reference_grid: bool = True,
+#     **kwargs,
+# ) -> T_Dataset:
+#     """Reproject `xr_time_series` to `x_resolution`/`y_resolution`.
+#
+#     Notes
+#     -----
+#     The `rio.reproject` approach commented out below raises
+#     `ValueError: IndexVariable objects must be 1-dimensional`
+#     See https://github.com/corteva/rioxarray/discussions/762
+#     """
+#     if isinstance(xr_time_series, PathLike | str):
+#         xr_time_series = open_dataset(
+#             xr_time_series, decode_coords="all", engine=engine
+#         )
+#
+#     try:
+#         assert isinstance(xr_time_series, Dataset)
+#     except:
+#         ValueError(f"'xr_time_series' must be an 'xr.Dataset' instance.")
+#
+#     if use_reference_grid or (x_grid is None or y_grid is None):
+#         if isinstance(reference_coords, PathLike | str):
+#             reference_coords = open_dataset(
+#                 reference_coords, decode_coords="all", engine=engine
+#             )
+#         try:
+#             assert isinstance(reference_coords, Dataset)
+#         except:
+#             ValueError(f"'reference_coords' must be an 'xr.Dataset' instance.")
+#         try:
+#             assert reference_coord_x_column_name in reference_coords.coords
+#             assert reference_coord_y_column_name in reference_coords.coords
+#             assert x_coord_column_name in xr_time_series.coords
+#             assert y_coord_column_name in xr_time_series.coords
+#         except AssertionError:
+#             raise ValueError(
+#                 f"At least one of\n"
+#                 f"'reference_coord_x_column_name': '{reference_coord_x_column_name}'\n"
+#                 f"'reference_coord_y_column_name': '{reference_coord_y_column_name}'\n"
+#                 f"'x_coord_column_name': '{x_coord_column_name}'\n"
+#                 f"'y_coord_column_name': '{y_coord_column_name}'\n"
+#                 f"not in 'reference_coords' and/or 'xr_time_series'."
+#             )
+#
+#         x_grid = (
+#             reference_coords[reference_coord_x_column_name].values
+#             if x_grid is None
+#             else x_grid
+#         )
+#         y_grid = (
+#             reference_coords[reference_coord_y_column_name].values
+#             if y_grid is None
+#             else y_grid
+#         )
+#         use_reference_grid = True
+#
+#     try:
+#         assert isinstance(x_grid, ndarray)
+#         assert isinstance(y_grid, ndarray)
+#     except:
+#         raise ValueError(
+#             f"Both must be 'ndarray' instances.\n"
+#             f"'x_grid': {x_grid}\n'y_grid': {y_grid}"
+#         )
+#     kwargs[x_coord_column_name] = x_grid
+#     kwargs[y_coord_column_name] = y_grid
+#     reprojected_data_array: T_DataArray = xr_time_series[variable_name].interp(
+#         method=method, **kwargs
+#     )
+#
+#     # Ensure original `rio.crs` is kept in returned `Dataset`
+#     if use_reference_grid:
+#         reprojected_data_array.rio.write_crs(reference_coords.rio.crs, inplace=True)
+#     else:
+#         reprojected_data_array.rio.write_crs(xr_time_series.rio.crs, inplace=True)
+#     reprojected: T_Dataset = Dataset({variable_name: reprojected_data_array})
+#     return reprojected
 
 
 def hads_resample_and_reproject(
@@ -524,7 +526,7 @@ def hads_resample_and_reproject(
     y_dim_name: str = HADS_RAW_Y_COLUMN_NAME,
 ) -> T_Dataset:
     """Resample `HADs` `xarray` time series to 2.2km."""
-    if isinstance(cpm_to_match, Dataset) and {"x", "y"} < cpm_to_match.dims.keys():
+    if isinstance(cpm_to_match, Dataset) and {"x", "y"} < cpm_to_match.sizes.keys():
         cpm_to_match_func = None
     epsg_277000_2_2km: T_Dataset = xr_reproject_crs(
         hads_xr_time_series,

@@ -15,22 +15,34 @@ from typing import Any, Callable, Final, Iterable, Iterator, Literal, Sequence
 import dill as pickle
 import numpy as np
 import rioxarray  # nopycln: import
+from osgeo.gdal import Dataset as GDALDataset
 from osgeo.gdal import GRA_NearestNeighbour
 from rich import print
 from tqdm.rich import trange
-from xarray import Dataset, open_dataset
+from xarray import Dataset
 from xarray.core.types import T_Dataset
 
 from clim_recal.debiasing.debias_wrapper import VariableOptions
 
 from .utils.core import climate_data_mount_path, console, multiprocess_execute
-from .utils.data import RegionOptions, RunOptions, VariableOptions
+from .utils.data import (
+    CPM_END_DATE,
+    CPM_RAW_X_COLUMN_NAME,
+    CPM_RAW_Y_COLUMN_NAME,
+    CPM_START_DATE,
+    CPM_SUB_PATH,
+    HADS_END_DATE,
+    HADS_START_DATE,
+    HADS_SUB_PATH,
+    HADS_XDIM,
+    HADS_YDIM,
+    RegionOptions,
+    RunOptions,
+    VariableOptions,
+)
 from .utils.gdal_formats import TIF_EXTENSION_STR
 from .utils.xarray import (
     BRITISH_NATIONAL_GRID_EPSG,
-    DEFAULT_RELATIVE_GRID_DATA_PATH,
-    HADS_RAW_X_COLUMN_NAME,
-    HADS_RAW_Y_COLUMN_NAME,
     NETCDF_EXTENSION_STR,
     ReprojectFuncType,
     apply_geo_func,
@@ -71,19 +83,7 @@ ResamplingArgs = tuple[PathLike, np.ndarray, np.ndarray, PathLike]
 ResamplingCallable = Callable[[list | tuple], int]
 CPM_STANDARD_CALENDAR_PATH: Final[Path] = Path("cpm-standard-calendar")
 CPM_SPATIAL_COORDS_PATH: Final[Path] = Path("cpm-to-27700-spatial")
-HADS_2_2K_RESOLUTION_PATH: Final[Path] = Path("hads-to-27700-spatial-2.2km")
-CPRUK_XDIM: Final[str] = "grid_longitude"
-CPRUK_YDIM: Final[str] = "grid_latitude"
-
-HADS_XDIM: Final[str] = HADS_RAW_X_COLUMN_NAME
-HADS_YDIM: Final[str] = HADS_RAW_Y_COLUMN_NAME
-
-
-CPM_START_DATE: Final[date] = date(1980, 12, 1)
-CPM_END_DATE: Final[date] = date(2060, 11, 30)
-
-HADS_START_DATE: Final[date] = date(1980, 1, 1)
-HADS_END_DATE: Final[date] = date(2021, 12, 31)
+# HADS_2_2K_RESOLUTION_PATH: Final[Path] = Path("hads-to-27700-spatial-2.2km")
 
 CPM_OUTPUT_LOCAL_PATH: Final[Path] = Path("cpm")
 HADS_OUTPUT_LOCAL_PATH: Final[Path] = Path("hads")
@@ -108,22 +108,22 @@ def reproject_2_2km_filename(path: Path) -> Path:
 class ResamblerBase:
     """Base class to inherit for `HADs` and `CPM`."""
 
-    input_path: PathLike | None = RAW_HADS_TASMAX_PATH
-    output_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH
+    input_path: PathLike | None = Path()
+    output_path: PathLike = RESAMPLING_OUTPUT_PATH
     variable_name: VariableOptions | str = VariableOptions.default()
     # grid: PathLike | T_Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
     input_files: Iterable[PathLike] | None = None
     cpus: int | None = None
     crop_regions: tuple[RegionOptions | str, ...] | None = RegionOptions.all()
-    crop_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH
+    crop_path: PathLike = RESAMPLING_OUTPUT_PATH
     final_crs: str = BRITISH_NATIONAL_GRID_EPSG
     # grid_x_column_name: str = HADS_XDIM
     # grid_y_column_name: str = HADS_YDIM
     input_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
     export_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
-    resolution_relative_path: Path = HADS_2_2K_RESOLUTION_PATH
-    input_file_x_column_name: str = HADS_XDIM
-    input_file_y_column_name: str = HADS_YDIM
+    # resolution_relative_path: Path = HADS_2_2K_RESOLUTION_PATH
+    input_file_x_column_name: str = ""
+    input_file_y_column_name: str = ""
     start_index: int = 0
     stop_index: int | None = None
 
@@ -197,24 +197,24 @@ class ResamblerBase:
             f"output_path='{self.output_path}')>"
         )
 
-    def set_grid(self, new_grid_data_path: PathLike | None = None) -> None:
-        """Set check and set (if necessary) `grid` attribute of `self`.
-
-        Notes
-        -----
-        To be depricated.
-
-        Parameters
-        ----------
-        new_grid_data_path
-            New `Path` to load to `self.grid`.
-        """
-        if new_grid_data_path:
-            self.grid = new_grid_data_path
-        if isinstance(self.grid, PathLike):
-            self._grid_path = Path(self.grid)
-            self.grid = open_dataset(self.grid)
-        assert isinstance(self.grid, Dataset)
+    # def set_grid(self, new_grid_data_path: PathLike | None = None) -> None:
+    #     """Set check and set (if necessary) `grid` attribute of `self`.
+    #
+    #     Notes
+    #     -----
+    #     To be depricated.
+    #
+    #     Parameters
+    #     ----------
+    #     new_grid_data_path
+    #         New `Path` to load to `self.grid`.
+    #     """
+    #     if new_grid_data_path:
+    #         self.grid = new_grid_data_path
+    #     if isinstance(self.grid, PathLike):
+    #         self._grid_path = Path(self.grid)
+    #         self.grid = open_dataset(self.grid)
+    #     assert isinstance(self.grid, Dataset)
 
     def _get_source_path(
         self, index: int, source_to_index: Sequence | None = None
@@ -420,14 +420,10 @@ class HADsResampler(ResamblerBase):
         `Path` to `HADs` files to process.
     output
         `Path` to save processed `HADS` files.
-    grid_data_path
-        `Path` to load to `self.grid`.
-    grid
-        `Dataset` of grid (either passed via `grid_data_path` or as a parameter).
     input_files
-        NCF or TIF files to process with `self.grid` etc.
+        `Path` or `Paths` of `NCF` files to resample.
     resampling_func
-        Function to call on `self.input_files` with `self.grid`
+        Function to call on `self.input_files`.
     crop
         Path or file to spatially crop `input_files` with.
     final_crs
@@ -438,6 +434,11 @@ class HADsResampler(ResamblerBase):
         Column name in `input_files` or `input` for `y` coordinates.
     input_file_extension
         File extensions to glob `input_files` with.
+    start_index
+        First index of file to iterate processing from.
+    stop_index
+        Last index of files to iterate processing from as a count from `start_index`.
+        If `None`, this will simply iterate over all available files.
 
     Notes
     -----
@@ -465,9 +466,11 @@ class HADsResampler(ResamblerBase):
 
     input_path: PathLike | None = RAW_HADS_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH
-    variable_name: VariableOptions = VariableOptions.default()
-    grid: PathLike | T_Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
+    # variable_name: VariableOptions = VariableOptions.default()
+    # grid: PathLike | T_Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
     input_files: Iterable[PathLike] | None = None
+
+    # input_path: PathLike | None = RAW_HADS_TASMAX_PATH
     cpus: int | None = None
     crop_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH
     final_crs: str = BRITISH_NATIONAL_GRID_EPSG
@@ -480,7 +483,7 @@ class HADsResampler(ResamblerBase):
     input_file_y_column_name: str = HADS_YDIM
     cpm_for_coord_alignment: T_Dataset | PathLike = RAW_CPM_TASMAX_PATH
     _resample_func: ReprojectFuncType = hads_resample_and_reproject
-    _use_reference_grid: bool = True
+    # _use_reference_grid: bool = True
 
     def __post_init__(self) -> None:
         """Ensure `self.cpm_for_coord_alignment` is set."""
@@ -544,16 +547,12 @@ class CPMResampler(ResamblerBase):
         `Path` to `CPM` files to process.
     output
         `Path` to save processed `CPM` files.
-    grid_data_path
-        `Path` to load to `self.grid`.
-    grid
-        `Dataset` of grid (either passed via `grid_data_path` or as a parameter).
     input_files
-        NCF or TIF files to process with `self.grid` etc.
+        `Path` or `Paths` of `NCF` files to reproject.
     cpus
         Number of `cpu` cores to use during multiprocessing.
     resampling_func
-        Function to call on `self.input_files` with `self.grid`
+        Function to call on `self.input_files`.
     crop
         Path or file to spatially crop `input_files` with.
     final_crs
@@ -590,8 +589,8 @@ class CPMResampler(ResamblerBase):
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_LOCAL_PATH
     crop_path: PathLike = RESAMPLING_OUTPUT_PATH / CPM_CROP_OUTPUT_LOCAL_PATH
     # standard_calendar_relative_path: Path = CPM_STANDARD_CALENDAR_PATH
-    input_file_x_column_name: str = CPRUK_XDIM
-    input_file_y_column_name: str = CPRUK_YDIM
+    input_file_x_column_name: str = CPM_RAW_X_COLUMN_NAME
+    input_file_y_column_name: str = CPM_RAW_Y_COLUMN_NAME
     # resolution_relative_path: Path = CPM_SPATIAL_COORDS_PATH
     _resample_func: ReprojectFuncType = cpm_reproject_with_standard_calendar
 
@@ -658,8 +657,27 @@ class HADsResamplerManager:
         `Path` or `Paths` to to save processed `CPM` files to. If `Path` will be propagated to match `input_paths`.
     variables
         Which `VariableOptions` to include.
+    crop_regions
+        `RegionOptions` (like Manchester, Scoltand etc.) to crop results to.
+    crop_paths
+        Where to save region crop files.
     sub_path
-        `Path` to include at the stem of generating `input_paths`.
+        `Path` to include at the stem of `input_paths`.
+    start_index
+        Index to begin iterating input files for `resampling` or `cropping`.
+    stop_index
+        Index to to run from `start_index` to when `resampling` or
+        `cropping`. If `None`, iterate full list of paths.
+    start_date
+        Not yet implemented, but in future from what date to generate start index from.
+    end_date
+        Not yet implemented, but in future from what date to generate stop index from.
+    configs
+        List of `HADsResampler` instances to iterate `resampling` or `cropping`.
+    config_default_kwargs
+        Parameters passed to all running `self.configs`.
+    resampler_class
+        `class` to construct all `self.configs` instances with.
     cpus
         Number of `cpu` cores to use during multiprocessing.
 
@@ -684,7 +702,7 @@ class HADsResamplerManager:
     crop_paths: Sequence[PathLike] | PathLike = (
         RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH
     )
-    sub_path: Path = Path("day")
+    sub_path: Path = HADS_SUB_PATH
     start_index: int = 0
     stop_index: int | None = None
     start_date: date = HADS_START_DATE
@@ -1009,6 +1027,41 @@ class HADsResamplerManager:
 class CPMResamplerManager(HADsResamplerManager):
     """Class to manage processing CPM resampling.
 
+    Attributes
+    ----------
+    input_paths
+        `Path` or `Paths` to `CPM` files to process. If `Path`, will be propegated with files matching
+    resample_paths
+        `Path` or `Paths` to to save processed `CPM` files to. If `Path` will be propagated to match `input_paths`.
+    variables
+        Which `VariableOptions` to include.
+    runs
+        Which `RunOptions` to include.
+    crop_regions
+        `RegionOptions` (like Manchester, Scoltand etc.) to crop results to.
+    crop_paths
+        Where to save region crop files.
+    sub_path
+        `Path` to include at the stem of `input_paths`.
+    start_index
+        Index to begin iterating input files for `resampling` or `cropping`.
+    stop_index
+        Index to to run from `start_index` to when `resampling` or
+        `cropping`. If `None`, iterate full list of paths.
+    start_date
+        Not yet implemented, but in future from what date to generate start index from.
+    end_date
+        Not yet implemented, but in future from what date to generate stop index from.
+    configs
+        List of `HADsResampler` instances to iterate `resampling` or `cropping`.
+    config_default_kwargs
+        Parameters passed to all running `self.configs`.
+    resampler_class
+        `class` to construct all `self.configs` instances with.
+    cpus
+        Number of `cpu` cores to use during multiprocessing.
+
+
     Examples
     --------
     >>> if not is_data_mounted:
@@ -1042,13 +1095,14 @@ class CPMResamplerManager(HADsResamplerManager):
     resample_paths: PathLike | Sequence[PathLike] = (
         RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_LOCAL_PATH
     )
-    sub_path: Path = Path("latest")
+    sub_path: Path = CPM_SUB_PATH
     start_date: date = CPM_START_DATE
     end_date: date = CPM_END_DATE
     configs: list[CPMResampler] = field(default_factory=list)
     resampler_class: type[CPMResampler] = CPMResampler
-    runs: Sequence[RunOptions] = RunOptions.preferred()
-    crop_paths: PathLike = RESAMPLING_OUTPUT_PATH / CPM_CROP_OUTPUT_LOCAL_PATH
+    # Runs are CPM simulations, not applicalbe to HADs
+    runs: Sequence[RunOptions | str] = RunOptions.preferred()
+    crop_paths = RESAMPLING_OUTPUT_PATH / CPM_CROP_OUTPUT_LOCAL_PATH
 
     # Uncomment if cpm specific paths like 'pr' for 'rainbow'
     # are needed at the manager level.

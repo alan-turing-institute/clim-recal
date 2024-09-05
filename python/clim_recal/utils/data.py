@@ -11,10 +11,34 @@ from xarray.backends.api import ENGINES
 from .core import StrEnumReprName
 
 
+DEFAULT_RESAMPLING_METHOD: Final[Resampling] = Resampling.average
+
 BRITISH_NATION_GRID_COORDS_NUMBER: Final[int] = 27700
 BRITISH_NATIONAL_GRID_EPSG: Final[str] = f"EPSG:{BRITISH_NATION_GRID_COORDS_NUMBER}"
 
-DEFAULT_RESAMPLING_METHOD: Final[Resampling] = Resampling.average
+HADS_START_DATE: Final[date] = date(1980, 1, 1)
+HADS_END_DATE: Final[date] = date(2021, 12, 31)
+
+CPM_START_DATE: Final[date] = date(1980, 12, 1)
+CPM_END_DATE: Final[date] = date(2060, 11, 30)
+
+HADS_RAW_X_COLUMN_NAME: Final[str] = "projection_x_coordinate"
+HADS_RAW_Y_COLUMN_NAME: Final[str] = "projection_y_coordinate"
+
+HADS_XDIM: Final[str] = HADS_RAW_X_COLUMN_NAME
+HADS_YDIM: Final[str] = HADS_RAW_Y_COLUMN_NAME
+
+HADS_SUB_PATH: Final[Path] = Path("day")
+
+CPM_RAW_X_COLUMN_NAME: Final[str] = "grid_longitude"
+CPM_RAW_Y_COLUMN_NAME: Final[str] = "grid_latitude"
+
+CPRUK_XDIM: Final[str] = CPM_RAW_X_COLUMN_NAME
+CPRUK_YDIM: Final[str] = CPM_RAW_Y_COLUMN_NAME
+
+CPM_SUB_PATH: Final[Path] = Path("latest")
+
+CPM_RESOLUTION_METERS: Final[int] = 2200
 
 AuthorshipType = Union[
     str | tuple[str, ...], dict[str, str] |
@@ -120,9 +144,9 @@ XArrayEngineType = Literal[*tuple(ENGINES)]
 DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
 NETCDF4_XARRAY_ENGINE: Final[str] = "netcdf4"
 
-DEFAULT_RELATIVE_GRID_DATA_PATH: Final[Path] = (
-    Path().absolute() / "../data/rcp85_land-cpm_uk_2.2km_grid.nc"
-)
+# DEFAULT_RELATIVE_GRID_DATA_PATH: Final[Path] = (
+#     Path().absolute() / "../data/rcp85_land-cpm_uk_2.2km_grid.nc"
+# )
 TIME_COLUMN_NAME: Final[str] = "time"
 
 GLASGOW_GEOM_LOCAL_PATH: Final[Path] = Path(

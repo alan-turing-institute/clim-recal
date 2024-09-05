@@ -134,7 +134,7 @@ class MonthDay:
         )
 
 
-DEFAULT_START_MONTH_DAY: Final[MonthDay] = MonthDay(month=12, day=1)
+DEFAULT_CPM_START_MONTH_DAY: Final[MonthDay] = MonthDay(month=12, day=1)
 
 
 def run_callable_attr(
@@ -602,7 +602,7 @@ def annual_data_paths_generator(
 def annual_data_path(
     start_year: int = 1980,
     end_year: int = 1981,
-    month_day: MonthDay | tuple[int, int] | None = DEFAULT_START_MONTH_DAY,
+    month_day: MonthDay | tuple[int, int] | None = DEFAULT_CPM_START_MONTH_DAY,
     include_end_date: bool = False,
     parent_path: Path | None = None,
     file_name_middle_str: str = CPM_FILE_NAME_MIDDLE_STR,
