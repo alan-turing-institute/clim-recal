@@ -15,7 +15,6 @@ from typing import Any, Callable, Final, Iterable, Iterator, Literal, Sequence
 import dill as pickle
 import numpy as np
 import rioxarray  # nopycln: import
-from numpy.typing import NDArray
 from osgeo.gdal import GRA_NearestNeighbour
 from rich import print
 from tqdm.rich import trange
@@ -112,14 +111,14 @@ class ResamblerBase:
     input_path: PathLike | None = RAW_HADS_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_LOCAL_PATH
     variable_name: VariableOptions | str = VariableOptions.default()
-    grid: PathLike | T_Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
+    # grid: PathLike | T_Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
     input_files: Iterable[PathLike] | None = None
     cpus: int | None = None
     crop_regions: tuple[RegionOptions | str, ...] | None = RegionOptions.all()
     crop_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH
     final_crs: str = BRITISH_NATIONAL_GRID_EPSG
-    grid_x_column_name: str = HADS_XDIM
-    grid_y_column_name: str = HADS_YDIM
+    # grid_x_column_name: str = HADS_XDIM
+    # grid_y_column_name: str = HADS_YDIM
     input_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
     export_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
     resolution_relative_path: Path = HADS_2_2K_RESOLUTION_PATH
@@ -136,7 +135,7 @@ class ResamblerBase:
             raise AttributeError(
                 f"'input_path' or 'input_file' are None; at least one must be set."
             )
-        self.set_grid_x_y()
+        # self.set_grid_x_y()
         self.set_input_files()
         Path(self.output_path).mkdir(parents=True, exist_ok=True)
         if self.crop_regions:
@@ -278,29 +277,29 @@ class ResamblerBase:
             source_to_index=source_to_index,
         )
 
-    def set_grid_x_y(
-        self,
-        grid_x_column_name: str | None = None,
-        grid_y_column_name: str | None = None,
-    ) -> None:
-        """Set the `x` `y` values via `grid_x_column_name` and `grid_y_column_name`.
-
-        Parameters
-        ----------
-        grid_x_column_name
-            Name of column in `self.grid` `Dataset` to extract to `self.x`.
-            If `None` use `self.grid_x_column_name`, else overwrite.
-        grid_y_column_name
-            Name of column in `self.grid` `Dataset` to extract to `self.y`.
-            If `None` use `self.grid_y_column_name`, else overwrite.
-        """
-        if self.grid is None or isinstance(self.grid, PathLike):
-            self.set_grid()
-        assert isinstance(self.grid, Dataset)
-        self.grid_x_column_name = grid_x_column_name or self.grid_x_column_name
-        self.grid_y_column_name = grid_y_column_name or self.grid_y_column_name
-        self.x: NDArray = self.grid[self.grid_x_column_name][:].values
-        self.y: NDArray = self.grid[self.grid_y_column_name][:].values
+    # def set_grid_x_y(
+    #     self,
+    #     grid_x_column_name: str | None = None,
+    #     grid_y_column_name: str | None = None,
+    # ) -> None:
+    #     """Set the `x` `y` values via `grid_x_column_name` and `grid_y_column_name`.
+    #
+    #     Parameters
+    #     ----------
+    #     grid_x_column_name
+    #         Name of column in `self.grid` `Dataset` to extract to `self.x`.
+    #         If `None` use `self.grid_x_column_name`, else overwrite.
+    #     grid_y_column_name
+    #         Name of column in `self.grid` `Dataset` to extract to `self.y`.
+    #         If `None` use `self.grid_y_column_name`, else overwrite.
+    #     """
+    #     if self.grid is None or isinstance(self.grid, PathLike):
+    #         self.set_grid()
+    #     assert isinstance(self.grid, Dataset)
+    #     self.grid_x_column_name = grid_x_column_name or self.grid_x_column_name
+    #     self.grid_y_column_name = grid_y_column_name or self.grid_y_column_name
+    #     self.x: NDArray = self.grid[self.grid_x_column_name][:].values
+    #     self.y: NDArray = self.grid[self.grid_y_column_name][:].values
 
     def execute(self, skip_spatial: bool = False, **kwargs) -> list[Path] | None:
         """Run all steps for processing"""
@@ -433,9 +432,9 @@ class HADsResampler(ResamblerBase):
         Path or file to spatially crop `input_files` with.
     final_crs
         Coordinate Reference System (CRS) to return final format in.
-    grid_x_column_name
+    input_file_x_column_name
         Column name in `input_files` or `input` for `x` coordinates.
-    grid_y_column_name
+    input_file_y_column_name
         Column name in `input_files` or `input` for `y` coordinates.
     input_file_extension
         File extensions to glob `input_files` with.
@@ -472,8 +471,8 @@ class HADsResampler(ResamblerBase):
     cpus: int | None = None
     crop_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH
     final_crs: str = BRITISH_NATIONAL_GRID_EPSG
-    grid_x_column_name: str = HADS_XDIM
-    grid_y_column_name: str = HADS_YDIM
+    # grid_x_column_name: str = HADS_XDIM
+    # grid_y_column_name: str = HADS_YDIM
     input_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
     export_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
     # resolution_relative_path: Path = HADS_2_2K_RESOLUTION_PATH
@@ -559,9 +558,9 @@ class CPMResampler(ResamblerBase):
         Path or file to spatially crop `input_files` with.
     final_crs
         Coordinate Reference System (CRS) to return final format in.
-    grid_x_column_name
+    input_file_x_column_name
         Column name in `input_files` or `input` for `x` coordinates.
-    grid_y_column_name
+    input_file_y_column_name
         Column name in `input_files` or `input` for `y` coordinates.
     input_file_extension
         File extensions to glob `input_files` with.

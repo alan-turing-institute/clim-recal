@@ -4,8 +4,6 @@ from typing import Any, Final
 
 import numpy as np
 import pytest
-
-# from matplotlib import pyplot as plt
 from numpy.testing import assert_allclose
 from numpy.typing import NDArray
 from osgeo.gdal import Dataset as GDALDataset
@@ -50,7 +48,6 @@ from clim_recal.utils.xarray import (
     interpolate_coords,
     plot_xarray,
 )
-from conftest import resample_test_cpm_output_path
 
 from .utils import (
     CPM_RAW_TASMAX_EXAMPLE_PATH,
@@ -62,7 +59,7 @@ from .utils import (
     year_days_count,
 )
 
-HADS_FIRST_DATES: np.array = np.array(
+HADS_FIRST_DATES: Final[NDArray] = np.array(
     ["19800101", "19800102", "19800103", "19800104", "19800105"]
 )
 
@@ -77,17 +74,17 @@ FINAL_CONVERTED_CPM_HEIGHT: Final[int] = 607
 FINAL_CONVERTED_HADS_WIDTH: Final[int] = 410
 FINAL_CONVERTED_HADS_HEIGHT: Final[int] = 660
 
-RAW_CPM_TASMAX_1980_FIRST_5: np.array = np.array(
+RAW_CPM_TASMAX_1980_FIRST_5: Final[NDArray] = np.array(
     [12.654932, 12.63711, 12.616358, 12.594385, 12.565821], dtype="float32"
 )
-RAW_CPM_TASMAX_1980_DEC_30_FIRST_5: np.array = np.array(
+RAW_CPM_TASMAX_1980_DEC_30_FIRST_5: Final[NDArray] = np.array(
     [13.832666, 13.802149, 13.788477, 13.777491, 13.768946], dtype="float32"
 )
 
-PROJECTED_CPM_TASMAX_1980_FIRST_5: np.array = np.array(
+PROJECTED_CPM_TASMAX_1980_FIRST_5: Final[NDArray] = np.array(
     [13.406641, 13.376368, 13.361719, 13.354639, 13.334864], dtype="float32"
 )
-PROJECTED_CPM_TASMAX_1980_DEC_31_FIRST_5: np.array = np.array(
+PROJECTED_CPM_TASMAX_1980_DEC_31_FIRST_5: Final[NDArray] = np.array(
     [10.645899, 10.508448, 10.546778, 10.547998, 10.553614], dtype="float32"
 )
 
@@ -624,7 +621,7 @@ def test_cpm_manager(
     export: T_Dataset = open_dataset(paths[0])
     assert export.dims["time"] == 365
     assert export.dims[FINAL_RESAMPLE_LON_COL] == FINAL_CONVERTED_CPM_WIDTH
-    assert_allclose(export.tasmax[10][5][:10].values, FINAL_CPM_DEC_10_5_X_0_10_Y)
+    assert_allclose(export.tasmax[10][5][:10].values, FINAL_CPM_DEC_10_X_2_Y_200_210)
     assert (
         CPM_FIRST_DATES == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
     ).all()
@@ -830,7 +827,8 @@ def test_execute_resample_configs(
     """Test running default HADs spatial projection."""
     test_config = HADsResamplerManager(
         input_paths=tasmax_hads_1980_raw_path.parent,
-        output_paths=tmp_path,
+        resample_paths=tmp_path,
+        crop_paths=tmp_path,
         stop_index=1,
     )
     resamplers: tuple[HADsResampler | CPMResampler, ...] = (
