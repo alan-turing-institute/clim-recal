@@ -1294,3 +1294,26 @@ def cftime_range_gen(time_data_array: T_DataArray, **kwargs) -> NDArray:
     )
     time_bnds_fix_range_end: CFTimeIndex = time_bnds_fix_range_start + timedelta(days=1)
     return np.array((time_bnds_fix_range_start, time_bnds_fix_range_end)).T
+
+
+def get_cpm_for_coord_alignment(
+    cpm_for_coord_alignment: PathLike | T_Dataset,
+) -> T_Dataset:
+    """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""
+    if isinstance(cpm_for_coord_alignment, PathLike):
+        if Path(cpm_for_coord_alignment).is_dir():
+            cpm_for_coord_alignment = next(Path(cpm_for_coord_alignment).glob("t*.nc"))
+        cpm_for_coord_alignment = cpm_reproject_with_standard_calendar(
+            cpm_for_coord_alignment
+        )
+        logger.info(
+            f"Set 'self.cpm_for_coord_alignment' to: '{cpm_for_coord_alignment}'"
+        )
+    try:
+        assert isinstance(cpm_for_coord_alignment, Dataset)
+    except AssertionError:
+        raise AttributeError(
+            f"'cpm_for_coord_alignment' must be a 'Dataset'. "
+            f"Currently a {type(cpm_for_coord_alignment)}."
+        )
+    return cpm_for_coord_alignment
