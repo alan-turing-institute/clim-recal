@@ -453,14 +453,16 @@ class HADsResampler(ResamblerBase):
     --------
     >>> if not is_data_mounted:
     ...     pytest.skip(mount_doctest_skip_message)
-    >>> hads_resampler: HADsResampler = HADsResampler(
+    >>> resample_test_hads_output_path: Path = getfixture(
+    ...         'resample_test_hads_output_path')
+    >>> hads_resampler: HADsResampler = HADsResampler(  # doctest: +SKIP
     ...     output_path=resample_test_hads_output_path,
     ... )
-    >>> hads_resampler
+    >>> hads_resampler  # doctest: +SKIP
     <HADsResampler(...count=504,...
         ...input_path='.../tasmax/day',...
         ...output_path='...run-results_..._.../hads')>
-    >>> pprint(hads_resampler.input_files)
+    >>> pprint(hads_resampler.input_files)   # doctest: +SKIP
     (...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc'),
      ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800201-19800229.nc'),
      ...,
@@ -585,6 +587,8 @@ class CPMResampler(ResamblerBase):
     --------
     >>> if not is_data_mounted:
     ...     pytest.skip(mount_doctest_skip_message)
+    >>> resample_test_cpm_output_path: Path = getfixture(
+    ...         'resample_test_cpm_output_path')
     >>> cpm_resampler: CPMResampler = CPMResampler(
     ...     input_path=REPROJECTED_CPM_TASMAX_05_LATEST_INPUT_PATH,
     ...     output_path=resample_test_cpm_output_path,
@@ -703,7 +707,7 @@ class ResamblerManagerBase:
         self.total_cpus: int | None = cpu_count()
         if not self.cpus:
             self.cpus = 1 if not self.total_cpus else self.total_cpus
-        self.cpm_for_coord_alignment: T_Dataset | PathLike = RAW_CPM_TASMAX_PATH
+        # self.cpm_for_coord_alignment: T_Dataset | PathLike = RAW_CPM_TASMAX_PATH
 
     @property
     def input_folder(self) -> Path | None:
@@ -1035,6 +1039,8 @@ class HADsResamplerManager(ResamblerManagerBase):
     --------
     >>> if not is_data_mounted:
     ...     pytest.skip(mount_doctest_skip_message)
+    >>> resample_test_hads_output_path: Path = getfixture(
+    ...         'resample_test_hads_output_path')
     >>> hads_resampler_manager: HADsResamplerManager = HADsResamplerManager(
     ...     variables=VariableOptions.all(),
     ...     resample_paths=resample_test_hads_output_path,
@@ -1121,7 +1127,7 @@ class HADsResamplerManager(ResamblerManagerBase):
     def __post_init__(self) -> None:
         """Ensure `self.cpm_for_coord_alignment` is set."""
         super().__post_init__()
-        self.set_cpm_for_coord_alignment()
+        # self.set_cpm_for_coord_alignment()
 
     def set_cpm_for_coord_alignment(self) -> None:
         """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""
@@ -1449,6 +1455,8 @@ class CPMResamplerManager(ResamblerManagerBase):
     --------
     >>> if not is_data_mounted:
     ...     pytest.skip(mount_doctest_skip_message)
+    >>> resample_test_cpm_output_path: Path = getfixture(
+    ...         'resample_test_cpm_output_path')
     >>> cpm_resampler_manager: CPMResamplerManager = CPMResamplerManager(
     ...     stop_index=9,
     ...     resample_paths=resample_test_cpm_output_path,
@@ -1502,6 +1510,11 @@ class CPMResamplerManager(ResamblerManagerBase):
             f"runs_count={len(self.runs)}, "
             f"input_paths_count={len(self.input_paths) if isinstance(self.input_paths, Sequence) else 1})>"
         )
+
+    # def __post_init__(self) -> None:
+    #     """Ensure `self.cpm_for_coord_alignment` is set."""
+    #     super().__post_init__()
+    #     self.set_cpm_for_coord_alignment()
 
     # def _gen_input_folder_paths(
     #     self, path: PathLike, append_var_path_dict: bool = False, cpm_paths: bool = True

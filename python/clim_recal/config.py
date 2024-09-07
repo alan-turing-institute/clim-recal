@@ -19,6 +19,7 @@ from .resample import (
 )
 from .utils.core import product_dict, results_path
 from .utils.data import MethodOptions, RegionOptions, RunOptions, VariableOptions
+from .utils.xarray import get_cpm_for_coord_alignment
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 
@@ -75,6 +76,8 @@ class ClimRecalConfig(BaseRunConfig):
         A `dict` of parameters to pass to a `CPMResamplerManager`.
     hads_kwargs
         A `dict` of parameters to pass to `HADsResamplerManager`.
+    cpm_for_coord_alignment
+        A `Path` to a `CPM` file to align `HADs` coordinates to.
     debug_mode
         Set to `True` to add more detailed debug logs, including `GDAL`.
 
@@ -114,6 +117,8 @@ class ClimRecalConfig(BaseRunConfig):
     add_local_dated_crops_path: bool = True
     local_dated_results_path_prefix: str = "run"
     local_dated_crops_path_prefix: str = "crop"
+    cpm_for_coord_alignment: PathLike | None = None
+    process_cmp_for_coord_alignment: bool = False
     debug_mode: bool = False
 
     @property
@@ -132,6 +137,7 @@ class ClimRecalConfig(BaseRunConfig):
 
         Examples
         --------
+        >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
         >>> print(clim_runner.exec_path)
         <BLANKLINE>
         ...test-run-results.../run...
@@ -152,6 +158,7 @@ class ClimRecalConfig(BaseRunConfig):
 
         Examples
         --------
+        >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
         >>> print(clim_runner.dated_results_path)
         <BLANKLINE>
         ...test-run-results.../run...
@@ -172,6 +179,7 @@ class ClimRecalConfig(BaseRunConfig):
 
         Examples
         --------
+        >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
         >>> print(clim_runner.dated_crops_path)
         <BLANKLINE>
         ...test-run-results.../crop...
@@ -226,6 +234,8 @@ class ClimRecalConfig(BaseRunConfig):
             stop_index=self.stop_index,
             **self.cpm_kwargs,
         )
+        if self.process_cmp_for_coord_alignment:
+            self.set_cpm_for_coord_alignment()
         self.hads_manager = HADsResamplerManager(
             input_paths=self.hads_input_path,
             variables=self.variables,
@@ -233,11 +243,18 @@ class ClimRecalConfig(BaseRunConfig):
             crop_paths=self.crops_path,
             start_index=self.start_index,
             stop_index=self.stop_index,
+            cpm_for_coord_alignment=self.cpm_for_coord_alignment,
             **self.hads_kwargs,
         )
         self.total_cpus: int | None = cpu_count()
         if self.cpus == None or (self.total_cpus and self.cpus >= self.total_cpus):
             self.cpus = 1 if not self.total_cpus else self.total_cpus - 1
+
+    def set_cpm_for_coord_alignment(self) -> None:
+        """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""
+        self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
+            self.cpm_for_coord_alignment
+        )
 
     def __repr__(self) -> str:
         """Summary of `self` configuration as a `str`."""
@@ -260,6 +277,7 @@ class ClimRecalConfig(BaseRunConfig):
 
         Examples
         --------
+        >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
         >>> pprint(clim_runner.model_vars)
         {'methods': ('quantile_delta_mapping',),
          'regions': ('Glasgow', 'Manchester'),
@@ -279,6 +297,7 @@ class ClimRecalConfig(BaseRunConfig):
 
         Examples
         --------
+        >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
         >>> pprint(clim_runner.model_configs)
         ({'method': 'quantile_delta_mapping',
           'region': 'Glasgow',
@@ -362,6 +381,7 @@ class ClimRecalConfig(BaseRunConfig):
 
         Examples
         --------
+        >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
         >>> runs: dict[tuple, dict] = clim_runner.run_models()
         >>> pprint(tuple(runs.keys()))
         (('Glasgow', 'tasmax', '05', 'quantile_delta_mapping'),

@@ -76,6 +76,7 @@ ReprojectFuncType = Callable[[T_Dataset], T_Dataset]
 GLASGOW_GEOM_ABSOLUTE_PATH: Final[Path] = (
     climate_data_mount_path() / GLASGOW_GEOM_LOCAL_PATH
 )
+CPM_REGEX: Final[str] = "[!.]*cpm*.nc"
 HADS_MIN_NULL: float = -1000000
 
 # MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
@@ -1297,12 +1298,27 @@ def cftime_range_gen(time_data_array: T_DataArray, **kwargs) -> NDArray:
 
 
 def get_cpm_for_coord_alignment(
-    cpm_for_coord_alignment: PathLike | T_Dataset,
+    cpm_for_coord_alignment: PathLike | T_Dataset, cpm_regex: str = CPM_REGEX
 ) -> T_Dataset:
-    """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""
+    """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`.
+
+    Parameters
+    ----------
+    cpm_for_coord_alignment
+        Either a `Path` or a file or folder with a `cpm` file to align to
+        or a `xarray.Dataset`. If a folder, the first file matching
+        `cpm_regex` will be used. It will then be processed via
+        `cpm_reproject_with_standard_calendar` for comparability and use
+        alongside `cpm` files.
+    cpm_regex
+        A regular expression to filter suitable files if
+        `cpm_for_coord_alignment` is a folder `Path`.
+    """
     if isinstance(cpm_for_coord_alignment, PathLike):
         if Path(cpm_for_coord_alignment).is_dir():
-            cpm_for_coord_alignment = next(Path(cpm_for_coord_alignment).glob("t*.nc"))
+            cpm_for_coord_alignment = next(
+                Path(cpm_for_coord_alignment).glob(cpm_regex)
+            )
         cpm_for_coord_alignment = cpm_reproject_with_standard_calendar(
             cpm_for_coord_alignment
         )

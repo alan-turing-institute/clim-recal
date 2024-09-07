@@ -303,7 +303,7 @@ def main(
             else:
                 print(f"Cropping CPMs to regions {config.regions}: ...")
                 region_cropped_cpm_resamples: tuple[CPMResampler, ...] = (
-                    config.cpm_manager.execute_region_crop_configs(
+                    config.cpm_manager.execute_crop_configs(
                         multiprocess=multiprocess, cpus=cpus
                     )
                 )
@@ -315,7 +315,7 @@ def main(
                     f"Cropping HADS 2.2km projections to regions {config.regions}: ..."
                 )
                 region_cropped_hads_resamples: tuple[CPMResampler, ...] = (
-                    config.hads_manager.execute_region_crop_configs(
+                    config.hads_manager.execute_crop_configs(
                         multiprocess=multiprocess, cpus=cpus
                     )
                 )

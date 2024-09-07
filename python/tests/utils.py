@@ -9,7 +9,7 @@ from typing import Any, Awaitable, Callable, Final, Iterable, Sequence, TypedDic
 
 import sysrsync
 from numpy import array, random
-from pandas import date_range, to_datetime
+from pandas import to_datetime
 from xarray import DataArray
 from xarray.core.types import T_DataArray, T_DataArrayOrSet
 
@@ -54,6 +54,9 @@ HADS_UK_RESAMPLED_DAY_SERVER_PATH: Final[Path] = Path(
 
 CPM_RAW_TASMAX_1980_FILE: Final[Path] = Path(
     "tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc"
+)
+CPM_CONVERTED_TASMAX_1980_FILE: Final[Path] = Path(
+    "tasmax_rcp85_land-cpm_uk_2.2km_05_day_std_year_19801201-19811130.nc"
 )
 HADS_RAW_TASMAX_1980_FILE: Final[Path] = Path(
     "tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc"
@@ -368,6 +371,9 @@ class LocalCache:
     reader: Callable | None = None
     reader_kwargs: dict[str, Any] = field(default_factory=dict)
 
+    parser: Callable | None = None
+    parser_kwargs: dict[str, Any] = field(default_factory=dict)
+
     _make_parent_folders: bool = True
 
     def __repr__(self) -> str:
@@ -394,7 +400,7 @@ class LocalCache:
         """Path to copy `source_path` file to."""
         assert isinstance(self.source_path, Path)
         assert isinstance(self.local_cache_path, Path)
-        if not self.local_cache_path.is_file():
+        if not self.local_cache_path.is_file() and not self.local_cache_path.suffix:
             logger.debug(
                 f"'local_cache_path' is a folder: "
                 f"'{self.local_cache_path}'. Inferring file name "
@@ -430,24 +436,70 @@ class LocalCache:
         if not self.created:
             self.created = self.synced
 
+    def parse(self) -> T_DataArrayOrSet | None:
+        """If `self.parser` is set, process file prior to syncing.
+
+        Examples
+        --------
+        >>> test_users_cache = getfixture('test_users_cache')
+        >>> from pandas import read_excel
+        >>> from xarray import Dataset, open_dataset
+        >>>
+        >>> def excel_to_netcdf(path: PathLike):
+        ...     df = read_excel(Path(path))
+        ...     return df.to_xarray()
+        >>> test_users_cache.parser = excel_to_netcdf
+        >>> test_users_cache.reader = open_dataset
+        >>> users_df: Dataset = test_users_cache.parse()
+        >>> test_users_cache.read(run_sync=True)
+        <xarray.Dataset>...
+        Dimensions:    (index: 5)
+        Coordinates:
+          * index      (index) int64 40B 0 1 2 3 4
+        Data variables:
+            A Column   (index) int64 40B ...
+            User Name  (index) <U8 160B ...
+            Password   (index) <U12 240B ...
+        >>> test_users_cache
+        <LocalCache(name='test-users', is_cached=True)>
+        """
+        if self.parser:
+            return self.parser(self.source_path, **self.parser_kwargs)
+        else:
+            return None
+
     async def async_sync(
         self, fail_if_no_source: bool = True, **kwargs
     ) -> CacheLogType:
         """Asyncronously sync `self.source_path` to `self.cache_path`."""
         if self._check_source_path(fail_if_no_source=fail_if_no_source):
-            await asyncio.create_subprocess_exec(
-                "rsync", str(self.source_path), str(self.cache_path), **kwargs
-            )
+            if self.parser:
+                logger.info(f"Asyncing 'parser' for {self}...")
+                intermediate: T_DataArrayOrSet = self.parse()
+                intermediate.to_netcdf(self.cache_path)
+            else:
+                logger.info(f"Asyncing 'rsync' for {self}...")
+                await asyncio.create_subprocess_exec(
+                    "rsync", str(self.source_path), str(self.cache_path), **kwargs
+                )
             self._update_synced()
         return self.name, self.synced, self.cache_path
 
     def sync(self, fail_if_no_source: bool = True, **kwargs) -> CacheLogType:
         """Sync `self.source_path` to `self.cache_path`."""
         if self._check_source_path(fail_if_no_source=fail_if_no_source):
-            sysrsync.run(
-                source=str(self.source_path), destination=str(self.cache_path), **kwargs
-            )
-            self._update_synced()
+            if self.parser:
+                logger.info(f"Syncing 'parser' for {self}...")
+                intermediate: T_DataArrayOrSet = self.parse()
+                intermediate.to_netcdf(self.cache_path)
+            else:
+                logger.info(f"Syncing 'rsync' for {self}...")
+                sysrsync.run(
+                    source=str(self.source_path),
+                    destination=str(self.cache_path),
+                    **kwargs,
+                )
+                self._update_synced()
         return self.name, self.synced, self.cache_path
 
     def read(self, cache_path: bool = True, run_sync: bool = False, **kwargs) -> Any:
@@ -459,6 +511,8 @@ class LocalCache:
             Whether to read `self.cache_path` (`True`) or `self.source_path` (`False`).
         run_sync
             Whether to run `run_sync` if `self.cache_path` is not set.
+        kwargs
+            Any additional parameters to pass to `self.reader`
 
         Returns
         -------
@@ -466,28 +520,28 @@ class LocalCache:
 
         Examples
         --------
-        >>> glasgow_tif_cache = getfixture('glasgow_tif_cache')
-        >>> glasgow_tif_cache.read()
+        >>> test_users_cache = getfixture('test_users_cache')
+        >>> test_users_cache.read()
         Traceback (most recent call last):
             ...
         ValueError: `reader` attribute must be set for
         <LocalCache(name='test-users', is_cached=False)>
         >>> from pandas import read_excel
-        >>> glasgow_tif_cache.reader = read_excel
-        >>> glasgow_tif_cache.read()
+        >>> test_users_cache.reader = read_excel
+        >>> test_users_cache.read()
         Traceback (most recent call last):
             ...
         ValueError: Can't use `local_path` prior to
         cache run. Run with `run_sync` to override for
         <LocalCache(name='test-users', is_cached=False)>.
-        >>> glasgow_tif_cache.read(run_sync=True)
+        >>> test_users_cache.read(run_sync=True)
            A Column User Name      Password
         0         1     sally        a pass
         1         2    george  another pass
         2        34      jean       passing
         3         4  felicity      pastoral
         4         2     frank        plough
-        >>> glasgow_tif_cache
+        >>> test_users_cache
         <LocalCache(name='test-users', is_cached=True)>
         """
         if not self.reader:
@@ -515,13 +569,13 @@ class LocalCachesManager(UserDict):
 
     Attributes
     ----------
-    sources
-        A `dict` of `name`: `configs` to construct `LocalCache` instances
+    caches
+        A `Sequence` of `LocalCache` instances to manage
 
     Examples
     --------
-    >>> glasow_tif_cache = getfixture('glasgow_tif_cache')
-    >>> cache_configs = LocalCachesManager([glasow_tif_cache])
+    >>> test_users_cache = getfixture('test_users_cache')
+    >>> cache_configs = LocalCachesManager([test_users_cache])
     >>> cache_configs
     <LocalCachesManager(count=1)>
     >>> asyncio.run(cache_configs.async_sync_all())
@@ -561,8 +615,9 @@ class LocalCachesManager(UserDict):
     def __post_init__(self) -> None:
         """Populate the `data` attribute."""
         self._sync_caches_attr()
-        if not self._synced:
-            self.sync_all(fail_if_no_source=self.fail_if_no_source)
+        # Removing this to avoid test delays from auto_syncing
+        # if not self._synced:
+        #     self.sync_all(fail_if_no_source=self.fail_if_no_source)
 
     @property
     def cached_paths(self) -> tuple[Path, ...]:
@@ -572,6 +627,11 @@ class LocalCachesManager(UserDict):
     def sync_all(self, fail_if_no_source: bool = True, **kwargs) -> tuple[Path, ...]:
         """Run `sync` on all `self.caches` instances."""
         sync_results: CacheLogType
+        fail_if_no_source = self.fail_if_no_source or self.fail_if_no_source
+        logger.info(
+            f"'fail_if_no_source' is {self.fail_if_no_source}. "
+            f"Syncing {len(self)} cached files..."
+        )
         for local_cacher in self.values():
             sync_results = local_cacher.sync(
                 fail_if_no_source=fail_if_no_source, **kwargs

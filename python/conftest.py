@@ -4,7 +4,7 @@ from os import PathLike
 from pathlib import Path
 from pprint import pprint
 from shutil import copytree, rmtree
-from typing import Final, Iterator
+from typing import Callable, Final, Iterator
 
 import pytest
 from coverage_badge.__main__ import main as gen_cov_badge
@@ -67,6 +67,8 @@ PYTHON_DIR_NAME: Final[Path] = Path("python")
 TEST_DATA_PATH: Final[Path] = TEST_FILE_PATH / "data"
 LOCAL_FIXTURE_PATH_NAME: Final[Path] = Path("local-cache")
 
+collect_ignore_glob: list[str] = ["*run*", "*.png", "*.xlsx"]
+
 
 @pytest.fixture
 def mod_folder_files_count_correct() -> int:
@@ -118,7 +120,9 @@ def local_cache_fixtures(
     local_hads_cache_path: Path,
     sync_all: bool,
     use_async: bool,
+    printer_session: Callable[[str], None],
 ) -> LocalCachesManager:
+    printer_session("Loading local fixtures cache...")
     cache_manager: LocalCachesManager = LocalCachesManager(
         default_local_cache_path=local_cache_path,
         caches=(
@@ -129,6 +133,14 @@ def local_cache_fixtures(
                 reader=open_dataset,
                 reader_kwargs={"decode_coords": "all"},
             ),
+            # LocalCache(
+            #     name="tasmax_cpm_1980_converted",
+            #     source_path=CPM_RAW_TASMAX_EXAMPLE_PATH,
+            #     local_cache_path=local_cpm_cache_path,
+            #     reader=open_dataset,
+            #     reader_kwargs={"decode_coords": "all"},
+            #     parser=cpm_reproject_with_standard_calendar,
+            # ),
             LocalCache(
                 name="tasmax_hads_1980_raw",
                 source_path=HADS_RAW_TASMAX_EXAMPLE_PATH,
@@ -208,6 +220,31 @@ def tasmax_hads_1980_raw_path(
         return local_cache_fixtures["tasmax_hads_1980_raw"].local_cache_path
     else:
         return local_cache_fixtures["tasmax_hads_1980_raw"].source_path
+
+
+@pytest.fixture(scope="session")
+def tasmax_cpm_1980_converted(
+    local_cache: bool,
+    local_cpm_cache_path: Path,
+    local_cache_fixtures: LocalCachesManager,
+) -> T_Dataset | None:
+    if local_cache:
+        return local_cache_fixtures["tasmax_cpm_1980_converted"].read(
+            cache_path=local_cpm_cache_path
+        )
+    else:
+        return None
+
+
+@pytest.fixture(scope="session")
+def tasmax_cpm_1980_converted_path(
+    local_cache: bool,
+    local_cache_fixtures: LocalCachesManager,
+) -> T_Dataset:
+    if local_cache:
+        return local_cache_fixtures["tasmax_cpm_1980_converted"].local_cache_path
+    else:
+        return local_cache_fixtures["tasmax_cpm_1980_converted"].source_path
 
 
 # This may be removed in future
@@ -377,6 +414,7 @@ def uk_rotated_grid_bounds() -> BoundsTupleType:
 
 
 # Note: it may be worth setting this to cache for session runs
+# This requires a different tmp_path configuration
 @pytest.fixture
 def clim_runner(
     tmp_path: Path,
@@ -385,6 +423,7 @@ def clim_runner(
     test_runs_output_path: PathLike,
     local_hads_cache_path: PathLike,
     local_cpm_cache_path: PathLike,
+    # tasmax_cpm_1980_converted_path: PathLike,
 ) -> ClimRecalConfig:
     """Return default `ClimRecalConfig`."""
     assert local_cache_fixtures.default_local_cache_path
@@ -400,6 +439,7 @@ def clim_runner(
             preprocess_out_folder=tmp_path,
             regions=regions,
             output_path=test_runs_output_path,
+            # cpm_for_coord_alignment=tasmax_cpm_1980_converted_path,
         )
     except (FileExistsError, AssertionError):
         return ClimRecalConfig(
@@ -411,6 +451,7 @@ def clim_runner(
             # Todo: refactor to use caching to speed up runs
             cpm_kwargs=dict(_allow_check_fail=True),
             hads_kwargs=dict(_allow_check_fail=True),
+            # cpm_for_coord_alignment=tasmax_cpm_1980_converted_path,
         )
 
 
@@ -437,7 +478,7 @@ def glasgow_example_cropped_cpm_rainfall_path(data_fixtures_path: Path) -> Path:
 
 
 @pytest.fixture
-def glasgow_tif_cache(data_fixtures_path: Path, tmp_path: Path) -> LocalCache:
+def test_users_cache(data_fixtures_path: Path, tmp_path: Path) -> LocalCache:
     return LocalCache(
         name="test-users",
         source_path=data_fixtures_path / "test_user_accounts.xlsx",
@@ -462,10 +503,10 @@ def doctest_auto_fixtures(
     glasgow_epsg_27700_bounds: BoundsTupleType,
     glasgow_shape_file_path: Path,
     test_runs_output_path: Path,
-    resample_test_cpm_output_path: Path,
-    resample_test_hads_output_path: Path,
+    # resample_test_cpm_output_path: Path,
+    # resample_test_hads_output_path: Path,
     glasgow_example_cropped_cpm_rainfall_path: Path,
-    clim_runner: ClimRecalConfig,
+    # clim_runner: ClimRecalConfig,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
     doctest_namespace["CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT"] = (
@@ -510,8 +551,8 @@ def doctest_auto_fixtures(
     doctest_namespace["glasgow_epsg_27700_bounds"] = glasgow_epsg_27700_bounds
     doctest_namespace["glasgow_shape_file_path"] = glasgow_shape_file_path
     doctest_namespace["test_runs_output_path"] = test_runs_output_path
-    doctest_namespace["resample_test_hads_output_path"] = resample_test_hads_output_path
-    doctest_namespace["resample_test_cpm_output_path"] = resample_test_cpm_output_path
+    # doctest_namespace["resample_test_hads_output_path"] = resample_test_hads_output_path
+    # doctest_namespace["resample_test_cpm_output_path"] = resample_test_cpm_output_path
     doctest_namespace["mount_doctest_skip_message"] = MOUNT_DOCTEST_SKIP_MESSAGE
     doctest_namespace["mount_or_cache_doctest_skip_message"] = (
         MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE
@@ -519,7 +560,7 @@ def doctest_auto_fixtures(
     doctest_namespace["glasgow_example_cropped_cpm_rainfall_path"] = (
         glasgow_example_cropped_cpm_rainfall_path
     )
-    doctest_namespace["clim_runner"] = clim_runner
+    # doctest_namespace["clim_runner"] = clim_runner
 
 
 def pytest_sessionfinish(session, exitstatus):

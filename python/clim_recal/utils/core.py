@@ -187,9 +187,11 @@ def multiprocess_execute(
     >>> if not is_data_mounted:
     ...     pytest.skip(mount_doctest_skip_message)
     >>> from clim_recal.resample import CPMResampler
+    >>> resample_test_hads_output_path: Path = getfixture(
+    ...         'resample_test_cpm_output_path')
     >>> cpm_resampler: CPMResampler = CPMResampler(
     ...     stop_index=3,
-    ...     output_path=resample_test_cpm_output_path,
+    ...     output_path=resample_test_hads_output_path,
     ... )
     >>> multiprocess_execute(cpm_resampler, method_name="exists")
     [True, True, True]
