@@ -4,7 +4,7 @@ from os import PathLike
 from pathlib import Path
 from pprint import pprint
 from shutil import copytree, rmtree
-from typing import Callable, Final, Iterator
+from typing import Final, Iterator
 
 import pytest
 from coverage_badge.__main__ import main as gen_cov_badge
@@ -120,9 +120,7 @@ def local_cache_fixtures(
     local_hads_cache_path: Path,
     sync_all: bool,
     use_async: bool,
-    printer_session: Callable[[str], None],
 ) -> LocalCachesManager:
-    printer_session("Loading local fixtures cache...")
     cache_manager: LocalCachesManager = LocalCachesManager(
         default_local_cache_path=local_cache_path,
         caches=(

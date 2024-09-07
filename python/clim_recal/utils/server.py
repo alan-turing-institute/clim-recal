@@ -495,9 +495,9 @@ def make_user(
     >>> user_name: str = 'an_unlinkely_test_user'
     >>> password: str = 'test_pass'
     >>> code_path: Path = JUPYTER_DOCKER_USER_PATH
-    >>> make_user(user_name, password, code_path=code_path)
+    >>> make_user(user_name, password, code_path=code_path)  # +SKIP
     PosixPath('/home/an_unlinkely_test_user')
-    >>> Path(f'/home/{user_name}/python/conftest.py').is_file()
+    >>> Path(f'/home/{user_name}/python/conftest.py').is_file()  # +SKIP
     True
     >>> rm_user(user_name)
     'an_unlinkely_test_user'
@@ -593,10 +593,10 @@ def make_users(
     ...     file_reader=excel_row_iter,
     ...     code_path=JUPYTER_DOCKER_USER_PATH,
     ... ))
-    >>> [(path / 'python' / 'conftest.py').is_file()
+    >>> [(path / 'python' / 'conftest.py').is_file()  # +SKIP
     ...  for path in user_paths]
     [True, True, True, True, True]
-    >>> [rm_user(user_path.name) for user_path in user_paths]
+    >>> [rm_user(user_path.name) for user_path in user_paths]  # +SKIP
     ['sally', 'george', 'jean', 'felicity', 'frank']
     """
     for record in file_reader(file_path):

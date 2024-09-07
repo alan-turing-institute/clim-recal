@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:315d60178a32e76bd4dac1cfc8bb65598021c0490932d1047c4ba94df1c38f00"
+content_hash = "sha256:0cdc21112758f7753fb9320582ff928e8e3629b9e5012128763450e4cfe491d1"
 
 [[metadata.targets]]
 requires_python = "~=3.12.5"
@@ -2405,21 +2405,6 @@ dependencies = [
 files = [
     {file = "pytest-cov-4.1.0.tar.gz", hash = "sha256:3904b13dfbfec47f003b8e77fd5b589cd11904a21ddf1ab38a64f204d6a10ef6"},
     {file = "pytest_cov-4.1.0-py3-none-any.whl", hash = "sha256:6ba70b9e97e69fcc3fb45bfeab2d0a138fb65c4d0d6a41ef33983ad114be8c3a"},
-]
-
-[[package]]
-name = "pytest-print"
-version = "1.0.0"
-requires_python = ">=3.8"
-summary = "pytest-print adds the printer fixture you can use to print messages to the user (directly to the pytest runner, not stdout)"
-groups = ["dev"]
-marker = "python_full_version ~= \"3.12.5\""
-dependencies = [
-    "pytest>=7.4",
-]
-files = [
-    {file = "pytest_print-1.0.0-py3-none-any.whl", hash = "sha256:23484f42b906b87e31abd564761efffeb0348a6f83109fb857ee6e8e5df42b69"},
-    {file = "pytest_print-1.0.0.tar.gz", hash = "sha256:1fcde9945fba462227a8959271369b10bb7a193be8452162707e63cd60875ca0"},
 ]
 
 [[package]]

@@ -61,7 +61,6 @@ dev = [
     "pytest-xdist>=3.5.0",
     "sysrsync>=1.1.1",
     "pydantic>=2.8.2",
-    "pytest-print>=1.0.0",
 ]
 
 [tool.pdm.build]
@@ -90,7 +89,6 @@ addopts = """
     --strict-markers
     --durations=5
     --failed-first
-    --print
 """
 doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS",]
 testpaths = [
