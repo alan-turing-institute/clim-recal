@@ -77,7 +77,7 @@ ReprojectFuncType = Callable[[T_Dataset], T_Dataset]
 GLASGOW_GEOM_ABSOLUTE_PATH: Final[Path] = (
     climate_data_mount_path() / GLASGOW_GEOM_LOCAL_PATH
 )
-CPM_REGEX: Final[str] = "[!.]*cpm*.nc"
+CPM_REGEX: Final[str] = "**/[!.]*cpm*.nc"
 HADS_MIN_NULL: float = -1000000
 
 FINAL_CONVERTED_CPM_WIDTH: Final[int] = 493
