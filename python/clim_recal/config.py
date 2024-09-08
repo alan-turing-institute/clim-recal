@@ -19,11 +19,8 @@ from .resample import (
 )
 from .utils.core import product_dict, results_path
 from .utils.data import MethodOptions, RegionOptions, RunOptions, VariableOptions
-from .utils.xarray import get_cpm_for_coord_alignment
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
-
-# DATA_PATH_DEFAULT: Final[Path] = climate_data_mount_path()
 
 
 DEFAULT_OUTPUT_PATH: Final[Path] = Path("clim-recal-runs")
@@ -119,6 +116,7 @@ class ClimRecalConfig(BaseRunConfig):
     local_dated_crops_path_prefix: str = "crop"
     cpm_for_coord_alignment: PathLike | None = None
     process_cmp_for_coord_alignment: bool = False
+    cpm_for_coord_alignment_path_converted: bool = False
     debug_mode: bool = False
 
     @property
@@ -234,8 +232,8 @@ class ClimRecalConfig(BaseRunConfig):
             stop_index=self.stop_index,
             **self.cpm_kwargs,
         )
-        if self.process_cmp_for_coord_alignment:
-            self.set_cpm_for_coord_alignment()
+        # if self.process_cmp_for_coord_alignment:
+        #     self.set_cpm_for_coord_alignment()
         self.hads_manager = HADsResamplerManager(
             input_paths=self.hads_input_path,
             variables=self.variables,
@@ -244,17 +242,19 @@ class ClimRecalConfig(BaseRunConfig):
             start_index=self.start_index,
             stop_index=self.stop_index,
             cpm_for_coord_alignment=self.cpm_for_coord_alignment,
+            cpm_for_coord_alignment_path_converted=self.cpm_for_coord_alignment_path_converted,
             **self.hads_kwargs,
         )
         self.total_cpus: int | None = cpu_count()
         if self.cpus == None or (self.total_cpus and self.cpus >= self.total_cpus):
             self.cpus = 1 if not self.total_cpus else self.total_cpus - 1
 
-    def set_cpm_for_coord_alignment(self) -> None:
-        """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""
-        self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
-            self.cpm_for_coord_alignment
-        )
+    # def set_cpm_for_coord_alignment(self) -> None:
+    #     """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""
+    #     self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
+    #         self.cpm_for_coord_alignment,
+    #         skip_reproject=self.cpm_for_coord_alignment_path_converted,
+    #     )
 
     def __repr__(self) -> str:
         """Summary of `self` configuration as a `str`."""

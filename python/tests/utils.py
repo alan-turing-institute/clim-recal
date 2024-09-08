@@ -8,7 +8,8 @@ from pathlib import Path
 from typing import Any, Awaitable, Callable, Final, Iterable, Sequence, TypedDict
 
 import sysrsync
-from numpy import array, random
+from numpy import array, nan, random
+from numpy.typing import NDArray
 from pandas import to_datetime
 from xarray import DataArray
 from xarray.core.types import T_DataArray, T_DataArrayOrSet
@@ -46,6 +47,24 @@ from clim_recal.utils.data import (
 )
 
 logger = getLogger(__name__)
+
+FINAL_CONVERTED_HADS_WIDTH: Final[int] = 410
+FINAL_CONVERTED_HADS_HEIGHT: Final[int] = 660
+
+FINAL_CPM_DEC_10_X_2_Y_200_210: Final[NDArray] = array(
+    (
+        nan,
+        nan,
+        9.637598,
+        9.646631,
+        9.636621,
+        9.622217,
+        9.625147,
+        9.640039,
+        9.6349125,
+        9.509668,
+    )
+)
 
 HADS_UK_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
 HADS_UK_RESAMPLED_DAY_SERVER_PATH: Final[Path] = Path(

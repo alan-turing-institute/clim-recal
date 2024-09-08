@@ -225,18 +225,18 @@ def tasmax_hads_1980_raw_path(
         return local_cache_fixtures["tasmax_hads_1980_raw"].source_path
 
 
-# @pytest.fixture(scope="session")
-# def tasmax_cpm_1980_converted(
-#     local_cache: bool,
-#     local_cpm_cache_path: Path,
-#     local_cache_fixtures: LocalCachesManager,
-# ) -> T_Dataset | None:
-#     if local_cache:
-#         return local_cache_fixtures["tasmax_cpm_1980_converted"].read(
-#             cache_path=local_cpm_cache_path
-#         )
-#     else:
-#         return None
+@pytest.fixture(scope="session")
+def tasmax_cpm_1980_converted(
+    local_cache: bool,
+    local_cpm_cache_path: Path,
+    local_cache_fixtures: LocalCachesManager,
+) -> T_Dataset | None:
+    if local_cache:
+        return local_cache_fixtures["tasmax_cpm_1980_converted"].read(
+            cache_path=local_cpm_cache_path
+        )
+    else:
+        return None
 
 
 @pytest.fixture(scope="session")

@@ -80,6 +80,9 @@ GLASGOW_GEOM_ABSOLUTE_PATH: Final[Path] = (
 CPM_REGEX: Final[str] = "[!.]*cpm*.nc"
 HADS_MIN_NULL: float = -1000000
 
+FINAL_CONVERTED_CPM_WIDTH: Final[int] = 493
+FINAL_CONVERTED_CPM_HEIGHT: Final[int] = 607
+
 # MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
 # """A `set` of tuples of month and day numbers for `enforce_date_changes`."""
 
@@ -195,10 +198,43 @@ def check_xarray_path_and_var_name(
     return xr_time_series, variable_name
 
 
+def cpm_check_converted(cpm_xr_time_series: T_Dataset | PathLike) -> bool:
+    """Check if `cpm_xr_time_series` is likely already reprojected.
+
+    Parameters
+    ----------
+    cpm_xr_time_series
+        `Dataset` instance or `Path` to check.
+
+    Returns
+    -------
+    `True` if all of the methics are `True`, else `False`
+    """
+    cpm_xr_time_series, variable = check_xarray_path_and_var_name(
+        xr_time_series=cpm_xr_time_series, variable_name=None
+    )
+    checks_dict: dict[str, bool] = {}
+    if "time" in cpm_xr_time_series.dims:
+        checks_dict["time-365-or-366"] = cpm_xr_time_series.dims["time"] in (365, 366)
+    if "x" in cpm_xr_time_series.dims:
+        checks_dict["x-final-coords"] = (
+            cpm_xr_time_series.dims["x"] == FINAL_CONVERTED_CPM_WIDTH
+        )
+    if "y" in cpm_xr_time_series.dims:
+        checks_dict["y-final-coords"] = (
+            cpm_xr_time_series.dims["y"] == FINAL_CONVERTED_CPM_HEIGHT
+        )
+    if all(checks_dict.values()):
+        return True
+    else:
+        return False
+
+
 def cpm_reproject_with_standard_calendar(
     cpm_xr_time_series: T_Dataset | PathLike,
     variable_name: str | None = None,
     close_temp_paths: bool = True,
+    force: bool = False,
 ) -> T_Dataset:
     """Convert raw `cpm_xr_time_series` to an 365/366 days and 27700 coords.
 
@@ -245,6 +281,16 @@ def cpm_reproject_with_standard_calendar(
     >>> tasmax_cpm_1980_365_day.dims
     Frozen...({'time': 365, 'x': 493, 'y': 607})
     """
+    if not force:
+        logger.info("Checking if already converted...")
+        if cpm_check_converted(cpm_xr_time_series):
+            logger.info("Similar to already converted. Returning unmodified")
+            xr_dataset, _ = check_xarray_path_and_var_name(
+                cpm_xr_time_series, variable_name=variable_name
+            )
+            return xr_dataset
+    else:
+        logger.info("Force skip checking if already converted...")
     temp_cpm: _TemporaryFileWrapper = NamedTemporaryFile(
         suffix="." + NETCDF_EXTENSION_STR
     )
@@ -1299,7 +1345,9 @@ def cftime_range_gen(time_data_array: T_DataArray, **kwargs) -> NDArray:
 
 
 def get_cpm_for_coord_alignment(
-    cpm_for_coord_alignment: PathLike | T_Dataset, cpm_regex: str = CPM_REGEX
+    cpm_for_coord_alignment: PathLike | T_Dataset | None,
+    skip_reproject: bool = False,
+    cpm_regex: str = CPM_REGEX,
 ) -> T_Dataset:
     """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`.
 
@@ -1311,20 +1359,46 @@ def get_cpm_for_coord_alignment(
         `cpm_regex` will be used. It will then be processed via
         `cpm_reproject_with_standard_calendar` for comparability and use
         alongside `cpm` files.
+    skip_reproject
+        Whether to skip calling `cpm_reproject_with_standard_calendar`.
     cpm_regex
         A regular expression to filter suitable files if
         `cpm_for_coord_alignment` is a folder `Path`.
+
+    Returns
+    -------
+    An `xarray.Dataset` coordinate structure to align `HADs` coordinates.
     """
-    if isinstance(cpm_for_coord_alignment, PathLike):
-        if Path(cpm_for_coord_alignment).is_dir():
-            cpm_for_coord_alignment = next(
-                Path(cpm_for_coord_alignment).glob(cpm_regex)
+    if not cpm_for_coord_alignment:
+        raise ValueError("'cpm_for_coord_alignment' must be a Path or xarray Dataset.")
+    elif isinstance(cpm_for_coord_alignment, PathLike):
+        path: Path = Path(cpm_for_coord_alignment)
+        if Path(path).is_dir():
+            path = next(Path(path).glob(cpm_regex))
+        if skip_reproject:
+            logger.info(f"Skipping reprojection and loading '{path}'...")
+            cpm_for_coord_alignment, variable = check_xarray_path_and_var_name(
+                cpm_for_coord_alignment, None
             )
+            logger.info(
+                f"Variable '{variable}' loaded for coord alignment from '{path}'."
+            )
+        else:
+            logger.info(f"Converting coordinates of '{path}'...")
+            cpm_for_coord_alignment = cpm_reproject_with_standard_calendar(path)
+            logger.info(f"Coordinates converted from '{path}''")
+    elif not skip_reproject:
+        logger.info(
+            f"Converting coordinates of type {type(cpm_for_coord_alignment)} ..."
+        )
         cpm_for_coord_alignment = cpm_reproject_with_standard_calendar(
             cpm_for_coord_alignment
         )
+        logger.info(f"Coordinates converted to type {type(cpm_for_coord_alignment)}")
+    else:
         logger.info(
-            f"Set 'self.cpm_for_coord_alignment' to: '{cpm_for_coord_alignment}'"
+            f"Coordinate converter of type {type(cpm_for_coord_alignment)} "
+            f"loaded without processing."
         )
     try:
         assert isinstance(cpm_for_coord_alignment, Dataset)

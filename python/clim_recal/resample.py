@@ -46,7 +46,6 @@ from .utils.xarray import (
     NETCDF_EXTENSION_STR,
     ReprojectFuncType,
     apply_geo_func,
-    check_xarray_path_and_var_name,
     cpm_reproject_with_standard_calendar,
     crop_xarray,
     get_cpm_for_coord_alignment,
@@ -510,38 +509,42 @@ class HADsResampler(ResamblerBase):
     # resolution_relative_path: Path = HADS_2_2K_RESOLUTION_PATH
     input_file_x_column_name: str = HADS_XDIM
     input_file_y_column_name: str = HADS_YDIM
-    cpm_for_coord_alignment: T_Dataset | PathLike = RAW_CPM_TASMAX_PATH
+    cpm_for_coord_alignment: T_Dataset | PathLike | None = RAW_CPM_TASMAX_PATH
     cpm_for_coord_alignment_path_converted: bool = False
     _resample_func: ReprojectFuncType = hads_resample_and_reproject
     # _use_reference_grid: bool = True
 
-    def __post_init__(self) -> None:
-        """Ensure `self.cpm_for_coord_alignment` is set."""
-        super().__post_init__()
-        self.set_cpm_for_coord_alignment()
-        # cpm_match_variable_name: str = self.cpm_for_coord_alignment
+    # def __post_init__(self) -> None:
+    #     """Ensure `self.cpm_for_coord_alignment` is set."""
+    #     super().__post_init__()
+    #     # self.set_cpm_for_coord_alignment()
+    #     # cpm_match_variable_name: str = self.cpm_for_coord_alignment
 
     def set_cpm_for_coord_alignment(self) -> None:
         """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""
-        if self.cpm_for_coord_alignment_path_converted:
-            if isinstance(self.cpm_for_coord_alignment, Dataset):
-                logger.info("Using 'self.cpm_for_coord_alignment'...")
-            elif isinstance(self.cpm_for_coord_alignment, PathLike):
-                logger.info(
-                    f"Loading 'self.cpm_for_coord_alignment' from "
-                    f"'{self.cpm_for_coord_alignment}'..."
-                )
-                self.cpm_for_coord_alignment, _ = check_xarray_path_and_var_name(
-                    self.cpm_for_coord_alignment, None
-                )
-            else:
-                raise ValueError(
-                    f"Type of 'cpm_for_coord_alingment' not valid for {self}"
-                )
-        else:
-            self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
-                self.cpm_for_coord_alignment
-            )
+        self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
+            self.cpm_for_coord_alignment,
+            skip_reproject=self.cpm_for_coord_alignment_path_converted,
+        )
+        # if self.cpm_for_coord_alignment_path_converted:
+        #     if isinstance(self.cpm_for_coord_alignment, Dataset):
+        #         logger.info("Using 'self.cpm_for_coord_alignment'...")
+        #     elif isinstance(self.cpm_for_coord_alignment, PathLike):
+        #         logger.info(
+        #             f"Loading 'self.cpm_for_coord_alignment' from "
+        #             f"'{self.cpm_for_coord_alignment}'..."
+        #         )
+        #         self.cpm_for_coord_alignment, _ = check_xarray_path_and_var_name(
+        #             self.cpm_for_coord_alignment, None
+        #         )
+        #     else:
+        #         raise ValueError(
+        #             f"Type of 'cpm_for_coord_alingment' not valid for {self}"
+        #         )
+        # else:
+        #     self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
+        #         self.cpm_for_coord_alignment
+        #     )
 
         # if isinstance(self.cpm_for_coord_alignment, PathLike):
         #     if Path(self.cpm_for_coord_alignment).is_dir():
@@ -572,6 +575,7 @@ class HADsResampler(ResamblerBase):
             index=index, source_to_index=source_to_index
         )
         path: PathLike = self.output_path
+        self.set_cpm_for_coord_alignment()
         # path: PathLike = self._output_path(
         #     self.resolution_relative_path, override_export_path
         # )
@@ -1114,55 +1118,7 @@ class HADsResamplerManager(ResamblerManagerBase):
     resampler_class: type[HADsResampler] = HADsResampler
     cpm_for_coord_alignment: T_Dataset | PathLike = RAW_CPM_TASMAX_PATH
     cpm_for_coord_alignment_path_converted: bool = False
-    # cpus: int | None = None
-    # _input_path_dict: dict[Path, str] = field(default_factory=dict)
-    # _resampled_path_dict: dict[PathLike, VariableOptions | str] = field(
-    #     default_factory=dict
-    # )
-    # _cropped_path_dict: dict[PathLike, VariableOptions | str] = field(
-    #     default_factory=dict
-    # )
-    # _strict_fail_if_var_in_input_path: bool = True
-    # _allow_check_fail: bool = False
 
-    # class VarirableInBaseImportPathError(Exception):
-    #     """Checking import path validity for `self.variables`."""
-    #     pass
-    #
-    # def __post_init__(self) -> None:
-    #     """Populate config attributes."""
-    #     if not self.crop_regions:
-    #         self.crop_regions = ()
-    #     self.check_paths()
-    #     self.total_cpus: int | None = cpu_count()
-    #     if not self.cpus:
-    #         self.cpus = 1 if not self.total_cpus else self.total_cpus
-    #     self.cpm_for_coord_alignment: T_Dataset | PathLike = RAW_CPM_TASMAX_PATH
-    #
-    # @property
-    # def input_folder(self) -> Path | None:
-    #     """Return `self._input_path` set by `set_input_paths()`."""
-    #     if hasattr(self, "_input_path"):
-    #         return Path(self._input_path)
-    #     else:
-    #         return None
-    #
-    # @property
-    # def resample_folder(self) -> Path | None:
-    #     """Return `self._output_path` set by `set_resample_paths()`."""
-    #     if hasattr(self, "_input_path"):
-    #         return Path(self._input_path)
-    #     else:
-    #         return None
-    #
-    # @property
-    # def crop_folder(self) -> Path | None:
-    #     """Return `self._output_path` set by `set_resample_paths()`."""
-    #     if hasattr(self, "_crop_path"):
-    #         return Path(self._crop_path)
-    #     else:
-    #         return None
-    #
     def __repr__(self) -> str:
         """Summary of `self` configuration as a `str`."""
         return (
@@ -1171,17 +1127,21 @@ class HADsResamplerManager(ResamblerManagerBase):
             f"input_paths_count={len(self.input_paths) if isinstance(self.input_paths, Sequence) else 1})>"
         )
 
-    def __post_init__(self) -> None:
-        """Ensure `self.cpm_for_coord_alignment` is set."""
-        super().__post_init__()
-        # self.set_cpm_for_coord_alignment()
+    # def __post_init__(self) -> None:
+    #     """Ensure `self.cpm_for_coord_alignment` is set."""
+    #     super().__post_init__()
+    #     # self.set_cpm_for_coord_alignment()
 
     def set_cpm_for_coord_alignment(self) -> None:
         """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""
-        if not self.cpm_for_coord_alignment_path_converted:
-            self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
-                self.cpm_for_coord_alignment
-            )
+        self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
+            self.cpm_for_coord_alignment,
+            skip_reproject=self.cpm_for_coord_alignment_path_converted,
+        )
+        # if not self.cpm_for_coord_alignment_path_converted:
+        #     self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
+        #         self.cpm_for_coord_alignment
+        #     )
 
     def yield_configs(self) -> Iterable[HADsResampler]:
         """Generate a `CPMResampler` or `HADsResampler` for `self.input_paths`."""
@@ -1199,266 +1159,6 @@ class HADsResamplerManager(ResamblerManagerBase):
                 cpm_for_coord_alignment_path_converted=self.cpm_for_coord_alignment_path_converted,
                 **self.config_default_kwargs,
             )
-
-    #
-    # # def _gen_input_folder_paths(
-    # #     self,
-    # #     path: PathLike,
-    # #     append_var_path_dict: bool = False,
-    # # ) -> Iterator[Path]:
-    # #     """Yield input paths of `self.variables` and `self.runs`."""
-    # #     var_path: Path
-    # #     for var in self.variables:
-    # #         var_path = Path(path) / var / self.sub_path
-    # #         if append_var_path_dict:
-    # #             self._path_dict[var_path] = var
-    # #         yield var_path
-    #
-    # def _gen_resample_folder_paths(
-    #     self,
-    #     path: PathLike,
-    #     append_input_path_dict: bool = False,
-    #     append_resampled_path_dict: bool = False,
-    # ) -> Iterator[tuple[Path, Path]]:
-    #     """Yield paths of resampled `self.variables` and `self.runs`."""
-    #     for var in self.variables:
-    #         input_path: Path = Path(path) / var / self.sub_path
-    #         resample_path: Path = Path(path) / var
-    #         if append_input_path_dict:
-    #             self._input_path_dict[input_path] = var
-    #         if append_resampled_path_dict:
-    #             self._resampled_path_dict[resample_path] = var
-    #         yield input_path, resample_path
-    #
-    # def _gen_crop_folder_paths(
-    #     self, path: PathLike, append_cropped_path_dict: bool = False
-    # ) -> Iterator[Path | None]:
-    #     """Return a Generator of paths of `self.variables` and `self.crops`."""
-    #     if not self.crop_regions:
-    #         return None
-    #     if not self._resampled_path_dict:
-    #         self._gen_resample_folder_paths(
-    #             self.input_paths,
-    #             append_input_path_dict=True,
-    #             append_resampled_path_dict=True,
-    #         )
-    #     for var in self.variables:
-    #         for region in self.crop_regions:
-    #             crop_path = Path(path) / var / region
-    #             if append_cropped_path_dict:
-    #                 self._cropped_path_dict[crop_path] = var
-    #             yield crop_path
-    #
-    # def check_paths(
-    #     self, run_set_data_paths: bool = True, run_set_crop_paths: bool = True
-    # ):
-    #     """Check if all `self.input_paths` exist."""
-    #
-    #     if run_set_data_paths:
-    #         # self.set_input_paths()
-    #         self.set_resample_paths()
-    #     if run_set_crop_paths:
-    #         self.set_crop_paths()
-    #     assert isinstance(self.input_paths, Iterable)
-    #     assert isinstance(self.resample_paths, Iterable)
-    #     if self.crop_paths:
-    #         try:
-    #             assert isinstance(self.crop_paths, Iterable)
-    #         except AssertionError:
-    #             raise ValueError(
-    #                 f"'crop_paths' not iterable for {self}. Hint: try setting 'run_set_crop_paths' to 'True'."
-    #             )
-    #     assert len(self.input_paths) == len(self.resample_paths)
-    #     for path in self.input_paths:
-    #         try:
-    #             assert Path(path).exists()
-    #             assert Path(path).is_dir()
-    #         except AssertionError:
-    #             message: str = (
-    #                 f"One of 'self.input_paths' in {self} not valid: '{path}'"
-    #             )
-    #             if self._allow_check_fail:
-    #                 logger.error(message)
-    #             else:
-    #                 raise FileExistsError(message)
-    #         try:
-    #             assert path in self._input_path_dict
-    #         except:
-    #             NotImplemented(
-    #                 f"Syncing `self._input_path_dict` with changes to `self.input_paths`."
-    #             )
-    #
-    # def _set_input_paths(self):
-    #     """Propagate `self.input_paths` if needed."""
-    #     if isinstance(self.input_paths, PathLike):
-    #         self._input_path = self.input_paths
-    #         self.input_paths = tuple(
-    #             input_path
-    #             for input_path, _ in self._gen_resample_folder_paths(
-    #                 self.input_paths, append_input_path_dict=True
-    #             )
-    #         )
-    #         if self._strict_fail_if_var_in_input_path:
-    #             for var in self.variables:
-    #                 try:
-    #                     assert var not in str(self._input_path)
-    #                 except AssertionError:
-    #                     raise self.VarirableInBaseImportPathError(
-    #                         f"Folder named '{var}' in self._input_path: "
-    #                         f"'{self._input_path}'. Try passing a parent path or "
-    #                         f"set '_strict_fail_if_var_in_input_path' to 'False'."
-    #                     )
-    #
-    # def set_resample_paths(self):
-    #     """Propagate `self.resample_paths` if needed."""
-    #     self._set_input_paths()
-    #     if isinstance(self.resample_paths, PathLike):
-    #         self._output_path = self.resample_paths
-    #         self.resample_paths = tuple(
-    #             resample_path
-    #             for _, resample_path in self._gen_resample_folder_paths(
-    #                 self.resample_paths, append_resampled_path_dict=True
-    #             )
-    #         )
-    #
-    # def set_crop_paths(self):
-    #     """Propagate `self.resample_paths` if needed."""
-    #     if isinstance(self.crop_paths, PathLike):
-    #         self._crop_path = self.crop_paths
-    #         self.crop_paths = tuple(
-    #             self._gen_crop_folder_paths(
-    #                 self.crop_paths, append_cropped_path_dict=True
-    #             )
-    #         )
-    #
-    # def set_cpm_for_coord_alignment(self) -> None:
-    #     """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""
-    #     self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(self.cpm_for_coord_alignment)
-    #
-    # def yield_configs(self) -> Iterable[HADsResampler]:
-    #     """Generate a `CPMResampler` or `HADsResampler` for `self.input_paths`."""
-    #     self.check_paths()
-    #     assert isinstance(self.resample_paths, Iterable)
-    #     # assert isinstance(self.crop_paths, Iterable)
-    #     for index, var_path in enumerate(self._input_path_dict.items()):
-    #         yield self.resampler_class(
-    #             input_path=var_path[0],
-    #             output_path=self.resample_paths[index],
-    #             variable_name=var_path[1],
-    #             start_index=self.start_index,
-    #             stop_index=self.stop_index,
-    #             **self.config_default_kwargs,
-    #         )
-    #
-    # def yield_crop_configs(self) -> Iterable[HADsResampler]:
-    #     """Generate a `CPMResampler` or `HADsResampler` for `self.input_paths`."""
-    #     self.check_paths()
-    #     assert isinstance(self.input_paths, Iterable)
-    #     assert isinstance(self.resample_paths, Iterable)
-    #     assert isinstance(self.crop_paths, Iterable)
-    #     for index, input_resample_paths in enumerate(self._resampled_path_dict.items()):
-    #         for crop_path, region in self._cropped_path_dict.items():
-    #             yield self.resampler_class(
-    #                 input_path=input_resample_paths[0],
-    #                 output_path=self.resample_paths[index],
-    #                 variable_name=input_resample_paths[1],
-    #                 start_index=self.start_index,
-    #                 stop_index=self.stop_index,
-    #                 crop_path=crop_path,
-    #                 # Todo: remove below if single crop configs iterate over all
-    #                 # crop_regions=self.crop_regions,
-    #                 crop_regions=(region,),
-    #                 **self.config_default_kwargs,
-    #             )
-    #
-    # def __len__(self) -> int:
-    #     """Return the length of `self.input_files`."""
-    #     return (
-    #         len(self.input_paths[self.start_index : self.stop_index])
-    #         if isinstance(self.input_paths, Sequence)
-    #         else 0
-    #     )
-    #
-    # @property
-    # def max_count(self) -> int:
-    #     """Maximum length of `self.input_files` ignoring `start_index` and `start_index`."""
-    #     return len(self.input_paths) if isinstance(self.input_paths, Sequence) else 0
-    #
-    # def __iter__(self) -> Iterator[Path] | None:
-    #     if isinstance(self.input_paths, Sequence):
-    #         for file_path in self.input_paths[self.start_index : self.stop_index]:
-    #             yield Path(file_path)
-    #     else:
-    #         return None
-    #
-    # def __getitem__(self, key: int | slice) -> Path | tuple[Path, ...] | None:
-    #     if not self.input_paths or not isinstance(self.input_paths, Sequence):
-    #         return None
-    #     elif isinstance(key, int):
-    #         return Path(self.input_paths[key])
-    #     elif isinstance(key, slice):
-    #         return tuple(Path(path) for path in self.input_paths[key])
-    #     else:
-    #         raise IndexError(f"Can only index with 'int', not: '{key}'")
-    #
-    # def execute_resample_configs(
-    #     self, multiprocess: bool = False, cpus: int | None = None
-    # ) -> tuple[CPMResampler | HADsResampler, ...]:
-    #     """Run all resampler configurations
-    #
-    #     Parameters
-    #     ----------
-    #     multiprocess
-    #         If `True` run parameters in `resample_configs` with `multiprocess_execute`.
-    #     cpus
-    #         Number of `cpus` to pass to `multiprocess_execute`.
-    #     """
-    #     resamplers: tuple[CPMResampler | HADsResampler, ...] = tuple(
-    #         self.yield_configs()
-    #     )
-    #     results: list[list[Path] | None] = []
-    #     if multiprocess:
-    #         cpus = cpus or self.cpus
-    #         if self.total_cpus and cpus:
-    #             cpus = min(cpus, self.total_cpus - 1)
-    #         results = multiprocess_execute(resamplers, method_name="execute", cpus=cpus)
-    #     else:
-    #         for resampler in resamplers:
-    #             print(resampler)
-    #             results.append(resampler.execute())
-    #     return resamplers
-    #
-    # def execute_crop_configs(
-    #     self, multiprocess: bool = False, cpus: int | None = None
-    # ) -> tuple[CPMResampler | HADsResampler, ...]:
-    #     """Run all resampler configurations
-    #
-    #     Parameters
-    #     ----------
-    #     multiprocess
-    #         If `True` run parameters in `resample_configs` with `multiprocess_execute`.
-    #     cpus
-    #         Number of `cpus` to pass to `multiprocess_execute`.
-    #     """
-    #     croppers: tuple[CPMResampler | HADsResampler, ...] = tuple(
-    #         # self.yield_configs(
-    #         #     input_path=self.resample_paths, output_path=self.crop_path
-    #         # )
-    #         self.yield_crop_configs()
-    #     )
-    #     results: list[list[Path] | None] = []
-    #     if multiprocess:
-    #         cpus = cpus or self.cpus
-    #         if self.total_cpus and cpus:
-    #             cpus = min(cpus, self.total_cpus - 1)
-    #         results = multiprocess_execute(
-    #             croppers, method_name="execute_crops", cpus=cpus
-    #         )
-    #     else:
-    #         for cropper in croppers:
-    #             print(cropper)
-    #             results.append(cropper.execute_crops())
-    #     return croppers
 
 
 @dataclass(kw_only=True, repr=False)
@@ -1559,33 +1259,6 @@ class CPMResamplerManager(ResamblerManagerBase):
             f"runs_count={len(self.runs)}, "
             f"input_paths_count={len(self.input_paths) if isinstance(self.input_paths, Sequence) else 1})>"
         )
-
-    # def __post_init__(self) -> None:
-    #     """Ensure `self.cpm_for_coord_alignment` is set."""
-    #     super().__post_init__()
-    #     self.set_cpm_for_coord_alignment()
-
-    # def _gen_input_folder_paths(
-    #     self, path: PathLike, append_var_path_dict: bool = False, cpm_paths: bool = True
-    # ) -> Iterator[Path]:
-    #     """Yield input paths of `self.variables` and `self.runs`."""
-    #     var_path: Path
-    #     for var in self.variables:
-    #         for run_type in self.runs:
-    #             if cpm_paths:
-    #                 var_path: Path = (
-    #                     Path(path)
-    #                     / VariableOptions.cpm_value(var)
-    #                     / run_type
-    #                     / self.sub_path
-    #                 )
-    #             else:
-    #                 var_path: Path = Path(path) / var / run_type / self.sub_path
-    #             if append_var_path_dict:
-    #                 self._var_path_dict[var_path] = var
-    #                 # Todo: remove below once testing confirms _var_path_dict works
-    #                 # self._var_path_dict[var].append(var_path)
-    #             yield var_path
 
     def _gen_resample_folder_paths(
         self,
