@@ -308,7 +308,7 @@ def main(
                     )
                 )
                 print(region_cropped_cpm_resamples[:print_range_length])
-            if not hads_regions:
+            if not crop_hads:
                 print("Skipping cropping HADS 2.2km projections.")
             else:
                 print(
