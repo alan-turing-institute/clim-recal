@@ -816,25 +816,6 @@ class ResamblerManagerBase:
                 self._resampled_path_dict[resample_path] = var
             yield input_path, resample_path
 
-    def _gen_crop_folder_paths(
-        self, path: PathLike, append_cropped_path_dict: bool = False
-    ) -> Iterator[Path | None]:
-        """Return a Generator of paths of `self.variables` and `self.crops`."""
-        if not self.crop_regions:
-            return None
-        if not self._resampled_path_dict:
-            self._gen_resample_folder_paths(
-                self.input_paths,
-                append_input_path_dict=True,
-                append_resampled_path_dict=True,
-            )
-        for var in self.variables:
-            for region in self.crop_regions:
-                crop_path = Path(path) / var / region
-                if append_cropped_path_dict:
-                    self._cropped_path_dict[crop_path] = region
-                yield crop_path
-
     def check_paths(
         self, run_set_data_paths: bool = True, run_set_crop_paths: bool = True
     ):
@@ -1127,6 +1108,25 @@ class HADsResamplerManager(ResamblerManagerBase):
             f"input_paths_count={len(self.input_paths) if isinstance(self.input_paths, Sequence) else 1})>"
         )
 
+    def _gen_crop_folder_paths(
+        self, path: PathLike, append_cropped_path_dict: bool = False
+    ) -> Iterator[Path | None]:
+        """Return a Generator of paths of `self.variables` and `self.crops`."""
+        if not self.crop_regions:
+            return None
+        if not self._resampled_path_dict:
+            self._gen_resample_folder_paths(
+                self.input_paths,
+                append_input_path_dict=True,
+                append_resampled_path_dict=True,
+            )
+        for var in self.variables:
+            for region in self.crop_regions:
+                crop_path = Path(path) / "hads" / var / region
+                if append_cropped_path_dict:
+                    self._cropped_path_dict[crop_path] = region
+                yield crop_path
+
     # def __post_init__(self) -> None:
     #     """Ensure `self.cpm_for_coord_alignment` is set."""
     #     super().__post_init__()
@@ -1302,12 +1302,13 @@ class CPMResamplerManager(ResamblerManagerBase):
                     if cpm_paths:
                         crop_path: Path = (
                             Path(path)
+                            / "cpm"
                             / VariableOptions.cpm_value(var)
                             / region
                             / run_type
                         )
                     else:
-                        crop_path: Path = Path(path) / var / region / run_type
+                        crop_path: Path = Path(path) / "cpm" / var / region / run_type
                     if append_cropped_path_dict:
                         self._cropped_path_dict[crop_path] = region
                     yield crop_path
