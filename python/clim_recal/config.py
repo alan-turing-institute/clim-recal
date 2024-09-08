@@ -258,7 +258,7 @@ class ClimRecalConfig(BaseRunConfig):
         """
         if not self.cpm_for_coord_alignment:
             if self.cpm_input_path:
-                console.info(
+                console.print(
                     "'set_cpm_for_coord_alignment' for 'HADs' not speficied.\n"
                     f"Defaulting to 'self.cpm_input_path': '{self.cpm_input_path}'"
                 )
