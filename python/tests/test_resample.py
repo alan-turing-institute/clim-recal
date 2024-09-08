@@ -1,6 +1,6 @@
 from datetime import date
 from pathlib import Path
-from typing import Final
+from typing import Any, Final
 
 import numpy as np
 import pytest
@@ -10,7 +10,7 @@ from osgeo.gdal import Dataset as GDALDataset
 from xarray import open_dataset
 from xarray.core.types import T_DataArray, T_Dataset
 
-from clim_recal.resample import (  # DEFAULT_RELATIVE_GRID_DATA_PATH,
+from clim_recal.resample import (
     BRITISH_NATIONAL_GRID_EPSG,
     CPM_CROP_OUTPUT_LOCAL_PATH,
     HADS_CROP_OUTPUT_LOCAL_PATH,
@@ -18,6 +18,7 @@ from clim_recal.resample import (  # DEFAULT_RELATIVE_GRID_DATA_PATH,
     CPMResamplerManager,
     HADsResampler,
     HADsResamplerManager,
+    ResamblerManagerBase,
 )
 from clim_recal.utils.core import (
     CLI_DATE_FORMAT_STR,
@@ -26,7 +27,12 @@ from clim_recal.utils.core import (
     date_range_generator,
     results_path,
 )
-from clim_recal.utils.data import HadUKGrid, UKCPLocalProjections
+from clim_recal.utils.data import (
+    HadUKGrid,
+    RegionOptions,
+    RunOptions,
+    UKCPLocalProjections,
+)
 from clim_recal.utils.gdal_formats import NETCDF_EXTENSION_STR
 from clim_recal.utils.xarray import (  # interpolate_coords,
     FINAL_RESAMPLE_LAT_COL,
@@ -835,3 +841,71 @@ def test_execute_resample_configs(
         HADS_FIRST_DATES.astype(object)
         == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
     ).all()
+
+
+@pytest.mark.localcache
+@pytest.mark.slow
+@pytest.mark.mount
+@pytest.mark.parametrize("manager", (CPMResamplerManager, HADsResamplerManager))
+# @pytest.mark.parametrize("multiprocess", (False, True))
+# @pytest.mark.parametrize("multiprocess", (False, False))
+def test_execute_crop_configs(
+    manager: ResamblerManagerBase,
+    # multiprocess: bool,
+    tmp_path: Path,
+    resample_test_hads_output_path: Path,
+    resample_test_cpm_output_path: Path,
+    tasmax_hads_1980_raw_path: Path,
+    tasmax_cpm_1980_raw_path: Path,
+    tasmax_cpm_1980_converted_path: Path,
+) -> None:
+    """Test running default HADs spatial projection."""
+    multiprocess: bool = False
+    input_path: Path
+    crop_path: Path
+    manager_kwargs: dict[str, Any] = {}
+    if isinstance(manager, type(HADsResamplerManager)):
+        input_path = tasmax_hads_1980_raw_path.parent
+        crop_path = (
+            resample_test_hads_output_path / "manage" / HADS_CROP_OUTPUT_LOCAL_PATH
+        )
+        manager_kwargs["cpm_for_coord_alignment"] = tasmax_cpm_1980_converted_path
+        manager_kwargs["cpm_for_coord_alignment_path_converted"] = True
+    else:
+        input_path = tasmax_cpm_1980_raw_path.parent
+        crop_path = (
+            resample_test_cpm_output_path / "manage" / CPM_CROP_OUTPUT_LOCAL_PATH
+        )
+        manager_kwargs["runs"] = (RunOptions.ONE,)
+    test_config: ResamblerManagerBase = manager(
+        input_paths=input_path,
+        resample_paths=tmp_path,
+        crop_paths=crop_path,
+        stop_index=1,
+        _strict_fail_if_var_in_input_path=False,
+        **manager_kwargs,
+    )
+    if isinstance(test_config, HADsResamplerManager):
+        test_config.set_cpm_for_coord_alignment = tasmax_cpm_1980_converted_path
+
+    _: tuple[HADsResampler | CPMResampler, ...] = test_config.execute_resample_configs(
+        multiprocess=multiprocess
+    )
+    region_crops: tuple[HADsResampler | CPMResampler, ...] = (
+        test_config.execute_crop_configs(multiprocess=multiprocess)
+    )
+    region_crop_dict: dict[str, tuple[Path, ...]] = {
+        crop.crop_region: tuple(Path(crop.crop_path).iterdir()) for crop in region_crops
+    }
+    assert len(region_crop_dict) == len(region_crops) == len(RegionOptions)
+    for region, path in region_crop_dict.items():
+        cropped_region: T_Dataset = open_dataset(path[0])
+        bbox = RegionOptions.bounding_box(region)
+        assert_allclose(cropped_region["x"].max(), bbox.xmax, rtol=0.1)
+        assert_allclose(cropped_region["x"].min(), bbox.xmin, rtol=0.1)
+        assert_allclose(cropped_region["y"].max(), bbox.ymax, rtol=0.1)
+        assert_allclose(cropped_region["y"].min(), bbox.ymin, rtol=0.1)
+        if isinstance(test_config, HADsResamplerManager):
+            assert len(cropped_region["time"]) == 31
+        else:
+            assert len(cropped_region["time"]) == 365

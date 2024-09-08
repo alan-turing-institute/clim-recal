@@ -46,10 +46,12 @@ from .utils.xarray import (
     NETCDF_EXTENSION_STR,
     ReprojectFuncType,
     apply_geo_func,
+    check_xarray_path_and_var_name,
     cpm_reproject_with_standard_calendar,
     crop_xarray,
     get_cpm_for_coord_alignment,
     hads_resample_and_reproject,
+    region_crop_file_name,
 )
 
 logger = getLogger(__name__)
@@ -115,7 +117,8 @@ class ResamblerBase:
     # grid: PathLike | T_Dataset = DEFAULT_RELATIVE_GRID_DATA_PATH
     input_files: Iterable[PathLike] | None = None
     cpus: int | None = None
-    crop_regions: tuple[RegionOptions | str, ...] | None = RegionOptions.all()
+    # crop_regions: tuple[RegionOptions | str, ...] | None = RegionOptions.all()
+    crop_region: RegionOptions | str | None = RegionOptions.GLASGOW
     crop_path: PathLike = RESAMPLING_OUTPUT_PATH
     final_crs: str = BRITISH_NATIONAL_GRID_EPSG
     # grid_x_column_name: str = HADS_XDIM
@@ -139,7 +142,9 @@ class ResamblerBase:
         # self.set_grid_x_y()
         self.set_input_files()
         Path(self.output_path).mkdir(parents=True, exist_ok=True)
-        if self.crop_regions:
+        # if self.crop_regions:
+        #     Path(self.crop_path).mkdir(parents=True, exist_ok=True)
+        if self.crop_region:
             Path(self.crop_path).mkdir(parents=True, exist_ok=True)
         self.total_cpus: int | None = cpu_count()
         if not self.cpus:
@@ -326,7 +331,8 @@ class ResamblerBase:
 
     def range_crop_projection(
         self,
-        regions: Iterable[str] | None = None,
+        # regions: Iterable[str] | None = None,
+        # regions: Iterable[str] | None = None,
         start: int | None = None,
         stop: int | None = None,
         step: int = 1,
@@ -334,33 +340,34 @@ class ResamblerBase:
         return_results: bool = False,
         **kwargs,
     ) -> list[Path]:
-        regions = regions or self.crop_regions
+        # regions = regions or self.crop_regions
         start = start or self.start_index
         stop = stop or self.stop_index
         export_paths: list[Path | T_Dataset] = []
         if stop is None:
             stop = len(self)
-        try:
-            assert regions
-        except:
-            raise ValueError(f"Iterable 'regions' must be set.")
-        for region in regions:
-            console.print(f"Cropping to '{region}' from {self}...")
-            for index in trange(start, stop, step):
-                export_paths.append(
-                    self.crop_projection(
-                        region=region,
-                        index=index,
-                        override_export_path=override_export_path,
-                        return_results=return_results,
-                        **kwargs,
-                    )
+        # try:
+        #     assert regions
+        # except:
+        #     raise ValueError(f"Iterable 'regions' must be set.")
+        # for region in regions:
+        # console.print(f"Cropping to '{region}' from {self}...")
+        console.print(f"Cropping to '{self.crop_path}'")
+        for index in trange(start, stop, step):
+            export_paths.append(
+                self.crop_projection(
+                    # region=region,
+                    index=index,
+                    override_export_path=override_export_path,
+                    return_results=return_results,
+                    **kwargs,
                 )
+            )
         return export_paths
 
     def crop_projection(
         self,
-        region: str,
+        # region: str,
         index: int = 0,
         override_export_path: Path | None = None,
         return_results: bool = False,
@@ -379,26 +386,41 @@ class ResamblerBase:
                     "Run after 'self.to_reprojection()' or set as a "
                     "list directly."
                 )
+        # try:
+        #     assert region and region in self.crop_regions
+        # except AttributeError:
+        #     raise IndexError(f"'{region}' not in 'crop_regions': '{self.crop_regions}'")
+        # try:
+        #     assert self.crop_region         except AttributeError:
+        #     raise IndexError(f"'{region}' not in 'crop_regions': '{self.crop_regions}'")
         try:
-            assert region and region in self.crop_regions
+            assert self.crop_region in RegionOptions
         except AttributeError:
-            raise IndexError(f"'{region}' not in 'crop_regions': '{self.crop_regions}'")
-        path: PathLike = override_export_path or Path(self.crop_path) / (region)
+            raise ValueError(
+                f"'{self.crop_path}' not in 'RegionOptions': {RegionOptions.all()}"
+            )
+        path: PathLike = override_export_path or Path(self.crop_path)  # / (region)
         path.mkdir(exist_ok=True, parents=True)
         resampled_xr: Dataset = self._reprojected_paths[index]
+
         cropped: Dataset = crop_xarray(
             xr_time_series=resampled_xr,
-            crop_box=RegionOptions.bounding_box(region),
+            crop_box=RegionOptions.bounding_box(self.crop_region),
             **kwargs,
         )
-        cropped_file_name: str = "crop_" + region + "-" + resampled_xr.name
+        # cropped_file_name: str = "crop_" + str(self.crop_region) + "-" + resampled_xr.name
+        cropped_file_name: str = region_crop_file_name(
+            self.crop_region, resampled_xr.name
+        )
         export_path: Path = path / cropped_file_name
         cropped.to_netcdf(export_path)
         if not hasattr(self, "_cropped_paths"):
-            self._cropped_paths: dict[str, list[PathLike]] = {}
-        if region not in self._cropped_paths:
-            self._cropped_paths[region] = []
-        self._cropped_paths[region].append(export_path)
+            self._cropped_paths: list[PathLike] = []
+        #     self._cropped_paths: dict[str, list[PathLike]] = {}
+        # if region not in self._cropped_paths:
+        #     self._cropped_paths[region] = []
+        # self._cropped_paths[region].append(export_path)
+        self._cropped_paths.append(export_path)
         if return_results:
             return cropped
         else:
@@ -442,6 +464,8 @@ class HADsResampler(ResamblerBase):
         If `None`, this will simply iterate over all available files.
     cpm_for_coord_alignment
         `CPM` `Path` or `Dataset` to match alignment with.
+    cpm_for_coord_alignment_path_converted
+        Whether a `Path` passed to `cpm_for_coord_alignment` should be processed.
 
     Notes
     -----
@@ -487,6 +511,7 @@ class HADsResampler(ResamblerBase):
     input_file_x_column_name: str = HADS_XDIM
     input_file_y_column_name: str = HADS_YDIM
     cpm_for_coord_alignment: T_Dataset | PathLike = RAW_CPM_TASMAX_PATH
+    cpm_for_coord_alignment_path_converted: bool = False
     _resample_func: ReprojectFuncType = hads_resample_and_reproject
     # _use_reference_grid: bool = True
 
@@ -498,9 +523,26 @@ class HADsResampler(ResamblerBase):
 
     def set_cpm_for_coord_alignment(self) -> None:
         """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""
-        self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
-            self.cpm_for_coord_alignment
-        )
+        if self.cpm_for_coord_alignment_path_converted:
+            if isinstance(self.cpm_for_coord_alignment, Dataset):
+                logger.info("Using 'self.cpm_for_coord_alignment'...")
+            elif isinstance(self.cpm_for_coord_alignment, PathLike):
+                logger.info(
+                    f"Loading 'self.cpm_for_coord_alignment' from "
+                    f"'{self.cpm_for_coord_alignment}'..."
+                )
+                self.cpm_for_coord_alignment, _ = check_xarray_path_and_var_name(
+                    self.cpm_for_coord_alignment, None
+                )
+            else:
+                raise ValueError(
+                    f"Type of 'cpm_for_coord_alingment' not valid for {self}"
+                )
+        else:
+            self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
+                self.cpm_for_coord_alignment
+            )
+
         # if isinstance(self.cpm_for_coord_alignment, PathLike):
         #     if Path(self.cpm_for_coord_alignment).is_dir():
         #         self.cpm_for_coord_alignment = next(
@@ -786,13 +828,13 @@ class ResamblerManagerBase:
             for region in self.crop_regions:
                 crop_path = Path(path) / var / region
                 if append_cropped_path_dict:
-                    self._cropped_path_dict[crop_path] = var
+                    self._cropped_path_dict[crop_path] = region
                 yield crop_path
 
     def check_paths(
         self, run_set_data_paths: bool = True, run_set_crop_paths: bool = True
     ):
-        """Check if all `self.input_paths` exist."""
+        """Check and set `input`, `resample` and `crop` paths."""
 
         if run_set_data_paths:
             # self.set_input_paths()
@@ -823,8 +865,8 @@ class ResamblerManagerBase:
                     raise FileExistsError(message)
             try:
                 assert path in self._input_path_dict
-            except:
-                NotImplemented(
+            except AssertionError:
+                NotImplementedError(
                     f"Syncing `self._input_path_dict` with changes to `self.input_paths`."
                 )
 
@@ -893,6 +935,7 @@ class ResamblerManagerBase:
         assert isinstance(self.resample_paths, Iterable)
         assert isinstance(self.crop_paths, Iterable)
         for index, input_resample_paths in enumerate(self._resampled_path_dict.items()):
+            # for crop_path, region in self._cropped_path_dict.items():
             for crop_path, region in self._cropped_path_dict.items():
                 yield self.resampler_class(
                     input_path=input_resample_paths[0],
@@ -903,7 +946,8 @@ class ResamblerManagerBase:
                     crop_path=crop_path,
                     # Todo: remove below if single crop configs iterate over all
                     # crop_regions=self.crop_regions,
-                    crop_regions=(region,),
+                    # crop_regions=(region,),
+                    crop_region=region,
                     **self.config_default_kwargs,
                 )
 
@@ -1034,6 +1078,8 @@ class HADsResamplerManager(ResamblerManagerBase):
         Number of `cpu` cores to use during multiprocessing.
     cpm_for_coord_alignment
         `CPM` `Path` or `Dataset` to match alignment with.
+    cpm_for_coord_alignment_path_converted
+        Whether a `Path` passed to `cpm_for_coord_alignment` should be processed.
 
     Examples
     --------
@@ -1067,6 +1113,7 @@ class HADsResamplerManager(ResamblerManagerBase):
     config_default_kwargs: dict[str, Any] = field(default_factory=dict)
     resampler_class: type[HADsResampler] = HADsResampler
     cpm_for_coord_alignment: T_Dataset | PathLike = RAW_CPM_TASMAX_PATH
+    cpm_for_coord_alignment_path_converted: bool = False
     # cpus: int | None = None
     # _input_path_dict: dict[Path, str] = field(default_factory=dict)
     # _resampled_path_dict: dict[PathLike, VariableOptions | str] = field(
@@ -1131,9 +1178,10 @@ class HADsResamplerManager(ResamblerManagerBase):
 
     def set_cpm_for_coord_alignment(self) -> None:
         """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""
-        self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
-            self.cpm_for_coord_alignment
-        )
+        if not self.cpm_for_coord_alignment_path_converted:
+            self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
+                self.cpm_for_coord_alignment
+            )
 
     def yield_configs(self) -> Iterable[HADsResampler]:
         """Generate a `CPMResampler` or `HADsResampler` for `self.input_paths`."""
@@ -1148,6 +1196,7 @@ class HADsResamplerManager(ResamblerManagerBase):
                 start_index=self.start_index,
                 stop_index=self.stop_index,
                 cpm_for_coord_alignment=self.cpm_for_coord_alignment,
+                cpm_for_coord_alignment_path_converted=self.cpm_for_coord_alignment_path_converted,
                 **self.config_default_kwargs,
             )
 
@@ -1587,5 +1636,5 @@ class CPMResamplerManager(ResamblerManagerBase):
                     else:
                         crop_path: Path = Path(path) / var / region / run_type
                     if append_cropped_path_dict:
-                        self._cropped_path_dict[crop_path] = var
+                        self._cropped_path_dict[crop_path] = region
                     yield crop_path

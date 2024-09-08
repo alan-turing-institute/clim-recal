@@ -41,7 +41,7 @@ from .core import (
     climate_data_mount_path,
     results_path,
 )
-from .data import (  # DEFAULT_RELATIVE_GRID_DATA_PATH,
+from .data import (
     BRITISH_NATIONAL_GRID_EPSG,
     CPM_RAW_X_COLUMN_NAME,
     CPM_RAW_Y_COLUMN_NAME,
@@ -56,6 +56,7 @@ from .data import (  # DEFAULT_RELATIVE_GRID_DATA_PATH,
     BoundingBoxCoords,
     CFCalendarSTANDARD,
     ConvertCalendarAlignOptions,
+    RegionOptions,
     VariableOptions,
     XArrayEngineType,
 )
@@ -1333,3 +1334,55 @@ def get_cpm_for_coord_alignment(
             f"Currently a {type(cpm_for_coord_alignment)}."
         )
     return cpm_for_coord_alignment
+
+
+def region_crop_file_name(
+    crop_region: str | RegionOptions | None, file_name: PathLike
+) -> str:
+    """Generate a file name for a regional crop.
+
+    Parameters
+    ----------
+    crop_region
+        Region name to include in cropped file name.
+    file_name
+        File name to add `crop_region` name to.
+
+    Examples
+    --------
+    >>> region_crop_file_name(
+    ...    'Glasgow',
+    ...    'tasmax.nc')
+    'crop_Glasgow_tasmax.nc'
+    >>> region_crop_file_name(
+    ...    'Glasgow',
+    ...    'tasmax_hadukgrid_uk_2_2km_day_19800601-19800630.nc')
+    'crop_Glasgow_tasmax_hads_19800601-19800630.nc'
+    >>> region_crop_file_name(
+    ...     'Glasgow',
+    ...     'tasmax_rcp85_land-cpm_uk_2.2km_05_day_std_year_19861201-19871130.nc')
+    'crop_Glasgow_tasmax_cpm_05_19861201-19871130.nc'
+    """
+    file_name_sections = Path(file_name).name.split("_")
+    final_suffix: str
+    crop_region = crop_region or ""
+    if "_rcp85_land-cpm_uk_2" in str(file_name):
+        final_suffix = "_".join(
+            (
+                file_name_sections[0],
+                "cpm",
+                file_name_sections[5],
+                file_name_sections[-1],
+            )
+        )
+    elif "_hadukgrid_uk_2_2km_day" in str(file_name):
+        final_suffix = "_".join(
+            (
+                file_name_sections[0],
+                "hads",
+                file_name_sections[-1],
+            )
+        )
+    else:
+        final_suffix = str(file_name)
+    return "_".join(("crop", str(crop_region), final_suffix))

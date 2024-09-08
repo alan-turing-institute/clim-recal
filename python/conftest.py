@@ -24,7 +24,10 @@ from clim_recal.utils.core import (
 )
 from clim_recal.utils.data import BoundsTupleType
 from clim_recal.utils.server import CondaLockFileManager
-from clim_recal.utils.xarray import GLASGOW_GEOM_LOCAL_PATH
+from clim_recal.utils.xarray import (
+    GLASGOW_GEOM_LOCAL_PATH,
+    cpm_reproject_with_standard_calendar,
+)
 from tests.utils import (
     CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT,
     CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT,
@@ -32,6 +35,7 @@ from tests.utils import (
     CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT,
     CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT,
     CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT,
+    CPM_CONVERTED_TASMAX_1980_FILE,
     CPM_RAW_TASMAX_1980_FILE,
     CPM_RAW_TASMAX_EXAMPLE_PATH,
     HADS_RAW_TASMAX_1980_FILE,
@@ -127,18 +131,19 @@ def local_cache_fixtures(
             LocalCache(
                 name="tasmax_cpm_1980_raw",
                 source_path=CPM_RAW_TASMAX_EXAMPLE_PATH,
+                # local_cache_path=local_cpm_cache_path / 'tasmax/01/latest' / CPM_RAW_TASMAX_1980_FILE,
                 local_cache_path=local_cpm_cache_path / CPM_RAW_TASMAX_1980_FILE,
                 reader=open_dataset,
                 reader_kwargs={"decode_coords": "all"},
             ),
-            # LocalCache(
-            #     name="tasmax_cpm_1980_converted",
-            #     source_path=CPM_RAW_TASMAX_EXAMPLE_PATH,
-            #     local_cache_path=local_cpm_cache_path,
-            #     reader=open_dataset,
-            #     reader_kwargs={"decode_coords": "all"},
-            #     parser=cpm_reproject_with_standard_calendar,
-            # ),
+            LocalCache(
+                name="tasmax_cpm_1980_converted",
+                source_path=CPM_RAW_TASMAX_EXAMPLE_PATH,
+                local_cache_path=local_cpm_cache_path / CPM_CONVERTED_TASMAX_1980_FILE,
+                reader=open_dataset,
+                reader_kwargs={"decode_coords": "all"},
+                parser=cpm_reproject_with_standard_calendar,
+            ),
             LocalCache(
                 name="tasmax_hads_1980_raw",
                 source_path=HADS_RAW_TASMAX_EXAMPLE_PATH,
@@ -220,18 +225,18 @@ def tasmax_hads_1980_raw_path(
         return local_cache_fixtures["tasmax_hads_1980_raw"].source_path
 
 
-@pytest.fixture(scope="session")
-def tasmax_cpm_1980_converted(
-    local_cache: bool,
-    local_cpm_cache_path: Path,
-    local_cache_fixtures: LocalCachesManager,
-) -> T_Dataset | None:
-    if local_cache:
-        return local_cache_fixtures["tasmax_cpm_1980_converted"].read(
-            cache_path=local_cpm_cache_path
-        )
-    else:
-        return None
+# @pytest.fixture(scope="session")
+# def tasmax_cpm_1980_converted(
+#     local_cache: bool,
+#     local_cpm_cache_path: Path,
+#     local_cache_fixtures: LocalCachesManager,
+# ) -> T_Dataset | None:
+#     if local_cache:
+#         return local_cache_fixtures["tasmax_cpm_1980_converted"].read(
+#             cache_path=local_cpm_cache_path
+#         )
+#     else:
+#         return None
 
 
 @pytest.fixture(scope="session")
