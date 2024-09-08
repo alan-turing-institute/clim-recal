@@ -348,7 +348,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#python.clim_recal.utils.xarray.hads_resample_and_reproject" id="toc-python.clim_recal.utils.xarray.hads_resample_and_reproject" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.hads_resample_and_reproject"><span class="header-section-number">3.0.10</span> hads_resample_and_reproject</a></li>
   <li><a href="#python.clim_recal.utils.xarray.interpolate_xr_ts_nans" id="toc-python.clim_recal.utils.xarray.interpolate_xr_ts_nans" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.interpolate_xr_ts_nans"><span class="header-section-number">3.0.11</span> interpolate_xr_ts_nans</a></li>
   <li><a href="#python.clim_recal.utils.xarray.plot_xarray" id="toc-python.clim_recal.utils.xarray.plot_xarray" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.plot_xarray"><span class="header-section-number">3.0.12</span> plot_xarray</a></li>
-  <li><a href="#python.clim_recal.utils.xarray.xr_reproject_crs" id="toc-python.clim_recal.utils.xarray.xr_reproject_crs" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.13</span> xr_reproject_crs</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.region_crop_file_name" id="toc-python.clim_recal.utils.xarray.region_crop_file_name" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.region_crop_file_name"><span class="header-section-number">3.0.13</span> region_crop_file_name</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.xr_reproject_crs" id="toc-python.clim_recal.utils.xarray.xr_reproject_crs" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.14</span> xr_reproject_crs</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -441,6 +442,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Plot <code>da</code> with <code>**kwargs</code> to <code>path</code>.</td>
 </tr>
 <tr class="even">
+<td><a href="#python.clim_recal.utils.xarray.region_crop_file_name">region_crop_file_name</a></td>
+<td>Generate a file name for a regional crop.</td>
+</tr>
+<tr class="odd">
 <td><a href="#python.clim_recal.utils.xarray.xr_reproject_crs">xr_reproject_crs</a></td>
 <td>Reproject <code>source_xr</code> to <code>target_xr</code> coordinate structure.</td>
 </tr>
@@ -1459,12 +1464,65 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="op">/</span>...<span class="op">/</span>test<span class="op">-</span>path<span class="op">/</span>example<span class="op">-</span>stamped_...<span class="op">-</span>...<span class="op">-</span>..._...png</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
-<section id="python.clim_recal.utils.xarray.xr_reproject_crs" class="level3" data-number="3.0.13">
-<h3 data-number="3.0.13" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.13</span> xr_reproject_crs</h3>
-<p><code>clim_recal.utils.xarray.xr_reproject_crs(xr_time_series, x_dim_name=CPM_RAW_X_COLUMN_NAME, y_dim_name=CPM_RAW_Y_COLUMN_NAME, time_dim_name=TIME_COLUMN_NAME, variable_name=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, match_xr_time_series=None, match_xr_time_series_load_func=None, match_xr_time_series_load_kwargs=None, resampling_method=DEFAULT_RESAMPLING_METHOD, nodata=np.nan, **kwargs)</code></p>
-<p>Reproject <code>source_xr</code> to <code>target_xr</code> coordinate structure.</p>
+<section id="python.clim_recal.utils.xarray.region_crop_file_name" class="level3" data-number="3.0.13">
+<h3 data-number="3.0.13" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.region_crop_file_name"><span class="header-section-number">3.0.13</span> region_crop_file_name</h3>
+<p><code>clim_recal.utils.xarray.region_crop_file_name(crop_region, file_name)</code></p>
+<p>Generate a file name for a regional crop.</p>
 <section id="parameters-11" class="level4" data-number="3.0.13.1">
 <h4 data-number="3.0.13.1" class="anchored" data-anchor-id="parameters-11"><span class="header-section-number">3.0.13.1</span> Parameters</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 29%">
+<col style="width: 44%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>crop_region</code></td>
+<td>str | RegionOptions | None</td>
+<td>Region name to include in cropped file name.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>file_name</code></td>
+<td>PathLike</td>
+<td>File name to add <code>crop_region</code> name to.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-8" class="level4" data-number="3.0.13.2">
+<h4 data-number="3.0.13.2" class="anchored" data-anchor-id="examples-8"><span class="header-section-number">3.0.13.2</span> Examples</h4>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> region_crop_file_name(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>...    <span class="st">'Glasgow'</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>...    <span class="st">'tasmax.nc'</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">'crop_Glasgow_tasmax.nc'</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> region_crop_file_name(</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>...    <span class="st">'Glasgow'</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>...    <span class="st">'tasmax_hadukgrid_uk_2_2km_day_19800601-19800630.nc'</span>)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co">'crop_Glasgow_tasmax_hads_19800601-19800630.nc'</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> region_crop_file_name(</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'Glasgow'</span>,</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'tasmax_rcp85_land-cpm_uk_2.2km_05_day_std_year_19861201-19871130.nc'</span>)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co">'crop_Glasgow_tasmax_cpm_05_19861201-19871130.nc'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="python.clim_recal.utils.xarray.xr_reproject_crs" class="level3" data-number="3.0.14">
+<h3 data-number="3.0.14" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.14</span> xr_reproject_crs</h3>
+<p><code>clim_recal.utils.xarray.xr_reproject_crs(xr_time_series, x_dim_name=CPM_RAW_X_COLUMN_NAME, y_dim_name=CPM_RAW_Y_COLUMN_NAME, time_dim_name=TIME_COLUMN_NAME, variable_name=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, match_xr_time_series=None, match_xr_time_series_load_func=None, match_xr_time_series_load_kwargs=None, resampling_method=DEFAULT_RESAMPLING_METHOD, nodata=np.nan, **kwargs)</code></p>
+<p>Reproject <code>source_xr</code> to <code>target_xr</code> coordinate structure.</p>
+<section id="parameters-12" class="level4" data-number="3.0.14.1">
+<h4 data-number="3.0.14.1" class="anchored" data-anchor-id="parameters-12"><span class="header-section-number">3.0.14.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 10%">
@@ -1526,27 +1584,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="examples-8" class="level4" data-number="3.0.13.2">
-<h4 data-number="3.0.13.2" class="anchored" data-anchor-id="examples-8"><span class="header-section-number">3.0.13.2</span> Examples</h4>
-<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_hads_1980_raw <span class="op">=</span> getfixture(<span class="st">'tasmax_hads_1980_raw'</span>)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> tasmax_hads_1980_raw:</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_or_cache_doctest_skip_message)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_hads_1980_raw.dims</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>FrozenMappingWarningOnValuesAccess({<span class="st">'time'</span>: <span class="dv">31</span>,</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">'projection_y_coordinate'</span>: <span class="dv">1450</span>,</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">'projection_x_coordinate'</span>: <span class="dv">900</span>,</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">'bnds'</span>: <span class="dv">2</span>})</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_hads_2_2km: T_Dataset <span class="op">=</span> xr_reproject_crs(</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>...     tasmax_hads_1980_raw,</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>...     variable_name<span class="op">=</span><span class="st">"tasmax"</span>,</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>...     x_dim_name<span class="op">=</span>HADS_RAW_X_COLUMN_NAME,</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>...     y_dim_name<span class="op">=</span>HADS_RAW_Y_COLUMN_NAME,</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>...     resolution<span class="op">=</span>(CPM_RESOLUTION_METERS,</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>...                 CPM_RESOLUTION_METERS),)</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_hads_2_2km.dims</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>FrozenMappingWarningOnValuesAccess({<span class="st">'x'</span>: <span class="dv">410</span>,</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">'y'</span>: <span class="dv">660</span>,</span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">'time'</span>: <span class="dv">31</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="examples-9" class="level4" data-number="3.0.14.2">
+<h4 data-number="3.0.14.2" class="anchored" data-anchor-id="examples-9"><span class="header-section-number">3.0.14.2</span> Examples</h4>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_hads_1980_raw <span class="op">=</span> getfixture(<span class="st">'tasmax_hads_1980_raw'</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> tasmax_hads_1980_raw:</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_or_cache_doctest_skip_message)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_hads_1980_raw.dims</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>FrozenMappingWarningOnValuesAccess({<span class="st">'time'</span>: <span class="dv">31</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">'projection_y_coordinate'</span>: <span class="dv">1450</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">'projection_x_coordinate'</span>: <span class="dv">900</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">'bnds'</span>: <span class="dv">2</span>})</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_hads_2_2km: T_Dataset <span class="op">=</span> xr_reproject_crs(</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>...     tasmax_hads_1980_raw,</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>...     variable_name<span class="op">=</span><span class="st">"tasmax"</span>,</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>...     x_dim_name<span class="op">=</span>HADS_RAW_X_COLUMN_NAME,</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>...     y_dim_name<span class="op">=</span>HADS_RAW_Y_COLUMN_NAME,</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>...     resolution<span class="op">=</span>(CPM_RESOLUTION_METERS,</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>...                 CPM_RESOLUTION_METERS),)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_hads_2_2km.dims</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>FrozenMappingWarningOnValuesAccess({<span class="st">'x'</span>: <span class="dv">410</span>,</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">'y'</span>: <span class="dv">660</span>,</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">'time'</span>: <span class="dv">31</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>
