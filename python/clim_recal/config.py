@@ -17,7 +17,7 @@ from .resample import (
     CPMResamplerManager,
     HADsResamplerManager,
 )
-from .utils.core import product_dict, results_path
+from .utils.core import console, product_dict, results_path
 from .utils.data import MethodOptions, RegionOptions, RunOptions, VariableOptions
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
@@ -232,6 +232,7 @@ class ClimRecalConfig(BaseRunConfig):
             stop_index=self.stop_index,
             **self.cpm_kwargs,
         )
+        self.set_cpm_for_coord_alignment()
         # if self.process_cmp_for_coord_alignment:
         #     self.set_cpm_for_coord_alignment()
         self.hads_manager = HADsResamplerManager(
@@ -248,6 +249,25 @@ class ClimRecalConfig(BaseRunConfig):
         self.total_cpus: int | None = cpu_count()
         if self.cpus == None or (self.total_cpus and self.cpus >= self.total_cpus):
             self.cpus = 1 if not self.total_cpus else self.total_cpus - 1
+
+    def set_cpm_for_coord_alignment(self) -> None:
+        """If `cpm_for_coord_alignment` is `None` use `self.cpm_input_path`.
+
+        It would be more efficient to use `self.resample_cpm_path` as
+        long as that option is used, but support cases of only
+        """
+        if not self.cpm_for_coord_alignment:
+            if self.cpm_input_path:
+                console.info(
+                    "'set_cpm_for_coord_alignment' for 'HADs' not speficied.\n"
+                    f"Defaulting to 'self.cpm_input_path': '{self.cpm_input_path}'"
+                )
+                self.cpm_for_coord_alignment = self.cpm_input_path
+            else:
+                raise ValueError(
+                    f"Neither required 'self.cpm_for_coord_alignment' nor backup "
+                    f"'self.cpm_input_path' provided for {self}"
+                )
 
     # def set_cpm_for_coord_alignment(self) -> None:
     #     """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""

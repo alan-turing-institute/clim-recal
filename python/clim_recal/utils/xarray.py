@@ -210,19 +210,19 @@ def cpm_check_converted(cpm_xr_time_series: T_Dataset | PathLike) -> bool:
     -------
     `True` if all of the methics are `True`, else `False`
     """
-    cpm_xr_time_series, variable = check_xarray_path_and_var_name(
+    cpm_xr_time_series, _ = check_xarray_path_and_var_name(
         xr_time_series=cpm_xr_time_series, variable_name=None
     )
     checks_dict: dict[str, bool] = {}
-    if "time" in cpm_xr_time_series.dims:
-        checks_dict["time-365-or-366"] = cpm_xr_time_series.dims["time"] in (365, 366)
-    if "x" in cpm_xr_time_series.dims:
+    if "time" in cpm_xr_time_series.sizes:
+        checks_dict["time-365-or-366"] = cpm_xr_time_series.sizes["time"] in (365, 366)
+    if "x" in cpm_xr_time_series.sizes:
         checks_dict["x-final-coords"] = (
-            cpm_xr_time_series.dims["x"] == FINAL_CONVERTED_CPM_WIDTH
+            cpm_xr_time_series.sizes["x"] == FINAL_CONVERTED_CPM_WIDTH
         )
-    if "y" in cpm_xr_time_series.dims:
+    if "y" in cpm_xr_time_series.sizes:
         checks_dict["y-final-coords"] = (
-            cpm_xr_time_series.dims["y"] == FINAL_CONVERTED_CPM_HEIGHT
+            cpm_xr_time_series.sizes["y"] == FINAL_CONVERTED_CPM_HEIGHT
         )
     if all(checks_dict.values()):
         return True
