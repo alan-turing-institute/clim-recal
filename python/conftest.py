@@ -426,7 +426,7 @@ def clim_runner(
     test_runs_output_path: PathLike,
     local_hads_cache_path: PathLike,
     local_cpm_cache_path: PathLike,
-    # tasmax_cpm_1980_converted_path: PathLike,
+    tasmax_cpm_1980_converted_path: PathLike,
 ) -> ClimRecalConfig:
     """Return default `ClimRecalConfig`."""
     assert local_cache_fixtures.default_local_cache_path
@@ -454,7 +454,7 @@ def clim_runner(
             # Todo: refactor to use caching to speed up runs
             cpm_kwargs=dict(_allow_check_fail=True),
             hads_kwargs=dict(_allow_check_fail=True),
-            # cpm_for_coord_alignment=tasmax_cpm_1980_converted_path,
+            cpm_for_coord_alignment=tasmax_cpm_1980_converted_path,
         )
 
 
