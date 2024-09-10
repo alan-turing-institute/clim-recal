@@ -1146,6 +1146,7 @@ def file_name_to_start_end_dates(
     >>> tif_366_path: Path = (Path('some') /
     ...     'folder' /
     ...     'pr_rcp85_land-cpm_uk_2.2km_06_day_20791201-20801130.tif')
+    >>> from pandas import date_range
     >>> dates = date_range(*file_name_to_start_end_dates(tif_366_path))
     >>> len(dates)
     366
