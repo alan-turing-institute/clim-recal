@@ -580,16 +580,18 @@ Running CPM Standard Calendar projection...
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>...      cpm_kwargs<span class="op">=</span><span class="bu">dict</span>(_allow_check_fail<span class="op">=</span><span class="va">True</span>),</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>...      hads_kwargs<span class="op">=</span><span class="bu">dict</span>(_allow_check_fail<span class="op">=</span><span class="va">True</span>),</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>... )</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>clim<span class="op">-</span>recal pipeline configurations:</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>ClimRecalConfig(variables_count<span class="op">=</span><span class="dv">2</span>, runs_count<span class="op">=</span><span class="dv">1</span>,</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                 regions_count<span class="op">=</span><span class="dv">1</span>, methods_count<span class="op">=</span><span class="dv">1</span>,</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>                 cpm_folders_count<span class="op">=</span><span class="dv">2</span>, hads_folders_count<span class="op">=</span><span class="dv">2</span>,</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>                 start_index<span class="op">=</span><span class="dv">0</span>, stop_index<span class="op">=</span><span class="va">None</span>,</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>                 cpus<span class="op">=</span>...)<span class="op">&gt;</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>CPMResamplerManager(variables_count<span class="op">=</span><span class="dv">2</span>, runs_count<span class="op">=</span><span class="dv">1</span>,</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>                     input_paths_count<span class="op">=</span><span class="dv">2</span>)<span class="op">&gt;</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>HADsResamplerManager(variables_count<span class="op">=</span><span class="dv">2</span>, input_paths_count<span class="op">=</span><span class="dv">2</span>)<span class="op">&gt;</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>No steps run. Add <span class="st">'--execute'</span> to run steps.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">'set_cpm_for_coord_alignment'</span> <span class="cf">for</span> <span class="st">'HADs'</span> <span class="kw">not</span> speficied.</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>Defaulting to <span class="st">'self.cpm_input_path'</span>: <span class="st">'...'</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>clim<span class="op">-</span>recal pipeline configurations:</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>ClimRecalConfig(variables_count<span class="op">=</span><span class="dv">2</span>, runs_count<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>                 regions_count<span class="op">=</span><span class="dv">1</span>, methods_count<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>                 cpm_folders_count<span class="op">=</span><span class="dv">2</span>, hads_folders_count<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>                 start_index<span class="op">=</span><span class="dv">0</span>, stop_index<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>                 cpus<span class="op">=</span>...)<span class="op">&gt;</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>CPMResamplerManager(variables_count<span class="op">=</span><span class="dv">2</span>, runs_count<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>                     input_paths_count<span class="op">=</span><span class="dv">2</span>)<span class="op">&gt;</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>HADsResamplerManager(variables_count<span class="op">=</span><span class="dv">2</span>, input_paths_count<span class="op">=</span><span class="dv">2</span>)<span class="op">&gt;</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>No steps run. Add <span class="st">'--execute'</span> to run steps.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>
