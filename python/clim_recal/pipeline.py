@@ -222,6 +222,8 @@ def main(
     ...      cpm_kwargs=dict(_allow_check_fail=True),
     ...      hads_kwargs=dict(_allow_check_fail=True),
     ... )
+    'set_cpm_for_coord_alignment' for 'HADs' not speficied.
+    Defaulting to 'self.cpm_input_path': '...'
     clim-recal pipeline configurations:
     <ClimRecalConfig(variables_count=2, runs_count=1,
                      regions_count=1, methods_count=1,
