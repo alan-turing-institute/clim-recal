@@ -49,7 +49,7 @@ New approach:
 - [x] Ensure HADs still works
 - [x] Add function for UKCP
 - [x] Check `convert_xr_calendar` `doctest` examples
-- [ ] Fix order of UKCP changes
+- [x] Fix order of UKCP changes
 
 To run this step in the pipeline the following should work
 for the default combindations of `variables`: `tasmax`,
@@ -324,5 +324,3 @@ def main(
                 print(region_cropped_hads_resamples[:print_range_length])
     else:
         print("No steps run. Add '--execute' to run steps.")
-
-    # config.cpm.resample_multiprocessing()

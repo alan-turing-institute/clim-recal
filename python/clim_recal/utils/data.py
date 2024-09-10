@@ -144,9 +144,6 @@ XArrayEngineType = Literal[*tuple(ENGINES)]
 DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
 NETCDF4_XARRAY_ENGINE: Final[str] = "netcdf4"
 
-# DEFAULT_RELATIVE_GRID_DATA_PATH: Final[Path] = (
-#     Path().absolute() / "../data/rcp85_land-cpm_uk_2.2km_grid.nc"
-# )
 TIME_COLUMN_NAME: Final[str] = "time"
 
 GLASGOW_GEOM_LOCAL_PATH: Final[Path] = Path(

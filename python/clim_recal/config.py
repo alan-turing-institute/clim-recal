@@ -233,8 +233,6 @@ class ClimRecalConfig(BaseRunConfig):
             **self.cpm_kwargs,
         )
         self.set_cpm_for_coord_alignment()
-        # if self.process_cmp_for_coord_alignment:
-        #     self.set_cpm_for_coord_alignment()
         self.hads_manager = HADsResamplerManager(
             input_paths=self.hads_input_path,
             variables=self.variables,
@@ -268,13 +266,6 @@ class ClimRecalConfig(BaseRunConfig):
                     f"Neither required 'self.cpm_for_coord_alignment' nor backup "
                     f"'self.cpm_input_path' provided for {self}"
                 )
-
-    # def set_cpm_for_coord_alignment(self) -> None:
-    #     """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""
-    #     self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
-    #         self.cpm_for_coord_alignment,
-    #         skip_reproject=self.cpm_for_coord_alignment_path_converted,
-    #     )
 
     def __repr__(self) -> str:
         """Summary of `self` configuration as a `str`."""
