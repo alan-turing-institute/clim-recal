@@ -17,13 +17,24 @@ Welcome to `clim-recal`, a specialized resource designed to tackle systematic er
 
 ## Table of Contents
 
-1. [Overview: Bias Correction Pipeline](#overview-bias-correction-pipeline)
-1. [Documentation](#documentation)
-1. [The Datasets](#the-datasets)
-1. [Why Bias Correction?](#why-bias-correction)
-1. [Contributing](#contributing)
-1. [Future Plans](#future-plans)
-1. [License](/LICENSE)
+- [Welcome to the `clim-recal` repository!](#welcome-to-the-clim-recal-repository)
+  - [Data results and documentation updates](#data-results-and-documentation-updates)
+  - [Table of Contents](#table-of-contents)
+  - [Overview: Bias Correction Pipeline](#overview-bias-correction-pipeline)
+  - [Documentation](#documentation)
+    - [`R`](#r)
+    - [`python`](#python)
+    - [Quarto](#quarto)
+  - [The Datasets](#the-datasets)
+    - [UKCP18](#ukcp18)
+    - [HADS](#hads)
+    - [Geographical Dataset](#geographical-dataset)
+  - [Why Bias Correction?](#why-bias-correction)
+  - [Contributing](#contributing)
+    - [Adding to the conda environment file](#adding-to-the-conda-environment-file)
+  - [Future plans](#future-plans)
+  - [Acknowledgements](#acknowledgements)
+  - [Citation](#citation)
 
 ## Overview: Bias Correction Pipeline
 
@@ -146,3 +157,23 @@ $ pip install -r requirements.txt
 ## Future plans
 - **More BC Methods**: Further bias correction of UKCP18 products. *This is planned for a future release and is not available yet.*
 - **Pipeline for adding new methods**: *This is planned for a future release and is not available yet.*
+
+
+## Acknowledgements
+
+Prior to 12th September 2024 we included a reference to the [python-cmethods](https://github.com/btschwertfeger/python-cmethods) library, written by Benjamin Thomas Schwertfeger.
+
+This was via a git submodule which targeted https://github.com/alan-turing-institute/python-cmethods, itself a fork of the original library.
+
+Inadvertently, we did not identify that the license for the `python-cmethods` library (GPL3) is not compatible with the license for this package (MIT). We apologies for this mistake and have taken the following actions to resolve it:
+
+* We have now removed the relevant submodule from this repository.
+* Added this note to the README.
+* Added a note to the `python/README.md` file.
+* Added the citation below.
+
+
+## Citation
+
+**python-cmethods**: Benjamin T. Schwertfeger. (2024). btschwertfeger/python-cmethods: v2.3.0 (v2.3.0). Zenodo. https://doi.org/10.5281/zenodo.12168002
+

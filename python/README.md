@@ -60,12 +60,19 @@ Note: By March 2023 we have only implemented the [python-cmethods](https://githu
 
 ### The cmethods library
 
-This repository contains two python scripts one for preprocessing/grouping data and one to run debiasing in climate data using a fork of the [original python-cmethods](https://github.com/btschwertfeger/python-cmethods) module written by Benjamin Thomas Schwertfeger's , which has been modified to function with the dataset used in the clim-recal project. This library has been included as a submodule to this project, so you must run the following command to pull the submodules required.
+---
+>  **_NOTE:_** `python-cmethod` has been removed from this project for the reasons given in the main README file. The original citation for the library is below:
+>
+> python-cmethods citation: Benjamin T. Schwertfeger. (2024). btschwertfeger/python-cmethods: v2.3.0 (v2.3.0). Zenodo. https://doi.org/10.5281/zenodo.12168002
+> 
+> There are still many references to the `python-cmethods` library in the codebase and documentation. This will not work in their current state and are not maintained. These references will be removed in due course.
+>
+> Users may download `python-cmethods` independently for their own use, but it will no longer be included in this project. Users must not redistribute the combination of `python-cmethods` and `clim-recal` as a single package, as this would violate the licence of `python-cmethods`.
 
-```sh
-$ cd debiasing
-$ git submodule update --init --recursive
-```
+---
+
+This repository contains two python scripts one for preprocessing/grouping data and one to run debiasing in climate data using a fork of the [original python-cmethods](https://github.com/btschwertfeger/python-cmethods) module written by Benjamin Thomas Schwertfeger's , which has been modified to function with the dataset used in the clim-recal project. ~~This library has been included as a submodule to this project, so you must run the following command to pull the submodules required.~~
+
 
 - The [preprocess_data.py](clim_recal/debiasing/preprocess_data.py) script allows the user to specify directories from which the modelled (CPM/UKCP) data and observation (HADs) data should be loaded, as well as time periods to use for calibration and validation. The script parses the necessary files and combines them into two files for calibration (modelled and observed), and two files for validation (modelled and observed) - with the option to specify multiple validation periods. These can then be used as inputs to `run_cmethods.py`.
 - The [run_cmethods.py](clim_recal/debiasing/run_cmethods.py) script allow us to adjust climate biases in climate data using the python-cmethods library.
