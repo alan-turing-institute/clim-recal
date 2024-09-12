@@ -165,7 +165,7 @@ Prior to 12th September 2024 we included a reference to the [python-cmethods](ht
 
 This was via a git submodule which targeted https://github.com/alan-turing-institute/python-cmethods, itself a fork of the original library.
 
-Inadvertently, we did not identify that the license for the `python-cmethods` library (GPL3) is not compatible with the license for this package (MIT). We apologies for this mistake and have taken the following actions to resolve it:
+Inadvertently, we did not identify that the license for the `python-cmethods` library (GPL3) is not compatible with the license for this package (MIT). We apologise for this mistake and have taken the following actions to resolve it:
 
 * We have now removed the relevant submodule from this repository.
 * Added this note to the README.
