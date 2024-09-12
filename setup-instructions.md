@@ -13,6 +13,10 @@ git clone https://github.com/alan-turing-institute/clim-recal
 cd clim-recal
 pip install conda-lock
 conda-lock install --name clim-recal conda-lock.yml
+conda activate clim-recal
+cd python
+pdm install
+clim-recal --help
 ```
 
 For `docker`:
@@ -20,19 +24,84 @@ For `docker`:
 ```bash
 git clone https://github.com/alan-turing-institute/clim-recal
 cd clim-recal
-docker compose up
+docker compose build jupyter
+docker compose up jupyter
+clim-recal --help
+```
+::: {.callout-warning}
+There are cases where `pdm install` raises a
+`KeyError: '_PYPROJECT_HOOKS_BUILD_BACKEND'`. Thus far, running `pdm install`
+again works.
+:::
+
+# Options
+
+Once installed the `clim-recal` command can be run with files. The settings
+below are specific to a server
+
+```bash
+clim-recal --help
+
+ Usage: clim-recal [OPTIONS]
+
+ Crop and align UK climate projections and test debias methods.
+
+╭─ Options ──────────────────────────────────────────────────────────────╮
+│ --hads-input-path     -d      PATH                [default: .]         │
+│ --cpm-input-path      -o      PATH                [default: .]         │
+│ --output-path         -o      DIRECTORY           [default:            │
+│                                                   clim-recal-runs]     │
+│ --variable            -v      [tasmax|rainfall|t  [default: tasmax]    │
+│                               asmin]                                   │
+│ --region              -a      [Glasgow|Mancheste  [default:            │
+│                               r|London|Scotland]  Manchester]          │
+│ --run                 -r      [01|04|05|06|07|08  [default: 05]        │
+│                               |09|10|11|12|13|14                       │
+│                               |15]                                     │
+│ --method              -m      [quantile_delta_ma  [default:            │
+│                               pping|quantile_map  quantile_delta_mapp… │
+│                               ping|variance_scal                       │
+│                               ing|delta_method]                        │
+│ --all-variables                                                        │
+│ --all-regions                                                          │
+│ --all-runs                                                             │
+│ --default-runs                                                         │
+│ --all-methods                                                          │
+│ --project-cpm                                     [default: True]      │
+│ --project-hads                                    [default: True]      │
+│ --crop-cpm                                        [default: True]      │
+│ --crop-hads                                       [default: True]      │
+│ --execute                                                              │
+│ --start-index         -s      INTEGER RANGE       [default: 0]         │
+│                               [x>=0]                                   │
+│ --total-from-index    -t      INTEGER RANGE       [default: 0]         │
+│                               [x>=0]                                   │
+│ --cpus                        INTEGER RANGE       [default: 2]         │
+│                               [1<=x<=10]                               │
+│ --use-multiprocessi…                                                   │
+│ --install-completion                              Install completion   │
+│                                                   for the current      │
+│                                                   shell.               │
+│ --show-completion                                 Show completion for  │
+│                                                   the current shell,   │
+│                                                   to copy it or        │
+│                                                   customize the        │
+│                                                   installation.        │
+│ --help                                            Show this message    │
+│                                                   and exit.            │
+╰────────────────────────────────────────────────────────────────────────╯
 ```
 
-
-# Python
+# Conda/Mamba Python
 
 ## `Conda` / `Mamba`
 
-At present either `conda` or `mamba` are needed to use `clim-recal`. Installation instructions for these are available:
+More detailed examples using `conda` or `mamba` are below. Installation instructions for either these are available:
 
 - `conda`: <https://conda.io/projects/conda/en/latest/user-guide/install/index.html>
 - `mamba`: <https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html>
 
+These options are primarily to ease use of `GDAL` and optionally `rsync`.
 
 <!--
 We support two main options for installing the `python` components:

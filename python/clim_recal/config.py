@@ -5,40 +5,34 @@ from os import PathLike, chdir, cpu_count
 from pathlib import Path
 from typing import Any, Final, Sequence, TypedDict
 
+from osgeo import gdal
 from tqdm import TqdmExperimentalWarning, tqdm
 
-from .debiasing.debias_wrapper import (
-    BaseRunConfig,
-    CityOptions,
-    MethodOptions,
-    RunConfig,
-    RunConfigType,
-    climate_data_mount_path,
-)
+from .debiasing.debias_wrapper import BaseRunConfig, RunConfig, RunConfigType
 from .resample import (
     CPM_OUTPUT_LOCAL_PATH,
     HADS_OUTPUT_LOCAL_PATH,
+    RAW_CPM_PATH,
+    RAW_HADS_PATH,
     CPMResamplerManager,
     HADsResamplerManager,
 )
-from .utils.core import product_dict, results_path
-from .utils.data import RunOptions, VariableOptions
+from .utils.core import console, product_dict, results_path
+from .utils.data import MethodOptions, RegionOptions, RunOptions, VariableOptions
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
-
-DATA_PATH_DEFAULT: Final[Path] = climate_data_mount_path()
 
 
 DEFAULT_OUTPUT_PATH: Final[Path] = Path("clim-recal-runs")
 DEFAULT_RESAMPLE_FOLDER: Final[Path] = Path("resample")
+DEFAULT_CROPS_FOLDER: Final[Path] = Path("crops")
 DEFAULT_CPUS: Final[int] = 2
 
 
 class ClimRecalRunsConfigType(TypedDict):
-
     """Lists of parameters to generate `RunConfigType` instances."""
 
-    cities: Sequence[CityOptions] | None
+    regions: Sequence[RegionOptions] | None
     variables: Sequence[VariableOptions]
     runs: Sequence[RunOptions]
     methods: Sequence[MethodOptions]
@@ -49,7 +43,6 @@ ClimRecalRunResultsType = dict[RunConfig, dict[str, subprocess.CompletedProcess]
 
 @dataclass
 class ClimRecalConfig(BaseRunConfig):
-
     """Manage creating command line scripts to run `debiasing` `cli`.
 
     Attributes
@@ -58,8 +51,8 @@ class ClimRecalConfig(BaseRunConfig):
         Variables to include in the model, eg. `tasmax`, `tasmin`.
     runs
         Which model runs to include, eg. "01", "08", "11".
-    cities
-        Which cities to crop data to. Future plans facilitate skipping to run for entire UK.
+    regions
+        Which regions to crop both HADs and CPM data to.
     methods
         Which debiasing methods to apply.
     multiprocess
@@ -70,25 +63,31 @@ class ClimRecalConfig(BaseRunConfig):
         `Path` to save all intermediate and final results to.
     resample_folder
         `Path` to append to `output_path` for resampling result files.
-    hads_folder
-        `Path` to append to `output_path` / `resample_folder` for resampling `HADs` files.
-    cpm_folder
-        `Path` to append to `output_path` / `resample_folder` for resampling `CPM` files.
+    crops_folder
+        `Path` to append to `output_path` for cropped resample files.
+    hads_output_folder
+        `Path` to append to `output_path` / `resample_folder` for resampling `HADs` files and to `output_path` / `crop_folder` for crops.
+    cpm_output_folder
+        `Path` to append to `output_path` / `resample_folder` for resampling `CPM` files and to `output_path` / `crop_folder` for crops.
     cpm_kwargs
         A `dict` of parameters to pass to a `CPMResamplerManager`.
     hads_kwargs
         A `dict` of parameters to pass to `HADsResamplerManager`.
+    cpm_for_coord_alignment
+        A `Path` to a `CPM` file to align `HADs` coordinates to.
+    debug_mode
+        Set to `True` to add more detailed debug logs, including `GDAL`.
 
     Examples
     --------
     >>> if not is_data_mounted:
     ...     pytest.skip(mount_doctest_skip_message)
     >>> run_config: ClimRecalConfig = ClimRecalConfig(
-    ...     cities=('Manchester', 'Glasgow'),
+    ...     regions=('Manchester', 'Glasgow'),
     ...     output_path=test_runs_output_path,
     ...     cpus=1)
     >>> run_config
-    <ClimRecalConfig(variables_count=1, runs_count=1, cities_count=2,
+    <ClimRecalConfig(variables_count=1, runs_count=1, regions_count=2,
                      methods_count=1, cpm_folders_count=1,
                      hads_folders_count=1, start_index=0,
                      stop_index=None, cpus=1)>
@@ -96,20 +95,29 @@ class ClimRecalConfig(BaseRunConfig):
 
     variables: Sequence[VariableOptions] = (VariableOptions.default(),)
     runs: Sequence[RunOptions] = (RunOptions.default(),)
-    cities: Sequence[CityOptions] | None = (CityOptions.default(),)
+    regions: Sequence[RegionOptions] | None = (RegionOptions.default(),)
     methods: Sequence[MethodOptions] = (MethodOptions.default(),)
     multiprocess: bool = False
     cpus: int | None = DEFAULT_CPUS
+    hads_input_path: PathLike = RAW_HADS_PATH
+    cpm_input_path: PathLike = RAW_CPM_PATH
     output_path: PathLike = DEFAULT_OUTPUT_PATH
     resample_folder: PathLike = DEFAULT_RESAMPLE_FOLDER
-    hads_folder: PathLike = HADS_OUTPUT_LOCAL_PATH
-    cpm_folder: PathLike = CPM_OUTPUT_LOCAL_PATH
+    crops_folder: PathLike = DEFAULT_CROPS_FOLDER
+    hads_output_folder: PathLike = HADS_OUTPUT_LOCAL_PATH
+    cpm_output_folder: PathLike = CPM_OUTPUT_LOCAL_PATH
     cpm_kwargs: dict = field(default_factory=dict)
     hads_kwargs: dict = field(default_factory=dict)
     start_index: int = 0
     stop_index: int | None = None
     add_local_dated_results_path: bool = True
+    add_local_dated_crops_path: bool = True
     local_dated_results_path_prefix: str = "run"
+    local_dated_crops_path_prefix: str = "crop"
+    cpm_for_coord_alignment: PathLike | None = None
+    process_cmp_for_coord_alignment: bool = False
+    cpm_for_coord_alignment_path_converted: bool = False
+    debug_mode: bool = False
 
     @property
     def resample_path(self) -> Path:
@@ -117,16 +125,24 @@ class ClimRecalConfig(BaseRunConfig):
         return Path(self.exec_path) / self.resample_folder
 
     @property
+    def crops_path(self) -> Path:
+        """The resample_path property."""
+        return Path(self.exec_path) / self.crops_folder
+
+    @property
     def exec_path(self) -> Path:
         """Path to save preparation and intermediate files.
 
         Examples
         --------
+        >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
         >>> print(clim_runner.exec_path)
-        clim-recal-runs/run...
+        <BLANKLINE>
+        ...test-run-results.../run...
         >>> clim_runner.add_local_dated_results_path = False
         >>> print(clim_runner.exec_path)
-        clim-recal-runs
+        <BLANKLINE>
+        ...test-run-results...
         """
         if self.add_local_dated_results_path:
             assert self.dated_results_path
@@ -140,8 +156,10 @@ class ClimRecalConfig(BaseRunConfig):
 
         Examples
         --------
+        >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
         >>> print(clim_runner.dated_results_path)
-        clim-recal-runs/run...
+        <BLANKLINE>
+        ...test-run-results.../run...
         >>> clim_runner.add_local_dated_results_path = False
         >>> print(clim_runner.dated_results_path)
         None
@@ -154,14 +172,45 @@ class ClimRecalConfig(BaseRunConfig):
             return None
 
     @property
+    def dated_crops_path(self) -> Path | None:
+        """Return a time stamped path if `add_local_dated_crops_path` is `True`.
+
+        Examples
+        --------
+        >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+        >>> print(clim_runner.dated_crops_path)
+        <BLANKLINE>
+        ...test-run-results.../crop...
+        >>> clim_runner.add_local_dated_crops_path = False
+        >>> print(clim_runner.dated_crops_path)
+        None
+        """
+        if self.add_local_dated_crops_path:
+            return self.output_path / results_path(
+                self.local_dated_crops_path_prefix, mkdir=True
+            )
+        else:
+            return None
+
+    @property
     def resample_hads_path(self) -> Path:
         """The resample_hads_path property."""
-        return self.resample_path / self.hads_folder
+        return self.resample_path / self.hads_output_folder
 
     @property
     def resample_cpm_path(self) -> Path:
         """The resample_hads_path property."""
-        return self.resample_path / self.cpm_folder
+        return self.resample_path / self.cpm_output_folder
+
+    @property
+    def cropped_hads_path(self) -> Path:
+        """The resample_hads_path property."""
+        return self.crops_path / self.hads_output_folder
+
+    @property
+    def cropped_cpm_path(self) -> Path:
+        """The resample_cpm_path property."""
+        return self.crops_path / self.cpm_output_folder
 
     def __post_init__(self) -> None:
         """Initiate related `HADs` and `CPM` managers.
@@ -170,26 +219,53 @@ class ClimRecalConfig(BaseRunConfig):
         -----
         The variagles passed to `CPMResamplerManager` do not apply
         `VariableOptions.cpm_values()`, that occurs within `CPMResamplerManager`
-        for ease of coparability with HADs.
+        for ease of comparability with HADs.
         """
+        gdal.UseExceptions() if self.debug_mode else gdal.DontUseExceptions()
         self.cpm_manager = CPMResamplerManager(
+            input_paths=self.cpm_input_path,
             variables=self.variables,
             runs=self.runs,
-            output_paths=self.resample_cpm_path,
+            resample_paths=self.resample_cpm_path,
+            crop_paths=self.crops_path,
             start_index=self.start_index,
             stop_index=self.stop_index,
             **self.cpm_kwargs,
         )
+        self.set_cpm_for_coord_alignment()
         self.hads_manager = HADsResamplerManager(
+            input_paths=self.hads_input_path,
             variables=self.variables,
-            output_paths=self.resample_hads_path,
+            resample_paths=self.resample_hads_path,
+            crop_paths=self.crops_path,
             start_index=self.start_index,
             stop_index=self.stop_index,
+            cpm_for_coord_alignment=self.cpm_for_coord_alignment,
+            cpm_for_coord_alignment_path_converted=self.cpm_for_coord_alignment_path_converted,
             **self.hads_kwargs,
         )
         self.total_cpus: int | None = cpu_count()
         if self.cpus == None or (self.total_cpus and self.cpus >= self.total_cpus):
             self.cpus = 1 if not self.total_cpus else self.total_cpus - 1
+
+    def set_cpm_for_coord_alignment(self) -> None:
+        """If `cpm_for_coord_alignment` is `None` use `self.cpm_input_path`.
+
+        It would be more efficient to use `self.resample_cpm_path` as
+        long as that option is used, but support cases of only
+        """
+        if not self.cpm_for_coord_alignment:
+            if self.cpm_input_path:
+                console.print(
+                    "'set_cpm_for_coord_alignment' for 'HADs' not speficied.\n"
+                    f"Defaulting to 'self.cpm_input_path': '{self.cpm_input_path}'"
+                )
+                self.cpm_for_coord_alignment = self.cpm_input_path
+            else:
+                raise ValueError(
+                    f"Neither required 'self.cpm_for_coord_alignment' nor backup "
+                    f"'self.cpm_input_path' provided for {self}"
+                )
 
     def __repr__(self) -> str:
         """Summary of `self` configuration as a `str`."""
@@ -197,7 +273,7 @@ class ClimRecalConfig(BaseRunConfig):
             f"<{self.__class__.__name__}("
             f"variables_count={len(self.variables)}, "
             f"runs_count={len(self.runs)}, "
-            f"cities_count={len(self.cities) if self.cities else None}, "
+            f"regions_count={len(self.regions) if self.regions else None}, "
             f"methods_count={len(self.methods)}, "
             f"cpm_folders_count={len(self.cpm_manager)}, "
             f"hads_folders_count={len(self.hads_manager)}, "
@@ -212,14 +288,15 @@ class ClimRecalConfig(BaseRunConfig):
 
         Examples
         --------
+        >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
         >>> pprint(clim_runner.model_vars)
-        {'cities': ('Glasgow', 'Manchester'),
-         'methods': ('quantile_delta_mapping',),
+        {'methods': ('quantile_delta_mapping',),
+         'regions': ('Glasgow', 'Manchester'),
          'runs': ('05',),
          'variables': ('tasmax',)}
         """
         return ClimRecalRunsConfigType(
-            cities=self.cities,
+            regions=self.regions,
             variables=self.variables,
             runs=self.runs,
             methods=self.methods,
@@ -231,20 +308,21 @@ class ClimRecalConfig(BaseRunConfig):
 
         Examples
         --------
+        >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
         >>> pprint(clim_runner.model_configs)
-        ({'city': 'Glasgow',
-          'method': 'quantile_delta_mapping',
+        ({'method': 'quantile_delta_mapping',
+          'region': 'Glasgow',
           'run': '05',
           'variable': 'tasmax'},
-         {'city': 'Manchester',
-          'method': 'quantile_delta_mapping',
+         {'method': 'quantile_delta_mapping',
+          'region': 'Manchester',
           'run': '05',
           'variable': 'tasmax'})
         """
         return tuple(
             RunConfigType(**params)
             for params in product_dict(
-                city=self.cities,
+                region=self.regions,
                 variable=self.variables,
                 run=self.runs,
                 method=self.methods,
@@ -279,9 +357,9 @@ class ClimRecalConfig(BaseRunConfig):
         return self.methods[0]
 
     @property
-    def _first_conf_city(self) -> VariableOptions | None:
+    def _first_conf_region(self) -> VariableOptions | None:
         """Return the first `self.variables` value."""
-        return self._get_first_or_none(attr_name="cities")
+        return self._get_first_or_none(attr_name="regions")
 
     @property
     def _base_run_config(self) -> RunConfig:
@@ -290,7 +368,7 @@ class ClimRecalConfig(BaseRunConfig):
             command_dir=self.command_dir,
             variable=self._first_conf_variable,
             run=self._first_conf_run,
-            city=self._first_conf_city,
+            region=self._first_conf_region,
             method=self._first_conf_method,
             run_prefix=self.run_prefix,
             preprocess_data_file=self.preprocess_data_file,
@@ -314,6 +392,7 @@ class ClimRecalConfig(BaseRunConfig):
 
         Examples
         --------
+        >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
         >>> runs: dict[tuple, dict] = clim_runner.run_models()
         >>> pprint(tuple(runs.keys()))
         (('Glasgow', 'tasmax', '05', 'quantile_delta_mapping'),
@@ -328,14 +407,14 @@ class ClimRecalConfig(BaseRunConfig):
                 self._base_run_config.to_cli_preprocess_tuple_strs(
                     variable=model_config["variable"],
                     run=model_config["run"],
-                    city=model_config["city"],
+                    region=model_config["region"],
                 ),
                 capture_output=True,
                 text=True,
             )
             cmethods_run: subprocess.CompletedProcess = subprocess.run(
                 self._base_run_config.to_cli_run_cmethods_tuple_strs(
-                    city=model_config["city"],
+                    region=model_config["region"],
                     run=model_config["run"],
                     variable=model_config["variable"],
                     method=model_config["method"],

@@ -49,7 +49,7 @@ New approach:
 - [x] Ensure HADs still works
 - [x] Add function for UKCP
 - [x] Check `convert_xr_calendar` `doctest` examples
-- [ ] Fix order of UKCP changes
+- [x] Fix order of UKCP changes
 
 To run this step in the pipeline the following should work
 for the default combindations of `variables`: `tasmax`,
@@ -61,7 +61,7 @@ clim-recal should be a command line function
 ```console
 $ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written
 clim-recal pipeline configurations:
-<ClimRecalConfig(variables_count=3, runs_count=4, cities_count=1, methods_count=1,
+<ClimRecalConfig(variables_count=3, runs_count=4, regions_count=1, methods_count=1,
                  cpm_folders_count=12, hads_folders_count=3, start_index=0,
                  stop_index=None, cpus=2)>
 <CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)>
@@ -92,7 +92,7 @@ assuming a local install:
 ```console
 $ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written --execute
 clim-recal pipeline configurations:
-<ClimRecalConfig(variables_count=3, runs_count=4, cities_count=1, methods_count=1,
+<ClimRecalConfig(variables_count=3, runs_count=4, regions_count=1, methods_count=1,
                  cpm_folders_count=12, hads_folders_count=3, start_index=0,
                  stop_index=None, cpus=2)>
 <CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)>
@@ -131,6 +131,7 @@ New approach:
 
 
 """
+
 from os import PathLike
 from pathlib import Path
 from typing import Final, Sequence
@@ -139,14 +140,14 @@ from rich import print
 
 from .config import (
     DEFAULT_OUTPUT_PATH,
-    CityOptions,
     ClimRecalConfig,
     ClimRecalRunResultsType,
     MethodOptions,
+    RegionOptions,
     RunOptions,
     VariableOptions,
 )
-from .resample import CPMResampler, HADsResampler
+from .resample import RAW_CPM_PATH, RAW_HADS_PATH, CPMResampler, HADsResampler
 
 REPROJECTION_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_one.sh")
 REPROJECTION_WRAPPER_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_all.sh")
@@ -154,18 +155,22 @@ REPROJECTION_WRAPPER_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_all.sh"
 
 def main(
     execute: bool = False,
+    hads_input_path: PathLike = RAW_HADS_PATH,
+    cpm_input_path: PathLike = RAW_CPM_PATH,
     output_path: PathLike = DEFAULT_OUTPUT_PATH,
     variables: Sequence[VariableOptions | str] = (VariableOptions.default(),),
-    cities: Sequence[CityOptions | str] | None = (CityOptions.default(),),
+    regions: Sequence[RegionOptions | str] | None = (RegionOptions.default(),),
     runs: Sequence[RunOptions | str] = (RunOptions.default(),),
     methods: Sequence[MethodOptions | str] = (MethodOptions.default(),),
     all_variables: bool = False,
-    all_cities: bool = False,
+    all_regions: bool = False,
     default_runs: bool = False,
     all_runs: bool = False,
     all_methods: bool = False,
-    skip_cpm_standard_calendar_projection: bool = False,
-    skip_hads_spatial_2k_projection: bool = False,
+    hads_projection: bool = False,
+    cpm_projection: bool = False,
+    crop_hads: bool = True,
+    crop_cpm: bool = True,
     cpus: int | None = None,
     multiprocess: bool = False,
     start_index: int = 0,
@@ -173,7 +178,7 @@ def main(
     total: int | None = None,
     print_range_length: int | None = 5,
     **kwargs,
-) -> ClimRecalRunResultsType:
+) -> ClimRecalRunResultsType | None:
     """Run all elements of the pipeline.
 
     Parameters
@@ -182,8 +187,8 @@ def main(
         Variables to include in the model, eg. `tasmax`, `tasmin`.
     runs
         Which model runs to include, eg. "01", "08", "11".
-    cities
-        Which cities to crop data to. Future plans facilitate
+    regions
+        Which regions to crop data to. Future plans facilitate
         skipping to run for entire UK.
     methods
         Which debiasing methods to apply.
@@ -206,7 +211,6 @@ def main(
     The default parameters here are meant to reflect the entire
     workflow process to ease reproducibility.
 
-
     Examples
     --------
 
@@ -218,9 +222,11 @@ def main(
     ...      cpm_kwargs=dict(_allow_check_fail=True),
     ...      hads_kwargs=dict(_allow_check_fail=True),
     ... )
+    'set_cpm_for_coord_alignment' for 'HADs' not speficied.
+    Defaulting to 'self.cpm_input_path': '...'
     clim-recal pipeline configurations:
     <ClimRecalConfig(variables_count=2, runs_count=1,
-                     cities_count=1, methods_count=1,
+                     regions_count=1, methods_count=1,
                      cpm_folders_count=2, hads_folders_count=2,
                      start_index=0, stop_index=None,
                      cpus=...)>
@@ -239,8 +245,9 @@ def main(
             f"'stop_index': {stop_index} set from 'total': {total} and 'start_index': {start_index}."
         )
     variables = VariableOptions.all() if all_variables else tuple(variables)
-    assert cities  # In future there will be support for skipping city cropping
-    cities = CityOptions.all() if all_cities else tuple(cities)
+    regions = (
+        RegionOptions.all() if all_regions else tuple(regions) if regions else None
+    )
     methods = MethodOptions.all() if all_methods else tuple(methods)
     if all_runs:
         runs = RunOptions.all()
@@ -250,9 +257,11 @@ def main(
         runs = tuple(runs)
 
     config: ClimRecalConfig = ClimRecalConfig(
+        cpm_input_path=cpm_input_path,
+        hads_input_path=hads_input_path,
         output_path=output_path,
         variables=variables,
-        cities=cities,
+        regions=regions,
         methods=methods,
         runs=runs,
         cpus=cpus,
@@ -266,27 +275,52 @@ def main(
     print(config.cpm_manager)
     print(config.hads_manager)
     if execute:
-        if skip_cpm_standard_calendar_projection:
+        if not cpm_projection:
             print("Skipping CPM Strandard Calendar projection.")
         else:
             print("Running CPM Standard Calendar projection...")
-            cpm_resamplers: tuple[
-                CPMResampler, ...
-            ] = config.cpm_manager.execute_resample_configs(
-                multiprocess=multiprocess, cpus=cpus
+            cpm_resamplers: tuple[CPMResampler, ...] = (
+                config.cpm_manager.execute_resample_configs(
+                    multiprocess=multiprocess, cpus=cpus
+                )
             )
             print(cpm_resamplers[:print_range_length])
-        if skip_hads_spatial_2k_projection:
+            # Leaving assert to remind ease for debugging in future
+            # assert False
+        if not hads_projection:
             print("Skipping HADs aggregation to 2.2km spatial units.")
         else:
             print("Running HADs aggregation to 2.2km spatial units...")
-            hads_resamplers: tuple[
-                HADsResampler, ...
-            ] = config.hads_manager.execute_resample_configs(
-                multiprocess=multiprocess, cpus=cpus
+            hads_resamplers: tuple[HADsResampler, ...] = (
+                config.hads_manager.execute_resample_configs(
+                    multiprocess=multiprocess, cpus=cpus
+                )
             )
             print(hads_resamplers[:print_range_length])
+        if not crop_hads and not crop_cpm:
+            print("Skipping region cropping.")
+        else:
+            if not crop_cpm:
+                print("Skipping cropping CPM Standard Calendar projections.")
+            else:
+                print(f"Cropping CPMs to regions {config.regions}: ...")
+                region_cropped_cpm_resamples: tuple[CPMResampler, ...] = (
+                    config.cpm_manager.execute_crop_configs(
+                        multiprocess=multiprocess, cpus=cpus
+                    )
+                )
+                print(region_cropped_cpm_resamples[:print_range_length])
+            if not crop_hads:
+                print("Skipping cropping HADS 2.2km projections.")
+            else:
+                print(
+                    f"Cropping HADS 2.2km projections to regions {config.regions}: ..."
+                )
+                region_cropped_hads_resamples: tuple[CPMResampler, ...] = (
+                    config.hads_manager.execute_crop_configs(
+                        multiprocess=multiprocess, cpus=cpus
+                    )
+                )
+                print(region_cropped_hads_resamples[:print_range_length])
     else:
         print("No steps run. Add '--execute' to run steps.")
-
-    # config.cpm.resample_multiprocessing()

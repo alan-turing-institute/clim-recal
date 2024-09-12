@@ -1,9 +1,12 @@
 # Methods implemented in Python
 
+*WARNING*: the documentation below predates a significant refactor.
+
 ## Resampling HADs grid from 1 km to 2.2 km
 
 The raw [UKHAD observational data](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km)
 needs to be resampled to the same grid of the [RCP8.5 data](https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/).
+<!--
 This can be done with the `python/resampling/resampling_hads.py` script, which takes an input
 grid and uses to resample the data using [linear interpolation](https://docs.xarray.dev/en/stable/generated/xarray.DataArray.interp.html) (for simplicity have added a
 default grid in `data/rcp85_land-cpm_uk_2.2km_grid.nc`).
@@ -45,6 +48,7 @@ as there is not a `--grid_data` flag, the default file described above is used.
 ## Loading UKCP and HADs data
 
 In [python/clim_recal/data_loader.py] we have written a few functions for loading and concatenating data into a single xarray which can be used for running debiasing methods. Instructions in how to use these functions can be found in [python/notebooks/load_data_python.ipynb](../notebooks/load_data_python.ipynb).
+-->
 
 ## Running debiasing methods
 

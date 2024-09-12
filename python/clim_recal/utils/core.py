@@ -1,4 +1,5 @@
 """Utility functions."""
+
 import sys
 import warnings
 from collections.abc import KeysView
@@ -24,9 +25,12 @@ from typing import (
     Union,
 )
 
+from rich.console import Console
 from tqdm import TqdmExperimentalWarning, tqdm
 
 logger = getLogger(__name__)
+
+console = Console()
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 
@@ -130,7 +134,7 @@ class MonthDay:
         )
 
 
-DEFAULT_START_MONTH_DAY: Final[MonthDay] = MonthDay(month=12, day=1)
+DEFAULT_CPM_START_MONTH_DAY: Final[MonthDay] = MonthDay(month=12, day=1)
 
 
 def run_callable_attr(
@@ -183,9 +187,11 @@ def multiprocess_execute(
     >>> if not is_data_mounted:
     ...     pytest.skip(mount_doctest_skip_message)
     >>> from clim_recal.resample import CPMResampler
+    >>> resample_test_hads_output_path: Path = getfixture(
+    ...         'resample_test_cpm_output_path')
     >>> cpm_resampler: CPMResampler = CPMResampler(
     ...     stop_index=3,
-    ...     output_path=resample_test_cpm_output_path,
+    ...     output_path=resample_test_hads_output_path,
     ... )
     >>> multiprocess_execute(cpm_resampler, method_name="exists")
     [True, True, True]
@@ -202,6 +208,10 @@ def multiprocess_execute(
     else:
         logger.warning(f"'total_cpus' not checkable, running with 'cpus': {cpus}")
     params_tuples: list[tuple[Any, str]] = [(item, method_name) for item in iter]
+    # Had build errors when generating a wheel,
+    # Followed solution here:
+    # https://stackoverflow.com/questions/45720153/python-multiprocessing-error-attributeerror-module-main-has-no-attribute
+    __spec__ = None
     with Pool(processes=cpus) as pool:
         results = list(
             tqdm(pool.starmap(run_callable_attr, params_tuples), total=len(iter))
@@ -594,7 +604,7 @@ def annual_data_paths_generator(
 def annual_data_path(
     start_year: int = 1980,
     end_year: int = 1981,
-    month_day: MonthDay | tuple[int, int] | None = DEFAULT_START_MONTH_DAY,
+    month_day: MonthDay | tuple[int, int] | None = DEFAULT_CPM_START_MONTH_DAY,
     include_end_date: bool = False,
     parent_path: Path | None = None,
     file_name_middle_str: str = CPM_FILE_NAME_MIDDLE_STR,
@@ -664,6 +674,7 @@ def results_path(
     time: datetime | None = None,
     extension: str | None = None,
     mkdir: bool = False,
+    dot_pre_extension: bool = True,
 ) -> Path:
     """Return `Path`: `path`/`name`_`time`.`extension`.
 
@@ -679,7 +690,10 @@ def results_path(
         time = datetime.now()
     file_name: str = f"{name}_{time_str(time)}"
     if extension:
-        file_name += f".{extension}"
+        if dot_pre_extension:
+            file_name += f".{extension}"
+        else:
+            file_name += extension
     return path / file_name
 
 

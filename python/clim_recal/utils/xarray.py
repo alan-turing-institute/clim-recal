@@ -1,121 +1,104 @@
-from dataclasses import dataclass
+import warnings
 from datetime import date, datetime, timedelta
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
-from typing import Any, Callable, Final, Iterable, Literal
+from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
+from typing import Any, Callable, Final
 
 import numpy as np
 import rioxarray  # nopycln: import
+import seaborn
 from cftime._cftime import Datetime360Day
-from geopandas import GeoDataFrame, read_file
-from numpy import array, random
+from matplotlib import pyplot as plt
 from numpy.typing import NDArray
 from osgeo.gdal import Dataset as GDALDataset
-from osgeo.gdal import GDALWarpAppOptions, Warp, WarpOptions
-from pandas import DatetimeIndex, date_range, to_datetime
+from osgeo.gdal import (
+    GDALTranslateOptions,
+    GDALWarpAppOptions,
+    Translate,
+    TranslateOptions,
+    Warp,
+    WarpOptions,
+)
+from osgeo.gdal import config_option as config_GDAL_option
+from rasterio.enums import Resampling
+from tqdm import tqdm
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
-from xarray.backends.api import ENGINES
 from xarray.coding.calendar_ops import convert_calendar
-from xarray.core.types import CFCalendar, InterpOptions
+from xarray.core.types import (
+    CFCalendar,
+    InterpOptions,
+    T_DataArray,
+    T_DataArrayOrSet,
+    T_Dataset,
+)
 
 from .core import (
     CLI_DATE_FORMAT_STR,
     ISO_DATE_FORMAT_STR,
-    DateType,
     climate_data_mount_path,
-    date_range_generator,
-    date_range_to_str,
-    time_str,
+    results_path,
+)
+from .data import (
+    BRITISH_NATIONAL_GRID_EPSG,
+    CPM_RAW_X_COLUMN_NAME,
+    CPM_RAW_Y_COLUMN_NAME,
+    DEFAULT_CALENDAR_ALIGN,
+    DEFAULT_INTERPOLATION_METHOD,
+    DEFAULT_RESAMPLING_METHOD,
+    GLASGOW_GEOM_LOCAL_PATH,
+    HADS_RAW_X_COLUMN_NAME,
+    HADS_RAW_Y_COLUMN_NAME,
+    NETCDF4_XARRAY_ENGINE,
+    TIME_COLUMN_NAME,
+    BoundingBoxCoords,
+    CFCalendarSTANDARD,
+    ConvertCalendarAlignOptions,
+    RegionOptions,
+    VariableOptions,
+    XArrayEngineType,
 )
 from .gdal_formats import (
     NETCDF_EXTENSION_STR,
-    GDALFormatExtensions,
+    TIF_EXTENSION_STR,
     GDALFormatsType,
     GDALGeoTiffFormatStr,
+    GDALNetCDFFormatStr,
 )
 
 logger = getLogger(__name__)
 
-DropDayType = set[tuple[int, int]]
-ChangeDayType = set[tuple[int, int]]
+seaborn.set()  # Use seaborn style for all `matplotlib` plots
 
-# MONTH_DAY_DROP: DropDayType = {(1, 31), (4, 1), (6, 1), (8, 1), (10, 1), (12, 1)}
-"""A `set` of tuples of month and day numbers for `enforce_date_changes`."""
+ReprojectFuncType = Callable[[T_Dataset], T_Dataset]
 
-BRITISH_NATIONAL_GRID_EPSG: Final[str] = "EPSG:27700"
-
-MONTH_DAY_XARRAY_LEAP_YEAR_DROP: DropDayType = {
-    (1, 31),
-    (4, 1),
-    (6, 1),
-    (8, 1),
-    (9, 31),
-    (12, 1),
-}
-"""A `set` of month and day tuples dropped for `xarray.day_360` leap years."""
-
-MONTH_DAY_XARRAY_NO_LEAP_YEAR_DROP: DropDayType = {
-    (2, 6),
-    (4, 20),
-    (7, 2),
-    (9, 13),
-    (11, 25),
-}
-"""A `set` of month and day tuples dropped for `xarray.day_360` non leap years."""
-
-DEFAULT_INTERPOLATION_METHOD: str = "linear"
-"""Default method to infer missing estimates in a time series."""
-
-CFCalendarSTANDARD: Final[str] = "standard"
-ConvertCalendarAlignOptions = Literal["date", "year", None]
-
-GLASGOW_CENTRE_COORDS: Final[tuple[float, float]] = (55.86279, -4.25424)
-MANCHESTER_CENTRE_COORDS: Final[tuple[float, float]] = (53.48095, -2.23743)
-LONDON_CENTRE_COORDS: Final[tuple[float, float]] = (51.509865, -0.118092)
-THREE_CITY_CENTRE_COORDS: Final[dict[str, tuple[float, float]]] = {
-    "Glasgow": GLASGOW_CENTRE_COORDS,
-    "Manchester": MANCHESTER_CENTRE_COORDS,
-    "London": LONDON_CENTRE_COORDS,
-}
-"""City centre `(lon, lat)` `tuple` coords of `Glasgow`, `Manchester` and `London`."""
-
-XARRAY_EXAMPLE_RANDOM_SEED: Final[int] = 0
-# Default 4 year start and end date covering leap year
-XARRAY_EXAMPLE_START_DATE_STR: Final[str] = "1980-11-30"
-XARRAY_EXAMPLE_END_DATE_4_YEARS: Final[str] = "1984-11-30"
-
-
-GLASGOW_GEOM_LOCAL_PATH: Final[Path] = Path(
-    "shapefiles/three.cities/Glasgow/Glasgow.shp"
-)
 GLASGOW_GEOM_ABSOLUTE_PATH: Final[Path] = (
     climate_data_mount_path() / GLASGOW_GEOM_LOCAL_PATH
 )
+CPM_REGEX: Final[str] = "**/[!.]*cpm*.nc"
+HADS_MIN_NULL: float = -1000000
 
-BoundsTupleType = tuple[float, float, float, float]
-"""`GeoPandas` bounds: (`minx`, `miny`, `maxx`, `maxy`)."""
+FINAL_CONVERTED_CPM_WIDTH: Final[int] = 493
+FINAL_CONVERTED_CPM_HEIGHT: Final[int] = 607
 
-XArrayEngineType = Literal[*tuple(ENGINES)]
-"""Engine types supported by `xarray` as `str`."""
+HADS_DROP_VARS_AFTER_PROJECTION: Final[tuple[str, ...]] = ("longitude", "latitude")
 
-DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
-NETCDF4_XARRAY_ENGINE: Final[str] = "netcdf4"
+FINAL_RESAMPLE_LON_COL: Final[str] = "x"
+FINAL_RESAMPLE_LAT_COL: Final[str] = "y"
 
 
-CPM_365_OR_366_INTERMEDIATE_NC: Final[str] = "cpm-365-or-366.nc"
-CPM_365_OR_366_SIMPLIFIED_NC: Final[str] = "cpm-365-or-366-simplified.nc"
-CPM_365_OR_366_27700_TIF: Final[str] = "cpm-365-or-366-27700.tif"
-CPM_365_OR_366_27700_FINAL: Final[str] = "cpm-365-or-366-27700-final.nc"
-CPM_LOCAL_INTERMEDIATE_PATH: Final[Path] = Path("cpm-intermediate-files")
+DEFAULT_WARP_DICT_OPTIONS: dict[str, str | float] = {
+    "VARIABLES_AS_BANDS": "YES",
+    "GDAL_NETCDF_VERIFY_DIMS": "STRICT",
+}
 
-FINAL_RESAMPLE_LAT_COL: Final[str] = "x"
-FINAL_RESAMPLE_LON_COL: Final[str] = "y"
+TQDM_FILE_NAME_PRINT_CHARS_INDEX: Final[int] = -7
 
 
 def cpm_xarray_to_standard_calendar(
-    cpm_xr_time_series: Dataset | PathLike, include_bnds_index: bool = False
-) -> Dataset:
+    cpm_xr_time_series: T_Dataset | PathLike, include_bnds_index: bool = False
+) -> T_Dataset:
     """Convert a CPM `nc` file of 360 day calendars to standard calendar.
 
     Parameters
@@ -129,20 +112,21 @@ def cpm_xarray_to_standard_calendar(
     -------
     `Dataset` calendar converted to standard (Gregorian).
     """
-    if isinstance(cpm_xr_time_series, PathLike):
-        cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
-    cpm_to_std_calendar: Dataset = convert_xr_calendar(
+    cpm_xr_time_series, _ = check_xarray_path_and_var_name(cpm_xr_time_series, None)
+    cpm_to_std_calendar: T_Dataset = convert_xr_calendar(
         cpm_xr_time_series, interpolate_na=True, check_cftime_cols=("time_bnds",)
     )
-    cpm_to_std_calendar[
-        "month_number"
-    ] = cpm_to_std_calendar.month_number.interpolate_na(
-        "time", fill_value="extrapolate"
+    cpm_to_std_calendar["month_number"] = (
+        cpm_to_std_calendar.month_number.interpolate_na(
+            "time", fill_value="extrapolate"
+        )
     )
     cpm_to_std_calendar["year"] = cpm_to_std_calendar.year.interpolate_na(
         "time", fill_value="extrapolate"
     )
-    yyyymmdd_fix: DataArray = cpm_to_std_calendar.time.dt.strftime(CLI_DATE_FORMAT_STR)
+    yyyymmdd_fix: T_DataArray = cpm_to_std_calendar.time.dt.strftime(
+        CLI_DATE_FORMAT_STR
+    )
     cpm_to_std_calendar["yyyymmdd"] = yyyymmdd_fix
     assert cpm_xr_time_series.rio.crs == cpm_to_std_calendar.rio.crs
     if include_bnds_index:
@@ -166,272 +150,421 @@ def cftime360_to_date(cf_360: Datetime360Day) -> date:
     return date(cf_360.year, cf_360.month, cf_360.day)
 
 
-@dataclass
-class IntermediateCPMFilesManager:
+def check_xarray_path_and_var_name(
+    xr_time_series: T_Dataset | PathLike,
+    variable_name: str | None,
+    ignore_warnings: bool = True,
+) -> tuple[Dataset, str]:
+    """Check and return a `T_Dataset` instances and included variable name."""
+    if isinstance(xr_time_series, PathLike):
+        with warnings.catch_warnings():
+            # Filter repeating warning such as:
+            # UserWarning: Variable(s) referenced in bounds not in variables: ['time_bnds']
+            if ignore_warnings:
+                warnings.simplefilter(action="ignore", category=UserWarning)
+            xr_time_series = open_dataset(xr_time_series, decode_coords="all")
+    try:
+        assert isinstance(xr_time_series, Dataset)
+    except AssertionError:
+        raise TypeError(
+            f"'xr_time_series' should be a 'Dataset' or 'NetCDF', recieved: '{type(xr_time_series)}'"
+        )
 
-    """Manage intermediate files and paths for CPM calendar projection.
+    if not variable_name:
+        data_vars_count: int = len(xr_time_series.data_vars)
+        try:
+            assert data_vars_count == 1
+        except:
+            ValueError(
+                f"'variable_name' must be specified or 'data_vars' count must be 1, not {data_vars_count}."
+            )
+        variable_name = tuple(xr_time_series.data_vars)[0]
+    if not isinstance(variable_name, str):
+        raise ValueError(
+            "'variable_name' must be a 'str' or inferred from 'xr_time_series.data_vars'. Got: '{variable_name}'"
+        )
+    return xr_time_series, variable_name
+
+
+def cpm_check_converted(cpm_xr_time_series: T_Dataset | PathLike) -> bool:
+    """Check if `cpm_xr_time_series` is likely already reprojected.
 
     Parameters
     ----------
-    variable_name
-        Name of variable (e.g. `tasmax`). Included in file names.
-    output_path
-        Folder to save results to.
-    subfolder_path
-        Path to place intermediate files relative to output_path.
-    time_series_start
-        Start of time series covered to include in file name.
-    time_series_end
-        End of time series covered to include in file name.
-    file_name_prefix
-        str to add at the start of the output file names (after integers).
-    subfolder_time_stamp
-        Whether to include a time stamp in the subfolder file name.
+    cpm_xr_time_series
+        `Dataset` instance or `Path` to check.
 
-    Examples
-    --------
-    >>> test_path = getfixture('tmp_path')
-    >>> intermedate_files_manager: IntermediateCPMFilesManager = IntermediateCPMFilesManager(
-    ...     file_name_prefix="test-1980",
-    ...     variable_name="tasmax",
-    ...     output_path=test_path / 'intermediate_test_folder',
-    ...     subfolder_path='test_subfolder',
-    ...     time_series_start=date(1980, 12, 1),
-    ...     time_series_end=date(1981, 11, 30),
-    ... )
-    >>> str(intermedate_files_manager.output_path)
-    '.../intermediate_test_folder'
-    >>> str(intermedate_files_manager.intermediate_files_folder)
-    '.../test_subfolder'
-    >>> str(intermedate_files_manager.final_nc_path)
-    '.../test_subfolder/3-test-1980-tasmax-19801201-19811130-cpm-365-or-366-27700-final.nc'
+    Returns
+    -------
+    `True` if all of the methics are `True`, else `False`
     """
-
-    variable_name: str
-    output_path: Path | None
-    time_series_start: datetime | date | Datetime360Day
-    time_series_end: datetime | date | Datetime360Day
-    subfolder_path: Path = CPM_LOCAL_INTERMEDIATE_PATH
-    file_name_prefix: str = ""
-    subfolder_time_stamp: bool = False
-
-    def __post_init__(self) -> None:
-        """Ensure `output_path`, `time_series_start/end` are set correctly."""
-        self.output_path = Path(self.output_path) if self.output_path else Path()
-        if self.output_path.suffix[1:] in GDALFormatExtensions.values():
-            logger.info(
-                f"Output path is: '{str(self.output_path)}'\n"
-                "Putting intermediate files in parent directory."
-            )
-            self._passed_output_path = self.output_path
-            self.output_path = self.output_path.parent
-        if isinstance(self.time_series_start, Datetime360Day):
-            self.time_series_start = cftime360_to_date(self.time_series_start)
-        if isinstance(self.time_series_end, Datetime360Day):
-            self.time_series_end = cftime360_to_date(self.time_series_end)
-
-    def __repr__(self):
-        """Summary of config."""
-        return (
-            f"<IntermediateCPMFilesManager(output_path='{self.output_path}, "
-            f"intermediate_files_folder='{self.intermediate_files_folder})>"
+    cpm_xr_time_series, _ = check_xarray_path_and_var_name(
+        xr_time_series=cpm_xr_time_series, variable_name=None
+    )
+    checks_dict: dict[str, bool] = {}
+    if "time" in cpm_xr_time_series.sizes:
+        checks_dict["time-365-or-366"] = cpm_xr_time_series.sizes["time"] in (365, 366)
+    if "x" in cpm_xr_time_series.sizes:
+        checks_dict["x-final-coords"] = (
+            cpm_xr_time_series.sizes["x"] == FINAL_CONVERTED_CPM_WIDTH
         )
-
-    @property
-    def date_range_to_str(self) -> str:
-        return date_range_to_str(self.time_series_start, self.time_series_end)
-
-    @property
-    def prefix_var_name_and_date(self) -> str:
-        prefix: str = f"{self.variable_name}-{self.date_range_to_str}-"
-        if self.file_name_prefix:
-            return f"{self.file_name_prefix}-{prefix}"
-        else:
-            return prefix
-
-    @property
-    def subfolder(self) -> Path:
-        if self.subfolder_time_stamp:
-            return Path(Path(self.subfolder_path).name + f"-{time_str()}")
-        else:
-            return self.subfolder_path
-
-    @property
-    def intermediate_files_folder(self) -> Path:
-        assert self.output_path
-        path: Path = self.output_path / self.subfolder
-        path.mkdir(exist_ok=True, parents=True)
-        assert path.is_dir()
-        return path
-
-    @property
-    def intermediate_nc_path(self) -> Path:
-        return self.intermediate_files_folder / (
-            "0-" + self.prefix_var_name_and_date + CPM_365_OR_366_INTERMEDIATE_NC
+    if "y" in cpm_xr_time_series.sizes:
+        checks_dict["y-final-coords"] = (
+            cpm_xr_time_series.sizes["y"] == FINAL_CONVERTED_CPM_HEIGHT
         )
-
-    @property
-    def simplified_nc_path(self) -> Path:
-        return self.intermediate_files_folder / (
-            "1-" + self.prefix_var_name_and_date + CPM_365_OR_366_SIMPLIFIED_NC
-        )
-
-    @property
-    def intermediate_warp_path(self) -> Path:
-        return self.intermediate_files_folder / (
-            "2-" + self.prefix_var_name_and_date + CPM_365_OR_366_27700_TIF
-        )
-
-    @property
-    def final_nc_path(self) -> Path:
-        return self.intermediate_files_folder / (
-            "3-" + self.prefix_var_name_and_date + CPM_365_OR_366_27700_FINAL
-        )
+    if all(checks_dict.values()):
+        return True
+    else:
+        return False
 
 
 def cpm_reproject_with_standard_calendar(
-    cpm_xr_time_series: Dataset | PathLike,
-    variable_name: str,
-    output_path: PathLike,
-    file_name_prefix: str = "",
-    subfolder: PathLike = CPM_LOCAL_INTERMEDIATE_PATH,
-    subfolder_time_stamp: bool = False,
-    final_x_coord_label: str = FINAL_RESAMPLE_LON_COL,
-    final_y_coord_label: str = FINAL_RESAMPLE_LAT_COL,
-) -> Dataset:
+    cpm_xr_time_series: T_Dataset | PathLike,
+    variable_name: str | None = None,
+    close_temp_paths: bool = True,
+    force: bool = False,
+) -> T_Dataset:
     """Convert raw `cpm_xr_time_series` to an 365/366 days and 27700 coords.
+
+    Notes
+    -----
+    Currently makes UTM coordinate structure
 
     Parameters
     ----------
     cpm_xr_time_series
         `Dataset` (or path to load as `Dataset`) expected to be in raw UKCPM
         format, with 360 day years and a rotated coordinate system.
-    output_folder
-        Path to store all intermediary and final projection.
-    file_name_prefix
-        `str` to prefix all written files with.
+    variable_name
+        Name of variable used, usually a measure of climate change like
+        `tasmax` and `tasmin`.
 
     Returns
     -------
     Final `xarray` `Dataset` after spatial and temporal changes.
+
+    Examples
+    --------
+    >>> tasmax_cpm_1980_raw = getfixture('tasmax_cpm_1980_raw')
+    >>> if not tasmax_cpm_1980_raw:
+    ...     pytest.skip(mount_or_cache_doctest_skip_message)
+    >>> tasmax_cpm_1980_365_day: T_Dataset = cpm_reproject_with_standard_calendar(
+    ...     cpm_xr_time_series=tasmax_cpm_1980_raw,
+    ...     variable_name="tasmax")
+    Warp:      ...nc ...100%...
+    Translate: ...tif ...100%...
+    >>> tasmax_cpm_1980_365_day
+    <xarray.Dataset>
+    Dimensions:              (time: 365, x: 493, y: 607)
+    Coordinates:
+      * time                 (time) datetime64[ns]...
+      * x                    (x) float64...
+      * y                    (y) float64...
+        transverse_mercator  |S1...
+        spatial_ref          int64...
+    Data variables:
+        tasmax               (time, y, x) float32...
+    Attributes: (12/18)
+        ...
+    >>> tasmax_cpm_1980_365_day.dims
+    Frozen...({'time': 365, 'x': 493, 'y': 607})
     """
-    if isinstance(cpm_xr_time_series, PathLike):
-        cpm_xr_time_series = open_dataset(cpm_xr_time_series, decode_coords="all")
-
-    intermediate_files: IntermediateCPMFilesManager = IntermediateCPMFilesManager(
-        file_name_prefix=file_name_prefix,
-        variable_name=variable_name,
-        output_path=Path(output_path),
-        subfolder_path=Path(subfolder),
-        subfolder_time_stamp=subfolder_time_stamp,
-        time_series_start=cpm_xr_time_series.time.values[0],
-        time_series_end=cpm_xr_time_series.time.values[-1],
+    if not force:
+        logger.info("Checking if already converted...")
+        if cpm_check_converted(cpm_xr_time_series):
+            logger.info("Similar to already converted. Returning unmodified")
+            xr_dataset, _ = check_xarray_path_and_var_name(
+                cpm_xr_time_series, variable_name=variable_name
+            )
+            return xr_dataset
+    else:
+        logger.info("Force skip checking if already converted...")
+    temp_cpm: _TemporaryFileWrapper = NamedTemporaryFile(
+        suffix="." + NETCDF_EXTENSION_STR
     )
-
-    expanded_calendar: Dataset = cpm_xarray_to_standard_calendar(cpm_xr_time_series)
-    subset_within_ensemble: DataArray = expanded_calendar[variable_name][0]
-    subset_within_ensemble.to_netcdf(intermediate_files.intermediate_nc_path)
-    simplified_netcdf: Dataset = open_dataset(
-        intermediate_files.intermediate_nc_path, decode_coords="all"
+    temp_tif: _TemporaryFileWrapper = NamedTemporaryFile(suffix="." + TIF_EXTENSION_STR)
+    temp_translated_ncf: _TemporaryFileWrapper = NamedTemporaryFile(
+        suffix="." + NETCDF_EXTENSION_STR
     )
-    simplified_netcdf[variable_name].to_netcdf(intermediate_files.simplified_nc_path)
-
-    warped_to_22700_path = gdal_warp_wrapper(
-        input_path=intermediate_files.simplified_nc_path,
-        output_path=intermediate_files.intermediate_warp_path,
-        copy_metadata=True,
-        format=None,
+    if isinstance(cpm_xr_time_series, Dataset):
+        xr_time_series_instance: T_Dataset = cpm_xr_time_series
+        cpm_xr_time_series = temp_cpm.name
+        xr_time_series_instance.to_netcdf(cpm_xr_time_series)
+    assert isinstance(cpm_xr_time_series, PathLike | str)
+    gdal_warp_wrapper(
+        cpm_xr_time_series,
+        output_path=Path(temp_tif.name),
+        format=GDALGeoTiffFormatStr,
+        use_tqdm_progress_bar=False,
+        # Leaving this if further projection is needed
+        # resampling_method=VariableOptions.resampling_method(variable=variable_name).name,
     )
+    gdal_translate_wrapper(
+        input_path=Path(temp_tif.name),
+        output_path=Path(temp_translated_ncf.name),
+        use_tqdm_progress_bar=False,
+        # Leaving this if further projection is needed
+        # resampling_method=VariableOptions.resampling_method(variable=variable_name).name,
+    )
+    reprojected_cpm_xr_time_series, _ = check_xarray_path_and_var_name(
+        Path(temp_translated_ncf.name), variable_name
+    )
+    reprojected_dropped_ensemble_member = reprojected_cpm_xr_time_series.squeeze(
+        "ensemble_member"
+    ).drop("ensemble_member")
 
-    assert warped_to_22700_path == intermediate_files.intermediate_warp_path
-    warped_to_22700 = open_dataset(intermediate_files.intermediate_warp_path)
-    assert warped_to_22700.rio.crs == BRITISH_NATIONAL_GRID_EPSG
-    assert len(warped_to_22700.time) == len(expanded_calendar.time)
-
-    # Commenting these out in prep for addressing
-    # https://github.com/alan-turing-institute/clim-recal/issues/151
-    # warped_to_22700_y_axis_inverted: Dataset = warped_to_22700.reindex(
-    #     y=list(reversed(warped_to_22700.y))
-    # )
-    #
-    # warped_to_22700_y_axis_inverted = warped_to_22700_y_axis_inverted.rename(
-    #     {"x": final_x_coord_label, "y": final_y_coord_label}
-    # )
-
-    warped_to_22700_y_axis_inverted.to_netcdf(intermediate_files.final_nc_path)
-    final_results = open_dataset(intermediate_files.final_nc_path, decode_coords="all")
-    assert (final_results.time == expanded_calendar.time).all()
-    return final_results
-
-
-def interpolate_coords(
-    xr_time_series: Dataset,
-    variable_name: str,
-    x_grid: NDArray,
-    y_grid: NDArray,
-    xr_time_series_x_column_name: str = FINAL_RESAMPLE_LON_COL,
-    xr_time_series_y_column_name: str = FINAL_RESAMPLE_LAT_COL,
-    method: str = "linear",
-    engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
-    **kwargs,
-) -> Dataset:
-    """Reproject `xr_time_series` to `x_resolution`/`y_resolution`.
-
-    Notes
-    -----
-    The `rio.reproject` approach commented out below raises
-    `ValueError: IndexVariable objects must be 1-dimensional`
-    See https://github.com/corteva/rioxarray/discussions/762
-    """
-    if isinstance(xr_time_series, PathLike | str):
-        xr_time_series = open_dataset(
-            xr_time_series, decode_coords="all", engine=engine
-        )
-    assert isinstance(xr_time_series, Dataset)
-    # crs = crs if crs else xr_time_series.rio.crs
-    # Code commented out below relates to a method following this discussion:
-    # https://github.com/corteva/rioxarray/discussions/762
-    # if x_resolution and y_resolution:
-    #     kwargs['resolution'] = (x_resolution, y_resolution)
-    # return xr_time_series.rio.reproject(dst_crs=crs, **kwargs)
-    kwargs[xr_time_series_x_column_name] = x_grid
-    kwargs[xr_time_series_y_column_name] = y_grid
-    return xr_time_series[[variable_name]].interp(method=method, **kwargs)
+    standard_calendar_ts: T_Dataset = convert_xr_calendar(
+        reprojected_dropped_ensemble_member, interpolate_na=True
+    )
+    if close_temp_paths:
+        temp_cpm.close()
+        temp_tif.close()
+        temp_translated_ncf.close()
+    return standard_calendar_ts
 
 
-def crop_nc(
-    xr_time_series: Dataset | PathLike,
-    crop_geom: PathLike | GeoDataFrame,
-    invert=False,
+def xr_reproject_crs(
+    xr_time_series: T_Dataset | PathLike,
+    x_dim_name: str = CPM_RAW_X_COLUMN_NAME,
+    y_dim_name: str = CPM_RAW_Y_COLUMN_NAME,
+    time_dim_name: str = TIME_COLUMN_NAME,
+    variable_name: str | None = None,
     final_crs: str = BRITISH_NATIONAL_GRID_EPSG,
-    initial_clip_box: bool = False,
-    enforce_xarray_spatial_dims: bool = True,
-    xr_spatial_xdim: str = "grid_longitude",
-    xr_spatial_ydim: str = "grid_latitude",
+    match_xr_time_series: T_Dataset | PathLike | None = None,
+    match_xr_time_series_load_func: Callable | None = None,
+    match_xr_time_series_load_kwargs: dict[str, Any] | None = None,
+    resampling_method: Resampling = DEFAULT_RESAMPLING_METHOD,
+    nodata: float = np.nan,
     **kwargs,
-) -> Dataset:
+) -> T_Dataset:
+    """Reproject `source_xr` to `target_xr` coordinate structure.
+
+    Parameters
+    ----------
+    xr_time_series
+        `Dataset` or `PathLike` to load and reproject.
+    x_dim_name
+        `str` name of `x` spatial dimension in `xr_time_series`. Default matches CPM UK projections.
+    y_dim_name
+        `str` name of `y` spatial dimension in `xr_time_series`. Default matches CPM UK projections.
+    time_dim_name
+        `str` name of `time` dimension in `xr_time_series`.
+    variable_name
+        Name of datset to apply projection to within `xr_time_series`.
+        Inferred if `None` assuming only one `data_var` attribute.
+    final_crs
+        Coordinate system `str` to project `xr_time_series` to.
+    resampling_method
+        `rasterio` resampling method to apply.
+
+    Examples
+    --------
+    >>> tasmax_hads_1980_raw = getfixture('tasmax_hads_1980_raw')
+    >>> if not tasmax_hads_1980_raw:
+    ...     pytest.skip(mount_or_cache_doctest_skip_message)
+    >>> tasmax_hads_1980_raw.dims
+    FrozenMappingWarningOnValuesAccess({'time': 31,
+                                        'projection_y_coordinate': 1450,
+                                        'projection_x_coordinate': 900,
+                                        'bnds': 2})
+    >>> tasmax_hads_2_2km: T_Dataset = xr_reproject_crs(
+    ...     tasmax_hads_1980_raw,
+    ...     variable_name="tasmax",
+    ...     x_dim_name=HADS_RAW_X_COLUMN_NAME,
+    ...     y_dim_name=HADS_RAW_Y_COLUMN_NAME,
+    ...     resolution=(CPM_RESOLUTION_METERS,
+    ...                 CPM_RESOLUTION_METERS),)
+    >>> tasmax_hads_2_2km.dims
+    FrozenMappingWarningOnValuesAccess({'x': 410,
+                                        'y': 660,
+                                        'time': 31})
+    """
+    xr_time_series, variable_name = check_xarray_path_and_var_name(
+        xr_time_series, variable_name
+    )
+    xr_time_series = xr_time_series.rio.set_spatial_dims(
+        x_dim=x_dim_name, y_dim=y_dim_name, inplace=True
+    )
+    # info requires a df parameter, not straightforward for logging
+    # logger.info(xr_time_series.info())
+    data_array: T_DataArray = xr_time_series[variable_name]
+    index_names: tuple[str, str, str] = (time_dim_name, x_dim_name, y_dim_name)
+    extra_dims: set[str] = set(data_array.indexes.dims) - set(index_names)
+    if extra_dims:
+        raise ValueError(
+            f"Can only reindex using dims: {index_names}, extra dim(s): {extra_dims}"
+        )
+    coords: dict[str, DataArray] = {
+        time_dim_name: xr_time_series[time_dim_name],
+        y_dim_name: xr_time_series[y_dim_name],
+        x_dim_name: xr_time_series[x_dim_name],
+    }
+    without_attributes: T_DataArray = DataArray(
+        data=data_array.to_numpy(), coords=coords, name=variable_name
+    )
+    without_attributes = without_attributes.rio.write_crs(xr_time_series.rio.crs)
+    without_attributes_reprojected: T_DataArray
+    if match_xr_time_series:
+        if match_xr_time_series_load_func:
+            match_xr_time_series_load_kwargs = match_xr_time_series_load_kwargs or {}
+            match_xr_time_series = match_xr_time_series_load_func(
+                match_xr_time_series, **match_xr_time_series_load_kwargs
+            )
+        if not {x_dim_name, y_dim_name} < match_xr_time_series.sizes.keys():
+            # If dim name
+            # likely x, y indexes from a projection like cpm, need to match
+            logger.debug(
+                f"'x_dim_name': {x_dim_name} and "
+                f"'y_dim_name': {y_dim_name} not in "
+                f"'match_xr_time_series' dims: "
+                f"{match_xr_time_series.sizes.keys()}."
+            )
+            if {"x", "y"} < match_xr_time_series.sizes.keys():
+                logger.debug(
+                    f"Renaming dims: '{x_dim_name}' -> 'x', '{y_dim_name}' -> 'y'"
+                )
+                without_attributes = without_attributes.rename(
+                    {x_dim_name: "x", y_dim_name: "y"}
+                )
+            else:
+                raise ValueError("Can't match dim names.")
+        without_attributes_reprojected = without_attributes.rio.reproject_match(
+            match_xr_time_series, resampling=resampling_method, nodata=nodata, **kwargs
+        )
+    else:
+        without_attributes_reprojected: T_DataArray = without_attributes.rio.reproject(
+            final_crs, resampling=resampling_method, nodata=nodata, **kwargs
+        )
+    final_dataset: T_Dataset = Dataset({variable_name: without_attributes_reprojected})
+    return final_dataset.rio.write_crs(BRITISH_NATIONAL_GRID_EPSG)
+
+
+def _ensure_resample_method_name(
+    method: str | Resampling, allow_none: bool = True
+) -> str | None:
+    """Ensure the correct method name `str` is returned."""
+
+    def error_message(method: str) -> str:
+        return f"Method '{method}' not a valid GDAL 'Resampling' method."
+
+    if isinstance(method, str):
+        try:
+            assert method in Resampling.__members__
+        except KeyError:
+            raise KeyError(error_message(method))
+        return method
+    elif isinstance(method, Resampling):
+        return method.name
+    elif method is None:
+        return None
+    else:
+        raise ValueError(error_message(method))
+
+
+def hads_resample_and_reproject(
+    hads_xr_time_series: T_Dataset | PathLike,
+    variable_name: str,
+    cpm_to_match: T_Dataset | PathLike,
+    cpm_to_match_func: Callable | None = cpm_reproject_with_standard_calendar,
+    x_dim_name: str = HADS_RAW_X_COLUMN_NAME,
+    y_dim_name: str = HADS_RAW_Y_COLUMN_NAME,
+) -> T_Dataset:
+    """Resample `HADs` `xarray` time series to 2.2km."""
+    if isinstance(cpm_to_match, Dataset) and {"x", "y"} < cpm_to_match.sizes.keys():
+        cpm_to_match_func = None
+    epsg_277000_2_2km: T_Dataset = xr_reproject_crs(
+        hads_xr_time_series,
+        variable_name=variable_name,
+        x_dim_name=x_dim_name,
+        y_dim_name=y_dim_name,
+        match_xr_time_series=cpm_to_match,
+        match_xr_time_series_load_func=cpm_to_match_func,
+        resampling_method=VariableOptions.resampling_method(variable_name),
+        # Check if the following line is needed
+        # match_xr_time_series_load_kwargs=dict(variable_name=variable_name),
+    )
+
+    final_epsg_277000_2_2km: T_Dataset
+
+    # Check if the minimum values should be NULL
+    min_value: float = epsg_277000_2_2km[variable_name].min()
+
+    if min_value < HADS_MIN_NULL:
+        logger.info(f"Setting '{variable_name}' values less than {min_value} as `nan`")
+        final_epsg_277000_2_2km = epsg_277000_2_2km.where(
+            epsg_277000_2_2km[variable_name] > min_value
+        )
+    else:
+        logger.debug(
+            f"Keeping '{variable_name}' values less than {min_value}. 'HADS_MIN_NULL': {HADS_MIN_NULL}"
+        )
+        final_epsg_277000_2_2km = epsg_277000_2_2km
+    return final_epsg_277000_2_2km.rio.write_crs(BRITISH_NATIONAL_GRID_EPSG)
+
+
+def plot_xarray(
+    da: T_DataArrayOrSet, path: PathLike, time_stamp: bool = False, **kwargs
+) -> Path:
+    """Plot `da` with `**kwargs` to `path`.
+
+    Parameters
+    ----------
+    da
+        `xarray` objec to plot.
+    path
+        File to write plot to.
+    time_stamp
+        Whather to add a `datetime` `str` of time of writing in file name.
+    kwargs
+        Additional parameters to pass to `plot`.
+
+    Examples
+    --------
+    >>> example_path: Path = (
+    ...     getfixture('tmp_path') / 'test-path/example.png')
+    >>> image_path: Path = plot_xarray(
+    ...     xarray_spatial_4_days, example_path)
+    >>> example_path == image_path
+    True
+    >>> example_time_stamped: Path = (
+    ...      example_path.parent / 'example-stamped.png')
+    >>> timed_image_path: Path = plot_xarray(
+    ...     xarray_spatial_4_days, example_time_stamped,
+    ...     time_stamp=True)
+    >>> example_time_stamped != timed_image_path
+    True
+    >>> print(timed_image_path)
+    /.../test-path/example-stamped_...-...-..._...png
+    """
+    da.plot(**kwargs)
+    path = Path(path)
+    path.parent.mkdir(exist_ok=True, parents=True)
+    if time_stamp:
+        path = results_path(
+            name=path.stem,
+            path=path.parent,
+            mkdir=True,
+            extension=path.suffix,
+            dot_pre_extension=False,
+        )
+    plt.savefig(path)
+    plt.close()
+    return Path(path)
+
+
+def crop_xarray(
+    xr_time_series: T_Dataset | PathLike,
+    crop_box: BoundingBoxCoords,
+    **kwargs,
+) -> T_Dataset:
     """Crop `xr_time_series` with `crop_path` `shapefile`.
 
     Parameters
     ----------
     xr_time_series
         `Dataset` or path to `netcdf` file to load and crop.
-    crop_geom
-        `GeoDataFrame` or `Path` of file to crop with.
-    invert
-        Whether to invert the `crop_geom` coordinates.
-    final_crs
-        Final coordinate system to return cropped `xr_time_series` in.
-    initial_clip_box
-        Whether to initially clip `xr_time_series` via `crop_geom`
-        boundaries. For more details on chained clip approaches see
-        https://corteva.github.io/rioxarray/html/examples/clip_geom.html#Clipping-larger-rasters
-    enforce_xarray_spatial_dims
-        Whether to use `set_spatial_dims` on `xr_time_series` prior to `clip`.
-    xr_spatial_xdim
-        Column parameter to pass as `xdim` to `set_spatial_dims` if used.
-    xr_spatial_ydim
-        Column parameter to pass as `ydim` to `set_spatial_dims` if used.
+    crop_box
+        Instance of `BoundingBoxCoords` with coords.
     kwargs
         Any additional parameters to pass to `clip`
 
@@ -442,48 +575,40 @@ def crop_nc(
 
     Examples
     --------
-    >>> pytest.skip('Refactor needed, may be removed.')
-    >>> if not is_data_mounted:
-    ...     pytest.skip(mount_doctest_skip_message)
-    >>> cropped = crop_nc(
-    ...     RAW_CPM_TASMAX_PATH /
-    ...     'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19821201-19831130.nc',
-    ...     crop_geom=glasgow_shape_file_path, invert=True)
-    >>> cropped.rio.bounds() == glasgow_epsg_27700_bounds
-    True
+    >>> from clim_recal.utils.data import GlasgowCoordsEPSG27700
+    >>> from numpy.testing import assert_allclose
+    >>> tasmax_cpm_1980_raw = getfixture('tasmax_cpm_1980_raw')
+    >>> if not tasmax_cpm_1980_raw:
+    ...     pytest.skip(mount_or_cache_doctest_skip_message)
+    >>> tasmax_cpm_1980_365_day: T_Dataset = cpm_reproject_with_standard_calendar(
+    ...     cpm_xr_time_series=tasmax_cpm_1980_raw,
+    ...     variable_name="tasmax")
+    >>> cropped = crop_xarray(
+    ...     tasmax_cpm_1980_365_day,
+    ...     crop_box=GlasgowCoordsEPSG27700)
+    >>> assert_allclose(cropped.rio.bounds(),
+    ...                 GlasgowCoordsEPSG27700.as_rioxarray_tuple(),
+    ...                 rtol=.01)
+    >>> tasmax_cpm_1980_365_day.sizes
+    Frozen({'x': 529, 'y': 653, 'time': 365})
+    >>> cropped.sizes
+    Frozen({'x': 10, 'y': 8, 'time': 365})
     """
-    # xr_time_series = reproject_xarray_by_crs(
-    #     xr_time_series,
-    #     crs=final_crs,
-    #     enforce_xarray_spatial_dims=enforce_xarray_spatial_dims,
-    #     xr_spatial_xdim=xr_spatial_xdim,
-    #     xr_spatial_ydim=xr_spatial_ydim,
-    # )
-
-    if isinstance(crop_geom, PathLike):
-        crop_geom = read_file(crop_geom)
-    # assert isinstance(crop_geom, GeoDataFrame)
-    # crop_geom.set_crs(crs=final_crs, inplace=True)
-    # if initial_clip_box:
-    # return xr_time_series.rio.clip_box(
-    #     minx=crop_geom.bounds.minx,
-    #     miny=crop_geom.bounds.miny,
-    #     maxx=crop_geom.bounds.maxx,
-    #     maxy=crop_geom.bounds.maxy,
-    # )
-    # return xr_time_series.rio.clip(
-    #     crop_geom.geometry.values, drop=True, invert=invert, **kwargs
-    # )
-    assert False
-    gdal_warp_wrapper(
-        input_path=xr_time_series,
-        output_path=output_path,
+    xr_time_series, _ = check_xarray_path_and_var_name(xr_time_series, None)
+    try:
+        assert str(xr_time_series.rio.crs) == crop_box.rioxarry_epsg
+    except AssertionError:
+        raise ValueError(
+            f"'xr_time_series.rio.crs': '{xr_time_series.rio.epsg}' must equal 'crop_box.crs': '{crop_box.crs}'"
+        )
+    return xr_time_series.rio.clip_box(
+        **crop_box.as_rioxarray_dict(), crs=crop_box.rioxarry_epsg, **kwargs
     )
 
 
 def ensure_xr_dataset(
-    xr_time_series: Dataset | DataArray, default_name="to_convert"
-) -> Dataset:
+    xr_time_series: T_DataArrayOrSet, default_name="to_convert"
+) -> T_Dataset:
     """Return `xr_time_series` as a `xarray.Dataset` instance.
 
     Parameters
@@ -517,7 +642,7 @@ def ensure_xr_dataset(
 
 
 def convert_xr_calendar(
-    xr_time_series: DataArray | Dataset | PathLike,
+    xr_time_series: T_DataArray | T_Dataset | PathLike,
     align_on: ConvertCalendarAlignOptions = DEFAULT_CALENDAR_ALIGN,
     calendar: CFCalendar = CFCalendarSTANDARD,
     use_cftime: bool = False,
@@ -529,11 +654,13 @@ def convert_xr_calendar(
     keep_attrs: bool = True,
     limit: int = 1,
     engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
-    extrapolate_fill_value: bool = True,
+    # This may need removing, including in docs
+    # extrapolate_fill_value: bool = True,
     check_cftime_cols: tuple[str] | None = None,
     cftime_range_gen_kwargs: dict[str, Any] | None = None,
-    **kwargs,
-) -> Dataset | DataArray:
+    # This may need to be removed
+    # **kwargs,
+) -> T_DataArrayOrSet:
     """Convert cpm 360 day time series to a standard 365/366 day time series.
 
     Notes
@@ -598,7 +725,7 @@ def convert_xr_calendar(
     --------
     # Note a new doctest needs to be written to deal
     # with default `year` vs `date` parameters
-    >>> xr_360_to_365_datetime64: Dataset = convert_xr_calendar(
+    >>> xr_360_to_365_datetime64: T_Dataset = convert_xr_calendar(
     ...     xarray_spatial_4_years_360_day, align_on="date")
     >>> xr_360_to_365_datetime64.sel(
     ...     time=slice("1981-01-30", "1981-02-01"),
@@ -607,7 +734,7 @@ def convert_xr_calendar(
     Coordinates:
       * time     (time) datetime64[ns] ...1981-01-30 1981-01-31 1981-02-01
         space    <U10 ...'Glasgow'
-    >>> xr_360_to_365_datetime64_interp: Dataset = convert_xr_calendar(
+    >>> xr_360_to_365_datetime64_interp: T_Dataset = convert_xr_calendar(
     ...     xarray_spatial_4_years_360_day, interpolate_na=True)
     >>> xr_360_to_365_datetime64_interp.sel(
     ...     time=slice("1981-01-30", "1981-02-01"),
@@ -631,7 +758,7 @@ def convert_xr_calendar(
             xr_time_series = open_dataset(xr_time_series, engine=engine)
     if ensure_output_type_is_dataset:
         xr_time_series = ensure_xr_dataset(xr_time_series)
-    calendar_converted_ts: Dataset | DataArray = convert_calendar(
+    calendar_converted_ts: T_DataArrayOrSet = convert_calendar(
         xr_time_series,
         calendar,
         align_on=align_on,
@@ -658,8 +785,8 @@ def convert_xr_calendar(
 
 
 def interpolate_xr_ts_nans(
-    xr_ts: Dataset,
-    original_xr_ts: Dataset | None = None,
+    xr_ts: T_Dataset,
+    original_xr_ts: T_Dataset | None = None,
     check_cftime_cols: tuple[str] | None = None,
     interpolate_method: InterpOptions = DEFAULT_INTERPOLATION_METHOD,
     keep_crs: bool = True,
@@ -667,7 +794,7 @@ def interpolate_xr_ts_nans(
     limit: int = 1,
     cftime_range_gen_kwargs: dict[str, Any] | None = None,
     **kwargs,
-) -> Dataset:
+) -> T_Dataset:
     """Interpolate `nan` values in a `Dataset` time series.
 
     Notes
@@ -709,7 +836,7 @@ def interpolate_xr_ts_nans(
     # Without this the `nan` values don't get filled
     kwargs["fill_value"] = "extrapolate"
 
-    interpolated_ts: Dataset = xr_ts.interpolate_na(
+    interpolated_ts: T_Dataset = xr_ts.interpolate_na(
         dim="time",
         method=interpolate_method,
         keep_attrs=keep_attrs,
@@ -731,6 +858,69 @@ def interpolate_xr_ts_nans(
         return interpolated_ts
 
 
+def _progress_bar_file_description(
+    input_path: PathLike,
+    prefix: str = "",
+    tqdm_file_name_chars: int = TQDM_FILE_NAME_PRINT_CHARS_INDEX,
+    suffix: str = "",
+) -> str:
+    return f"{prefix}{Path(input_path).name[tqdm_file_name_chars:]}{suffix}"
+
+
+def _gen_progress_bar(description: str = "") -> tuple[tqdm, Callable[..., None]]:
+    progress_bar: tqdm = tqdm(total=100, desc=description)
+
+    def _tqdm_progress_callback_func(progress: float, *args) -> None:
+        progress_bar.update(progress * 100 - progress_bar.n)
+
+    return progress_bar, _tqdm_progress_callback_func
+
+
+def gdal_translate_wrapper(
+    input_path: PathLike,
+    output_path: PathLike,
+    return_path: bool = True,
+    translate_format: GDALFormatsType | str = GDALNetCDFFormatStr,
+    use_tqdm_progress_bar: bool = True,
+    tqdm_file_name_chars: int = TQDM_FILE_NAME_PRINT_CHARS_INDEX,
+    resampling_method: Resampling | None = None,
+    supress_warnings: bool = True,
+    **kwargs,
+) -> Path | GDALDataset:
+    if use_tqdm_progress_bar:
+        description: str = _progress_bar_file_description(
+            input_path=input_path,
+            prefix="Translate: ",
+            tqdm_file_name_chars=tqdm_file_name_chars,
+        )
+        progress_bar, progress_callback = _gen_progress_bar(description=description)
+        kwargs["callback"] = progress_callback
+    translate_options: GDALTranslateOptions = TranslateOptions(
+        format=translate_format,
+        resampleAlg=_ensure_resample_method_name(resampling_method),
+        **kwargs,
+    )
+    translation: GDALDataset
+    if supress_warnings:
+        with config_GDAL_option("CPL_LOG", "gdal_warnings.log"):
+            translation = Translate(
+                destName=output_path,
+                srcDS=input_path,
+                options=translate_options,
+            )
+    else:
+        translation = Translate(
+            destName=output_path,
+            srcDS=input_path,
+            options=translate_options,
+        )
+    if use_tqdm_progress_bar:
+        translation.FlushCache()
+        progress_bar.close()
+    assert translation is not None
+    return Path(output_path) if return_path else translation
+
+
 def gdal_warp_wrapper(
     input_path: PathLike,
     output_path: PathLike,
@@ -739,8 +929,13 @@ def gdal_warp_wrapper(
     output_y_resolution: int | None = None,
     copy_metadata: bool = True,
     return_path: bool = True,
-    format: GDALFormatsType | None = GDALGeoTiffFormatStr,
+    format: GDALFormatsType | str | None = GDALNetCDFFormatStr,
     multithread: bool = True,
+    warp_dict_options: dict[str, str | float] | None = DEFAULT_WARP_DICT_OPTIONS,
+    use_tqdm_progress_bar: bool = True,
+    tqdm_file_name_chars: int = TQDM_FILE_NAME_PRINT_CHARS_INDEX,
+    resampling_method: Resampling | None = None,
+    supress_warnings: bool = True,
     **kwargs,
 ) -> Path | GDALDataset:
     """Execute the `gdalwrap` function within `python`.
@@ -762,9 +957,8 @@ def gdal_warp_wrapper(
         Path with `CPRUK` files to resample. `srcDSOrSrcDSTab` in
         `Warp`.
     output_path
-        Path to save resampled `input_path` file(s) to. If equal to
-        `input_path` then the `overwrite` parameter is called.
-        `destNameOrDestDS` in `Warp`.
+        Path to save resampled `input_path` file(s) to `destNameOrDestDS`
+        in `Warp`.
     output_crs
         Coordinate system to convert `input_path` file(s) to.
         `dstSRS` in `WarpOptions`.
@@ -780,36 +974,63 @@ def gdal_warp_wrapper(
         Whether to copy metadata when possible.
     return_path
         Return the resulting path if `True`, else the new `GDALDataset`.
-    resampling_method
-        Sampling method. `resampleAlg` in `WarpOption`. See other options
-        in: `https://gdal.org/programs/gdalwarp.html#cmdoption-gdalwarp-r`.
+    format
+        Format to write new file to.
+    multithread
+        Whether to use `multithread` to speed up calculations.
+    kwargs
+        Any additional parameters to pass to `WarpOption`.
     """
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    if use_tqdm_progress_bar:
+        description: str = _progress_bar_file_description(
+            input_path=input_path,
+            prefix="Warp:      ",
+            tqdm_file_name_chars=tqdm_file_name_chars,
+        )
+        progress_bar, progress_callback = _gen_progress_bar(description=description)
+        kwargs["callback"] = progress_callback
+
     try:
         assert not Path(output_path).is_dir()
     except AssertionError:
         raise FileExistsError(f"Path exists as a directory: {output_path}")
-    if input_path == output_path:
-        kwargs["overwrite"] = True
-    warp_options: GDALWarpAppOptions = WarpOptions(
+    warp_config: GDALWarpAppOptions = WarpOptions(
         dstSRS=output_crs,
         format=format,
         xRes=output_x_resolution,
         yRes=output_y_resolution,
         copyMetadata=copy_metadata,
         multithread=multithread,
+        warpOptions=warp_dict_options,
+        resampleAlg=_ensure_resample_method_name(resampling_method),
         **kwargs,
     )
-    projection: GDALDataset = Warp(
-        destNameOrDestDS=output_path, srcDSOrSrcDSTab=input_path, options=warp_options
-    )
+    projection: GDALDataset
+    if supress_warnings:
+        with config_GDAL_option("CPL_LOG", "gdal_warnings.log"):
+            projection = Warp(
+                destNameOrDestDS=output_path,
+                srcDSOrSrcDSTab=input_path,
+                options=warp_config,
+            )
+    else:
+        projection = Warp(
+            destNameOrDestDS=output_path,
+            srcDSOrSrcDSTab=input_path,
+            options=warp_config,
+        )
+    projection.FlushCache()
+    if use_tqdm_progress_bar:
+        progress_bar.close()
+
     assert projection is not None
     return output_path if return_path else projection
 
 
 def apply_geo_func(
     source_path: PathLike,
-    func: Callable[[Dataset], Dataset],
+    func: ReprojectFuncType,
     export_folder: PathLike,
     new_path_name_func: Callable[[Path], Path] | None = None,
     to_netcdf: bool = True,
@@ -817,7 +1038,7 @@ def apply_geo_func(
     export_path_as_output_path_kwarg: bool = False,
     return_results: bool = False,
     **kwargs,
-) -> Path | Dataset | GDALDataset:
+) -> Path | T_Dataset | GDALDataset:
     """Apply a `Callable` to `netcdf_source` file and export via `to_netcdf`.
 
     Parameters
@@ -828,18 +1049,38 @@ def apply_geo_func(
         `Callable` to modify `netcdf`.
     export_folder
         Where to save results.
-    path_name_replace_tuple
-        Optional replacement `str` to apply to `source_path.name` when exporting
+    new_path_name_func
+        `Callabe` to generate new path to save to.
     to_netcdf
-        Whether to call `to_netcdf` method on `results` `Dataset`.
+        Whether to call `to_netcdf()` method on `results` `Dataset`.
+    to_raster
+        Whether to call `rio.to_raster()` on `results` `Dataset`.
+    export_path_as_output_path_kwarg
+        Whether to add `output_path = export_path` to `kwargs` passed to
+        `func`. Meant for cases calling `gdal_warp_wrapper`.
+    return_results
+        Whether to return results, which would be a `Dataset` or
+        `GDALDataset` (the latter if `gdal_warp_wrapper` is used).
+    **kwargs
+        Other parameters passed to `func` call.
+
+    Returns
+    -------
+       Either a `Path` to generated file or converted `xarray` object.
     """
+    if not source_path:
+        raise ValueError(
+            f"Source path must be a folder, currently '{source_path}'. "
+            f"May need to mount drive."
+        )
+    # Generate export_path following source_path name
     export_path: Path = Path(source_path)
     if new_path_name_func:
         export_path = new_path_name_func(export_path)
     export_path = Path(export_folder) / export_path.name
     if export_path_as_output_path_kwarg:
         kwargs["output_path"] = export_path
-    results: Dataset | Path | GDALDataset = func(source_path, **kwargs)
+    results: T_Dataset | Path | GDALDataset = func(source_path, **kwargs)
     if to_netcdf or to_raster:
         if isinstance(results, Path):
             results = open_dataset(results)
@@ -863,94 +1104,6 @@ def apply_geo_func(
         return results
     else:
         return export_path
-
-
-# Note: `rioxarray` is imported to ensure GIS methods are included. See:
-# https://corteva.github.io/rioxarray/stable/getting_started/getting_started.html#rio-accessor
-def xarray_example(
-    start_date: DateType = XARRAY_EXAMPLE_START_DATE_STR,
-    end_date: DateType = XARRAY_EXAMPLE_END_DATE_4_YEARS,
-    coordinates: dict[str, tuple[float, float]] = THREE_CITY_CENTRE_COORDS,
-    skip_dates: Iterable[date] | None = None,
-    random_seed_int: int | None = XARRAY_EXAMPLE_RANDOM_SEED,
-    name: str | None = None,
-    as_dataset: bool = False,
-    **kwargs,
-) -> DataArray | Dataset:
-    """Generate spatial and temporal `xarray` objects.
-
-    Parameters
-    ----------
-    start_date
-        Start of time series.
-    end_date
-        End of time series (by default not inclusive).
-    coordinates
-        A `dict` of region name `str` to `tuple` of
-        `(lon, lat)` form.
-    skip_dates
-        A list of `date` objects to drop/skip between
-        `start_date` and `end_date`.
-    as_dataset
-        Convert output to `Dataset`.
-    name
-        Name of returned `DataArray` and `Dataset`.
-    kwargs
-        Additional parameters to pass to `date_range_generator`.
-
-    Returns
-    -------
-    :
-        A `DataArray` of `start_date` to `end_date` date
-        range a random variable for coordinates regions
-        (Glasgow, Manchester and London as default).
-
-    Examples
-    --------
-    >>> xarray_example('1980-11-30', '1980-12-5')
-    <xarray.DataArray 'xa_template' (time: 5, space: 3)>...
-    array([[..., ..., ...],
-           [..., ..., ...],
-           [..., ..., ...],
-           [..., ..., ...],
-           [..., ..., ...]])
-    Coordinates:
-      * time     (time) datetime64[ns] ...1980-11-30 ... 1980-12-04
-      * space    (space) <U10 ...'Glasgow' 'Manchester' 'London'
-    """
-    date_range: list[DateType] = list(
-        date_range_generator(
-            start_date=start_date,
-            end_date=end_date,
-            start_format_str=ISO_DATE_FORMAT_STR,
-            end_format_str=ISO_DATE_FORMAT_STR,
-            skip_dates=skip_dates,
-            **kwargs,
-        )
-    )
-    if not name:
-        name = f"xa_template"
-    if isinstance(random_seed_int, int):
-        random.seed(random_seed_int)  # ensure results are predictable
-    random_data: array = random.rand(len(date_range), len(coordinates))
-    spaces: list[str] = list(coordinates.keys())
-    # If useful, add lat/lon (currently not working)
-    # lat: list[float] = [coord[0] for coord in coordinates.values()]
-    # lon: list[float] = [coord[1] for coord in coordinates.values()]
-    da: DataArray = DataArray(
-        random_data,
-        name=name,
-        coords={
-            "time": to_datetime(date_range),
-            "space": spaces,
-            # "lon": lon,# *len(date_range),
-            # "lat": lat,
-        },
-    )
-    if as_dataset:
-        return da.to_dataset()
-    else:
-        return da
 
 
 def file_name_to_start_end_dates(
@@ -993,6 +1146,7 @@ def file_name_to_start_end_dates(
     >>> tif_366_path: Path = (Path('some') /
     ...     'folder' /
     ...     'pr_rcp85_land-cpm_uk_2.2km_06_day_20791201-20801130.tif')
+    >>> from pandas import date_range
     >>> dates = date_range(*file_name_to_start_end_dates(tif_366_path))
     >>> len(dates)
     366
@@ -1010,13 +1164,10 @@ def file_name_to_start_end_dates(
     return start_date, end_date
 
 
-def generate_360_to_standard(array_to_expand: DataArray) -> DataArray:
+def generate_360_to_standard(array_to_expand: T_DataArray) -> T_DataArray:
     """Return `array_to_expand` 360 days expanded to 365 or 366 days.
 
     This may be dropped if `cpm_reproject_with_standard_calendar` is successful.
-
-    Examples
-    --------
     """
     initial_days: int = len(array_to_expand)
     assert initial_days == 360
@@ -1033,54 +1184,7 @@ def generate_360_to_standard(array_to_expand: DataArray) -> DataArray:
     return DataArray(expanded_index)
 
 
-def correct_int_time_datafile(
-    xr_dataset_path: Path,
-    new_index_name: str = "time",
-    replace_index: str | None = "band",
-    data_attribute_name: str = "band_data",
-) -> Dataset:
-    """Load a `Dataset` from path and generate `time` index.
-
-    Notes
-    -----
-    This is not finished and may be removed in future.
-
-    Examples
-    --------
-    >>> pytest.skip(reason="Not finished implementing")
-    >>> rainfall_dataset = correct_int_time_datafile(
-    ...     glasgow_example_cropped_cpm_rainfall_path)
-    >>> assert False
-    """
-    xr_dataset: Dataset = open_dataset(xr_dataset_path)
-    metric_name: str = str(xr_dataset_path).split("_")[0]
-    start_date, end_date = file_name_to_start_end_dates(xr_dataset_path)
-    dates_index: DatetimeIndex = date_range(start_date, end_date)
-    intermediate_new_index: str = new_index_name + "_standard"
-    # xr_intermediate_date = xr_dataset.assign_coords({intermediate_new_index: dates_index})
-    xr_dataset[intermediate_new_index]: Dataset = dates_index
-    xr_360_datetime = xr_dataset[intermediate_new_index].convert_calendar(
-        "360_day", align_on="year", dim=intermediate_new_index
-    )
-    if len(xr_360_datetime[intermediate_new_index]) == 361:
-        # If the range overlaps a leap and non leap year,
-        # it is possible to have 361 days
-        # See https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html
-        # Assuming first date is a December 1
-        xr_360_datetime = xr_360_datetime[intermediate_new_index][1:]
-    assert len(xr_360_datetime[intermediate_new_index]) == 360
-    # xr_with_datetime['time'] = xr_360_datetime
-    assert False
-    xr_bands_time_indexed: DataArray = xr_intermediate_date[
-        data_attribute_name
-    ].expand_dims(dim={new_index_name: xr_intermediate_date[new_index_name]})
-    # xr_365_data_array: DataArray = convert_xr_calendar(xr_bands_time_indexed)
-    xr_365_dataset: Dataset = Dataset({metric_name: xr_bands_time_indexed})
-    partial_fix_365_dataset: Dataset = convert_xr_calendar(xr_365_dataset.time)
-    assert False
-
-
-def cftime_range_gen(time_data_array: DataArray, **kwargs) -> NDArray:
+def cftime_range_gen(time_data_array: T_DataArray, **kwargs) -> NDArray:
     """Convert a banded time index a banded standard (Gregorian)."""
     assert hasattr(time_data_array, "time")
     time_bnds_fix_range_start: CFTimeIndex = cftime_range(
@@ -1090,3 +1194,121 @@ def cftime_range_gen(time_data_array: DataArray, **kwargs) -> NDArray:
     )
     time_bnds_fix_range_end: CFTimeIndex = time_bnds_fix_range_start + timedelta(days=1)
     return np.array((time_bnds_fix_range_start, time_bnds_fix_range_end)).T
+
+
+def get_cpm_for_coord_alignment(
+    cpm_for_coord_alignment: PathLike | T_Dataset | None,
+    skip_reproject: bool = False,
+    cpm_regex: str = CPM_REGEX,
+) -> T_Dataset:
+    """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`.
+
+    Parameters
+    ----------
+    cpm_for_coord_alignment
+        Either a `Path` or a file or folder with a `cpm` file to align to
+        or a `xarray.Dataset`. If a folder, the first file matching
+        `cpm_regex` will be used. It will then be processed via
+        `cpm_reproject_with_standard_calendar` for comparability and use
+        alongside `cpm` files.
+    skip_reproject
+        Whether to skip calling `cpm_reproject_with_standard_calendar`.
+    cpm_regex
+        A regular expression to filter suitable files if
+        `cpm_for_coord_alignment` is a folder `Path`.
+
+    Returns
+    -------
+    An `xarray.Dataset` coordinate structure to align `HADs` coordinates.
+    """
+    if not cpm_for_coord_alignment:
+        raise ValueError("'cpm_for_coord_alignment' must be a Path or xarray Dataset.")
+    elif isinstance(cpm_for_coord_alignment, PathLike):
+        path: Path = Path(cpm_for_coord_alignment)
+        if Path(path).is_dir():
+            path = next(Path(path).glob(cpm_regex))
+        if skip_reproject:
+            logger.info(f"Skipping reprojection and loading '{path}'...")
+            cpm_for_coord_alignment, variable = check_xarray_path_and_var_name(
+                cpm_for_coord_alignment, None
+            )
+            logger.info(
+                f"Variable '{variable}' loaded for coord alignment from '{path}'."
+            )
+        else:
+            logger.info(f"Converting coordinates of '{path}'...")
+            cpm_for_coord_alignment = cpm_reproject_with_standard_calendar(path)
+            logger.info(f"Coordinates converted from '{path}''")
+    elif not skip_reproject:
+        logger.info(
+            f"Converting coordinates of type {type(cpm_for_coord_alignment)} ..."
+        )
+        cpm_for_coord_alignment = cpm_reproject_with_standard_calendar(
+            cpm_for_coord_alignment
+        )
+        logger.info(f"Coordinates converted to type {type(cpm_for_coord_alignment)}")
+    else:
+        logger.info(
+            f"Coordinate converter of type {type(cpm_for_coord_alignment)} "
+            f"loaded without processing."
+        )
+    try:
+        assert isinstance(cpm_for_coord_alignment, Dataset)
+    except AssertionError:
+        raise AttributeError(
+            f"'cpm_for_coord_alignment' must be a 'Dataset'. "
+            f"Currently a {type(cpm_for_coord_alignment)}."
+        )
+    return cpm_for_coord_alignment
+
+
+def region_crop_file_name(
+    crop_region: str | RegionOptions | None, file_name: PathLike
+) -> str:
+    """Generate a file name for a regional crop.
+
+    Parameters
+    ----------
+    crop_region
+        Region name to include in cropped file name.
+    file_name
+        File name to add `crop_region` name to.
+
+    Examples
+    --------
+    >>> region_crop_file_name(
+    ...    'Glasgow',
+    ...    'tasmax.nc')
+    'crop_Glasgow_tasmax.nc'
+    >>> region_crop_file_name(
+    ...    'Glasgow',
+    ...    'tasmax_hadukgrid_uk_2_2km_day_19800601-19800630.nc')
+    'crop_Glasgow_tasmax_hads_19800601-19800630.nc'
+    >>> region_crop_file_name(
+    ...     'Glasgow',
+    ...     'tasmax_rcp85_land-cpm_uk_2.2km_05_day_std_year_19861201-19871130.nc')
+    'crop_Glasgow_tasmax_cpm_05_19861201-19871130.nc'
+    """
+    file_name_sections = Path(file_name).name.split("_")
+    final_suffix: str
+    crop_region = crop_region or ""
+    if "_rcp85_land-cpm_uk_2" in str(file_name):
+        final_suffix = "_".join(
+            (
+                file_name_sections[0],
+                "cpm",
+                file_name_sections[5],
+                file_name_sections[-1],
+            )
+        )
+    elif "_hadukgrid_uk_2_2km_day" in str(file_name):
+        final_suffix = "_".join(
+            (
+                file_name_sections[0],
+                "hads",
+                file_name_sections[-1],
+            )
+        )
+    else:
+        final_suffix = str(file_name)
+    return "_".join(("crop", str(crop_region), final_suffix))

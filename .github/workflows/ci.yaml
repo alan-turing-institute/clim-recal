@@ -5,6 +5,7 @@ env:
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
   CONDA_ENV_NAME: clim-recal
+  # CONDA_ENV_PATH: conda-lock.yml
   CONDA_ENV_PATH: .conda-linux-64.lock
   MIN_PYTHON_VERSION: 3.12
   PYTHON_MODULE_FOLDER: python/
@@ -16,11 +17,11 @@ env:
 
 on:
   pull_request:
-    branches: ['main', 'raw-data-resample', ]
+    branches: ['main', 'cache-cpm-for-hads', ]
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['main', 'raw-data-resample', ]
+    branches: ['main', 'cache-cpm-for-hads', ]
     paths-ignore: ['docs/**']
 
 concurrency:
@@ -62,15 +63,20 @@ jobs:
       - name: Build Conda Environment
         uses: conda-incubator/setup-miniconda@v3
         with:
-          auto-update-conda: false
           activate-environment: ${{ env.CONDA_ENV_NAME }}
           environment-file: ${{ env.CONDA_ENV_PATH }}
+          auto-activate-base: false
           miniforge-version: latest
           use-mamba: true
 
       - name: Run Python Tests
+        # The first line below may be temporary,
+        # see this solution:
+        # https://github.com/pyenv/pyenv/issues/2625
         run: |
+          mamba install libsqlite --force-reinstall
           mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest -m "not darwin and not mount"
+        shell: bash -el {0}
 
       - name: Copy test coverage results
         run: |

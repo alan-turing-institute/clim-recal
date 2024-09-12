@@ -1,3 +1,6 @@
+import asyncio
+from argparse import BooleanOptionalAction
+from os import PathLike
 from pathlib import Path
 from pprint import pprint
 from shutil import copytree, rmtree
@@ -5,25 +8,11 @@ from typing import Final, Iterator
 
 import pytest
 from coverage_badge.__main__ import main as gen_cov_badge
-from xarray import DataArray, Dataset
+from xarray import DataArray, Dataset, open_dataset
+from xarray.core.types import T_Dataset
 
 from clim_recal.config import ClimRecalConfig
-from clim_recal.debiasing.debias_wrapper import (
-    CALIB_DATES_STR_DEFAULT,
-    CMETHODS_FILE_NAME,
-    CMETHODS_OUT_FOLDER_DEFAULT,
-    DATA_PATH_DEFAULT,
-    MOD_FOLDER_DEFAULT,
-    OBS_FOLDER_DEFAULT,
-    PREPROCESS_FILE_NAME,
-    PREPROCESS_OUT_FOLDER_DEFAULT,
-    PROCESSESORS_DEFAULT,
-    VALID_DATES_STR_DEFAULT,
-    CityOptions,
-    MethodOptions,
-    RunOptions,
-    VariableOptions,
-)
+from clim_recal.debiasing.debias_wrapper import RegionOptions
 from clim_recal.resample import CPM_OUTPUT_LOCAL_PATH, HADS_OUTPUT_LOCAL_PATH
 from clim_recal.utils.core import (
     ISO_DATE_FORMAT_STR,
@@ -31,103 +20,58 @@ from clim_recal.utils.core import (
     climate_data_mount_path,
     is_climate_data_mounted,
     is_platform_darwin,
-    iter_to_tuple_strs,
     results_path,
 )
+from clim_recal.utils.data import BoundsTupleType
 from clim_recal.utils.server import CondaLockFileManager
 from clim_recal.utils.xarray import (
     GLASGOW_GEOM_LOCAL_PATH,
+    cpm_reproject_with_standard_calendar,
+)
+from tests.utils import (
+    CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT,
+    CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT,
+    CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT,
+    CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT,
+    CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT,
+    CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT,
+    CPM_CONVERTED_TASMAX_1980_FILE,
+    CPM_RAW_TASMAX_1980_FILE,
+    CPM_RAW_TASMAX_EXAMPLE_PATH,
+    HADS_RAW_TASMAX_1980_FILE,
+    HADS_RAW_TASMAX_EXAMPLE_PATH,
+    MOD_FOLDER_FILES_COUNT_CORRECT,
+    OBS_FOLDER_FILES_COUNT_CORRECT,
+    PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT,
+    TEST_AUTH_CSV_FILE_NAME,
+    XARRAY_END_DATE_4_DAYS,
+    XARRAY_END_DATE_8_DAYS,
     XARRAY_EXAMPLE_END_DATE_4_YEARS,
-    BoundsTupleType,
+    XARRAY_SKIP_2_FROM_8_DAYS,
+    LocalCache,
+    LocalCachesManager,
     xarray_example,
 )
 
 MOUNT_DOCTEST_SKIP_MESSAGE: Final[str] = "requires external data mounted"
-# Date Range covering leap year
-XARRAY_END_DATE_4_DAYS: Final[str] = "1980-12-5"
-XARRAY_END_DATE_8_DAYS: Final[str] = "1980-12-10"
-XARRAY_SKIP_2_FROM_8_DAYS: Final[tuple[str, str]] = (
-    "1980-12-7",
-    "1980-12-8",
+MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE: Final[str] = (
+    "requires external data mounted or cached"
 )
-TEST_AUTH_CSV_FILE_NAME: Final[Path] = Path("test_auth.csv")
 
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
 CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData")
 CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateData")
 
-TEST_PATH: Final[Path] = Path().absolute()
-TEST_DATA_PATH: Final[Path] = TEST_PATH / "tests"
+TEST_RUN_PATH: Final[Path] = Path().absolute()
+TEST_FILE_PATH: Final[Path] = TEST_RUN_PATH / "tests"
 TEST_RESULTS_PATH: Final[Path] = results_path(
-    name="test-run-results", path=TEST_DATA_PATH, mkdir=True
+    name="test-run-results", path=TEST_FILE_PATH, mkdir=True
 )
 PYTHON_DIR_NAME: Final[Path] = Path("python")
+TEST_DATA_PATH: Final[Path] = TEST_FILE_PATH / "data"
+LOCAL_FIXTURE_PATH_NAME: Final[Path] = Path("local-cache")
 
-CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str, ...]] = (
-    "python",
-    PREPROCESS_FILE_NAME,
-    "--mod",
-    DATA_PATH_DEFAULT / MOD_FOLDER_DEFAULT / CityOptions.default(),
-    "--obs",
-    DATA_PATH_DEFAULT / OBS_FOLDER_DEFAULT / CityOptions.default(),
-    "-v",
-    VariableOptions.default(),
-    "-r",
-    RunOptions.default(),
-    "--out",
-    (
-        DATA_PATH_DEFAULT
-        / PREPROCESS_OUT_FOLDER_DEFAULT
-        / CityOptions.default()
-        / RunOptions.default()
-        / VariableOptions.default()
-    ),
-    "--calib_dates",
-    CALIB_DATES_STR_DEFAULT,
-    "--valid_dates",
-    VALID_DATES_STR_DEFAULT,
-)
-
-CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT: Final[
-    tuple[str, ...]
-] = iter_to_tuple_strs(CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT)
-
-CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = " ".join(
-    CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
-)
-
-CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str, ...]] = (
-    "python",
-    CMETHODS_FILE_NAME,
-    "--input_data_folder",
-    CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT[11],
-    "--out",
-    (
-        DATA_PATH_DEFAULT
-        / CMETHODS_OUT_FOLDER_DEFAULT
-        / CityOptions.default()
-        / RunOptions.default()
-    ).resolve(),
-    "--method",
-    MethodOptions.default(),
-    "-v",
-    VariableOptions.default(),
-    "-p",
-    PROCESSESORS_DEFAULT,
-)
-
-CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT: Final[
-    tuple[str, ...]
-] = iter_to_tuple_strs(CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT)
-
-CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = " ".join(
-    CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
-)
-
-
-MOD_FOLDER_FILES_COUNT_CORRECT: Final[int] = 1478
-OBS_FOLDER_FILES_COUNT_CORRECT: Final[int] = MOD_FOLDER_FILES_COUNT_CORRECT
-PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT: Final[int] = 4
+collect_ignore_glob: list[str] = ["*run*", "*.png", "*.xlsx"]
 
 
 @pytest.fixture
@@ -171,6 +115,139 @@ def is_data_mounted(data_mount_path) -> bool:
         condition by returning `None`.
     """
     return is_climate_data_mounted(mount_path=data_mount_path)
+
+
+@pytest.fixture(scope="session")
+def local_cache_fixtures(
+    local_cache_path: Path,
+    local_cpm_cache_path: Path,
+    local_hads_cache_path: Path,
+    sync_all: bool,
+    use_async: bool,
+) -> LocalCachesManager:
+    cache_manager: LocalCachesManager = LocalCachesManager(
+        default_local_cache_path=local_cache_path,
+        caches=(
+            LocalCache(
+                name="tasmax_cpm_1980_raw",
+                source_path=CPM_RAW_TASMAX_EXAMPLE_PATH,
+                # local_cache_path=local_cpm_cache_path / 'tasmax/01/latest' / CPM_RAW_TASMAX_1980_FILE,
+                local_cache_path=local_cpm_cache_path / CPM_RAW_TASMAX_1980_FILE,
+                reader=open_dataset,
+                reader_kwargs={"decode_coords": "all"},
+            ),
+            LocalCache(
+                name="tasmax_cpm_1980_converted",
+                source_path=CPM_RAW_TASMAX_EXAMPLE_PATH,
+                local_cache_path=local_cpm_cache_path / CPM_CONVERTED_TASMAX_1980_FILE,
+                reader=open_dataset,
+                reader_kwargs={"decode_coords": "all"},
+                parser=cpm_reproject_with_standard_calendar,
+            ),
+            LocalCache(
+                name="tasmax_hads_1980_raw",
+                source_path=HADS_RAW_TASMAX_EXAMPLE_PATH,
+                local_cache_path=local_hads_cache_path / HADS_RAW_TASMAX_1980_FILE,
+                reader=open_dataset,
+                reader_kwargs={"decode_coords": "all"},
+            ),
+            # LocalCache(
+            #     name="railfall_hads_1980_raw",
+            #     source_path=HADS_RAW_RAINFALL_EXAMPLE_PATH,
+            #     local_cache_path=local_hads_cache_path / HADS_RAW_RAINFALL_1980_FILE,
+            #     reader=open_dataset,
+            #     reader_kwargs={"decode_coords": "all"},
+            # ),
+            # LocalCache(
+            #     name="railfall_cpm_1980_raw",
+            #     source_path=CPM_RAW_RAINFALL_EXAMPLE_PATH,
+            #     local_cache_path=local_hads_cache_path / CPM_RAW_RAINFALL_1980_FILE,
+            #     reader=open_dataset,
+            #     reader_kwargs={"decode_coords": "all"},
+            # ),
+        ),
+    )
+    if sync_all:
+        if use_async:
+            _ = asyncio.run(cache_manager.async_sync_all())
+        else:
+            _ = cache_manager.sync_all()
+    return cache_manager
+
+
+@pytest.fixture(scope="session")
+def tasmax_cpm_1980_raw(
+    local_cache: bool,
+    local_cpm_cache_path: Path,
+    local_cache_fixtures: LocalCachesManager,
+) -> T_Dataset | None:
+    if local_cache:
+        return local_cache_fixtures["tasmax_cpm_1980_raw"].read(
+            cache_path=local_cpm_cache_path
+        )
+    else:
+        return None
+
+
+@pytest.fixture(scope="session")
+def tasmax_cpm_1980_raw_path(
+    local_cache: bool,
+    local_cache_fixtures: LocalCachesManager,
+) -> T_Dataset:
+    if local_cache:
+        return local_cache_fixtures["tasmax_cpm_1980_raw"].local_cache_path
+    else:
+        return local_cache_fixtures["tasmax_cpm_1980_raw"].source_path
+
+
+@pytest.fixture(scope="session")
+def tasmax_hads_1980_raw(
+    local_cache: bool,
+    local_hads_cache_path: Path,
+    local_cache_fixtures: LocalCachesManager,
+) -> T_Dataset | None:
+    if local_cache:
+        return local_cache_fixtures["tasmax_hads_1980_raw"].read(
+            cache_path=local_hads_cache_path
+        )
+    else:
+        return None
+
+
+@pytest.fixture(scope="session")
+def tasmax_hads_1980_raw_path(
+    local_cache: bool,
+    local_cache_fixtures: LocalCachesManager,
+) -> T_Dataset:
+    if local_cache:
+        return local_cache_fixtures["tasmax_hads_1980_raw"].local_cache_path
+    else:
+        return local_cache_fixtures["tasmax_hads_1980_raw"].source_path
+
+
+@pytest.fixture(scope="session")
+def tasmax_cpm_1980_converted(
+    local_cache: bool,
+    local_cpm_cache_path: Path,
+    local_cache_fixtures: LocalCachesManager,
+) -> T_Dataset | None:
+    if local_cache:
+        return local_cache_fixtures["tasmax_cpm_1980_converted"].read(
+            cache_path=local_cpm_cache_path
+        )
+    else:
+        return None
+
+
+@pytest.fixture(scope="session")
+def tasmax_cpm_1980_converted_path(
+    local_cache: bool,
+    local_cache_fixtures: LocalCachesManager,
+) -> T_Dataset:
+    if local_cache:
+        return local_cache_fixtures["tasmax_cpm_1980_converted"].local_cache_path
+    else:
+        return local_cache_fixtures["tasmax_cpm_1980_converted"].source_path
 
 
 # This may be removed in future
@@ -224,22 +301,91 @@ def conda_lock_file_manager() -> CondaLockFileManager:
 
 @pytest.fixture
 def data_fixtures_path(tmp_path: Path) -> Iterator[Path]:
-    yield copytree(TEST_DATA_PATH, tmp_path / TEST_DATA_PATH.name)
-    rmtree(tmp_path / TEST_DATA_PATH.name)
+    yield copytree(TEST_DATA_PATH, tmp_path / TEST_FILE_PATH.name)
+    rmtree(tmp_path / TEST_FILE_PATH.name)
 
 
-@pytest.mark.mount
 @pytest.fixture
 def glasgow_shape_file_path(data_fixtures_path: Path) -> Path:
     return data_fixtures_path / Path(*GLASGOW_GEOM_LOCAL_PATH.parts[-2:])
 
 
 @pytest.fixture(scope="session")
-def test_runs_output_path(path=TEST_RESULTS_PATH) -> Iterator[Path]:
+def test_runs_output_path(
+    keep_test_results: bool, path=TEST_RESULTS_PATH
+) -> Iterator[Path]:
     path.mkdir(exist_ok=True, parents=True)
     yield path
-    # Comment out rmtree line below to leave test files for checking after runs
-    rmtree(path, ignore_errors=True)
+    if not keep_test_results:
+        rmtree(path, ignore_errors=True)
+
+
+def pytest_addoption(parser):
+    """Add cli config to use used cached test fixture files."""
+    parser.addoption(
+        "--local-cache",
+        action=BooleanOptionalAction,
+        default=False,
+        help="use 'local_cache' data fixtures",
+    )
+    parser.addoption(
+        "--sync-all",
+        action=BooleanOptionalAction,
+        default=False,
+        help="sync all local cached data fixtures",
+    )
+    parser.addoption(
+        "--use-async",
+        action=BooleanOptionalAction,
+        default=False,
+        help="If --sync-all, use async calls",
+    )
+    parser.addoption(
+        "--keep-results",
+        action=BooleanOptionalAction,
+        default=False,
+        help="Keep test result files (else deleted after each test)",
+    )
+
+
+@pytest.fixture(scope="session")
+def local_cache(request) -> bool:
+    return request.config.getoption("--local-cache")
+
+
+@pytest.fixture(scope="session")
+def sync_all(request) -> bool:
+    return request.config.getoption("--sync-all")
+
+
+@pytest.fixture(scope="session")
+def use_async(request) -> bool:
+    return request.config.getoption("--use-async")
+
+
+@pytest.fixture(scope="session")
+def keep_test_results(request) -> bool:
+    return request.config.getoption("--keep-results")
+
+
+@pytest.fixture(scope="session")
+def local_test_data_path() -> Path:
+    return TEST_DATA_PATH
+
+
+@pytest.fixture(scope="session")
+def local_cache_path(local_test_data_path) -> Path:
+    return local_test_data_path / LOCAL_FIXTURE_PATH_NAME
+
+
+@pytest.fixture(scope="session")
+def local_hads_cache_path(local_cache_path: Path) -> Path:
+    return local_cache_path / "hadsuk"
+
+
+@pytest.fixture(scope="session")
+def local_cpm_cache_path(local_cache_path: Path) -> Path:
+    return local_cache_path / "ukcp"
 
 
 @pytest.fixture
@@ -271,21 +417,44 @@ def uk_rotated_grid_bounds() -> BoundsTupleType:
 
 
 # Note: it may be worth setting this to cache for session runs
-@pytest.mark.mount
+# This requires a different tmp_path configuration
 @pytest.fixture
-def clim_runner(tmp_path) -> ClimRecalConfig:
+def clim_runner(
+    tmp_path: Path,
+    local_cache: bool,
+    local_cache_fixtures: LocalCachesManager,
+    test_runs_output_path: PathLike,
+    local_hads_cache_path: PathLike,
+    local_cpm_cache_path: PathLike,
+    tasmax_cpm_1980_converted_path: PathLike,
+) -> ClimRecalConfig:
     """Return default `ClimRecalConfig`."""
+    assert local_cache_fixtures.default_local_cache_path
+    assert local_cache_fixtures.check_default_cache_path()
+    regions: tuple[RegionOptions, RegionOptions] = (
+        RegionOptions.GLASGOW,
+        RegionOptions.MANCHESTER,
+    )
     try:
+        # Todo: refactor to more easily specify `local_cache`
+        assert not local_cache
         return ClimRecalConfig(
             preprocess_out_folder=tmp_path,
-            cities=(CityOptions.GLASGOW, CityOptions.MANCHESTER),
+            regions=regions,
+            output_path=test_runs_output_path,
+            # cpm_for_coord_alignment=tasmax_cpm_1980_converted_path,
         )
-    except FileExistsError:
+    except (FileExistsError, AssertionError):
         return ClimRecalConfig(
             preprocess_out_folder=tmp_path,
-            cities=(CityOptions.GLASGOW, CityOptions.MANCHESTER),
+            regions=regions,
+            output_path=test_runs_output_path,
+            hads_input_path=local_hads_cache_path,
+            cpm_input_path=local_cpm_cache_path,
+            # Todo: refactor to use caching to speed up runs
             cpm_kwargs=dict(_allow_check_fail=True),
             hads_kwargs=dict(_allow_check_fail=True),
+            cpm_for_coord_alignment=tasmax_cpm_1980_converted_path,
         )
 
 
@@ -311,6 +480,15 @@ def glasgow_example_cropped_cpm_rainfall_path(data_fixtures_path: Path) -> Path:
     )
 
 
+@pytest.fixture
+def test_users_cache(data_fixtures_path: Path, tmp_path: Path) -> LocalCache:
+    return LocalCache(
+        name="test-users",
+        source_path=data_fixtures_path / "test_user_accounts.xlsx",
+        local_cache_path=tmp_path / "test-local-cache",
+    )
+
+
 @pytest.fixture(autouse=True)
 def doctest_auto_fixtures(
     doctest_namespace: dict,
@@ -328,35 +506,35 @@ def doctest_auto_fixtures(
     glasgow_epsg_27700_bounds: BoundsTupleType,
     glasgow_shape_file_path: Path,
     test_runs_output_path: Path,
-    resample_test_cpm_output_path: Path,
-    resample_test_hads_output_path: Path,
+    # resample_test_cpm_output_path: Path,
+    # resample_test_hads_output_path: Path,
     glasgow_example_cropped_cpm_rainfall_path: Path,
-    clim_runner: ClimRecalConfig,
+    # clim_runner: ClimRecalConfig,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
-    doctest_namespace[
-        "CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT"
-    ] = CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT
-    doctest_namespace[
-        "CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT"
-    ] = CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
-    doctest_namespace[
-        "CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT"
-    ] = CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
+    doctest_namespace["CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT"] = (
+        CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT
+    )
+    doctest_namespace["CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT"] = (
+        CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
+    )
+    doctest_namespace["CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT"] = (
+        CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
+    )
     doctest_namespace["MOD_FOLDER_FILES_COUNT_CORRECT"] = MOD_FOLDER_FILES_COUNT_CORRECT
     doctest_namespace["OBS_FOLDER_FILES_COUNT_CORRECT"] = OBS_FOLDER_FILES_COUNT_CORRECT
-    doctest_namespace[
-        "PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT"
-    ] = preprocess_out_folder_files_count_correct
-    doctest_namespace[
-        "CLI_CMEHTODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT"
-    ] = CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
-    doctest_namespace[
-        "CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT"
-    ] = CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT
-    doctest_namespace[
-        "CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT"
-    ] = CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
+    doctest_namespace["PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT"] = (
+        preprocess_out_folder_files_count_correct
+    )
+    doctest_namespace["CLI_CMEHTODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT"] = (
+        CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
+    )
+    doctest_namespace["CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT"] = (
+        CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT
+    )
+    doctest_namespace["CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT"] = (
+        CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
+    )
     doctest_namespace["TEST_AUTH_CSV_PATH"] = TEST_AUTH_CSV_FILE_NAME
     doctest_namespace["is_platform_darwin"] = is_platform_darwin()
     doctest_namespace["is_data_mounted"] = is_data_mounted
@@ -364,9 +542,9 @@ def doctest_auto_fixtures(
     doctest_namespace["pprint"] = pprint
     doctest_namespace["pytest"] = pytest
     doctest_namespace["xarray_spatial_4_days"] = xarray_spatial_4_days
-    doctest_namespace[
-        "xarray_spatial_6_days_2_skipped"
-    ] = xarray_spatial_6_days_2_skipped
+    doctest_namespace["xarray_spatial_6_days_2_skipped"] = (
+        xarray_spatial_6_days_2_skipped
+    )
     doctest_namespace["xarray_spatial_8_days"] = xarray_spatial_8_days
     doctest_namespace["xarray_spatial_4_years"] = xarray_spatial_4_years
     doctest_namespace["xarray_spatial_4_years_360_day"] = xarray_spatial_4_years_360_day
@@ -376,13 +554,16 @@ def doctest_auto_fixtures(
     doctest_namespace["glasgow_epsg_27700_bounds"] = glasgow_epsg_27700_bounds
     doctest_namespace["glasgow_shape_file_path"] = glasgow_shape_file_path
     doctest_namespace["test_runs_output_path"] = test_runs_output_path
-    doctest_namespace["resample_test_hads_output_path"] = resample_test_hads_output_path
-    doctest_namespace["resample_test_cpm_output_path"] = resample_test_cpm_output_path
+    # doctest_namespace["resample_test_hads_output_path"] = resample_test_hads_output_path
+    # doctest_namespace["resample_test_cpm_output_path"] = resample_test_cpm_output_path
     doctest_namespace["mount_doctest_skip_message"] = MOUNT_DOCTEST_SKIP_MESSAGE
-    doctest_namespace[
-        "glasgow_example_cropped_cpm_rainfall_path"
-    ] = glasgow_example_cropped_cpm_rainfall_path
-    doctest_namespace["clim_runner"] = clim_runner
+    doctest_namespace["mount_or_cache_doctest_skip_message"] = (
+        MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE
+    )
+    doctest_namespace["glasgow_example_cropped_cpm_rainfall_path"] = (
+        glasgow_example_cropped_cpm_rainfall_path
+    )
+    # doctest_namespace["clim_runner"] = clim_runner
 
 
 def pytest_sessionfinish(session, exitstatus):

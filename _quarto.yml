@@ -43,6 +43,8 @@ website:
         href: "setup-instructions.md"
       - text: "Pipeline"
         href: "docs/pipeline_guidance.qmd"
+      - text: "Generated Datasets"
+        href: "docs/datasets.qmd"
       # - section: "Pipeline"
       #   contents:
       #     - text: "Guidance"
@@ -109,7 +111,7 @@ quartodoc:
   # see: https://github.com/alan-turing-institute/clim-recal/issues/128
   sections:
     - title: Data Source Management
-      desc: How data is downloaded for use
+      desc: How data is downloaded and processed
       contents:
         # the functions being documented in the package.
         # you can refer to anything: class methods, modules, etc..

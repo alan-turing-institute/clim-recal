@@ -3,20 +3,200 @@ from typing import Collection, Union, Callable, Any, Literal, Final, Iterable
 from os import PathLike
 from datetime import date
 from enum import auto
+from pathlib import Path
+
+from rasterio.enums import Resampling
+from xarray.backends.api import ENGINES
 
 from .core import StrEnumReprName
+
+
+DEFAULT_RESAMPLING_METHOD: Final[Resampling] = Resampling.average
+
+BRITISH_NATION_GRID_COORDS_NUMBER: Final[int] = 27700
+BRITISH_NATIONAL_GRID_EPSG: Final[str] = f"EPSG:{BRITISH_NATION_GRID_COORDS_NUMBER}"
+
+HADS_START_DATE: Final[date] = date(1980, 1, 1)
+HADS_END_DATE: Final[date] = date(2021, 12, 31)
+
+CPM_START_DATE: Final[date] = date(1980, 12, 1)
+CPM_END_DATE: Final[date] = date(2060, 11, 30)
+
+HADS_RAW_X_COLUMN_NAME: Final[str] = "projection_x_coordinate"
+HADS_RAW_Y_COLUMN_NAME: Final[str] = "projection_y_coordinate"
+
+HADS_XDIM: Final[str] = HADS_RAW_X_COLUMN_NAME
+HADS_YDIM: Final[str] = HADS_RAW_Y_COLUMN_NAME
+
+HADS_SUB_PATH: Final[Path] = Path("day")
+
+CPM_RAW_X_COLUMN_NAME: Final[str] = "grid_longitude"
+CPM_RAW_Y_COLUMN_NAME: Final[str] = "grid_latitude"
+
+CPRUK_XDIM: Final[str] = CPM_RAW_X_COLUMN_NAME
+CPRUK_YDIM: Final[str] = CPM_RAW_Y_COLUMN_NAME
+
+CPM_SUB_PATH: Final[Path] = Path("latest")
+
+CPM_RESOLUTION_METERS: Final[int] = 2200
 
 AuthorshipType = Union[
     str | tuple[str, ...], dict[str, str] |
     dict[str, dict[str, str]] | dict[str, Collection[str]]
 ]
+DropDayType = set[tuple[int, int]]
+ChangeDayType = set[tuple[int, int]]
+
+BoundsTupleType = tuple[float, float, float, float]
+"""`GeoPandas` bounds: (`minx`, `miny`, `maxx`, `maxy`)."""
+
+
+@dataclass
+class BoundingBoxCoords:
+
+    """A region name and its bounding box coordinates."""
+
+    name: str
+    xmin: float
+    xmax: float
+    ymin: float
+    ymax: float
+    epsg: int = BRITISH_NATION_GRID_COORDS_NUMBER
+
+    def as_rioxarray_tuple(self) -> tuple[float, float, float, float]:
+        """Return in `xmin`, `xmax`, `ymin`, `ymax` order."""
+        return self.xmin, self.ymin, self.xmax, self.ymax
+
+    def as_rioxarray_dict(self) -> dict[str, float]:
+        """Return coords as `dict`"""
+        return {'minx': self.xmin, 'maxx': self.xmax, 'miny': self.ymin, 'maxy': self.ymax}
+
+    @property
+    def rioxarry_epsg(self) -> str:
+        """Return `self.epsg` in `rioxarray` `str` format."""
+        return f"EPSG:{self.epsg}"
+
+
+GlasgowCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
+    name="Glasgow", xmin=249799.999600002, xmax=269234.9996, ymin=657761.472000003, ymax=672330.696800007
+)
+"""Glasgow box coordinates in 27700 grid."""
+
+LondonCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
+    name="London", xmin=503568.1996, xmax=561957.4961, ymin=155850.7974, ymax=200933.9025
+)
+"""London box coordinates in 27700 grid."""
+
+ManchesterCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
+    name="Manchester", xmin=380399.997, xmax=393249.999, ymin=389349.999, ymax=405300.003
+)
+"""Manchester box coordinates in 27700 grid."""
+
+ScotlandCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
+    name="Scotland", xmin=5513.00030000042, xmax=470323.0001, ymin=530252.800000001, ymax=1220301.5
+)
+"""Scotland box coordinates in 27700 grid."""
+
+DEFAULT_CROP_COORDS_EPSG2770: Final[dict[str, BoundingBoxCoords]] = {
+    record.name: record for record in 
+    (GlasgowCoordsEPSG27700, ManchesterCoordsEPSG27700,
+     LondonCoordsEPSG27700, ScotlandCoordsEPSG27700)
+}
+
+GLASGOW_CENTRE_COORDS: Final[tuple[float, float]] = (55.86279, -4.25424)
+MANCHESTER_CENTRE_COORDS: Final[tuple[float, float]] = (53.48095, -2.23743)
+LONDON_CENTRE_COORDS: Final[tuple[float, float]] = (51.509865, -0.118092)
+THREE_CITY_CENTRE_COORDS: Final[dict[str, tuple[float, float]]] = {
+    "Glasgow": GLASGOW_CENTRE_COORDS,
+    "Manchester": MANCHESTER_CENTRE_COORDS,
+    "London": LONDON_CENTRE_COORDS,
+}
+"""City centre `(lon, lat)` `tuple` coords of `Glasgow`, `Manchester` and `London`."""
+
+MONTH_DAY_XARRAY_LEAP_YEAR_DROP: DropDayType = {
+    (1, 31),
+    (4, 1),
+    (6, 1),
+    (8, 1),
+    (9, 31),
+    (12, 1),
+}
+"""A `set` of month and day tuples dropped for `xarray.day_360` leap years."""
+
+MONTH_DAY_XARRAY_NO_LEAP_YEAR_DROP: DropDayType = {
+    (2, 6),
+    (4, 20),
+    (7, 2),
+    (9, 13),
+    (11, 25),
+}
+"""A `set` of month and day tuples dropped for `xarray.day_360` non leap years."""
+
+DEFAULT_INTERPOLATION_METHOD: str = "linear"
+"""Default method to infer missing estimates in a time series."""
+
+CFCalendarSTANDARD: Final[str] = "standard"
+ConvertCalendarAlignOptions = Literal["date", "year", None]
+
+XArrayEngineType = Literal[*tuple(ENGINES)]
+"""Engine types supported by `xarray` as `str`."""
+
+DEFAULT_CALENDAR_ALIGN: Final[ConvertCalendarAlignOptions] = "year"
+NETCDF4_XARRAY_ENGINE: Final[str] = "netcdf4"
+
+TIME_COLUMN_NAME: Final[str] = "time"
+
+GLASGOW_GEOM_LOCAL_PATH: Final[Path] = Path(
+    "shapefiles/three.cities/Glasgow/Glasgow.shp"
+)
 
 class VariableOptions(StrEnumReprName):
-    """Supported options for variables"""
+    """Supported variables options and related configuration."""
 
     TASMAX = auto()
     RAINFALL = auto()
     TASMIN = auto()
+
+    @classmethod
+    def default_resample_method(cls) -> Resampling:
+        """Default resampling method."""
+        return DEFAULT_RESAMPLING_METHOD
+
+
+    @classmethod
+    def _method_dict(cls) -> dict[str, Resampling]:
+        """Return the preferred aggregation method for each option."""
+        return {
+            cls.TASMAX: Resampling.max,
+            cls.RAINFALL: Resampling.average,
+            cls.TASMIN: Resampling.min,
+        }
+
+    @classmethod
+    def resampling_method(cls, variable: str | None) -> Resampling:
+        """Return resampling method for `variable`.
+
+        For details see: https://rasterio.readthedocs.io/en/stable/api/rasterio.enums.html#rasterio.enums.Resampling
+        
+        Parameters
+        ----------
+        variable
+            `VariableOptions` attribute to query resampling method from.
+
+        Returns
+        -------
+        Value to access related resampling method.
+
+        Examples
+        --------
+        >>> VariableOptions.resampling_method('rainfall')
+        <Resampling.average: 5>
+        >>> VariableOptions.resampling_method('tasmin')
+        <Resampling.min: 9>
+        >>> VariableOptions.resampling_method(None)
+        <Resampling.average: 5>
+        """
+        return cls._method_dict()[variable.lower()] if variable else cls.default_resample_method()
 
     @classmethod
     def cpm_value(cls, variable: str) -> str:
@@ -112,7 +292,6 @@ class RunOptions(StrEnumReprName):
         return tuple(map(lambda c: c.value, cls))
 
 
-
 class MethodOptions(StrEnumReprName):
     """Supported options for methods."""
 
@@ -132,12 +311,13 @@ class MethodOptions(StrEnumReprName):
         return tuple(map(lambda c: c.value, cls))
 
 
-class CityOptions(StrEnumReprName):
+class RegionOptions(StrEnumReprName):
     """Supported options for variables."""
 
     GLASGOW = "Glasgow"
     MANCHESTER = "Manchester"
     LONDON = "London"
+    SCOTLAND = "Scotland"
 
     @classmethod
     def default(cls) -> str:
@@ -148,6 +328,11 @@ class CityOptions(StrEnumReprName):
     def all(cls) -> tuple[str, ...]:
         """Return a `tuple` of all options"""
         return tuple(map(lambda c: c.value, cls))
+
+    @staticmethod
+    def bounding_box(region_name: str) -> BoundingBoxCoords:
+        """`dict` for accessing bounding boxes of included `Regions`."""
+        return DEFAULT_CROP_COORDS_EPSG2770[region_name.title()]
 
 
 @dataclass
