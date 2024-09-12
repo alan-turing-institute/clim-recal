@@ -176,4 +176,3 @@ Inadvertently, we did not identify that the license for the `python-cmethods` li
 ## Citation
 
 **python-cmethods**: Benjamin T. Schwertfeger. (2024). btschwertfeger/python-cmethods: v2.3.0 (v2.3.0). Zenodo. https://doi.org/10.5281/zenodo.12168002
-

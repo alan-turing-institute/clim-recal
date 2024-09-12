@@ -64,7 +64,7 @@ Note: By March 2023 we have only implemented the [python-cmethods](https://githu
 >  **_NOTE:_** `python-cmethod` has been removed from this project for the reasons given in the main README file. The original citation for the library is below:
 >
 > python-cmethods citation: Benjamin T. Schwertfeger. (2024). btschwertfeger/python-cmethods: v2.3.0 (v2.3.0). Zenodo. https://doi.org/10.5281/zenodo.12168002
-> 
+>
 > There are still many references to the `python-cmethods` library in the codebase and documentation. This will not work in their current state and are not maintained. These references will be removed in due course.
 >
 > Users may download `python-cmethods` independently for their own use, but it will no longer be included in this project. Users must not redistribute the combination of `python-cmethods` and `clim-recal` as a single package, as this would violate the licence of `python-cmethods`.
