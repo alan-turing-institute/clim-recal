@@ -13,10 +13,8 @@ from pathlib import Path
 from typing import Any, Callable, Final, Iterable, Iterator, Literal, Sequence
 
 import dill as pickle
-import numpy as np
 import rioxarray  # nopycln: import
 from osgeo.gdal import Dataset as GDALDataset
-from osgeo.gdal import GRA_NearestNeighbour
 from rich import print
 from tqdm.rich import trange
 from xarray import Dataset
@@ -59,32 +57,16 @@ DropDayType = set[tuple[int, int]]
 ChangeDayType = set[tuple[int, int]]
 
 CLIMATE_DATA_MOUNT_PATH: Path = climate_data_mount_path()
-DEFAULT_INTERPOLATION_METHOD: str = "linear"
-"""Default method to infer missing estimates in a time series."""
 
 CFCalendarSTANDARD: Final[str] = "standard"
 
 RESAMPLING_OUTPUT_PATH: Final[PathLike] = (
     CLIMATE_DATA_MOUNT_PATH / "CPM-365/andys-two-gdal-step-approach/resample"
 )
-CROP_OUTPUT_PATH: Final[PathLike] = (
-    CLIMATE_DATA_MOUNT_PATH / "CPM-365/andys-two-gdal-step-approach/crop"
-)
 RAW_HADS_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/HadsUKgrid"
 RAW_CPM_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/UKCP2.2"
 RAW_HADS_TASMAX_PATH: Final[PathLike] = RAW_HADS_PATH / "tasmax/day"
 RAW_CPM_TASMAX_PATH: Final[PathLike] = RAW_CPM_PATH / "tasmax/01/latest"
-
-# TODO: remove REPROJECTED_CPM_TASMAX_05_LATEST_INPUT_PATH
-REPROJECTED_CPM_TASMAX_05_LATEST_INPUT_PATH: Final[PathLike] = Path(
-    CLIMATE_DATA_MOUNT_PATH / "Reprojected_infill/UKCP2.2/tasmax/05/latest"
-)
-
-CPRUK_RESAMPLING_METHOD: Final[str] = GRA_NearestNeighbour
-ResamplingArgs = tuple[PathLike, np.ndarray, np.ndarray, PathLike]
-ResamplingCallable = Callable[[list | tuple], int]
-CPM_STANDARD_CALENDAR_PATH: Final[Path] = Path("cpm-standard-calendar")
-CPM_SPATIAL_COORDS_PATH: Final[Path] = Path("cpm-to-27700-spatial")
 
 CPM_OUTPUT_LOCAL_PATH: Final[Path] = Path("cpm")
 HADS_OUTPUT_LOCAL_PATH: Final[Path] = Path("hads")
@@ -283,6 +265,7 @@ class ResamblerBase:
         step: int = 1,
         override_export_path: Path | None = None,
         return_results: bool = False,
+        delete_xarray_after_save: bool = True,
         **kwargs,
     ) -> list[Path]:
         start = start or self.start_index
@@ -312,6 +295,9 @@ class ResamblerBase:
         **kwargs,
     ) -> Path | T_Dataset:
         """Crop a projection to `region` geometry."""
+        console.debug(
+            f"Preparing to crop `_reprojected_paths` index {index} from {self}"
+        )
         try:
             assert hasattr(self, "_reprojected_paths")
         except AssertionError:
@@ -333,6 +319,7 @@ class ResamblerBase:
         path.mkdir(exist_ok=True, parents=True)
         resampled_xr: Dataset = self._reprojected_paths[index]
 
+        console.debug(f"From {self} crop {xr_time_series}")
         cropped: Dataset = crop_xarray(
             xr_time_series=resampled_xr,
             crop_box=RegionOptions.bounding_box(self.crop_region),
@@ -445,7 +432,9 @@ class HADsResampler(ResamblerBase):
             index=index, source_to_index=source_to_index
         )
         path: PathLike = self.output_path
+        console.debug(f"Setting 'cpm_for_coord_alignment' for {self}")
         self.set_cpm_for_coord_alignment()
+        console.debug(f"Set 'cpm_for_coord_alignment' for {self}")
         return apply_geo_func(
             source_path=source_path,
             func=self._resample_func,
@@ -497,7 +486,7 @@ class CPMResampler(ResamblerBase):
     >>> resample_test_cpm_output_path: Path = getfixture(
     ...         'resample_test_cpm_output_path')
     >>> cpm_resampler: CPMResampler = CPMResampler(
-    ...     input_path=REPROJECTED_CPM_TASMAX_05_LATEST_INPUT_PATH,
+    ...     input_path=RAW_CPM_TASMAX_PATH,
     ...     output_path=resample_test_cpm_output_path,
     ...     input_file_extension=TIF_EXTENSION_STR,
     ... )
@@ -518,6 +507,7 @@ class CPMResampler(ResamblerBase):
     crop_path: PathLike = RESAMPLING_OUTPUT_PATH / CPM_CROP_OUTPUT_LOCAL_PATH
     input_file_x_column_name: str = CPM_RAW_X_COLUMN_NAME
     input_file_y_column_name: str = CPM_RAW_Y_COLUMN_NAME
+    prior_time_series: PathLike | Dataset | None = None
     _resample_func: ReprojectFuncType = cpm_reproject_with_standard_calendar
 
     @property
@@ -535,6 +525,7 @@ class CPMResampler(ResamblerBase):
             index=index, source_to_index=source_to_index
         )
         path: PathLike = self.output_path
+        console.debug(f"Reprojecting index CPM {index}...")
         result: Path | T_Dataset | GDALDataset = apply_geo_func(
             source_path=source_path,
             func=self._resample_func,
@@ -544,6 +535,7 @@ class CPMResampler(ResamblerBase):
             variable_name=self.cpm_variable_name,
             return_results=return_results,
         )
+        console.debug(f"Completed index CPM {index}...")
         if isinstance(result, PathLike):
             if not hasattr(self, "_reprojected_paths"):
                 self._reprojected_paths: list[Path] = []
