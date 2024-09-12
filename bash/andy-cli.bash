@@ -13,7 +13,7 @@ log_path="$output_path/logs"
 
 mkdir -p $log_path
 
-for i in $(seq 1 $max_index); do
+for i in $(seq 0 $max_index); do
   echo "Running for index={$i}"
   {
     clim-recal \
