@@ -101,3 +101,6 @@ def pipeline(
     )
     # print(results)
     return results
+
+if __name__ == "__main__":
+    clim_recal

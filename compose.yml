@@ -15,6 +15,7 @@ services:
       - JUPYTER_ENABLE_LAB=yes
     volumes:
       - .:/home/jovyan:rw
+      - /mnt/vmfileshare:/mnt/vmfileshare:rw
 
   docs:
     build:
