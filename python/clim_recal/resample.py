@@ -519,7 +519,7 @@ class CPMResampler(ResamblerBase):
     def to_reprojection(
         self,
         index: int = 0,
-        # override_export_path: Path | None = None,
+        override_export_path: Path | None = None,
         return_results: bool = False,
         source_to_index: Sequence | None = None,
     ) -> Path | T_Dataset:
