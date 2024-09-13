@@ -17,7 +17,7 @@ for i in $(seq 0 $max_index); do
   echo "Running for index={$i}"
   {
     clim-recal \
-    --start-index $i \
+    --resample-start-index $i \
     --total-from-index 1 \
     --hads-input-path $hads_input_path \
     --cpm-input-path $cpm_input_path \
