@@ -265,7 +265,9 @@ class ResamblerBase:
         step: int = 1,
         override_export_path: Path | None = None,
         return_results: bool = False,
-        delete_xarray_after_save: bool = True,
+        # possible meanse of reducing memory issues by removing
+        # xarray instance while keeping paths for logging purposes
+        # delete_xarray_after_save: bool = True,
         **kwargs,
     ) -> list[Path]:
         start = start or self.start_index
@@ -424,7 +426,7 @@ class HADsResampler(ResamblerBase):
     def to_reprojection(
         self,
         index: int = 0,
-        # override_export_path: Path | None = None,
+        override_export_path: Path | None = None,
         return_results: bool = False,
         source_to_index: Sequence | None = None,
     ) -> Path | T_Dataset:
@@ -614,8 +616,8 @@ class ResamblerManagerBase:
     @property
     def resample_folder(self) -> Path | None:
         """Return `self._output_path` set by `set_resample_paths()`."""
-        if hasattr(self, "_input_path"):
-            return Path(self._input_path)
+        if hasattr(self, "_output_path"):
+            return Path(self._output_path)
         else:
             return None
 
