@@ -297,9 +297,7 @@ class ResamblerBase:
         **kwargs,
     ) -> Path | T_Dataset:
         """Crop a projection to `region` geometry."""
-        console.debug(
-            f"Preparing to crop `_reprojected_paths` index {index} from {self}"
-        )
+        console.log(f"Preparing to crop `_reprojected_paths` index {index} from {self}")
         try:
             assert hasattr(self, "_reprojected_paths")
         except AssertionError:
@@ -321,7 +319,7 @@ class ResamblerBase:
         path.mkdir(exist_ok=True, parents=True)
         resampled_xr: Dataset = self._reprojected_paths[index]
 
-        console.debug(f"From {self} crop {xr_time_series}")
+        console.log(f"From {self} crop {xr_time_series}")
         cropped: Dataset = crop_xarray(
             xr_time_series=resampled_xr,
             crop_box=RegionOptions.bounding_box(self.crop_region),
@@ -434,9 +432,9 @@ class HADsResampler(ResamblerBase):
             index=index, source_to_index=source_to_index
         )
         path: PathLike = self.output_path
-        console.debug(f"Setting 'cpm_for_coord_alignment' for {self}")
+        console.log(f"Setting 'cpm_for_coord_alignment' for {self}")
         self.set_cpm_for_coord_alignment()
-        console.debug(f"Set 'cpm_for_coord_alignment' for {self}")
+        console.log(f"Set 'cpm_for_coord_alignment' for {self}")
         return apply_geo_func(
             source_path=source_path,
             func=self._resample_func,
@@ -527,7 +525,7 @@ class CPMResampler(ResamblerBase):
             index=index, source_to_index=source_to_index
         )
         path: PathLike = self.output_path
-        console.debug(f"Reprojecting index CPM {index}...")
+        console.log(f"Reprojecting index CPM {index}...")
         result: Path | T_Dataset | GDALDataset = apply_geo_func(
             source_path=source_path,
             func=self._resample_func,
@@ -537,7 +535,7 @@ class CPMResampler(ResamblerBase):
             variable_name=self.cpm_variable_name,
             return_results=return_results,
         )
-        console.debug(f"Completed index CPM {index}...")
+        console.log(f"Completed index CPM {index}...")
         if isinstance(result, PathLike):
             if not hasattr(self, "_reprojected_paths"):
                 self._reprojected_paths: list[Path] = []
