@@ -59,8 +59,6 @@ MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE: Final[str] = (
 )
 
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
-CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData")
-CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateData")
 
 TEST_RUN_PATH: Final[Path] = Path().absolute()
 TEST_FILE_PATH: Final[Path] = TEST_RUN_PATH / "tests"
@@ -442,7 +440,7 @@ def clim_runner(
             preprocess_out_folder=tmp_path,
             regions=regions,
             output_path=test_runs_output_path,
-            # cpm_for_coord_alignment=tasmax_cpm_1980_converted_path,
+            cpm_for_coord_alignment=CPM_RAW_TASMAX_EXAMPLE_PATH,
         )
     except (FileExistsError, AssertionError):
         return ClimRecalConfig(
@@ -506,10 +504,7 @@ def doctest_auto_fixtures(
     glasgow_epsg_27700_bounds: BoundsTupleType,
     glasgow_shape_file_path: Path,
     test_runs_output_path: Path,
-    # resample_test_cpm_output_path: Path,
-    # resample_test_hads_output_path: Path,
     glasgow_example_cropped_cpm_rainfall_path: Path,
-    # clim_runner: ClimRecalConfig,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
     doctest_namespace["CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT"] = (
@@ -554,8 +549,6 @@ def doctest_auto_fixtures(
     doctest_namespace["glasgow_epsg_27700_bounds"] = glasgow_epsg_27700_bounds
     doctest_namespace["glasgow_shape_file_path"] = glasgow_shape_file_path
     doctest_namespace["test_runs_output_path"] = test_runs_output_path
-    # doctest_namespace["resample_test_hads_output_path"] = resample_test_hads_output_path
-    # doctest_namespace["resample_test_cpm_output_path"] = resample_test_cpm_output_path
     doctest_namespace["mount_doctest_skip_message"] = MOUNT_DOCTEST_SKIP_MESSAGE
     doctest_namespace["mount_or_cache_doctest_skip_message"] = (
         MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE
@@ -563,7 +556,6 @@ def doctest_auto_fixtures(
     doctest_namespace["glasgow_example_cropped_cpm_rainfall_path"] = (
         glasgow_example_cropped_cpm_rainfall_path
     )
-    # doctest_namespace["clim_runner"] = clim_runner
 
 
 def pytest_sessionfinish(session, exitstatus):

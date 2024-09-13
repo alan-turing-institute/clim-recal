@@ -59,7 +59,7 @@ def test_main(
         hads_projection=True,
         cpm_projection=False,
         regions=regions,
-        stop_index=1,
+        resample_stop_index=1,
         cpus=2,
         multiprocess=multiprocess,
         cpm_kwargs=dict(_allow_check_fail=True),

@@ -103,8 +103,10 @@ class ResamblerBase:
     export_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
     input_file_x_column_name: str = ""
     input_file_y_column_name: str = ""
-    start_index: int = 0
-    stop_index: int | None = None
+    resample_start_index: int = 0
+    resample_stop_index: int | None = None
+    crop_start_index: int = 0
+    crop_stop_index: int | None = None
 
     def __post_init__(self) -> None:
         """Generate related attributes."""
@@ -125,19 +127,21 @@ class ResamblerBase:
     def __len__(self) -> int:
         """Return the length of `self.input_files`."""
         return (
-            len(self.input_files[self.start_index : self.stop_index])
+            len(self.input_files[self.resample_start_index : self.resample_stop_index])
             if isinstance(self.input_files, Sequence)
             else 0
         )
 
     @property
     def max_count(self) -> int:
-        """Maximum length of `self.input_files` ignoring `start_index` and `start_index`."""
+        """Maximum length of `self.input_files` ignoring `resample_start_index` and `resample_start_index`."""
         return len(self.input_files) if isinstance(self.input_files, Sequence) else 0
 
     def __iter__(self) -> Iterator[Path] | None:
         if self.input_files and isinstance(self.input_files, Sequence):
-            for file_path in self.input_files[self.start_index : self.stop_index]:
+            for file_path in self.input_files[
+                self.resample_start_index : self.resample_stop_index
+            ]:
                 yield Path(file_path)
         else:
             return None
@@ -225,8 +229,8 @@ class ResamblerBase:
         override_export_path: Path | None = None,
         source_to_index: Sequence | None = None,
     ) -> list[Path]:
-        start = start or self.start_index
-        stop = stop or self.stop_index
+        start = start or self.resample_start_index
+        stop = stop or self.resample_stop_index
         return self._range_call(
             method=self.to_reprojection,
             start=start,
@@ -270,8 +274,8 @@ class ResamblerBase:
         # delete_xarray_after_save: bool = True,
         **kwargs,
     ) -> list[Path]:
-        start = start or self.start_index
-        stop = stop or self.stop_index
+        start = start or self.crop_stop_index
+        stop = stop or self.crop_stop_index
         export_paths: list[Path | T_Dataset] = []
         if stop is None:
             stop = len(self)
@@ -363,10 +367,10 @@ class HADsResampler(ResamblerBase):
         Column name in `input_files` or `input` for `y` coordinates.
     input_file_extension
         File extensions to glob `input_files` with.
-    start_index
+    resample_start_index
         First index of file to iterate processing from.
-    stop_index
-        Last index of files to iterate processing from as a count from `start_index`.
+    resample_stop_index
+        Last index of files to iterate processing from as a count from `resample_start_index`.
         If `None`, this will simply iterate over all available files.
     cpm_for_coord_alignment
         `CPM` `Path` or `Dataset` to match alignment with.
@@ -570,8 +574,10 @@ class ResamblerManagerBase:
     crop_regions: tuple[RegionOptions | str, ...] | None = RegionOptions.all()
     crop_paths: Sequence[PathLike] | PathLike = Path()
     sub_path: Path = Path()
-    start_index: int = 0
-    stop_index: int | None = None
+    resample_start_index: int = 0
+    resample_stop_index: int | None = None
+    crop_start_index: int = 0
+    crop_stop_index: int | None = None
     start_date: date | None = None
     end_date: date | None = None
     configs: list[HADsResampler | CPMResampler] = field(default_factory=list)
@@ -741,8 +747,8 @@ class ResamblerManagerBase:
                 input_path=var_path[0],
                 output_path=self.resample_paths[index],
                 variable_name=var_path[1],
-                start_index=self.start_index,
-                stop_index=self.stop_index,
+                resample_start_index=self.resample_start_index,
+                resample_stop_index=self.resample_stop_index,
                 **self.config_default_kwargs,
             )
 
@@ -758,8 +764,8 @@ class ResamblerManagerBase:
                     input_path=input_resample_paths[0],
                     output_path=self.resample_paths[index],
                     variable_name=input_resample_paths[1],
-                    start_index=self.start_index,
-                    stop_index=self.stop_index,
+                    resample_start_index=self.resample_start_index,
+                    resample_stop_index=self.resample_stop_index,
                     crop_path=crop_path,
                     # Todo: remove below if single crop configs iterate over all
                     # crop_regions=self.crop_regions,
@@ -771,19 +777,21 @@ class ResamblerManagerBase:
     def __len__(self) -> int:
         """Return the length of `self.input_files`."""
         return (
-            len(self.input_paths[self.start_index : self.stop_index])
+            len(self.input_paths[self.resample_start_index : self.resample_stop_index])
             if isinstance(self.input_paths, Sequence)
             else 0
         )
 
     @property
     def max_count(self) -> int:
-        """Maximum length of `self.input_files` ignoring `start_index` and `start_index`."""
+        """Maximum length of `self.input_files` ignoring `resample_start_index` and `resample_start_index`."""
         return len(self.input_paths) if isinstance(self.input_paths, Sequence) else 0
 
     def __iter__(self) -> Iterator[Path] | None:
         if isinstance(self.input_paths, Sequence):
-            for file_path in self.input_paths[self.start_index : self.stop_index]:
+            for file_path in self.input_paths[
+                self.resample_start_index : self.resample_stop_index
+            ]:
                 yield Path(file_path)
         else:
             return None
@@ -869,10 +877,10 @@ class HADsResamplerManager(ResamblerManagerBase):
         Where to save region crop files.
     sub_path
         `Path` to include at the stem of `input_paths`.
-    start_index
+    resample_start_index
         Index to begin iterating input files for `resampling` or `cropping`.
-    stop_index
-        Index to to run from `start_index` to when `resampling` or
+    resample_stop_index
+        Index to to run from `resample_start_index` to when `resampling` or
         `cropping`. If `None`, iterate full list of paths.
     start_date
         Not yet implemented, but in future from what date to generate start index from.
@@ -965,8 +973,8 @@ class HADsResamplerManager(ResamblerManagerBase):
                 input_path=var_path[0],
                 output_path=self.resample_paths[index],
                 variable_name=var_path[1],
-                start_index=self.start_index,
-                stop_index=self.stop_index,
+                resample_start_index=self.resample_start_index,
+                resample_stop_index=self.resample_stop_index,
                 cpm_for_coord_alignment=self.cpm_for_coord_alignment,
                 cpm_for_coord_alignment_path_converted=self.cpm_for_coord_alignment_path_converted,
                 **self.config_default_kwargs,
@@ -993,10 +1001,10 @@ class CPMResamplerManager(ResamblerManagerBase):
         Where to save region crop files.
     sub_path
         `Path` to include at the stem of `input_paths`.
-    start_index
+    resample_start_index
         Index to begin iterating input files for `resampling` or `cropping`.
-    stop_index
-        Index to to run from `start_index` to when `resampling` or
+    resample_stop_index
+        Index to to run from `resample_start_index` to when `resampling` or
         `cropping`. If `None`, iterate full list of paths.
     start_date
         Not yet implemented, but in future from what date to generate start index from.
@@ -1019,7 +1027,7 @@ class CPMResamplerManager(ResamblerManagerBase):
     >>> resample_test_cpm_output_path: Path = getfixture(
     ...         'resample_test_cpm_output_path')
     >>> cpm_resampler_manager: CPMResamplerManager = CPMResamplerManager(
-    ...     stop_index=9,
+    ...     resample_stop_index=9,
     ...     resample_paths=resample_test_cpm_output_path,
     ...     crop_paths=resample_test_cpm_output_path,
     ...     )

@@ -89,8 +89,8 @@ class ClimRecalConfig(BaseRunConfig):
     >>> run_config
     <ClimRecalConfig(variables_count=1, runs_count=1, regions_count=2,
                      methods_count=1, cpm_folders_count=1,
-                     hads_folders_count=1, start_index=0,
-                     stop_index=None, cpus=1)>
+                     hads_folders_count=1, resample_start_index=0,
+                     resample_stop_index=None, cpus=1)>
     """
 
     variables: Sequence[VariableOptions] = (VariableOptions.default(),)
@@ -108,8 +108,10 @@ class ClimRecalConfig(BaseRunConfig):
     cpm_output_folder: PathLike = CPM_OUTPUT_LOCAL_PATH
     cpm_kwargs: dict = field(default_factory=dict)
     hads_kwargs: dict = field(default_factory=dict)
-    start_index: int = 0
-    stop_index: int | None = None
+    resample_start_index: int = 0
+    resample_stop_index: int | None = None
+    crop_start_index: int = 0
+    crop_stop_index: int | None = None
     add_local_dated_results_path: bool = True
     add_local_dated_crops_path: bool = True
     local_dated_results_path_prefix: str = "run"
@@ -228,8 +230,10 @@ class ClimRecalConfig(BaseRunConfig):
             runs=self.runs,
             resample_paths=self.resample_cpm_path,
             crop_paths=self.crops_path,
-            start_index=self.start_index,
-            stop_index=self.stop_index,
+            resample_start_index=self.resample_start_index,
+            resample_stop_index=self.resample_stop_index,
+            crop_start_index=self.crop_start_index,
+            crop_stop_index=self.crop_stop_index,
             **self.cpm_kwargs,
         )
         self.set_cpm_for_coord_alignment()
@@ -238,8 +242,10 @@ class ClimRecalConfig(BaseRunConfig):
             variables=self.variables,
             resample_paths=self.resample_hads_path,
             crop_paths=self.crops_path,
-            start_index=self.start_index,
-            stop_index=self.stop_index,
+            resample_start_index=self.resample_start_index,
+            resample_stop_index=self.resample_stop_index,
+            crop_start_index=self.crop_start_index,
+            crop_stop_index=self.crop_stop_index,
             cpm_for_coord_alignment=self.cpm_for_coord_alignment,
             cpm_for_coord_alignment_path_converted=self.cpm_for_coord_alignment_path_converted,
             **self.hads_kwargs,
@@ -277,8 +283,9 @@ class ClimRecalConfig(BaseRunConfig):
             f"methods_count={len(self.methods)}, "
             f"cpm_folders_count={len(self.cpm_manager)}, "
             f"hads_folders_count={len(self.hads_manager)}, "
-            f"start_index={self.start_index}, "
-            f"stop_index={self.stop_index if self.stop_index else 'None'}, "
+            f"resample_start_index={self.resample_start_index}, "
+            f"resample_stop_index={self.resample_stop_index if self.resample_stop_index else 'None'}, "
+            f"crop_start_index={self.crop_start_index}, "
             f"cpus={self.cpus})>"
         )
 
