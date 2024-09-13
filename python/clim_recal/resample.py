@@ -265,7 +265,9 @@ class ResamblerBase:
         step: int = 1,
         override_export_path: Path | None = None,
         return_results: bool = False,
-        delete_xarray_after_save: bool = True,
+        # possible meanse of reducing memory issues by removing
+        # xarray instance while keeping paths for logging purposes
+        # delete_xarray_after_save: bool = True,
         **kwargs,
     ) -> list[Path]:
         start = start or self.start_index
@@ -424,7 +426,7 @@ class HADsResampler(ResamblerBase):
     def to_reprojection(
         self,
         index: int = 0,
-        # override_export_path: Path | None = None,
+        override_export_path: Path | None = None,
         return_results: bool = False,
         source_to_index: Sequence | None = None,
     ) -> Path | T_Dataset:
@@ -614,8 +616,8 @@ class ResamblerManagerBase:
     @property
     def resample_folder(self) -> Path | None:
         """Return `self._output_path` set by `set_resample_paths()`."""
-        if hasattr(self, "_input_path"):
-            return Path(self._input_path)
+        if hasattr(self, "_output_path"):
+            return Path(self._output_path)
         else:
             return None
 
@@ -943,7 +945,7 @@ class HADsResamplerManager(ResamblerManagerBase):
             )
         for var in self.variables:
             for region in self.crop_regions:
-                crop_path = Path(path) / "hads" / var / region
+                crop_path = Path(path) / "hads" / region / var
                 if append_cropped_path_dict:
                     self._cropped_path_dict[crop_path] = region
                 yield crop_path
@@ -1115,12 +1117,12 @@ class CPMResamplerManager(ResamblerManagerBase):
                         crop_path: Path = (
                             Path(path)
                             / "cpm"
-                            / VariableOptions.cpm_value(var)
                             / region
+                            / VariableOptions.cpm_value(var)
                             / run_type
                         )
                     else:
-                        crop_path: Path = Path(path) / "cpm" / var / region / run_type
+                        crop_path: Path = Path(path) / "cpm" / region / var / run_type
                     if append_cropped_path_dict:
                         self._cropped_path_dict[crop_path] = region
                     yield crop_path
