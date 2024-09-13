@@ -945,7 +945,7 @@ class HADsResamplerManager(ResamblerManagerBase):
             )
         for var in self.variables:
             for region in self.crop_regions:
-                crop_path = Path(path) / "hads" / var / region
+                crop_path = Path(path) / "hads" / region / var
                 if append_cropped_path_dict:
                     self._cropped_path_dict[crop_path] = region
                 yield crop_path
@@ -1117,12 +1117,12 @@ class CPMResamplerManager(ResamblerManagerBase):
                         crop_path: Path = (
                             Path(path)
                             / "cpm"
-                            / VariableOptions.cpm_value(var)
                             / region
+                            / VariableOptions.cpm_value(var)
                             / run_type
                         )
                     else:
-                        crop_path: Path = Path(path) / "cpm" / var / region / run_type
+                        crop_path: Path = Path(path) / "cpm" / region / var / run_type
                     if append_cropped_path_dict:
                         self._cropped_path_dict[crop_path] = region
                     yield crop_path
