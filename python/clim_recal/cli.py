@@ -65,8 +65,12 @@ def pipeline(
     all_runs: Annotated[bool, typer.Option("--all-runs")] = False,
     default_runs: Annotated[bool, typer.Option("--default-runs")] = False,
     all_methods: Annotated[bool, typer.Option("--all-methods")] = False,
-    cpm_projection: Annotated[bool, typer.Option("--project-cpm/--skip-project-cpm")] = True,
-    hads_projection: Annotated[bool, typer.Option("--project-hads/--skip-project-hads")] = True,
+    cpm_projection: Annotated[
+        bool, typer.Option("--project-cpm/--skip-project-cpm")
+    ] = True,
+    hads_projection: Annotated[
+        bool, typer.Option("--project-hads/--skip-project-hads")
+    ] = True,
     crop_hads: Annotated[bool, typer.Option("--crop-hads/--skip-crop-hads")] = True,
     crop_cpm: Annotated[bool, typer.Option("--crop-cpm/--skip-crop-cpm")] = True,
     execute: Annotated[bool, typer.Option("--execute")] = False,
