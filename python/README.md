@@ -61,6 +61,7 @@ Note: By March 2023 we have only implemented the [python-cmethods](https://githu
 ### The cmethods library
 
 ---
+
 >  **_NOTE:_** `python-cmethod` has been removed from this project for the reasons given in the main README file. The original citation for the library is below:
 >
 > python-cmethods citation: Benjamin T. Schwertfeger. (2024). btschwertfeger/python-cmethods: v2.3.0 (v2.3.0). Zenodo. https://doi.org/10.5281/zenodo.12168002
