@@ -319,7 +319,7 @@ class ResamblerBase:
         path.mkdir(exist_ok=True, parents=True)
         resampled_xr: Dataset = self._reprojected_paths[index]
 
-        console.log(f"From {self} crop {xr_time_series}")
+        console.log(f"From {self} crop {resampled_xr}")
         cropped: Dataset = crop_xarray(
             xr_time_series=resampled_xr,
             crop_box=RegionOptions.bounding_box(self.crop_region),
