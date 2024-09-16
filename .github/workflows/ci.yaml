@@ -17,11 +17,11 @@ env:
 
 on:
   pull_request:
-    branches: ['main', 'cache-cpm-for-hads', ]
+    branches: ['main', 'crop-cli', ]
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['main', 'cache-cpm-for-hads', ]
+    branches: ['main', 'crop-cli', ]
     paths-ignore: ['docs/**']
 
 concurrency:
