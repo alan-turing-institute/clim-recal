@@ -7,6 +7,7 @@ services:
       - NB_GID=1001
     volumes:
       - /mnt/vmfileshare:/mnt/vmfileshare
+      - /datadrive:/datadrive
 
   rstudio:
     volumes:
