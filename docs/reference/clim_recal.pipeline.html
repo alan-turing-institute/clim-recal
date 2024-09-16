@@ -407,8 +407,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre class="console"><code>$ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written
 clim-recal pipeline configurations:
 &lt;ClimRecalConfig(variables_count=3, runs_count=4, regions_count=1, methods_count=1,
-                 cpm_folders_count=12, hads_folders_count=3, start_index=0,
-                 stop_index=None, cpus=2)&gt;
+                 cpm_folders_count=12, hads_folders_count=3, resample_start_index=0,
+                 resample_stop_index=None, cpus=2)&gt;
 &lt;CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)&gt;
 &lt;HADsResamplerManager(variables_count=3, input_paths_count=3)&gt;</code></pre>
 <p>Otherwise, you can install locally and either run via <code>pdm</code> from the <code>python</code> folder</p>
@@ -424,8 +424,8 @@ $ pdm run clim-recal --all-variables --default-runs --output-path /where/results
 <pre class="console"><code>$ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written --execute
 clim-recal pipeline configurations:
 &lt;ClimRecalConfig(variables_count=3, runs_count=4, regions_count=1, methods_count=1,
-                 cpm_folders_count=12, hads_folders_count=3, start_index=0,
-                 stop_index=None, cpus=2)&gt;
+                 cpm_folders_count=12, hads_folders_count=3, resample_start_index=0,
+                 resample_stop_index=None, cpus=2)&gt;
 &lt;CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)&gt;
 &lt;HADsResamplerManager(variables_count=3, input_paths_count=3)&gt;
 Running CPM Standard Calendar projection...
@@ -485,16 +485,16 @@ Running CPM Standard Calendar projection...
 </table>
 <section id="python.clim_recal.pipeline.main" class="level3" data-number="8.1.1">
 <h3 data-number="8.1.1" class="anchored" data-anchor-id="python.clim_recal.pipeline.main"><span class="header-section-number">8.1.1</span> main</h3>
-<p><code>clim_recal.pipeline.main(execute=False, hads_input_path=RAW_HADS_PATH, cpm_input_path=RAW_CPM_PATH, output_path=DEFAULT_OUTPUT_PATH, variables=(VariableOptions.default()), regions=(RegionOptions.default()), runs=(RunOptions.default()), methods=(MethodOptions.default()), all_variables=False, all_regions=False, default_runs=False, all_runs=False, all_methods=False, hads_projection=False, cpm_projection=False, crop_hads=True, crop_cpm=True, cpus=None, multiprocess=False, start_index=0, stop_index=None, total=None, print_range_length=5, **kwargs)</code></p>
+<p><code>clim_recal.pipeline.main(execute=False, hads_input_path=RAW_HADS_PATH, cpm_input_path=RAW_CPM_PATH, output_path=DEFAULT_OUTPUT_PATH, variables=(VariableOptions.default()), regions=(RegionOptions.default()), runs=(RunOptions.default()), methods=(MethodOptions.default()), all_variables=False, all_regions=False, default_runs=False, all_runs=False, all_methods=False, hads_projection=False, cpm_projection=False, crop_hads=True, crop_cpm=True, cpus=None, multiprocess=False, resample_start_index=0, resample_stop_index=None, crop_start_index=0, crop_stop_index=None, total=None, print_range_length=5, **kwargs)</code></p>
 <p>Run all elements of the pipeline.</p>
 <section id="parameters" class="level4" data-number="8.1.1.1">
 <h4 data-number="8.1.1.1" class="anchored" data-anchor-id="parameters"><span class="header-section-number">8.1.1.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 8%">
-<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 20%">
 <col style="width: 51%">
-<col style="width: 16%">
+<col style="width: 15%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -548,18 +548,36 @@ Running CPM Standard Calendar projection...
 <td><code>False</code></td>
 </tr>
 <tr class="even">
-<td><code>start_index</code></td>
+<td><code>resample_start_index</code></td>
 <td>int</td>
 <td>Index to start all iterations from.</td>
 <td><code>0</code></td>
 </tr>
 <tr class="odd">
-<td><code>total</code></td>
+<td><code>resample_stop_index</code></td>
 <td>int | None</td>
-<td>Total number of records to iterate over. 0 and <code>None</code> indicate all values from <code>start_index</code>.</td>
+<td>Number of files from <code>resample_start_index</code> to resample.</td>
 <td><code>None</code></td>
 </tr>
 <tr class="even">
+<td><code>crop_start_index</code></td>
+<td>int</td>
+<td>Index to start all crop iterations from.</td>
+<td><code>0</code></td>
+</tr>
+<tr class="odd">
+<td><code>crop_stop_index</code></td>
+<td>int | None</td>
+<td>Number of files iterating from <code>crop_start_index</code> to crop.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td><code>total</code></td>
+<td>int | None</td>
+<td>Total number of records to iterate over. 0 and <code>None</code> indicate all values from <code>resample_start_index</code>.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
 <td><code>**kwargs</code></td>
 <td></td>
 <td>Additional parameters to pass to a <code>ClimRecalConfig</code>.</td>
@@ -575,10 +593,10 @@ Running CPM Standard Calendar projection...
 <section id="examples" class="level4" data-number="8.1.1.3">
 <h4 data-number="8.1.1.3" class="anchored" data-anchor-id="examples"><span class="header-section-number">8.1.1.3</span> Examples</h4>
 <p>Note the <code>_allow_check_fail</code> parameters support running the examples without data mounted from a server.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> main(variables<span class="op">=</span>(<span class="st">"rainfall"</span>, <span class="st">"tasmin"</span>),</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>...      output_path<span class="op">=</span>test_runs_output_path,</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>...      cpm_kwargs<span class="op">=</span><span class="bu">dict</span>(_allow_check_fail<span class="op">=</span><span class="va">True</span>),</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>...      hads_kwargs<span class="op">=</span><span class="bu">dict</span>(_allow_check_fail<span class="op">=</span><span class="va">True</span>),</span>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> is_data_mounted:</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_doctest_skip_message)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> main(variables<span class="op">=</span>(<span class="st">"rainfall"</span>, <span class="st">"tasmin"</span>),</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>...      output_path<span class="op">=</span>test_runs_output_path,</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>... )</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">'set_cpm_for_coord_alignment'</span> <span class="cf">for</span> <span class="st">'HADs'</span> <span class="kw">not</span> speficied.</span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>Defaulting to <span class="st">'self.cpm_input_path'</span>: <span class="st">'...'</span></span>
@@ -586,8 +604,8 @@ Running CPM Standard Calendar projection...
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>ClimRecalConfig(variables_count<span class="op">=</span><span class="dv">2</span>, runs_count<span class="op">=</span><span class="dv">1</span>,</span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>                 regions_count<span class="op">=</span><span class="dv">1</span>, methods_count<span class="op">=</span><span class="dv">1</span>,</span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>                 cpm_folders_count<span class="op">=</span><span class="dv">2</span>, hads_folders_count<span class="op">=</span><span class="dv">2</span>,</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>                 start_index<span class="op">=</span><span class="dv">0</span>, stop_index<span class="op">=</span><span class="va">None</span>,</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>                 cpus<span class="op">=</span>...)<span class="op">&gt;</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>                 resample_start_index<span class="op">=</span><span class="dv">0</span>, resample_stop_index<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>                 crop_star_index<span class="op">=</span><span class="dv">0</span>, cpus<span class="op">=</span>...)<span class="op">&gt;</span></span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>CPMResamplerManager(variables_count<span class="op">=</span><span class="dv">2</span>, runs_count<span class="op">=</span><span class="dv">1</span>,</span>
 <span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>                     input_paths_count<span class="op">=</span><span class="dv">2</span>)<span class="op">&gt;</span></span>
 <span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>HADsResamplerManager(variables_count<span class="op">=</span><span class="dv">2</span>, input_paths_count<span class="op">=</span><span class="dv">2</span>)<span class="op">&gt;</span></span>
