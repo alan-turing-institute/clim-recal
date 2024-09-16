@@ -25,8 +25,12 @@ from typing import (
     Union,
 )
 
+# try:
 from rich.console import Console
 from tqdm import TqdmExperimentalWarning, tqdm
+
+# except ImportError:
+#     pass
 
 logger = getLogger(__name__)
 
@@ -761,6 +765,18 @@ def climate_data_mount_path(
         return path / CLIMATE_DATA_PATH
     else:
         return path
+
+
+def _get_source_path(
+    instance, index: int, source_to_index: Sequence | None = None
+) -> Path:
+    """Return a path indexed from `source_to_index` or `self`."""
+    if source_to_index is None:
+        return instance[index]
+    elif isinstance(source_to_index, str):
+        return getattr(instance, source_to_index)[index]
+    else:
+        return source_to_index[index]
 
 
 def is_climate_data_mounted(mount_path: PathLike | None = None) -> bool:

@@ -11,12 +11,8 @@ from osgeo.gdal import Dataset as GDALDataset
 from xarray import Dataset, open_dataset
 from xarray.core.types import T_DataArray, T_Dataset
 
-from clim_recal.resample import (
-    CPM_CROP_OUTPUT_LOCAL_PATH,
-    HADS_CROP_OUTPUT_LOCAL_PATH,
-    CPMResampler,
-    HADsResampler,
-)
+from clim_recal.crop import CPM_CROP_OUTPUT_PATH, HADS_CROP_OUTPUT_PATH
+from clim_recal.resample import CPMResampler, HADsResampler
 from clim_recal.utils.core import (
     CLI_DATE_FORMAT_STR,
     DateType,
@@ -407,7 +403,7 @@ def test_crop_xarray(
     if data_type == HadUKGrid:
         output_path: Path = resample_test_hads_output_path / config
         crop_path: Path = (
-            resample_test_hads_output_path / config / HADS_CROP_OUTPUT_LOCAL_PATH
+            resample_test_hads_output_path / config / HADS_CROP_OUTPUT_PATH
         )
 
         test_config = HADsResampler(
@@ -418,9 +414,7 @@ def test_crop_xarray(
     else:
         assert data_type == UKCPLocalProjections
         output_path: Path = resample_test_cpm_output_path / config
-        crop_path: Path = (
-            resample_test_cpm_output_path / config / CPM_CROP_OUTPUT_LOCAL_PATH
-        )
+        crop_path: Path = resample_test_cpm_output_path / config / CPM_CROP_OUTPUT_PATH
         test_config = CPMResampler(
             input_path=tasmax_cpm_1980_raw_path.parent,
             output_path=output_path,

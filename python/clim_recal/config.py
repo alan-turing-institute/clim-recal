@@ -8,17 +8,23 @@ from typing import Any, Final, Sequence, TypedDict
 from osgeo import gdal
 from tqdm import TqdmExperimentalWarning, tqdm
 
+from .crop import CPMRegionCropManager, HADsRegionCropManager
 from .debiasing.debias_wrapper import BaseRunConfig, RunConfig, RunConfigType
 from .resample import (
-    CPM_OUTPUT_LOCAL_PATH,
-    HADS_OUTPUT_LOCAL_PATH,
     RAW_CPM_PATH,
     RAW_HADS_PATH,
     CPMResamplerManager,
     HADsResamplerManager,
 )
 from .utils.core import console, product_dict, results_path
-from .utils.data import MethodOptions, RegionOptions, RunOptions, VariableOptions
+from .utils.data import (
+    CPM_OUTPUT_PATH,
+    HADS_OUTPUT_PATH,
+    MethodOptions,
+    RegionOptions,
+    RunOptions,
+    VariableOptions,
+)
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 
@@ -104,8 +110,8 @@ class ClimRecalConfig(BaseRunConfig):
     output_path: PathLike = DEFAULT_OUTPUT_PATH
     resample_folder: PathLike = DEFAULT_RESAMPLE_FOLDER
     crops_folder: PathLike = DEFAULT_CROPS_FOLDER
-    hads_output_folder: PathLike = HADS_OUTPUT_LOCAL_PATH
-    cpm_output_folder: PathLike = CPM_OUTPUT_LOCAL_PATH
+    hads_output_folder: PathLike = HADS_OUTPUT_PATH
+    cpm_output_folder: PathLike = CPM_OUTPUT_PATH
     cpm_kwargs: dict = field(default_factory=dict)
     hads_kwargs: dict = field(default_factory=dict)
     resample_start_index: int = 0
@@ -228,27 +234,62 @@ class ClimRecalConfig(BaseRunConfig):
             input_paths=self.cpm_input_path,
             variables=self.variables,
             runs=self.runs,
-            resample_paths=self.resample_cpm_path,
-            crop_paths=self.crops_path,
-            resample_start_index=self.resample_start_index,
-            resample_stop_index=self.resample_stop_index,
-            crop_start_index=self.crop_start_index,
-            crop_stop_index=self.crop_stop_index,
+            # resample_paths=self.resample_cpm_path,
+            output_paths=self.resample_cpm_path,
+            # crop_paths=self.crops_path,
+            start_index=self.resample_start_index,
+            stop_index=self.resample_stop_index,
+            # resample_start_index=self.resample_start_index,
+            # resample_stop_index=self.resample_stop_index,
+            # crop_start_index=self.crop_start_index,
+            # crop_stop_index=self.crop_stop_index,
             **self.cpm_kwargs,
         )
         self.set_cpm_for_coord_alignment()
         self.hads_manager = HADsResamplerManager(
             input_paths=self.hads_input_path,
             variables=self.variables,
-            resample_paths=self.resample_hads_path,
-            crop_paths=self.crops_path,
-            resample_start_index=self.resample_start_index,
-            resample_stop_index=self.resample_stop_index,
-            crop_start_index=self.crop_start_index,
-            crop_stop_index=self.crop_stop_index,
+            # resample_paths=self.resample_hads_path,
+            output_paths=self.resample_hads_path,
+            # crop_paths=self.crops_path,
+            start_index=self.resample_start_index,
+            stop_index=self.resample_stop_index,
+            # resample_start_index=self.resample_start_index,
+            # resample_stop_index=self.resample_stop_index,
+            # crop_start_index=self.crop_start_index,
+            # crop_stop_index=self.crop_stop_index,
             cpm_for_coord_alignment=self.cpm_for_coord_alignment,
             cpm_for_coord_alignment_path_converted=self.cpm_for_coord_alignment_path_converted,
             **self.hads_kwargs,
+        )
+        self.cpm_crops_manager = CPMRegionCropManager(
+            input_paths=self.cpm_output_folder,
+            variables=self.variables,
+            runs=self.runs,
+            # resample_paths=self.resample_cpm_path,
+            output_paths=self.cropped_cpm_path,
+            # crop_paths=self.crops_path,
+            start_index=self.crop_start_index,
+            stop_index=self.crop_stop_index,
+            # resample_start_index=self.resample_start_index,
+            # resample_stop_index=self.resample_stop_index,
+            # crop_start_index=self.crop_start_index,
+            # crop_stop_index=self.crop_stop_index,
+            **self.cpm_kwargs,
+        )
+        self.hads_crops_manager = HADsRegionCropManager(
+            input_paths=self.hads_output_folder,
+            variables=self.variables,
+            # resample_paths=self.resample_cpm_path,
+            output_paths=self.cropped_hads_path,
+            # crop_paths=self.crops_path,
+            start_index=self.crop_start_index,
+            stop_index=self.crop_stop_index,
+            # resample_start_index=self.resample_start_index,
+            # resample_stop_index=self.resample_stop_index,
+            # crop_start_index=self.crop_start_index,
+            # crop_stop_index=self.crop_stop_index,
+            **self.cpm_kwargs,
         )
         self.total_cpus: int | None = cpu_count()
         if self.cpus == None or (self.total_cpus and self.cpus >= self.total_cpus):

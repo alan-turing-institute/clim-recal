@@ -4,7 +4,7 @@ from logging import getLogger
 from os import PathLike
 from pathlib import Path
 from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
-from typing import Any, Callable, Final
+from typing import Any, Callable, Final, Iterable, Iterator, Sequence
 
 import numpy as np
 import rioxarray  # nopycln: import
@@ -24,6 +24,7 @@ from osgeo.gdal import (
 from osgeo.gdal import config_option as config_GDAL_option
 from rasterio.enums import Resampling
 from tqdm import tqdm
+from tqdm.rich import trange
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import (
@@ -1312,3 +1313,32 @@ def region_crop_file_name(
     else:
         final_suffix = str(file_name)
     return "_".join(("crop", str(crop_region), final_suffix))
+
+
+def trange_wrapper(
+    instance: Sequence,
+    calc: Callable,
+    start: int,
+    stop: int | None,
+    step: int,
+    default_export_path: Path,
+    override_export_path: Path | None = None,
+    source_to_index: Iterable | None = None,
+) -> Iterator[Path | T_Dataset]:
+    # export_paths: list[Path | T_Dataset] = []
+    if stop is None:
+        stop = len(instance)
+    export_path: Path = override_export_path or default_export_path
+    for index in trange(start, stop, step):
+        # export_paths.append(
+        #     method(
+        yield calc(
+            # path=export_path,
+            index=index,
+            # override_export_path=override_export_path,
+            export_path=export_path,
+            source_to_index=source_to_index,
+        )
+        #     )
+        # )
+    # return export_paths

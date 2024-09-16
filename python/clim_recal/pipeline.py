@@ -227,10 +227,10 @@ def main(
     Note the `_allow_check_fail` parameters support running
     the examples without data mounted from a server.
 
+    >>> if not is_data_mounted:
+    ...     pytest.skip(mount_doctest_skip_message)
     >>> main(variables=("rainfall", "tasmin"),
     ...      output_path=test_runs_output_path,
-    ...      cpm_kwargs=dict(_allow_check_fail=True),
-    ...      hads_kwargs=dict(_allow_check_fail=True),
     ... )
     'set_cpm_for_coord_alignment' for 'HADs' not speficied.
     Defaulting to 'self.cpm_input_path': '...'
@@ -239,7 +239,7 @@ def main(
                      regions_count=1, methods_count=1,
                      cpm_folders_count=2, hads_folders_count=2,
                      resample_start_index=0, resample_stop_index=None,
-                     cpus=...)>
+                     crop_star_index=0, cpus=...)>
     <CPMResamplerManager(variables_count=2, runs_count=1,
                          input_paths_count=2)>
     <HADsResamplerManager(variables_count=2, input_paths_count=2)>

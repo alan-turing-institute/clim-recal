@@ -40,6 +40,12 @@ CPM_SUB_PATH: Final[Path] = Path("latest")
 
 CPM_RESOLUTION_METERS: Final[int] = 2200
 
+HADS_OUTPUT_PATH: Final[Path] = Path("hads")
+CPM_OUTPUT_PATH: Final[Path] = Path("cpm")
+
+CPM_CROP_OUTPUT_PATH: Final[Path] = Path("cpm-crop")
+HADS_CROP_OUTPUT_PATH: Final[Path] = Path("hads-crop")
+
 AuthorshipType = Union[
     str | tuple[str, ...], dict[str, str] |
     dict[str, dict[str, str]] | dict[str, Collection[str]]

@@ -13,7 +13,6 @@ from xarray.core.types import T_Dataset
 
 from clim_recal.config import ClimRecalConfig
 from clim_recal.debiasing.debias_wrapper import RegionOptions
-from clim_recal.resample import CPM_OUTPUT_LOCAL_PATH, HADS_OUTPUT_LOCAL_PATH
 from clim_recal.utils.core import (
     ISO_DATE_FORMAT_STR,
     check_package_path,
@@ -22,7 +21,7 @@ from clim_recal.utils.core import (
     is_platform_darwin,
     results_path,
 )
-from clim_recal.utils.data import BoundsTupleType
+from clim_recal.utils.data import CPM_OUTPUT_PATH, HADS_OUTPUT_PATH, BoundsTupleType
 from clim_recal.utils.server import CondaLockFileManager
 from clim_recal.utils.xarray import (
     GLASGOW_GEOM_LOCAL_PATH,
@@ -460,14 +459,14 @@ def clim_runner(
 def resample_test_cpm_output_path(
     test_runs_output_path: Path,
 ) -> Path:
-    return test_runs_output_path / CPM_OUTPUT_LOCAL_PATH
+    return test_runs_output_path / CPM_OUTPUT_PATH
 
 
 @pytest.fixture
 def resample_test_hads_output_path(
     test_runs_output_path: Path,
 ) -> Path:
-    return test_runs_output_path / HADS_OUTPUT_LOCAL_PATH
+    return test_runs_output_path / HADS_OUTPUT_PATH
 
 
 @pytest.fixture
