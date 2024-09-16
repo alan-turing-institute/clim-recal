@@ -17,11 +17,11 @@ env:
 
 on:
   pull_request:
-    branches: ['main', 'crop-cli', ]
+    branches: ['main',]
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['main', 'crop-cli', ]
+    branches: ['main',]
     paths-ignore: ['docs/**']
 
 concurrency:
