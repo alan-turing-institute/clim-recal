@@ -36,15 +36,19 @@ CPM_RAW_Y_COLUMN_NAME: Final[str] = "grid_latitude"
 CPRUK_XDIM: Final[str] = CPM_RAW_X_COLUMN_NAME
 CPRUK_YDIM: Final[str] = CPM_RAW_Y_COLUMN_NAME
 
+
 CPM_SUB_PATH: Final[Path] = Path("latest")
 
 CPM_RESOLUTION_METERS: Final[int] = 2200
 
-HADS_OUTPUT_PATH: Final[Path] = Path("hads")
-CPM_OUTPUT_PATH: Final[Path] = Path("cpm")
+HADS_NAME: Final[str] = "hads"
+CPM_NAME: Final[str] = "cpm"
 
-CPM_CROP_OUTPUT_PATH: Final[Path] = Path("cpm-crop")
-HADS_CROP_OUTPUT_PATH: Final[Path] = Path("hads-crop")
+HADS_OUTPUT_PATH: Final[Path] = Path(HADS_NAME)
+CPM_OUTPUT_PATH: Final[Path] = Path(CPM_NAME)
+
+CPM_CROP_OUTPUT_PATH: Final[Path] = Path(f"{CPM_NAME}-crop")
+HADS_CROP_OUTPUT_PATH: Final[Path] = Path(f"{HADS_NAME}-crop")
 
 AuthorshipType = Union[
     str | tuple[str, ...], dict[str, str] |

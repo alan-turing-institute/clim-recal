@@ -273,6 +273,7 @@ class RegionCropperManagerBase(ResamplerManagerBase):
     # )
     # _strict_fail_if_var_in_input_path: bool = True
     # _allow_check_fail: bool = False
+    check_input_paths_exist: bool = True
     _raw_input_path_dict: dict[Path, VariableOptions | str] = field(
         default_factory=dict
     )
@@ -350,9 +351,15 @@ class RegionCropperManagerBase(ResamplerManagerBase):
     #         yield input_path, resample_path
 
     def check_paths(
-        self, run_set_input_paths: bool = True, run_set_output_paths: bool = True
+        self,
+        run_set_input_paths: bool = True,
+        run_set_output_paths: bool = True,
+        check_input_paths_exist: bool = False,
     ):
-        """Check and set `input`, `resample` and `crop` paths."""
+        """Check and set `input` and `output` paths."""
+        check_input_paths_exist = (
+            check_input_paths_exist or self.check_input_paths_exist
+        )
         if run_set_input_paths:
             self.set_input_paths()
 
@@ -370,24 +377,25 @@ class RegionCropperManagerBase(ResamplerManagerBase):
                     f"'output_paths' not iterable for {self}. Hint: try setting 'run_set_output_paths' to 'True'."
                 )
         # assert len(self.input_paths) == len(self.resample_paths)
-        for path in self.input_paths:
-            try:
-                assert Path(path).exists()
-                assert Path(path).is_dir()
-            except AssertionError:
-                message: str = (
-                    f"One of 'self.input_paths' in {self} not valid: '{path}'"
-                )
-                if self._allow_check_fail:
-                    logger.error(message)
-                else:
-                    raise FileExistsError(message)
-            try:
-                assert path in self._input_path_dict
-            except AssertionError:
-                NotImplementedError(
-                    f"Syncing `self._input_path_dict` with changes to `self.input_paths`."
-                )
+        if check_input_paths_exist:
+            for path in self.input_paths:
+                try:
+                    assert Path(path).exists()
+                    assert Path(path).is_dir()
+                except AssertionError:
+                    message: str = (
+                        f"One of 'self.input_paths' in {self} not valid: '{path}'"
+                    )
+                    if self._allow_check_fail:
+                        logger.error(message)
+                    else:
+                        raise FileExistsError(message)
+                try:
+                    assert path in self._input_path_dict
+                except AssertionError:
+                    NotImplementedError(
+                        f"Syncing `self._input_path_dict` with changes to `self.input_paths`."
+                    )
 
     def set_input_paths(self):
         """Propagate `self.input_paths` if needed."""
@@ -482,7 +490,7 @@ class RegionCropperManagerBase(ResamplerManagerBase):
                     input_path=input_paths[0],
                     # output_path=self.resample_paths[index],
                     output_path=crop_path,
-                    variable_name=input_resample_paths[1],
+                    variable_name=input_paths[1],
                     start_index=self.start_index,
                     stop_index=self.stop_index,
                     # crop_path=crop_path,
@@ -737,27 +745,27 @@ class CPMRegionCropManager(RegionCropperManagerBase):
     ...     pytest.skip(mount_doctest_skip_message)
     >>> resample_test_cpm_output_path: Path = getfixture(
     ...         'resample_test_cpm_output_path')
-    >>> cpm_resampler_manager: CPMResamplerManager = CPMResamplerManager(
+    >>> cpm_crop_manager: CPMResamplerManager = CPMResamplerManager(
     ...     stop_index=9,
     ...     resample_paths=resample_test_cpm_output_path,
     ...     output_paths=resample_test_cpm_output_path,
     ...     )
-    >>> cpm_resampler_manager
-    <CPMResamplerManager(variables_count=1, runs_count=4,
+    >>> cpm_crop_manager
+    <CPMRegionCropManager(variables_count=1, runs_count=4,
                          input_paths_count=4)>
-    >>> configs: tuple[CPMResampler, ...] = tuple(
-    ...     cpm_resampler_manager.yield_configs())
+    >>> configs: tuple[CPMRegionCrop, ...] = tuple(
+    ...     cpm_crop_manager.yield_configs())
     >>> pprint(configs)
-    (<CPMResampler(count=9, max_count=100,
+    (<CPMRegionCrop(count=9, max_count=100,
                    input_path='.../tasmax/05/latest',
                    output_path='.../cpm/tasmax/05')>,
-     <CPMResampler(count=9, max_count=100,
+     <CPMRegionCrop(count=9, max_count=100,
                    input_path='.../tasmax/06/latest',
                    output_path='.../cpm/tasmax/06')>,
-     <CPMResampler(count=9, max_count=100,
+     <CPMRegionCrop(count=9, max_count=100,
                    input_path='.../tasmax/07/latest',
                    output_path='.../cpm/tasmax/07')>,
-     <CPMResampler(count=9, max_count=100,
+     <CPMRegionCrop(count=9, max_count=100,
                    input_path='.../tasmax/08/latest',
                    output_path='.../cpm/tasmax/08')>)
     """

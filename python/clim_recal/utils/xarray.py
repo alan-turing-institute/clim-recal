@@ -1029,6 +1029,39 @@ def gdal_warp_wrapper(
     return output_path if return_path else projection
 
 
+def resample_output_path(
+    source_path: PathLike | None,
+    export_folder: PathLike,
+    new_path_name_func: Callable[[Path], Path] | None = None,
+) -> Path:
+    """`source_path` in `export_folder` via `new_path_name_func`.
+
+    Parameters
+    ----------
+    source_path
+        Original path to extract file name via `Path(source_path).name`
+    export_folder
+        Folder to save new path in.
+    new_path_name_func
+        Function to convert old file name to new file name.
+
+    Returns
+    -------
+    Converted path of `export_folder` / then either
+    `source_path` or results of `new_path_name_func(source_path)`.
+    """
+    if not source_path:
+        raise ValueError(
+            f"Source path must be a folder, currently '{source_path}'. "
+            f"May need to mount drive."
+        )
+    # Generate export_path following source_path name
+    source_path_copy: Path = Path(source_path)
+    if new_path_name_func:
+        source_path_copy = new_path_name_func(source_path_copy)
+    return Path(export_folder) / source_path_copy.name
+
+
 def apply_geo_func(
     source_path: PathLike,
     func: ReprojectFuncType,
@@ -1226,8 +1259,12 @@ def get_cpm_for_coord_alignment(
         raise ValueError("'cpm_for_coord_alignment' must be a Path or xarray Dataset.")
     elif isinstance(cpm_for_coord_alignment, PathLike):
         path: Path = Path(cpm_for_coord_alignment)
-        if Path(path).is_dir():
-            path = next(Path(path).glob(cpm_regex))
+        try:
+            assert path.exists()
+        except:
+            raise FileExistsError(f"No 'cpm_for_coord_alignment' at '{path}'")
+        if path.is_dir():
+            path = next(path.glob(cpm_regex))
         if skip_reproject:
             logger.info(f"Skipping reprojection and loading '{path}'...")
             cpm_for_coord_alignment, variable = check_xarray_path_and_var_name(

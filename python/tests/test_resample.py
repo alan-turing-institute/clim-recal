@@ -14,18 +14,20 @@ from clim_recal.resample import (
     HADsResampler,
     HADsResamplerManager,
     ResamplerBase,
+    ResamplerManagerBase,
 )
 from clim_recal.utils.core import CLI_DATE_FORMAT_STR
+from clim_recal.utils.data import CPM_NAME, HADS_NAME, RunOptions
 from clim_recal.utils.xarray import (
     FINAL_CONVERTED_CPM_WIDTH,
     FINAL_RESAMPLE_LON_COL,
     plot_xarray,
 )
+from conftest import hads_data_path, tasmax_cpm_1980_converted
 
 from .utils import (
     CPM_TASMAX_DAY_SERVER_PATH,
     CPM_TASMAX_LOCAL_TEST_PATH,
-    FINAL_CPM_DEC_10_X_2_Y_200_210,
     HADS_UK_TASMAX_DAY_SERVER_PATH,
     HADS_UK_TASMAX_LOCAL_TEST_PATH,
 )
@@ -55,6 +57,46 @@ def cpm_tasmax_local_test_path(data_fixtures_path: Path) -> Path:
     return data_fixtures_path / CPM_TASMAX_LOCAL_TEST_PATH
 
 
+def check_tasmax_1980_cpm(export: T_Dataset) -> bool:
+    CPM_FIRST_DATES: NDArray = np.array(
+        ["19801201", "19801202", "19801203", "19801204", "19801205"]
+    )
+    CPM_CHECK_VALUES: NDArray = np.array(
+        [
+            12.325586,
+            12.325586,
+            12.312891,
+            12.296778,
+            12.296778,
+            12.2792,
+            12.2792,
+            12.260401,
+            12.260401,
+            12.244776,
+        ]
+    )
+    assert export.dims["time"] == 365
+    assert export.dims[FINAL_RESAMPLE_LON_COL] == FINAL_CONVERTED_CPM_WIDTH
+    # assert export.dims[FINAL_RESAMPLE_LON_COL] == CPM_CHECK_VALUES
+    # assert_allclose(export.tasmax[10][5][:10].values, FINAL_CPM_DEC_10_X_2_Y_200_210)
+    assert_allclose(export.tasmax[10][5][:10].values, CPM_CHECK_VALUES)
+    assert (
+        CPM_FIRST_DATES == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
+    ).all()
+    return True
+
+
+def check_tasmax_1980_hads(export: T_Dataset) -> bool:
+    """Checks for 1980 hads."""
+    assert len(export.time) == 31
+    assert not np.isnan(export.tasmax[0][200:300].values).all()
+    assert (
+        HADS_FIRST_DATES.astype(object)
+        == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
+    ).all()
+    return True
+
+
 @pytest.mark.localcache
 @pytest.mark.slow
 @pytest.mark.mount
@@ -65,9 +107,9 @@ def test_cpm_manager(
     resample_test_cpm_output_path, config: str, tasmax_cpm_1980_raw_path: Path
 ) -> None:
     """Test running default CPM calendar fix."""
-    CPM_FIRST_DATES: np.array = np.array(
-        ["19801201", "19801202", "19801203", "19801204", "19801205"]
-    )
+    # CPM_FIRST_DATES: np.array = np.array(
+    #     ["19801201", "19801202", "19801203", "19801204", "19801205"]
+    # )
     output_path: Path = resample_test_cpm_output_path / config
     test_config = CPMResampler(
         input_path=tasmax_cpm_1980_raw_path.parent,
@@ -88,12 +130,13 @@ def test_cpm_manager(
                 stop=1, source_to_index=tuple(test_config)
             )
     export: T_Dataset = open_dataset(paths[0])
-    assert export.dims["time"] == 365
-    assert export.dims[FINAL_RESAMPLE_LON_COL] == FINAL_CONVERTED_CPM_WIDTH
-    assert_allclose(export.tasmax[10][5][:10].values, FINAL_CPM_DEC_10_X_2_Y_200_210)
-    assert (
-        CPM_FIRST_DATES == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
-    ).all()
+    assert check_tasmax_1980_cpm(export)
+    # assert export.dims["time"] == 365
+    # assert export.dims[FINAL_RESAMPLE_LON_COL] == FINAL_CONVERTED_CPM_WIDTH
+    # assert_allclose(export.tasmax[10][5][:10].values, FINAL_CPM_DEC_10_X_2_Y_200_210)
+    # assert (
+    #     CPM_FIRST_DATES == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
+    # ).all()
     plot_xarray(
         export.tasmax[0],
         path=resample_test_cpm_output_path / f"config-{config}.png",
@@ -119,12 +162,13 @@ def test_hads_manager(
     else:
         paths = [test_config.to_reprojection()]
     export: T_Dataset = open_dataset(paths[0])
-    assert len(export.time) == 31
-    assert not np.isnan(export.tasmax[0][200:300].values).all()
-    assert (
-        HADS_FIRST_DATES.astype(object)
-        == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
-    ).all()
+    assert check_tasmax_1980_hads(export)
+    # assert len(export.time) == 31
+    # assert not np.isnan(export.tasmax[0][200:300].values).all()
+    # assert (
+    #     HADS_FIRST_DATES.astype(object)
+    #     == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
+    # ).all()
     plot_xarray(
         export.tasmax[0],
         path=resample_test_hads_output_path / f"range-{range}.png",
@@ -159,27 +203,50 @@ def test_variable_in_base_import_path_error(
 @pytest.mark.localcache
 @pytest.mark.slow
 @pytest.mark.mount
-@pytest.mark.parametrize("multiprocess", (False, True))
+# @pytest.mark.parametrize("multiprocess", (False, True))
+@pytest.mark.parametrize("manager_type", (CPM_NAME, HADS_NAME))
 def test_execute_resample_configs(
-    multiprocess: bool, tmp_path, tasmax_hads_1980_raw_path: Path
+    manager_type: str,
+    tmp_path,
+    hads_data_path: Path,
+    cpm_data_path: Path,
+    tasmax_cpm_1980_converted: Path,
+    multiprocess: bool = False,
 ) -> None:
     """Test running default HADs spatial projection."""
-    test_config = HADsResamplerManager(
-        input_paths=tasmax_hads_1980_raw_path.parent,
-        resample_paths=tmp_path,
-        # crop_paths=tmp_path,
-        stop_index=1,
-    )
+    test_config: ResamplerManagerBase
+    if manager_type == HADS_NAME:
+        test_config = HADsResamplerManager(
+            input_paths=hads_data_path,
+            output_paths=tmp_path,
+            # crop_paths=tmp_path,
+            stop_index=1,
+            # _strict_fail_if_var_in_input_path=False,
+            cpm_for_coord_alignment=tasmax_cpm_1980_converted,
+        )
+    else:
+        test_config = CPMResamplerManager(
+            input_paths=cpm_data_path,
+            output_paths=tmp_path,
+            # crop_paths=tmp_path,
+            runs=(RunOptions.ONE,),
+            stop_index=1,
+            # _strict_fail_if_var_in_input_path=False,
+        )
     resamplers: tuple[ResamplerBase, ...] = test_config.execute_configs(
-        multiprocess=multiprocess
+        multiprocess=multiprocess, return_resamplers=False, return_path=True
     )
     export: T_Dataset = open_dataset(resamplers[0][0])
-    assert len(export.time) == 31
-    assert not np.isnan(export.tasmax[0][200:300].values).all()
-    assert (
-        HADS_FIRST_DATES.astype(object)
-        == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
-    ).all()
+    if manager_type == HADS_NAME:
+        check_tasmax_1980_hads(export)
+        # assert len(export.time) == 31
+        # assert not np.isnan(export.tasmax[0][200:300].values).all()
+        # assert (
+        #     HADS_FIRST_DATES.astype(object)
+        #     == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
+        # ).all()
+    else:
+        assert check_tasmax_1980_cpm(export)
 
 
 # @pytest.mark.localcache

@@ -14,8 +14,8 @@ from typing import Any, Final, Iterable, Iterator, Literal, Sequence
 
 import dill as pickle
 import rioxarray  # nopycln: import
-from osgeo.gdal import Dataset as GDALDataset
 from rich import print
+from rich.progress import track
 from xarray import Dataset
 from xarray.core.types import T_Dataset
 
@@ -47,12 +47,10 @@ from .utils.gdal_formats import TIF_EXTENSION_STR
 from .utils.xarray import (
     BRITISH_NATIONAL_GRID_EPSG,
     NETCDF_EXTENSION_STR,
-    ReprojectFuncType,
-    apply_geo_func,
     cpm_reproject_with_standard_calendar,
     get_cpm_for_coord_alignment,
     hads_resample_and_reproject,
-    trange_wrapper,
+    resample_output_path,
 )
 
 logger = getLogger(__name__)
@@ -109,6 +107,7 @@ class ResamplerBase:
     input_file_y_column_name: str = ""
     start_index: int = 0
     stop_index: int | None = None
+    _result_paths: dict[PathLike, PathLike | None] = field(default_factory=dict)
     # resample_start_index: int = 0
     # resample_stop_index: int | None = None
 
@@ -230,6 +229,8 @@ class ResamplerBase:
         step: int = 1,
         override_export_path: Path | None = None,
         source_to_index: Sequence | None = None,
+        return_path: bool = False,
+        write_results: bool = True,
     ) -> Iterator[Path]:
         # start = start or self.resample_start_index
         # stop = stop or self.resample_stop_index
@@ -239,16 +240,36 @@ class ResamplerBase:
         # export_paths: list[Path | T_Dataset] = []
         if stop is None:
             stop = len(self)
-        return trange_wrapper(
-            instance=self,
-            calc=self.to_reprojection,
-            start=start,
-            stop=stop,
-            step=step,
-            default_export_path=Path(self.output_path),
-            override_export_path=override_export_path,
-            source_to_index=source_to_index,
-        )
+        # export_path: Path = Path(override_export_path or self.output_path)
+        for index in track(range(start, stop, step), description="Processing..."):
+            yield self.to_reprojection(
+                index=index,
+                override_export_path=override_export_path,
+                source_to_index=source_to_index,
+                return_path=return_path,
+                write_results=write_results,
+            )
+            # yield self.to_reprojection()
+            # export_paths.append(
+            #     method(
+            # yield hads_resample_and_reproject(self[0], self.variable_name, cpm_to_match=self.)
+            # yield calc(
+            #     # path=export_path,
+            #     index=index,
+            #     # override_export_path=override_export_path,
+            #     export_path=export_path,
+            #     source_to_index=source_to_index,
+            # )
+            # return trange_wrapper(
+            #     instance=self,
+            #     calc=self.to_reprojection,
+            #     start=start,
+            #     stop=stop,
+            #     step=step,
+            #     default_export_path=Path(self.output_path),
+            #     override_export_path=override_export_path,
+            #     source_to_index=source_to_index,
+            # )
         # yield self.to_reprojection(index=start, stop=stop, step=step)
         # return self._range_call(
         #     method=self.to_reprojection,
@@ -259,9 +280,11 @@ class ResamplerBase:
         #     source_to_index=source_to_index,
         # )
 
-    def execute(self, skip_spatial: bool = False, **kwargs) -> list[Path] | None:
+    def execute(self, **kwargs) -> tuple[Path, ...]:
         """Run all steps for processing"""
-        return self.range_to_reprojection(**kwargs) if not skip_spatial else None
+        return tuple(
+            self.range_to_reprojection(**kwargs)
+        )  # if not skip_spatial else None
 
     # def execute_crops(self, skip_crop: bool = False, **kwargs) -> list[Path] | None:
     #     """Run all specified crops."""
@@ -270,7 +293,12 @@ class ResamplerBase:
     def _sync_reprojected_paths(
         self, overwrite_output_path: PathLike | None = None
     ) -> None:
-        """Sync `self._reprojected_paths` with files in `self.export_path`."""
+        """Sync `self._reprojected_paths` with files in `self.export_path`.
+
+        Todo
+        ----
+        This may need to be removed.
+        """
         if not hasattr(self, "_reprojected_paths"):
             if overwrite_output_path:
                 self.output_path = overwrite_output_path
@@ -435,7 +463,7 @@ class HADsResampler(ResamplerBase):
     input_file_y_column_name: str = HADS_YDIM
     cpm_for_coord_alignment: T_Dataset | PathLike | None = RAW_CPM_TASMAX_PATH
     cpm_for_coord_alignment_path_converted: bool = False
-    _resample_func: ReprojectFuncType = hads_resample_and_reproject
+    # _resample_func: ReprojectFuncType = hads_resample_and_reproject
 
     def set_cpm_for_coord_alignment(self) -> None:
         """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""
@@ -446,12 +474,19 @@ class HADsResampler(ResamplerBase):
 
     def to_reprojection(
         self,
-        export_path: PathLike,
+        # export_path: PathLike,
+        # index: int = 0,
+        # # override_export_path: Path | None = None,
+        # # return_results: bool = False,
+        # # export_path: PathLike = path
+        # source_to_index: Sequence | None = None,
+        # **kwargs
         index: int = 0,
-        # override_export_path: Path | None = None,
-        # return_results: bool = False,
-        # export_path: PathLike = path
+        override_export_path: Path | None = None,
+        return_path: bool = False,
+        write_results: bool = True,
         source_to_index: Sequence | None = None,
+        **kwargs,
     ) -> Path | T_Dataset:
         # source_path: Path = self._get_source_path(
         #     index=index, source_to_index=source_to_index
@@ -463,21 +498,42 @@ class HADsResampler(ResamplerBase):
         console.log(f"Setting 'cpm_for_coord_alignment' for {self}")
         self.set_cpm_for_coord_alignment()
         console.log(f"Set 'cpm_for_coord_alignment' for {self}")
-        return apply_geo_func(
-            source_path=source_path,
-            func=self._resample_func,
-            export_folder=export_path,
-            # Leaving in case we return to using warp
-            # export_path_as_output_path_kwarg=True,
-            # to_netcdf=False,
-            to_netcdf=True,
+        console.log(f"Starting HADs index {index}...")
+        result: T_Dataset = hads_resample_and_reproject(
+            source_path,
             variable_name=self.variable_name,
             x_dim_name=self.input_file_x_column_name,
             y_dim_name=self.input_file_y_column_name,
             cpm_to_match=self.cpm_for_coord_alignment,
-            new_path_name_func=reproject_2_2km_filename,
-            return_results=return_results,
+            **kwargs,
         )
+        console.log(f"Completed HADs index {index}...")
+        self._result_paths[source_path] = None
+        if write_results or return_path:
+            export_path: Path = override_export_path or resample_output_path(
+                source_path, self.output_path, reproject_2_2km_filename
+            )
+            if write_results:
+                result.to_netcdf(export_path)
+                self._result_paths[source_path] = export_path
+            if return_path:
+                return export_path
+        return result
+        # return apply_geo_func(
+        #     source_path=source_path,
+        #     func=self._resample_func,
+        #     export_folder=export_path,
+        #     # Leaving in case we return to using warp
+        #     # export_path_as_output_path_kwarg=True,
+        #     # to_netcdf=False,
+        #     to_netcdf=True,
+        #     variable_name=self.variable_name,
+        #     x_dim_name=self.input_file_x_column_name,
+        #     y_dim_name=self.input_file_y_column_name,
+        #     cpm_to_match=self.cpm_for_coord_alignment,
+        #     new_path_name_func=reproject_2_2km_filename,
+        #     # return_results=return_results,
+        # )
 
 
 @dataclass(kw_only=True, repr=False)
@@ -534,7 +590,8 @@ class CPMResampler(ResamplerBase):
     input_file_x_column_name: str = CPM_RAW_X_COLUMN_NAME
     input_file_y_column_name: str = CPM_RAW_Y_COLUMN_NAME
     prior_time_series: PathLike | Dataset | None = None
-    _resample_func: ReprojectFuncType = cpm_reproject_with_standard_calendar
+    # _resample_func: ReprojectFuncType = cpm_reproject_with_standard_calendar
+    # _resample_path_func: Callable
 
     @property
     def cpm_variable_name(self) -> str:
@@ -544,8 +601,10 @@ class CPMResampler(ResamplerBase):
         self,
         index: int = 0,
         override_export_path: Path | None = None,
-        return_results: bool = False,
+        return_path: bool = False,
+        write_results: bool = True,
         source_to_index: Sequence | None = None,
+        **kwargs,
     ) -> Path | T_Dataset:
         # source_path: Path = self._get_source_path(
         #     index=index, source_to_index=source_to_index
@@ -553,23 +612,43 @@ class CPMResampler(ResamplerBase):
         source_path: Path = _get_source_path(
             self, index=index, source_to_index=source_to_index
         )
-        path: PathLike = self.output_path
-        console.log(f"Reprojecting index CPM {index}...")
-        result: Path | T_Dataset | GDALDataset = apply_geo_func(
-            source_path=source_path,
-            func=self._resample_func,
-            new_path_name_func=reproject_standard_calendar_filename,
-            export_folder=path,
-            to_netcdf=True,
-            variable_name=self.cpm_variable_name,
-            return_results=return_results,
+        # path: PathLike = self.output_path
+        console.log(f"Converting CPM index {index}...")
+        # export_path: Path = Path(source_path)
+        # if new_path_name_func:
+        #     export_path = new_path_name_func(export_path)
+        # export_path = Path(export_folder) / export_path.name
+        result: T_Dataset = cpm_reproject_with_standard_calendar(
+            source_path, variable_name=self.cpm_variable_name, **kwargs
         )
-        console.log(f"Completed index CPM {index}...")
-        if isinstance(result, PathLike):
-            if not hasattr(self, "_reprojected_paths"):
-                self._reprojected_paths: list[Path] = []
-            self._reprojected_paths.append(Path(result))
+        console.log(f"Completed CPM index {index}...")
+        self._result_paths[source_path] = None
+        if write_results or return_path:
+            export_path: Path = override_export_path or resample_output_path(
+                source_path, self.output_path, reproject_standard_calendar_filename
+            )
+            if write_results:
+                result.to_netcdf(export_path)
+                self._result_paths[source_path] = export_path
+            if return_path:
+                return export_path
         return result
+        # result: Path | T_Dataset | GDALDataset = apply_geo_func(
+        #     source_path=source_path,
+        #     func=self._resample_func,
+        #     new_path_name_func=reproject_standard_calendar_filename,
+        #     export_folder=path,
+        #     to_netcdf=True,
+        #     variable_name=self.cpm_variable_name,
+        #     # return_results=return_results,
+        # )
+        # console.log(f"Completed index CPM {index}...")
+        # May need to remove below
+        # if isinstance(result, PathLike):
+        #     if not hasattr(self, "_reprojected_paths"):
+        #         self._reprojected_paths: list[Path] = []
+        #     self._reprojected_paths.append(Path(result))
+        # return result
 
     def __getstate__(self):
         """Meanse of testing what aspects of instance have issues multiprocessing.
@@ -691,6 +770,7 @@ class ResamplerManagerBase:
         """Check and set `input`, `resample` and `crop` paths."""
 
         if run_set_data_paths:
+            self.set_input_paths()
             self.set_output_paths()
         # if run_set_crop_paths:
         #     self.set_crop_paths()
@@ -723,7 +803,7 @@ class ResamplerManagerBase:
                     f"Syncing `self._input_path_dict` with changes to `self.input_paths`."
                 )
 
-    def _set_input_paths(self):
+    def set_input_paths(self):
         """Propagate `self.input_paths` if needed."""
         if isinstance(self.input_paths, PathLike):
             self._input_path = self.input_paths
@@ -746,7 +826,7 @@ class ResamplerManagerBase:
 
     def set_output_paths(self):
         """Propagate `self.output_paths` if needed."""
-        self._set_input_paths()
+        # self._set_input_paths()
         if isinstance(self.output_paths, PathLike):
             self._output_path = self.output_paths
             self.output_paths = tuple(
@@ -835,8 +915,12 @@ class ResamplerManagerBase:
             raise IndexError(f"Can only index with 'int', not: '{key}'")
 
     def execute_configs(
-        self, multiprocess: bool = False, cpus: int | None = None
-    ) -> tuple[ResamplerBase, ...]:
+        self,
+        multiprocess: bool = False,
+        cpus: int | None = None,
+        return_resamplers: bool = True,
+        **kwargs,
+    ) -> tuple[ResamplerBase, ...] | list[T_Dataset | Path]:
         """Run all resampler configurations
 
         Parameters
@@ -845,19 +929,30 @@ class ResamplerManagerBase:
             If `True` run parameters in `resample_configs` with `multiprocess_execute`.
         cpus
             Number of `cpus` to pass to `multiprocess_execute`.
+        return_resamplers
+            Return instances of generated `HADsResampler` or
+            `CPMResampler`, or return the `results` of each
+            `execute` call.
+        kwargs
+            Parameters to path to sampler `execute` calls.
         """
         resamplers: tuple[ResamplerBase, ...] = tuple(self.yield_configs())
-        results: list[list[Path] | None] = []
+        results: list[tuple[Path, ...]] = []
         if multiprocess:
             cpus = cpus or self.cpus
             if self.total_cpus and cpus:
                 cpus = min(cpus, self.total_cpus - 1)
-            results = multiprocess_execute(resamplers, method_name="execute", cpus=cpus)
+            results = multiprocess_execute(
+                resamplers, method_name="execute", cpus=cpus, **kwargs
+            )
         else:
             for resampler in resamplers:
                 print(resampler)
-                results.append(resampler.execute())
-        return resamplers
+                results.append(resampler.execute(**kwargs))
+        if return_resamplers:
+            return resamplers
+        else:
+            return results
 
     # def execute_crop_configs(
     #     self, multiprocess: bool = False, cpus: int | None = None

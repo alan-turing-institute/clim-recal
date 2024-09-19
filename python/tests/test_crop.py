@@ -21,7 +21,9 @@ from clim_recal.resample import (
 )
 from clim_recal.utils.data import (
     CPM_CROP_OUTPUT_PATH,
+    CPM_OUTPUT_PATH,
     HADS_CROP_OUTPUT_PATH,
+    HADS_OUTPUT_PATH,
     RegionOptions,
     RunOptions,
 )
@@ -39,49 +41,57 @@ def test_execute_crop_configs(
     resample_test_hads_output_path: Path,
     resample_test_cpm_output_path: Path,
     tasmax_hads_1980_raw_path: Path,
+    hads_data_path: Path,
+    cpm_data_path: Path,
     tasmax_cpm_1980_raw_path: Path,
     tasmax_cpm_1980_converted_path: Path,
 ) -> None:
     """Test running default HADs spatial projection."""
     multiprocess: bool = False
-    input_path: Path
+    raw_input_path: Path
+    resample_path: Path
     crop_path: Path
     resampler_manager_kwargs: dict[str, Any] = {}
     crop_manager_kwargs: dict[str, Any] = {}
     resampler: ResamplerManagerBase
     if crop_manager is HADsRegionCropManager:
-        input_path = tasmax_hads_1980_raw_path.parent
+        # raw_input_path = tasmax_hads_1980_raw_path.parents[2]
+        raw_input_path = hads_data_path
+        resample_path = tmp_path / HADS_OUTPUT_PATH
         crop_path = resample_test_hads_output_path / "manage" / HADS_CROP_OUTPUT_PATH
         resampler_manager_kwargs["cpm_for_coord_alignment"] = (
             tasmax_cpm_1980_converted_path
         )
         resampler_manager_kwargs["cpm_for_coord_alignment_path_converted"] = True
         resampler = HADsResamplerManager(
-            input_paths=input_path,
-            output_paths=tmp_path,
+            input_paths=raw_input_path,
+            output_paths=resample_path,
             # crop_paths=crop_path,
             stop_index=1,
             _strict_fail_if_var_in_input_path=False,
             **resampler_manager_kwargs,
         )
     else:
-        input_path = tasmax_cpm_1980_raw_path.parent
+        # raw_input_path = tasmax_cpm_1980_raw_path.parents[2]
+        raw_input_path = cpm_data_path
+        resample_path = tmp_path / CPM_OUTPUT_PATH
         crop_path = resample_test_cpm_output_path / "manage" / CPM_CROP_OUTPUT_PATH
         resampler_manager_kwargs["runs"] = crop_manager_kwargs["runs"] = (
             RunOptions.ONE,
         )
         resampler = CPMResamplerManager(
-            input_paths=input_path,
-            output_paths=tmp_path,
+            input_paths=raw_input_path,
+            output_paths=resample_path,
             stop_index=1,
             _strict_fail_if_var_in_input_path=False,
             **resampler_manager_kwargs,
         )
     crop_config: RegionCropperManagerBase = crop_manager(
-        input_paths=tmp_path,
+        input_paths=resample_path,
         output_paths=crop_path,
         stop_index=1,
         _strict_fail_if_var_in_input_path=False,
+        check_input_paths_exist=False,
         **crop_manager_kwargs,
     )
     if isinstance(resampler, HADsResamplerManager):
@@ -92,7 +102,7 @@ def test_execute_crop_configs(
         crop_config.execute_configs(multiprocess=multiprocess)
     )
     region_crop_dict: dict[str, tuple[Path, ...]] = {
-        crop.crop_region: tuple(Path(crop.output_paths).iterdir())
+        crop.crop_region: tuple(Path(crop.output_path).iterdir())
         for crop in region_crops
     }
     assert len(region_crop_dict) == len(region_crops) == len(RegionOptions)

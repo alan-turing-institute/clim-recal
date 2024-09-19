@@ -173,7 +173,7 @@ def run_callable_attr(
 
 
 def multiprocess_execute(
-    iter: Sequence, method_name: str | None = None, cpus: int | None = None
+    iter: Sequence, method_name: str | None = None, cpus: int | None = None, **kwargs
 ) -> list:
     """Run `method_name` as from `iter` via `multiprocessing`.
 
@@ -185,6 +185,8 @@ def multiprocess_execute(
         What to call from objects in `inter`.
     cpus
         Number of cpus to pass to `Pool` for multiprocessing.
+    kwargs
+        Any additional parameters to pass to `method_name`
 
     Examples
     --------
@@ -202,7 +204,9 @@ def multiprocess_execute(
 
     Notes
     -----
-    Failed asserting cpus <= total - 1
+    Failed asserting cpus <= total - 1. Need to facilitate including
+    *args and **kwargs.
+
     """
     total_cpus: int | None = cpu_count()
     cpus = cpus or 1
@@ -211,7 +215,7 @@ def multiprocess_execute(
         cpus = min(cpus, total_cpus - 1)
     else:
         logger.warning(f"'total_cpus' not checkable, running with 'cpus': {cpus}")
-    params_tuples: list[tuple[Any, str]] = [(item, method_name) for item in iter]
+    params_tuples: list[tuple[Any, str | None]] = [(item, method_name) for item in iter]
     # Had build errors when generating a wheel,
     # Followed solution here:
     # https://stackoverflow.com/questions/45720153/python-multiprocessing-error-attributeerror-module-main-has-no-attribute

@@ -21,7 +21,13 @@ from clim_recal.utils.core import (
     is_platform_darwin,
     results_path,
 )
-from clim_recal.utils.data import CPM_OUTPUT_PATH, HADS_OUTPUT_PATH, BoundsTupleType
+from clim_recal.utils.data import (
+    CPM_OUTPUT_PATH,
+    HADS_OUTPUT_PATH,
+    HADS_SUB_PATH,
+    BoundsTupleType,
+    RunOptions,
+)
 from clim_recal.utils.server import CondaLockFileManager
 from clim_recal.utils.xarray import (
     GLASGOW_GEOM_LOCAL_PATH,
@@ -136,7 +142,10 @@ def local_cache_fixtures(
             LocalCache(
                 name="tasmax_cpm_1980_converted",
                 source_path=CPM_RAW_TASMAX_EXAMPLE_PATH,
-                local_cache_path=local_cpm_cache_path / CPM_CONVERTED_TASMAX_1980_FILE,
+                local_cache_path=local_cache_path
+                / "converted"
+                / CPM_OUTPUT_PATH
+                / CPM_CONVERTED_TASMAX_1980_FILE,
                 reader=open_dataset,
                 reader_kwargs={"decode_coords": "all"},
                 parser=cpm_reproject_with_standard_calendar,
@@ -220,6 +229,34 @@ def tasmax_hads_1980_raw_path(
         return local_cache_fixtures["tasmax_hads_1980_raw"].local_cache_path
     else:
         return local_cache_fixtures["tasmax_hads_1980_raw"].source_path
+
+
+@pytest.fixture(scope="session")
+def hads_data_path(
+    local_cache: bool,
+    local_cache_fixtures: LocalCachesManager,
+    local_hads_cache_path: Path,
+    # local_hads_tasmax_cache_path: Path,
+    # local_hads_tasmax_cache_path: Path,
+) -> T_Dataset:
+    if local_cache:
+        # return local_cache_fixtures["tasmax_hads_1980_raw"].local_cache_path.parents[2]
+        return local_hads_cache_path
+    else:
+        return local_cache_fixtures["tasmax_hads_1980_raw"].source_path.parents[2]
+
+
+@pytest.fixture(scope="session")
+def cpm_data_path(
+    local_cache: bool,
+    local_cache_fixtures: LocalCachesManager,
+    local_cpm_cache_path: Path,
+) -> T_Dataset:
+    if local_cache:
+        # return local_cache_fixtures["tasmax_cpm_1980_raw"].local_cache_path.parents[1]
+        return local_cpm_cache_path
+    else:
+        return local_cache_fixtures["tasmax_cpm_1980_raw"].source_path.parents[2]
 
 
 @pytest.fixture(scope="session")
@@ -381,8 +418,18 @@ def local_hads_cache_path(local_cache_path: Path) -> Path:
 
 
 @pytest.fixture(scope="session")
+def local_hads_tasmax_cache_path(local_hads_cache_path: Path) -> Path:
+    return local_hads_cache_path / "tasmax" / HADS_SUB_PATH
+
+
+@pytest.fixture(scope="session")
 def local_cpm_cache_path(local_cache_path: Path) -> Path:
     return local_cache_path / "ukcp"
+
+
+@pytest.fixture(scope="session")
+def local_cpm_tasmax_01_cache_path(local_hads_cache_path: Path) -> Path:
+    return local_hads_cache_path / "tasmax" / RunOptions.ONE / HADS_SUB_PATH
 
 
 @pytest.fixture
