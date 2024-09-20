@@ -13,10 +13,10 @@ output_path="/datadrive/clim-recal-results/group_run_`date +%F-%H-%M`"
 
 # Other values used in local development
 # hads_input_path="/Volumes/vmfileshare/ClimateData/Raw/HadsUKgrid"
-hads_input_path="$script_dir/example_files/HadsUKgrid"
+# hads_input_path="$script_dir/example_files/HadsUKgrid"
 # cpm_input_path="/Volumes/vmfileshare/ClimateData/Raw/UKCP2.2"
-cpm_input_path="$script_dir/example_files/UKCP2.2"
-output_path="$script_dir/clim-recal-results/group_run_`date +%F-%H-%M`"
+# cpm_input_path="$script_dir/example_files/UKCP2.2"
+# output_path="$script_dir/clim-recal-results/group_run_`date +%F-%H-%M`"
 
 log_path="$output_path/logs"
 
@@ -31,8 +31,8 @@ mkdir -p $log_path
 
 
 cpm_start_year=1980
-# cpm_end_year=2079
-cpm_end_year=1982
+cpm_end_year=2079
+# cpm_end_year=1982
 
 # First and last year that we have CPM data for
 for year in $(seq $cpm_start_year $cpm_end_year); do
@@ -68,11 +68,11 @@ for year in $(seq $cpm_start_year $cpm_end_year); do
     $hads_working_dir
 
   {
-    echo "clim-recal \
+    clim-recal \
     --hads-input-path $hads_working_dir \
     --cpm-input-path $cpm_working_dir \
     --output-path $output_path \
-    --execute"
+    --execute
    } 2>&1 | tee $log_path/log_$year.txt
 
 done
