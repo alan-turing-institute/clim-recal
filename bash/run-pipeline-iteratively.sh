@@ -72,6 +72,13 @@ for year in $(seq $cpm_start_year $cpm_end_year); do
     --hads-input-path $hads_working_dir \
     --cpm-input-path $cpm_working_dir \
     --output-path $output_path \
+    --all-variables \
+    --all-regions \
+    --run 01 \
+    --run 05 \
+    --run 06 \
+    --run 07 \
+    --run 08 \
     --execute
    } 2>&1 | tee $log_path/log_$year.txt
 
