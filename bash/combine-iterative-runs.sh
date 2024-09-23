@@ -2,7 +2,6 @@
 
 # Run this script from the root of the `group_run_*` directory
 
-
 combined_dir=./combined_output
 mkdir -p $combined_dir
 
