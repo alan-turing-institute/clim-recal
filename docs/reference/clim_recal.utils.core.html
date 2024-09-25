@@ -1246,16 +1246,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.utils.core.multiprocess_execute" class="level3" data-number="1.2.13">
 <h3 data-number="1.2.13" class="anchored" data-anchor-id="python.clim_recal.utils.core.multiprocess_execute"><span class="header-section-number">1.2.13</span> multiprocess_execute</h3>
-<p><code>clim_recal.utils.core.multiprocess_execute(iter, method_name=None, cpus=None)</code></p>
+<p><code>clim_recal.utils.core.multiprocess_execute(iter, *args, method_name=DEFAULT_CALLABLE_ATTR_NAME, progress_bar=False, bar_name='', cpus=None, include_sub_process_config=False, sub_process_progress_bar=False, **kwargs)</code></p>
 <p>Run <code>method_name</code> as from <code>iter</code> via <code>multiprocessing</code>.</p>
 <section id="parameters-9" class="level4" data-number="1.2.13.1">
 <h4 data-number="1.2.13.1" class="anchored" data-anchor-id="parameters-9"><span class="header-section-number">1.2.13.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 13%">
+<col style="width: 18%">
 <col style="width: 11%">
-<col style="width: 63%">
-<col style="width: 11%">
+<col style="width: 50%">
+<col style="width: 18%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1273,37 +1273,72 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><em>required</em></td>
 </tr>
 <tr class="even">
-<td><code>method_name</code></td>
-<td>str | None</td>
-<td>What to call from objects in <code>inter</code>.</td>
-<td><code>None</code></td>
+<td><code>*args</code></td>
+<td>Any</td>
+<td>Args to pass to <code>method_name</code></td>
+<td><code>()</code></td>
 </tr>
 <tr class="odd">
+<td><code>method_name</code></td>
+<td>str</td>
+<td>What to call from objects in <code>inter</code>.</td>
+<td><code>DEFAULT_CALLABLE_ATTR_NAME</code></td>
+</tr>
+<tr class="even">
+<td><code>progress_bar</code></td>
+<td>bool</td>
+<td>Whether to render a progress bar.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="odd">
+<td><code>bar_name</code></td>
+<td>str</td>
+<td>Passed to <code>description</code> parameter for progress bar.</td>
+<td><code>''</code></td>
+</tr>
+<tr class="even">
 <td><code>cpus</code></td>
 <td>int | None</td>
 <td>Number of cpus to pass to <code>Pool</code> for multiprocessing.</td>
 <td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td><code>include_sub_process_config</code></td>
+<td>bool</td>
+<td>Include configurations specific to multiprocessess (eg. <code>progress_bar</code> config)</td>
+<td><code>False</code></td>
+</tr>
+<tr class="even">
+<td><code>sub_process_progress_bar</code></td>
+<td>bool</td>
+<td>Whether to include <code>progress_bar</code> within each <code>multiprocess</code> run.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="odd">
+<td><code>**kwargs</code></td>
+<td>dict[str, Any]</td>
+<td>Args to pass to <code>method_name</code></td>
+<td><code>{}</code></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="examples-11" class="level4" data-number="1.2.13.2">
 <h4 data-number="1.2.13.2" class="anchored" data-anchor-id="examples-11"><span class="header-section-number">1.2.13.2</span> Examples</h4>
-<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> is_data_mounted:</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_doctest_skip_message)</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> clim_recal.resample <span class="im">import</span> CPMResampler</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> resample_test_hads_output_path: Path <span class="op">=</span> getfixture(</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>...         <span class="st">'resample_test_cpm_output_path'</span>)</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cpm_resampler: CPMResampler <span class="op">=</span> CPMResampler(</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>...     stop_index<span class="op">=</span><span class="dv">3</span>,</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>...     output_path<span class="op">=</span>resample_test_hads_output_path,</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>... )</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> multiprocess_execute(cpm_resampler, method_name<span class="op">=</span><span class="st">"exists"</span>)</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>[<span class="va">True</span>, <span class="va">True</span>, <span class="va">True</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> test_strs: <span class="bu">tuple</span>[<span class="bu">tuple</span>[<span class="bu">str</span>], ...] <span class="op">=</span> ((<span class="st">'the third'</span>), (<span class="st">'man'</span>))</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> multiprocess_execute(test_strs, method_name<span class="op">=</span><span class="st">"split"</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>[[<span class="st">'the'</span>, <span class="st">'third'</span>], [<span class="st">'man'</span>]]</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> test_strs <span class="op">=</span> ((<span class="st">'lumbar'</span>), (<span class="st">'puncture'</span>))</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> multiprocess_execute(test_strs, <span class="st">'u'</span>, method_name<span class="op">=</span><span class="st">"split"</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>[[<span class="st">'l'</span>, <span class="st">'mbar'</span>], [<span class="st">'p'</span>, <span class="st">'nct'</span>, <span class="st">'re'</span>]]</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> multiprocess_execute(test_strs, <span class="st">'u'</span>, method_name<span class="op">=</span><span class="st">"split"</span>,</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>...                      progress_bar<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class="dv">100</span><span class="op">%</span>...</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>[[<span class="st">'l'</span>, <span class="st">'mbar'</span>], [<span class="st">'p'</span>, <span class="st">'nct'</span>, <span class="st">'re'</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="notes-1" class="level4" data-number="1.2.13.3">
 <h4 data-number="1.2.13.3" class="anchored" data-anchor-id="notes-1"><span class="header-section-number">1.2.13.3</span> Notes</h4>
-<p>Failed asserting cpus &lt;= total - 1</p>
+<p>Failed asserting cpus &lt;= total - 1.</p>
 </section>
 </section>
 <section id="python.clim_recal.utils.core.path_iterdir" class="level3" data-number="1.2.14">
@@ -1434,16 +1469,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python.clim_recal.utils.core.run_callable_attr" class="level3" data-number="1.2.17">
 <h3 data-number="1.2.17" class="anchored" data-anchor-id="python.clim_recal.utils.core.run_callable_attr"><span class="header-section-number">1.2.17</span> run_callable_attr</h3>
-<p><code>clim_recal.utils.core.run_callable_attr(instance, method_name='execute', *args, **kwargs)</code></p>
+<p><code>clim_recal.utils.core.run_callable_attr(instance, *args, method_name=DEFAULT_CALLABLE_ATTR_NAME, **kwargs)</code></p>
 <p>Extract <code>method_name</code> from <code>instance</code> to call.</p>
 <section id="parameters-11" class="level4" data-number="1.2.17.1">
 <h4 data-number="1.2.17.1" class="anchored" data-anchor-id="parameters-11"><span class="header-section-number">1.2.17.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 16%">
-<col style="width: 8%">
-<col style="width: 59%">
 <col style="width: 14%">
+<col style="width: 7%">
+<col style="width: 50%">
+<col style="width: 28%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1461,16 +1496,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><em>required</em></td>
 </tr>
 <tr class="even">
-<td><code>method_name</code></td>
-<td>str</td>
-<td>Name of method on <code>object</code> to call.</td>
-<td><code>'execute'</code></td>
-</tr>
-<tr class="odd">
 <td><code>*args</code></td>
 <td></td>
 <td>Parameters passed to <code>method_name</code> from <code>instance</code>.</td>
 <td><code>()</code></td>
+</tr>
+<tr class="odd">
+<td><code>method_name</code></td>
+<td>str</td>
+<td>Name of method on <code>object</code> to call.</td>
+<td><code>DEFAULT_CALLABLE_ATTR_NAME</code></td>
 </tr>
 <tr class="even">
 <td><code>**kwargs</code></td>
@@ -1488,7 +1523,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="examples-15" class="level4" data-number="1.2.17.3">
 <h4 data-number="1.2.17.3" class="anchored" data-anchor-id="examples-15"><span class="header-section-number">1.2.17.3</span> Examples</h4>
 <div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> jan_1: MonthDay <span class="op">=</span> MonthDay()</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> run_callable_attr(jan_1, <span class="st">'from_year'</span>, <span class="dv">1984</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> run_callable_attr(jan_1, <span class="dv">1984</span>, method_name<span class="op">=</span><span class="st">'from_year'</span>)</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>datetime.date(<span class="dv">1984</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>

@@ -349,7 +349,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#python.clim_recal.utils.xarray.interpolate_xr_ts_nans" id="toc-python.clim_recal.utils.xarray.interpolate_xr_ts_nans" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.interpolate_xr_ts_nans"><span class="header-section-number">3.0.11</span> interpolate_xr_ts_nans</a></li>
   <li><a href="#python.clim_recal.utils.xarray.plot_xarray" id="toc-python.clim_recal.utils.xarray.plot_xarray" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.plot_xarray"><span class="header-section-number">3.0.12</span> plot_xarray</a></li>
   <li><a href="#python.clim_recal.utils.xarray.region_crop_file_name" id="toc-python.clim_recal.utils.xarray.region_crop_file_name" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.region_crop_file_name"><span class="header-section-number">3.0.13</span> region_crop_file_name</a></li>
-  <li><a href="#python.clim_recal.utils.xarray.xr_reproject_crs" id="toc-python.clim_recal.utils.xarray.xr_reproject_crs" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.14</span> xr_reproject_crs</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.resample_output_path" id="toc-python.clim_recal.utils.xarray.resample_output_path" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.resample_output_path"><span class="header-section-number">3.0.14</span> resample_output_path</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.xr_reproject_crs" id="toc-python.clim_recal.utils.xarray.xr_reproject_crs" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.15</span> xr_reproject_crs</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -446,6 +447,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Generate a file name for a regional crop.</td>
 </tr>
 <tr class="odd">
+<td><a href="#python.clim_recal.utils.xarray.resample_output_path">resample_output_path</a></td>
+<td><code>source_path</code> in <code>export_folder</code> via <code>new_path_name_func</code>.</td>
+</tr>
+<tr class="even">
 <td><a href="#python.clim_recal.utils.xarray.xr_reproject_crs">xr_reproject_crs</a></td>
 <td>Reproject <code>source_xr</code> to <code>target_xr</code> coordinate structure.</td>
 </tr>
@@ -1582,12 +1587,81 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co">'crop_Glasgow_tasmax_cpm_05_19861201-19871130.nc'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
-<section id="python.clim_recal.utils.xarray.xr_reproject_crs" class="level3" data-number="3.0.14">
-<h3 data-number="3.0.14" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.14</span> xr_reproject_crs</h3>
-<p><code>clim_recal.utils.xarray.xr_reproject_crs(xr_time_series, x_dim_name=CPM_RAW_X_COLUMN_NAME, y_dim_name=CPM_RAW_Y_COLUMN_NAME, time_dim_name=TIME_COLUMN_NAME, variable_name=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, match_xr_time_series=None, match_xr_time_series_load_func=None, match_xr_time_series_load_kwargs=None, resampling_method=DEFAULT_RESAMPLING_METHOD, nodata=np.nan, **kwargs)</code></p>
-<p>Reproject <code>source_xr</code> to <code>target_xr</code> coordinate structure.</p>
+<section id="python.clim_recal.utils.xarray.resample_output_path" class="level3" data-number="3.0.14">
+<h3 data-number="3.0.14" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.resample_output_path"><span class="header-section-number">3.0.14</span> resample_output_path</h3>
+<p><code>clim_recal.utils.xarray.resample_output_path(source_path, export_folder, new_path_name_func=None)</code></p>
+<p><code>source_path</code> in <code>export_folder</code> via <code>new_path_name_func</code>.</p>
 <section id="parameters-13" class="level4" data-number="3.0.14.1">
 <h4 data-number="3.0.14.1" class="anchored" data-anchor-id="parameters-13"><span class="header-section-number">3.0.14.1</span> Parameters</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 26%">
+<col style="width: 48%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>source_path</code></td>
+<td>PathLike | None</td>
+<td>Original path to extract file name via <code>Path(source_path).name</code></td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>export_folder</code></td>
+<td>PathLike</td>
+<td>Folder to save new path in.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td><code>new_path_name_func</code></td>
+<td>Callable[[Path], Path] | None</td>
+<td>Function to convert old file name to new file name.</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-9" class="level4" data-number="3.0.14.2">
+<h4 data-number="3.0.14.2" class="anchored" data-anchor-id="returns-9"><span class="header-section-number">3.0.14.2</span> Returns</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 81%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Converted path of <code>export_folder</code> / then either</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>source_path</code> or results of <code>new_path_name_func(source_path)</code>.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="python.clim_recal.utils.xarray.xr_reproject_crs" class="level3" data-number="3.0.15">
+<h3 data-number="3.0.15" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.15</span> xr_reproject_crs</h3>
+<p><code>clim_recal.utils.xarray.xr_reproject_crs(xr_time_series, x_dim_name=CPM_RAW_X_COLUMN_NAME, y_dim_name=CPM_RAW_Y_COLUMN_NAME, time_dim_name=TIME_COLUMN_NAME, variable_name=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, match_xr_time_series=None, match_xr_time_series_load_func=None, match_xr_time_series_load_kwargs=None, resampling_method=DEFAULT_RESAMPLING_METHOD, nodata=np.nan, **kwargs)</code></p>
+<p>Reproject <code>source_xr</code> to <code>target_xr</code> coordinate structure.</p>
+<section id="parameters-14" class="level4" data-number="3.0.15.1">
+<h4 data-number="3.0.15.1" class="anchored" data-anchor-id="parameters-14"><span class="header-section-number">3.0.15.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 10%">
@@ -1649,8 +1723,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="examples-8" class="level4" data-number="3.0.14.2">
-<h4 data-number="3.0.14.2" class="anchored" data-anchor-id="examples-8"><span class="header-section-number">3.0.14.2</span> Examples</h4>
+<section id="examples-8" class="level4" data-number="3.0.15.2">
+<h4 data-number="3.0.15.2" class="anchored" data-anchor-id="examples-8"><span class="header-section-number">3.0.15.2</span> Examples</h4>
 <div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_hads_1980_raw <span class="op">=</span> getfixture(<span class="st">'tasmax_hads_1980_raw'</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> tasmax_hads_1980_raw:</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_or_cache_doctest_skip_message)</span>
