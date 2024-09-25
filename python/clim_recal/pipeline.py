@@ -145,11 +145,9 @@ from .config import (
     RunOptions,
     VariableOptions,
 )
+from .crop import CPMRegionCropper, HADsRegionCropper
 from .resample import RAW_CPM_PATH, RAW_HADS_PATH, CPMResampler, HADsResampler
 from .utils.core import console
-
-# from rich import print
-
 
 REPROJECTION_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_one.sh")
 REPROJECTION_WRAPPER_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_all.sh")
@@ -329,8 +327,8 @@ def main(
                 console.print("Skipping cropping CPM Standard Calendar projections.")
             else:
                 console.print(f"Cropping CPMs to regions {config.regions}: ...")
-                region_cropped_cpm_resamples: tuple[CPMResampler, ...] = (
-                    config.cpm_manager.execute_crop_configs(
+                region_cropped_cpm_resamples: tuple[CPMRegionCropper, ...] = (
+                    config.cpm_crop_manager.execute_crop_configs(
                         multiprocess=multiprocess, cpus=cpus
                     )
                 )
@@ -341,8 +339,8 @@ def main(
                 console.print(
                     f"Cropping HADS 2.2km projections to regions {config.regions}: ..."
                 )
-                region_cropped_hads_resamples: tuple[CPMResampler, ...] = (
-                    config.hads_manager.execute_crop_configs(
+                region_cropped_hads_resamples: tuple[HADsRegionCropper, ...] = (
+                    config.hads_crop_manager.execute_crop_configs(
                         multiprocess=multiprocess, cpus=cpus
                     )
                 )

@@ -56,9 +56,6 @@ CLIMATE_DATA_MOUNT_PATH: Path = climate_data_mount_path()
 
 CFCalendarSTANDARD: Final[str] = "standard"
 
-# RESAMPLING_OUTPUT_PATH: Final[PathLike] = (
-#     CLIMATE_DATA_MOUNT_PATH / "CPM-365/andys-two-gdal-step-approach/resample"
-# )
 RAW_HADS_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/HadsUKgrid"
 RAW_CPM_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/UKCP2.2"
 RAW_HADS_TASMAX_PATH: Final[PathLike] = RAW_HADS_PATH / "tasmax/day"
@@ -482,14 +479,6 @@ class ResamplerManagerBase:
         else:
             return None
 
-    # @property
-    # def crop_folder(self) -> Path | None:
-    #     """Return `self._output_path` set by `set_output_paths()`."""
-    #     if hasattr(self, "_crop_path"):
-    #         return Path(self._crop_path)
-    #     else:
-    #         return None
-
     def __repr__(self) -> str:
         """Summary of `self` configuration as a `str`."""
         return (
@@ -516,24 +505,15 @@ class ResamplerManagerBase:
 
     def check_paths(
         self,
-        run_set_data_paths: bool = True,  # run_set_crop_paths: bool = True
+        run_set_data_paths: bool = True,
     ):
         """Check and set `input`, `resample` and `crop` paths."""
 
         if run_set_data_paths:
             self.set_input_paths()
             self.set_output_paths()
-        # if run_set_crop_paths:
-        #     self.set_crop_paths()
         assert isinstance(self.input_paths, Iterable)
         assert isinstance(self.output_paths, Iterable)
-        # if self.crop_paths:
-        #     try:
-        #         assert isinstance(self.crop_paths, Iterable)
-        #     except AssertionError:
-        #         raise ValueError(
-        #             f"'crop_paths' not iterable for {self}. Hint: try setting 'run_set_crop_paths' to 'True'."
-        #         )
         assert len(self.input_paths) == len(self.output_paths)
         for path in self.input_paths:
             try:
@@ -577,7 +557,6 @@ class ResamplerManagerBase:
 
     def set_output_paths(self):
         """Propagate `self.output_paths` if needed."""
-        # self._set_input_paths()
         if isinstance(self.output_paths, PathLike):
             self._output_path = self.output_paths
             self.output_paths = tuple(
@@ -587,20 +566,9 @@ class ResamplerManagerBase:
                 )
             )
 
-    # def set_crop_paths(self) -> None:
-    #     """Propagate `self.output_paths` if needed."""
-    #     if isinstance(self.crop_paths, PathLike):
-    #         self._crop_path = self.crop_paths
-    #         self.crop_paths = tuple(
-    #             self._gen_crop_folder_paths(
-    #                 self.crop_paths, append_cropped_path_dict=True
-    #             )
-    #         )
-
     def yield_configs(self) -> Iterable[ResamplerBase]:
         """Generate a `CPMResampler` or `HADsResampler` for `self.input_paths`."""
         self.check_paths()
-        # try:
         assert isinstance(self.output_paths, Iterable)
         assert isinstance(self.calc_class, type(ResamplerBase))
         for index, var_path in enumerate(self._input_path_dict.items()):
@@ -612,28 +580,6 @@ class ResamplerManagerBase:
                 stop_index=self.stop_index,
                 **self.config_default_kwargs,
             )
-
-    # def yield_crop_configs(self) -> Iterable[ResamplerBase]:
-    #     """Generate a `CPMResampler` or `HADsResampler` for `self.input_paths`."""
-    #     self.check_paths()
-    #     assert isinstance(self.input_paths, Iterable)
-    #     assert isinstance(self.output_paths, Iterable)
-    #     assert isinstance(self.crop_paths, Iterable)
-    #     for index, input_output_paths in enumerate(self._output_path_dict.items()):
-    #         for crop_path, region in self._cropped_path_dict.items():
-    #             yield self.calc_class(
-    #                 input_path=input_output_paths[0],
-    #                 output_path=self.output_paths[index],
-    #                 variable_name=input_output_paths[1],
-    #                 start_index=self.start_index,
-    #                 stop_index=self.stop_index,
-    #                 crop_path=crop_path,
-    #                 # Todo: remove below if single crop configs iterate over all
-    #                 # crop_regions=self.crop_regions,
-    #                 # crop_regions=(region,),
-    #                 crop_region=region,
-    #                 **self.config_default_kwargs,
-    #             )
 
     def __len__(self) -> int:
         """Return the length of `self.input_files`."""
@@ -693,8 +639,6 @@ class ResamplerManagerBase:
         resamplers: tuple[ResamplerBase, ...] = tuple(self.yield_configs())
         results: list[tuple[Path, ...]] = []
         if multiprocess:
-            # if kwargs:
-            #     console.print("Note: **kwargs passed ignored if `multiprocess` enabled")
             cpus = cpus or self.cpus
             if self.total_cpus and cpus:
                 cpus = min(cpus, self.total_cpus - 1)
@@ -713,33 +657,6 @@ class ResamplerManagerBase:
             return resamplers
         else:
             return results
-
-    # def execute_crop_configs(
-    #     self, multiprocess: bool = False, cpus: int | None = None
-    # ) -> tuple[ResamplerBase, ...]:
-    #     """Run all resampler configurations
-    #
-    #     Parameters
-    #     ----------
-    #     multiprocess
-    #         If `True` run parameters in `resample_configs` with `multiprocess_execute`.
-    #     cpus
-    #         Number of `cpus` to pass to `multiprocess_execute`.
-    #     """
-    #     croppers: tuple[ResamplerBase, ...] = tuple(self.yield_crop_configs())
-    #     results: list[list[Path] | None] = []
-    #     if multiprocess:
-    #         cpus = cpus or self.cpus
-    #         if self.total_cpus and cpus:
-    #             cpus = min(cpus, self.total_cpus - 1)
-    #         results = multiprocess_execute(
-    #             croppers, method_name="execute_crops", cpus=cpus
-    #         )
-    #     else:
-    #         for cropper in croppers:
-    #             print(cropper)
-    #             results.append(cropper.execute_crops())
-    #     return croppers
 
 
 @dataclass(kw_only=True, repr=False)
@@ -800,9 +717,6 @@ class HADsResamplerManager(ResamplerManagerBase):
     output_paths: PathLike | Sequence[PathLike] = (
         RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH
     )
-    # crop_paths: Sequence[PathLike] | PathLike = (
-    #     RESAMPLE_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH
-    # )
     sub_path: Path = HADS_SUB_PATH
     start_date: date = HADS_START_DATE
     end_date: date = HADS_END_DATE
@@ -820,25 +734,6 @@ class HADsResamplerManager(ResamplerManagerBase):
             f"input_paths_count={len(self.input_paths) if isinstance(self.input_paths, Sequence) else 1})>"
         )
 
-    # def _gen_crop_folder_paths(
-    #     self, path: PathLike, append_cropped_path_dict: bool = False
-    # ) -> Iterator[Path | None]:
-    #     """Return a Generator of paths of `self.variables` and `self.crops`."""
-    #     if not self.crop_regions:
-    #         return None
-    #     if not self._output_path_dict:
-    #         self._gen_output_folder_paths(
-    #             self.input_paths,
-    #             append_input_path_dict=True,
-    #             append_output_path_dict=True,
-    #         )
-    #     for var in self.variables:
-    #         for region in self.crop_regions:
-    #             crop_path = Path(path) / HADS_OUTPUT_PATH / region / var
-    #             if append_cropped_path_dict:
-    #                 self._cropped_path_dict[crop_path] = region
-    #             yield crop_path
-
     def set_cpm_for_coord_alignment(self) -> None:
         """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""
         self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
@@ -850,7 +745,6 @@ class HADsResamplerManager(ResamplerManagerBase):
         """Generate a `CPMResampler` or `HADsResampler` for `self.input_paths`."""
         self.check_paths()
         assert isinstance(self.output_paths, Iterable)
-        # assert isinstance(self.crop_paths, Iterable)
         for index, var_path in enumerate(self._input_path_dict.items()):
             yield self.calc_class(
                 input_path=var_path[0],
@@ -940,9 +834,7 @@ class CPMResamplerManager(ResamplerManagerBase):
     end_date: date = CPM_END_DATE
     configs: list[CPMResampler] = field(default_factory=list)
     calc_class: type[CPMResampler] = CPMResampler
-    # Runs are CPM simulations, not applicalbe to HADs
     runs: Sequence[RunOptions | str] = RunOptions.preferred()
-    # crop_paths = RESAMPLE_OUTPUT_PATH / CPM_CROP_OUTPUT_LOCAL_PATH
 
     # Uncomment if cpm specific paths like 'pr' for 'rainbow'
     # are needed at the manager level.
@@ -988,27 +880,3 @@ class CPMResamplerManager(ResamplerManagerBase):
                 if append_output_path_dict:
                     self._output_path_dict[output_path] = var
                 yield input_path, output_path
-
-    # def _gen_crop_folder_paths(
-    #     self,
-    #     path: PathLike,
-    #     append_cropped_path_dict: bool = False,
-    #     cpm_paths: bool = True,
-    # ) -> Iterator[Path]:
-    #     """Return a Generator of paths of `self.variables` and `self.crops`."""
-    #     for var in self.variables:
-    #         for region in self.crop_regions:
-    #             for run_type in self.runs:
-    #                 if cpm_paths:
-    #                     crop_path: Path = (
-    #                         Path(path)
-    #                         / CPM_OUTPUT_PATH
-    #                         / region
-    #                         / VariableOptions.cpm_value(var)
-    #                         / run_type
-    #                     )
-    #                 else:
-    #                     crop_path: Path = Path(path) / CPM_OUTPUT_PATH / region / var / run_type
-    #                 if append_cropped_path_dict:
-    #                     self._cropped_path_dict[crop_path] = region
-    #                 yield crop_path
