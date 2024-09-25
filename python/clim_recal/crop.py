@@ -5,12 +5,12 @@ from os import PathLike, cpu_count
 from pathlib import Path
 from typing import Any, Iterable, Iterator, Sequence
 
-from tqdm.rich import trange
+from rich.progress import track
 from xarray import Dataset
 from xarray.core.types import T_Dataset
 
 from .resample import ResamplerBase, ResamplerManagerBase
-from .utils.core import _get_source_path, console, multiprocess_execute
+from .utils.core import _get_source_path, multiprocess_execute
 from .utils.data import (
     CPM_CROP_OUTPUT_PATH,
     CPM_END_DATE,
@@ -29,18 +29,6 @@ from .utils.data import (
 from .utils.xarray import converted_output_path, crop_xarray, region_crop_file_name
 
 logger = getLogger(__name__)
-
-# RESAMPLING_OUTPUT_PATH: Final[PathLike] = (
-#     CLIMATE_DATA_MOUNT_PATH / "CPM-365/andys-two-gdal-step-approach/resample"
-# )
-# CPM_CROP_OUTPUT_PATH: Final[Path] = Path("cpm-crop")
-# HADS_CROP_OUTPUT_PATH: Final[Path] = Path("hads-crop")
-
-# def region_crop_filename(path: Path, crop_region: str | RegionOptions) -> Path:
-#     return path.parent / region_crop_file_name(
-#             crop_region=crop_region,
-#             file_name=Path(path.name),
-#         )
 
 
 @dataclass(kw_only=True, repr=False)
@@ -67,7 +55,6 @@ class RegionCropperBase(ResamplerBase):
     input_path: PathLike | None = Path()
     output_path: PathLike = CROP_OUTPUT_PATH
     crop_region: RegionOptions | str | None = RegionOptions.GLASGOW
-    # crop_path: PathLike = RESAMPLING_OUTPUT_PATH
 
     def range_crop_projection(
         self,
@@ -75,95 +62,79 @@ class RegionCropperBase(ResamplerBase):
         stop: int | None = None,
         step: int = 1,
         override_export_path: Path | None = None,
-        return_results: bool = False,
-        # possible meanse of reducing memory issues by removing
-        # xarray instance while keeping paths for logging purposes
-        # delete_xarray_after_save: bool = True,
-        **kwargs,
+        source_to_index: Sequence | None = None,
+        return_path: bool = True,
+        write_results: bool = True,
+        progress_bar: bool = True,
+        # return_results: bool = False,
+        # **kwargs,
     ) -> Iterator[Path]:
-        start = start or self.stop_index
+        start = start or self.start_index
         stop = stop or self.stop_index
-        self._export_paths: list[Path | T_Dataset] = []
+        # self._export_paths: list[Path | T_Dataset] = []
         if stop is None:
             stop = len(self)
-        console.print(f"Cropping to '{self.output_path}'")
-        for index in trange(start, stop, step):
-            self._export_paths.append(
-                self.crop_projection(
+        logger.info(f"Cropping to '{self.output_path}'")
+        if progress_bar:
+            for index in track(range(start, stop, step), description="Cropping..."):
+                yield self.crop_projection(
                     # region=region,
                     index=index,
                     override_export_path=override_export_path,
-                    return_results=return_results,
-                    **kwargs,
+                    source_to_index=source_to_index,
+                    return_path=return_path,
+                    write_results=write_results,
+                    # return_results=return_results,
+                    # **kwargs,
                 )
-            )
-            yield self._export_paths[-1]
-        # return export_paths
-
-    # def _sync_reprojected_paths(
-    #     self, overwrite_output_path: PathLike | None = None
-    # ) -> None:
-    #     """Sync `self._reprojected_paths` with files in `self.export_path`.
-    #
-    #     Todo
-    #     ----
-    #     This may need to be removed.
-    #     """
-    #     if not hasattr(self, "_reprojected_paths"):
-    #         if overwrite_output_path:
-    #             self.output_path = overwrite_output_path
-    #         path: PathLike = self.output_path
-    #     self._reprojected_paths: list[Path] = [
-    #         local_path
-    #         for local_path in Path(path).iterdir()
-    #         if local_path.is_file() and local_path.suffix == f".{NETCDF_EXTENSION_STR}"
-    #     ]
+        else:
+            for index in track(range(start, stop, step), description="Cropping..."):
+                yield self.crop_projection(
+                    # region=region,
+                    index=index,
+                    override_export_path=override_export_path,
+                    source_to_index=source_to_index,
+                    return_path=return_path,
+                    write_results=write_results,
+                    # return_results=return_results,
+                    # **kwargs,
+                )
+                # self._export_paths.append(
+                #     self.crop_projection(
+                #         # region=region,
+                #         index=index,
+                #         override_export_path=override_export_path,
+                #         return_results=return_results,
+                #         **kwargs,
+                #     )
+                # )
+                # yield self._export_paths[-1]
 
     def crop_projection(
         self,
         index: int = 0,
         override_export_path: Path | None = None,
-        # return_results: bool = False,
         return_path: bool = False,
         write_results: bool = True,
         source_to_index: Sequence | None = None,
-        # sync_reprojection_paths: bool = True,
         **kwargs,
     ) -> Path | T_Dataset:
         """Crop a projection to `region` geometry."""
         source_path: Path = _get_source_path(
             self, index=index, source_to_index=source_to_index
         )
-        # logger.debug(f"Preparing to crop `_reprojected_paths` index {index} from {self}")
-        # try:
-        #     assert hasattr(self, "_reprojected_paths")
-        # except AssertionError:
-        #     if sync_reprojection_paths:
-        #         self._sync_reprojected_paths()
-        #     else:
-        #         raise AttributeError(
-        #             f"'_reprojected_paths' must be set. "
-        #             "Run after 'self.to_reprojection()' or set as a "
-        #             "list directly."
-        #         )
         try:
             assert self.crop_region in RegionOptions
         except AttributeError:
             raise ValueError(
                 f"'{self.crop_path}' not in 'RegionOptions': {RegionOptions.all()}"
             )
-        # path: PathLike = override_export_path or Path(self.crop_path)  # / (region)
-        # path.mkdir(exist_ok=True, parents=True)
-        # resampled_xr: Dataset = self._reprojected_paths[index]
         logger.info(f"{self} cropping {source_path}")
         result: Dataset = crop_xarray(
             xr_time_series=source_path,
             crop_box=RegionOptions.bounding_box(self.crop_region),
             **kwargs,
         )
-        # if not hasattr(self, "_cropped_paths"):
-        #     self._cropped_paths: list[PathLike] = []
-        # self._cropped_paths.append(export_path)
         logger.debug(f"Completed cropping index {index}...")
         self._result_paths[source_path] = None
         if write_results or return_path:
@@ -173,33 +144,16 @@ class RegionCropperBase(ResamplerBase):
                 new_path_name_func=region_crop_file_name,
                 crop_region=self.crop_region,
             )
-            # assert False
-            # export_path.mkdir(exist_ok=True, parents=True)
-            # cropped_file_name: str = region_crop_file_name(
-            #     self.crop_region, resampled_xr.name,
-            # )
-            # export_path: Path = path / cropped_file_name
-            # if
-            # cropped.to_netcdf(export_path)
-            # export_path: Path = override_export_path or converted_output_path(
             if write_results:
                 result.to_netcdf(export_path)
                 self._result_paths[source_path] = export_path
             if return_path:
                 return export_path
         return result
-        # if return_results:
-        #     return cropped
-        # else:
-        #     return export_path
 
-    # def execute_crops(self, skip_crop: bool = False, **kwargs) -> list[Path] | None:
-    #     """Run all specified crops."""
-    #     return self.range_crop_projection(**kwargs) if not skip_crop else None
-
-    def execute(self, skip_crop: bool = False, **kwargs) -> Iterator[Path] | None:
-        """Run all specified crops."""
-        return self.range_crop_projection(**kwargs) if not skip_crop else None
+    def execute(self, **kwargs) -> Iterator[Path] | None:
+        """Crop all paths to `self.crop_region`."""
+        return tuple(self.range_crop_projection(**kwargs))
 
 
 @dataclass(kw_only=True, repr=False)
@@ -607,8 +561,13 @@ class RegionCropperManagerBase(ResamplerManagerBase):
     #     return resamplers
 
     def execute_configs(
-        self, multiprocess: bool = False, cpus: int | None = None
-    ) -> tuple[ResamplerBase, ...]:
+        self,
+        multiprocess: bool = False,
+        cpus: int | None = None,
+        return_region_croppers: bool = False,
+        return_path: bool = True,
+        **kwargs,
+    ) -> tuple[RegionCropperBase, ...] | list[T_Dataset | Path]:
         """Run all resampler configurations
 
         Parameters
@@ -618,18 +577,28 @@ class RegionCropperManagerBase(ResamplerManagerBase):
         cpus
             Number of `cpus` to pass to `multiprocess_execute`.
         """
-        croppers: tuple[ResamplerBase, ...] = tuple(self.yield_crop_configs())
+        croppers: tuple[RegionCropperBase, ...] = tuple(self.yield_crop_configs())
         results: list[list[Path] | None] = []
         if multiprocess:
             cpus = cpus or self.cpus
             if self.total_cpus and cpus:
                 cpus = min(cpus, self.total_cpus - 1)
-            results = multiprocess_execute(croppers, method_name="execute", cpus=cpus)
+            results = multiprocess_execute(
+                croppers,
+                method_name="execute",
+                cpus=cpus,
+                return_path=return_path,
+                sub_process_progress_bar=False,
+                **kwargs,
+            )
         else:
             for cropper in croppers:
                 print(cropper)
-                results.append(cropper.execute())
-        return croppers
+                results.append(cropper.execute(return_path=return_path, **kwargs))
+        if return_region_croppers:
+            return croppers
+        else:
+            return results
 
 
 @dataclass(kw_only=True, repr=False)

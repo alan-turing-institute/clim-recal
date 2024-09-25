@@ -197,7 +197,7 @@ class ResamplerBase:
         if stop is None:
             stop = len(self)
         if progress_bar:
-            for index in track(range(start, stop, step), description="Processing..."):
+            for index in track(range(start, stop, step), description="Resampling..."):
                 yield self.to_reprojection(
                     index=index,
                     override_export_path=override_export_path,
