@@ -234,7 +234,6 @@ def multiprocess_execute(
     ...                      progress_bar=True)
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100%...
     [['l', 'mbar'], ['p', 'nct', 're']]
-    >>> assert False
 
     Notes
     -----
