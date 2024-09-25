@@ -9,28 +9,24 @@ from tqdm.rich import trange
 from xarray import Dataset
 from xarray.core.types import T_Dataset
 
-from .resample import (
-    RAW_CPM_TASMAX_PATH,
-    RAW_HADS_TASMAX_PATH,
-    RESAMPLING_OUTPUT_PATH,
-    ResamplerBase,
-    ResamplerManagerBase,
-)
-from .utils.core import console, multiprocess_execute
+from .resample import ResamplerBase, ResamplerManagerBase
+from .utils.core import _get_source_path, console, multiprocess_execute
 from .utils.data import (
     CPM_CROP_OUTPUT_PATH,
     CPM_END_DATE,
     CPM_OUTPUT_PATH,
     CPM_START_DATE,
+    CROP_OUTPUT_PATH,
     HADS_CROP_OUTPUT_PATH,
     HADS_END_DATE,
     HADS_OUTPUT_PATH,
     HADS_START_DATE,
+    RESAMPLE_OUTPUT_PATH,
     RegionOptions,
     RunOptions,
     VariableOptions,
 )
-from .utils.xarray import crop_xarray, region_crop_file_name
+from .utils.xarray import converted_output_path, crop_xarray, region_crop_file_name
 
 logger = getLogger(__name__)
 
@@ -39,6 +35,12 @@ logger = getLogger(__name__)
 # )
 # CPM_CROP_OUTPUT_PATH: Final[Path] = Path("cpm-crop")
 # HADS_CROP_OUTPUT_PATH: Final[Path] = Path("hads-crop")
+
+# def region_crop_filename(path: Path, crop_region: str | RegionOptions) -> Path:
+#     return path.parent / region_crop_file_name(
+#             crop_region=crop_region,
+#             file_name=Path(path.name),
+#         )
 
 
 @dataclass(kw_only=True, repr=False)
@@ -62,8 +64,10 @@ class RegionCropperBase(ResamplerBase):
         If `None`, this will simply iterate over all available files.
     """
 
+    input_path: PathLike | None = Path()
+    output_path: PathLike = CROP_OUTPUT_PATH
     crop_region: RegionOptions | str | None = RegionOptions.GLASGOW
-    crop_path: PathLike = RESAMPLING_OUTPUT_PATH
+    # crop_path: PathLike = RESAMPLING_OUTPUT_PATH
 
     def range_crop_projection(
         self,
@@ -96,54 +100,98 @@ class RegionCropperBase(ResamplerBase):
             yield self._export_paths[-1]
         # return export_paths
 
+    # def _sync_reprojected_paths(
+    #     self, overwrite_output_path: PathLike | None = None
+    # ) -> None:
+    #     """Sync `self._reprojected_paths` with files in `self.export_path`.
+    #
+    #     Todo
+    #     ----
+    #     This may need to be removed.
+    #     """
+    #     if not hasattr(self, "_reprojected_paths"):
+    #         if overwrite_output_path:
+    #             self.output_path = overwrite_output_path
+    #         path: PathLike = self.output_path
+    #     self._reprojected_paths: list[Path] = [
+    #         local_path
+    #         for local_path in Path(path).iterdir()
+    #         if local_path.is_file() and local_path.suffix == f".{NETCDF_EXTENSION_STR}"
+    #     ]
+
     def crop_projection(
         self,
         index: int = 0,
         override_export_path: Path | None = None,
-        return_results: bool = False,
-        sync_reprojection_paths: bool = True,
+        # return_results: bool = False,
+        return_path: bool = False,
+        write_results: bool = True,
+        source_to_index: Sequence | None = None,
+        # sync_reprojection_paths: bool = True,
         **kwargs,
     ) -> Path | T_Dataset:
         """Crop a projection to `region` geometry."""
-        console.log(f"Preparing to crop `_reprojected_paths` index {index} from {self}")
-        try:
-            assert hasattr(self, "_reprojected_paths")
-        except AssertionError:
-            if sync_reprojection_paths:
-                self._sync_reprojected_paths()
-            else:
-                raise AttributeError(
-                    f"'_reprojected_paths' must be set. "
-                    "Run after 'self.to_reprojection()' or set as a "
-                    "list directly."
-                )
+        source_path: Path = _get_source_path(
+            self, index=index, source_to_index=source_to_index
+        )
+        # logger.debug(f"Preparing to crop `_reprojected_paths` index {index} from {self}")
+        # try:
+        #     assert hasattr(self, "_reprojected_paths")
+        # except AssertionError:
+        #     if sync_reprojection_paths:
+        #         self._sync_reprojected_paths()
+        #     else:
+        #         raise AttributeError(
+        #             f"'_reprojected_paths' must be set. "
+        #             "Run after 'self.to_reprojection()' or set as a "
+        #             "list directly."
+        #         )
         try:
             assert self.crop_region in RegionOptions
         except AttributeError:
             raise ValueError(
                 f"'{self.crop_path}' not in 'RegionOptions': {RegionOptions.all()}"
             )
-        path: PathLike = override_export_path or Path(self.crop_path)  # / (region)
-        path.mkdir(exist_ok=True, parents=True)
-        resampled_xr: Dataset = self._reprojected_paths[index]
-        console.log(f"From {self} crop {resampled_xr}")
-        cropped: Dataset = crop_xarray(
-            xr_time_series=resampled_xr,
+        # path: PathLike = override_export_path or Path(self.crop_path)  # / (region)
+        # path.mkdir(exist_ok=True, parents=True)
+        # resampled_xr: Dataset = self._reprojected_paths[index]
+        logger.info(f"{self} cropping {source_path}")
+        result: Dataset = crop_xarray(
+            xr_time_series=source_path,
             crop_box=RegionOptions.bounding_box(self.crop_region),
             **kwargs,
         )
-        cropped_file_name: str = region_crop_file_name(
-            self.crop_region, resampled_xr.name
-        )
-        export_path: Path = path / cropped_file_name
-        cropped.to_netcdf(export_path)
-        if not hasattr(self, "_cropped_paths"):
-            self._cropped_paths: list[PathLike] = []
-        self._cropped_paths.append(export_path)
-        if return_results:
-            return cropped
-        else:
-            return export_path
+        # if not hasattr(self, "_cropped_paths"):
+        #     self._cropped_paths: list[PathLike] = []
+        # self._cropped_paths.append(export_path)
+        logger.debug(f"Completed cropping index {index}...")
+        self._result_paths[source_path] = None
+        if write_results or return_path:
+            export_path: Path = override_export_path or converted_output_path(
+                source_path=source_path,
+                export_folder=Path(self.output_path),
+                new_path_name_func=region_crop_file_name,
+                crop_region=self.crop_region,
+            )
+            # assert False
+            # export_path.mkdir(exist_ok=True, parents=True)
+            # cropped_file_name: str = region_crop_file_name(
+            #     self.crop_region, resampled_xr.name,
+            # )
+            # export_path: Path = path / cropped_file_name
+            # if
+            # cropped.to_netcdf(export_path)
+            # export_path: Path = override_export_path or converted_output_path(
+            if write_results:
+                result.to_netcdf(export_path)
+                self._result_paths[source_path] = export_path
+            if return_path:
+                return export_path
+        return result
+        # if return_results:
+        #     return cropped
+        # else:
+        #     return export_path
 
     # def execute_crops(self, skip_crop: bool = False, **kwargs) -> list[Path] | None:
     #     """Run all specified crops."""
@@ -194,8 +242,8 @@ class HADsRegionCropper(RegionCropperBase):
      ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_20211201-20211231.nc'))
     """
 
-    input_path: PathLike | None = RAW_HADS_TASMAX_PATH
-    crop_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_PATH
+    input_path: PathLike | None = RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH
+    crop_path: PathLike = CROP_OUTPUT_PATH / HADS_CROP_OUTPUT_PATH
 
 
 @dataclass(kw_only=True, repr=False)
@@ -238,8 +286,8 @@ class CPMRegionCropper(RegionCropperBase):
      ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_20211201-20211231.nc'))
     """
 
-    input_path: PathLike | None = RAW_CPM_TASMAX_PATH
-    crop_path: PathLike = RESAMPLING_OUTPUT_PATH / CPM_CROP_OUTPUT_PATH
+    input_path: PathLike | None = RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH
+    crop_path: PathLike = CROP_OUTPUT_PATH / CPM_CROP_OUTPUT_PATH
 
 
 @dataclass(kw_only=True, repr=False)
@@ -318,13 +366,13 @@ class RegionCropperManagerBase(ResamplerManagerBase):
     #     else:
     #         return None
 
-    @property
-    def crop_folder(self) -> Path | None:
-        """Return `self._output_path` set by `set_resample_paths()`."""
-        if hasattr(self, "_crop_path"):
-            return Path(self._crop_path)
-        else:
-            return None
+    # @property
+    # def crop_folder(self) -> Path | None:
+    #     """Return `self._output_path` set by `set_resample_paths()`."""
+    #     if hasattr(self, "_crop_path"):
+    #         return Path(self._crop_path)
+    #     else:
+    #         return None
 
     def __repr__(self) -> str:
         """Summary of `self` configuration as a `str`."""
@@ -640,10 +688,10 @@ class HADsRegionCropManager(RegionCropperManagerBase):
 
     input_paths: PathLike | Sequence[PathLike] = HADS_OUTPUT_PATH
     # resample_paths: PathLike | Sequence[PathLike] = (
-    #     RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_PATH
+    #     RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH
     # )
     output_paths: Sequence[PathLike] | PathLike = (
-        RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_PATH
+        RESAMPLE_OUTPUT_PATH / HADS_CROP_OUTPUT_PATH
     )
     # sub_path: Path =  Path()
     start_date: date = HADS_START_DATE
@@ -770,14 +818,12 @@ class CPMRegionCropManager(RegionCropperManagerBase):
                    output_path='.../cpm/tasmax/08')>)
     """
 
-    input_paths: PathLike | Sequence[PathLike] = (
-        RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_PATH
-    )
+    input_paths: PathLike | Sequence[PathLike] = RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH
     # resample_paths: PathLike | Sequence[PathLike] = (
-    #     RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_PATH
+    #     RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH
     # )
     output_paths: PathLike | Sequence[PathLike] = (
-        RESAMPLING_OUTPUT_PATH / CPM_CROP_OUTPUT_PATH
+        RESAMPLE_OUTPUT_PATH / CPM_CROP_OUTPUT_PATH
     )
     # sub_path: Path = CPM_SUB_PATH
     start_date: date = CPM_START_DATE
@@ -786,7 +832,7 @@ class CPMRegionCropManager(RegionCropperManagerBase):
     calc_class: type[CPMRegionCropper] = CPMRegionCropper
     # Runs are CPM simulations, not applicalbe to HADs
     runs: Sequence[RunOptions | str] = RunOptions.preferred()
-    # crop_paths = RESAMPLING_OUTPUT_PATH / CPM_CROP_OUTPUT_PATH
+    # crop_paths = RESAMPLE_OUTPUT_PATH / CPM_CROP_OUTPUT_PATH
 
     def _gen_input_folder_paths(
         self,

@@ -36,10 +36,12 @@ CPM_RAW_Y_COLUMN_NAME: Final[str] = "grid_latitude"
 CPRUK_XDIM: Final[str] = CPM_RAW_X_COLUMN_NAME
 CPRUK_YDIM: Final[str] = CPM_RAW_Y_COLUMN_NAME
 
-
 CPM_SUB_PATH: Final[Path] = Path("latest")
 
 CPM_RESOLUTION_METERS: Final[int] = 2200
+
+RESAMPLE_OUTPUT_PATH: Final[Path] = Path("resample")
+CROP_OUTPUT_PATH: Final[Path] = Path("crop")
 
 HADS_NAME: Final[str] = "hads"
 CPM_NAME: Final[str] = "cpm"
@@ -61,6 +63,7 @@ BoundsTupleType = tuple[float, float, float, float]
 """`GeoPandas` bounds: (`minx`, `miny`, `maxx`, `maxy`)."""
 
 
+
 @dataclass
 class BoundingBoxCoords:
 
@@ -71,6 +74,8 @@ class BoundingBoxCoords:
     xmax: float
     ymin: float
     ymax: float
+    crop_width: int | None = None
+    crop_height: int | None = None
     epsg: int = BRITISH_NATION_GRID_COORDS_NUMBER
 
     def as_rioxarray_tuple(self) -> tuple[float, float, float, float]:
@@ -88,7 +93,7 @@ class BoundingBoxCoords:
 
 
 GlasgowCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
-    name="Glasgow", xmin=249799.999600002, xmax=269234.9996, ymin=657761.472000003, ymax=672330.696800007
+    name="Glasgow", xmin=249799.999600002, xmax=269234.9996, ymin=657761.472000003, ymax=672330.696800007, crop_width=9, crop_height=7
 )
 """Glasgow box coordinates in 27700 grid."""
 

@@ -1,8 +1,10 @@
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pytest
 from numpy.testing import assert_allclose
+from numpy.typing import NDArray
 from xarray import open_dataset
 from xarray.core.types import T_Dataset
 
@@ -19,14 +21,104 @@ from clim_recal.resample import (
     ResamplerBase,
     ResamplerManagerBase,
 )
+from clim_recal.utils.core import CLI_DATE_FORMAT_STR
 from clim_recal.utils.data import (
     CPM_CROP_OUTPUT_PATH,
+    CPM_NAME,
     CPM_OUTPUT_PATH,
     HADS_CROP_OUTPUT_PATH,
+    HADS_NAME,
     HADS_OUTPUT_PATH,
+    GlasgowCoordsEPSG27700,
     RegionOptions,
     RunOptions,
 )
+from clim_recal.utils.xarray import FINAL_RESAMPLE_LON_COL, plot_xarray
+
+
+def check_tasmax_1980_cpm_glasgow(export: T_Dataset) -> bool:
+    CPM_FIRST_DATES: NDArray = np.array(
+        ["19801201", "19801202", "19801203", "19801204", "19801205"]
+    )
+    CPM_CHECK_VALUES: NDArray = np.array(
+        [
+            6.471338,
+            6.238672,
+            5.943994,
+            5.6705565,
+            5.4742675,
+            5.126611,
+            4.7020507,
+            4.2784667,
+            4.1996093,
+        ]
+    )
+    assert export.dims["time"] == 365
+    assert export.dims[FINAL_RESAMPLE_LON_COL] == GlasgowCoordsEPSG27700.crop_width
+    assert_allclose(export.tasmax[10][5].values, CPM_CHECK_VALUES)
+    assert (
+        CPM_FIRST_DATES == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
+    ).all()
+    return True
+
+
+@pytest.mark.localcache
+@pytest.mark.slow
+@pytest.mark.mount
+@pytest.mark.parametrize("crop_type", (CPM_NAME, HADS_NAME))
+# @pytest.mark.parametrize("cropper", (CPMRegionCropper, HADsRegionCropper))
+# @pytest.mark.parametrize("resampler", (CPMResampler, HADsResampler))
+# @pytest.mark.parametrize("cropper", (CPMRegionCropper, HADsRegionCropper))
+@pytest.mark.parametrize(
+    "config", ("direct", "range", "direct_provided", "range_provided")
+)
+def test_cpm_crop(
+    resample_test_cpm_output_path: Path,
+    resample_test_hads_output_path: Path,
+    config: str,
+    tasmax_cpm_1980_raw_path: Path,
+    tasmax_hads_1980_raw_path: Path,
+    tasmax_cpm_1980_converted_path: Path,
+    crop_type: str,
+) -> None:
+    """Test running default CPM calendar fix."""
+    crop_path: Path = (
+        resample_test_cpm_output_path / CPM_CROP_OUTPUT_PATH
+        if crop_type == CPM_NAME
+        else resample_test_hads_output_path / HADS_CROP_OUTPUT_PATH
+    )
+    crop_config: HADsRegionCropper | CPMRegionCropper = CPMRegionCropper(
+        input_path=tasmax_cpm_1980_converted_path.parent,
+        output_path=crop_path,
+    )
+    paths: list[Path]
+    match config:
+        case "direct":
+            paths = [crop_config.crop_projection(return_path=True)]
+        case "range":
+            paths = crop_config.range_crop_projection(
+                stop=1, return_results=True, return_path=True
+            )
+        case "direct_provided":
+            paths = [
+                crop_config.crop_projection(
+                    index=0, source_to_index=tuple(crop_config), return_path=True
+                )
+            ]
+        case "range_provided":
+            paths = crop_config.range_crop_projection(
+                stop=1,
+                source_to_index=tuple(crop_config),
+                return_results=True,
+                return_path=True,
+            )
+    export: T_Dataset = open_dataset(paths[0])
+    assert check_tasmax_1980_cpm_glasgow(export)
+    plot_xarray(
+        export.tasmax[0],
+        path=crop_path / "glasgow" / f"config-{config}.png",
+        time_stamp=True,
+    )
 
 
 @pytest.mark.localcache

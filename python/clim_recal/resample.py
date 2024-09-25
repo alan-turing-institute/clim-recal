@@ -33,6 +33,7 @@ from .utils.data import (
     HADS_SUB_PATH,
     HADS_XDIM,
     HADS_YDIM,
+    RESAMPLE_OUTPUT_PATH,
     RunOptions,
     VariableOptions,
 )
@@ -40,10 +41,10 @@ from .utils.gdal_formats import TIF_EXTENSION_STR
 from .utils.xarray import (
     BRITISH_NATIONAL_GRID_EPSG,
     NETCDF_EXTENSION_STR,
+    converted_output_path,
     cpm_reproject_with_standard_calendar,
     get_cpm_for_coord_alignment,
     hads_resample_and_reproject,
-    resample_output_path,
 )
 
 logger = getLogger(__name__)
@@ -55,9 +56,9 @@ CLIMATE_DATA_MOUNT_PATH: Path = climate_data_mount_path()
 
 CFCalendarSTANDARD: Final[str] = "standard"
 
-RESAMPLING_OUTPUT_PATH: Final[PathLike] = (
-    CLIMATE_DATA_MOUNT_PATH / "CPM-365/andys-two-gdal-step-approach/resample"
-)
+# RESAMPLING_OUTPUT_PATH: Final[PathLike] = (
+#     CLIMATE_DATA_MOUNT_PATH / "CPM-365/andys-two-gdal-step-approach/resample"
+# )
 RAW_HADS_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/HadsUKgrid"
 RAW_CPM_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/UKCP2.2"
 RAW_HADS_TASMAX_PATH: Final[PathLike] = RAW_HADS_PATH / "tasmax/day"
@@ -67,12 +68,12 @@ RAW_CPM_TASMAX_PATH: Final[PathLike] = RAW_CPM_PATH / "tasmax/01/latest"
 NETCDF_OR_TIF = Literal[TIF_EXTENSION_STR, NETCDF_EXTENSION_STR]
 
 
-def reproject_standard_calendar_filename(path: Path) -> Path:
+def reproject_standard_calendar_file_name(path: Path) -> Path:
     """Return tweaked `path` to indicate standard day projection."""
     return path.parent / path.name.replace("_day", "_day_std_year")
 
 
-def reproject_2_2km_filename(path: Path) -> Path:
+def reproject_2_2km_file_name(path: Path) -> Path:
     """Return tweaked `path` to indicate standard day projection."""
     return path.parent / path.name.replace("_1km", "_2_2km")
 
@@ -82,7 +83,7 @@ class ResamplerBase:
     """Base class to inherit for `HADs` and `CPM`."""
 
     input_path: PathLike | None = Path()
-    output_path: PathLike = RESAMPLING_OUTPUT_PATH
+    output_path: PathLike = RESAMPLE_OUTPUT_PATH
     variable_name: VariableOptions | str = VariableOptions.default()
     input_files: Iterable[PathLike] | None = None
     cpus: int | None = None
@@ -218,25 +219,6 @@ class ResamplerBase:
         """Run all steps for processing"""
         return tuple(self.range_to_reprojection(**kwargs))
 
-    def _sync_reprojected_paths(
-        self, overwrite_output_path: PathLike | None = None
-    ) -> None:
-        """Sync `self._reprojected_paths` with files in `self.export_path`.
-
-        Todo
-        ----
-        This may need to be removed.
-        """
-        if not hasattr(self, "_reprojected_paths"):
-            if overwrite_output_path:
-                self.output_path = overwrite_output_path
-            path: PathLike = self.output_path
-        self._reprojected_paths: list[Path] = [
-            local_path
-            for local_path in Path(path).iterdir()
-            if local_path.is_file() and local_path.suffix == f".{NETCDF_EXTENSION_STR}"
-        ]
-
 
 @dataclass(kw_only=True, repr=False)
 class HADsResampler(ResamplerBase):
@@ -293,7 +275,7 @@ class HADsResampler(ResamplerBase):
     """
 
     input_path: PathLike | None = RAW_HADS_TASMAX_PATH
-    output_path: PathLike = RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_PATH
+    output_path: PathLike = RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH
     input_files: Iterable[PathLike] | None = None
 
     cpus: int | None = None
@@ -339,8 +321,8 @@ class HADsResampler(ResamplerBase):
         logger.debug(f"Completed HADs index {index}...")
         self._result_paths[source_path] = None
         if write_results or return_path:
-            export_path: Path = override_export_path or resample_output_path(
-                source_path, self.output_path, reproject_2_2km_filename
+            export_path: Path = override_export_path or converted_output_path(
+                source_path, self.output_path, reproject_2_2km_file_name
             )
             if write_results:
                 result.to_netcdf(export_path)
@@ -395,7 +377,7 @@ class CPMResampler(ResamplerBase):
     """
 
     input_path: PathLike | None = RAW_CPM_TASMAX_PATH
-    output_path: PathLike = RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_PATH
+    output_path: PathLike = RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH
     prior_time_series: PathLike | Dataset | None = None
 
     @property
@@ -421,8 +403,8 @@ class CPMResampler(ResamplerBase):
         logger.debug(f"Completed CPM index {index}...")
         self._result_paths[source_path] = None
         if write_results or return_path:
-            export_path: Path = override_export_path or resample_output_path(
-                source_path, self.output_path, reproject_standard_calendar_filename
+            export_path: Path = override_export_path or converted_output_path(
+                source_path, self.output_path, reproject_standard_calendar_file_name
             )
             if write_results:
                 result.to_netcdf(export_path)
@@ -816,10 +798,10 @@ class HADsResamplerManager(ResamplerManagerBase):
 
     input_paths: PathLike | Sequence[PathLike] = RAW_HADS_PATH
     output_paths: PathLike | Sequence[PathLike] = (
-        RESAMPLING_OUTPUT_PATH / HADS_OUTPUT_PATH
+        RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH
     )
     # crop_paths: Sequence[PathLike] | PathLike = (
-    #     RESAMPLING_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH
+    #     RESAMPLE_OUTPUT_PATH / HADS_CROP_OUTPUT_LOCAL_PATH
     # )
     sub_path: Path = HADS_SUB_PATH
     start_date: date = HADS_START_DATE
@@ -952,9 +934,7 @@ class CPMResamplerManager(ResamplerManagerBase):
     """
 
     input_paths: PathLike | Sequence[PathLike] = RAW_CPM_PATH
-    output_paths: PathLike | Sequence[PathLike] = (
-        RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_PATH
-    )
+    output_paths: PathLike | Sequence[PathLike] = RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH
     sub_path: Path = CPM_SUB_PATH
     start_date: date = CPM_START_DATE
     end_date: date = CPM_END_DATE
@@ -962,7 +942,7 @@ class CPMResamplerManager(ResamplerManagerBase):
     calc_class: type[CPMResampler] = CPMResampler
     # Runs are CPM simulations, not applicalbe to HADs
     runs: Sequence[RunOptions | str] = RunOptions.preferred()
-    # crop_paths = RESAMPLING_OUTPUT_PATH / CPM_CROP_OUTPUT_LOCAL_PATH
+    # crop_paths = RESAMPLE_OUTPUT_PATH / CPM_CROP_OUTPUT_LOCAL_PATH
 
     # Uncomment if cpm specific paths like 'pr' for 'rainbow'
     # are needed at the manager level.

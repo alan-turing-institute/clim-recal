@@ -1029,10 +1029,11 @@ def gdal_warp_wrapper(
     return output_path if return_path else projection
 
 
-def resample_output_path(
+def converted_output_path(
     source_path: PathLike | None,
     export_folder: PathLike,
-    new_path_name_func: Callable[[Path], Path] | None = None,
+    new_path_name_func: Callable[..., Path] | None = None,
+    **kwargs,
 ) -> Path:
     """`source_path` in `export_folder` via `new_path_name_func`.
 
@@ -1044,6 +1045,8 @@ def resample_output_path(
         Folder to save new path in.
     new_path_name_func
         Function to convert old file name to new file name.
+    **kwargs
+        Additional parameters passed to `new_path_name_func`
 
     Returns
     -------
@@ -1056,10 +1059,10 @@ def resample_output_path(
             f"May need to mount drive."
         )
     # Generate export_path following source_path name
-    source_path_copy: Path = Path(source_path)
+    source_as_path: Path = Path(source_path)
     if new_path_name_func:
-        source_path_copy = new_path_name_func(source_path_copy)
-    return Path(export_folder) / source_path_copy.name
+        source_as_path = Path(new_path_name_func(source_as_path, **kwargs))
+    return Path(export_folder) / source_as_path.name
 
 
 def apply_geo_func(
@@ -1301,30 +1304,30 @@ def get_cpm_for_coord_alignment(
 
 
 def region_crop_file_name(
-    crop_region: str | RegionOptions | None, file_name: PathLike
+    file_name: PathLike, crop_region: str | RegionOptions | None
 ) -> str:
     """Generate a file name for a regional crop.
 
     Parameters
     ----------
-    crop_region
-        Region name to include in cropped file name.
     file_name
         File name to add `crop_region` name to.
+    crop_region
+        Region name to include in cropped file name.
 
     Examples
     --------
     >>> region_crop_file_name(
-    ...    'Glasgow',
-    ...    'tasmax.nc')
+    ...    'tasmax.nc',
+    ...    'Glasgow')
     'crop_Glasgow_tasmax.nc'
     >>> region_crop_file_name(
-    ...    'Glasgow',
-    ...    'tasmax_hadukgrid_uk_2_2km_day_19800601-19800630.nc')
+    ...    'tasmax_hadukgrid_uk_2_2km_day_19800601-19800630.nc',
+    ...    'Glasgow')
     'crop_Glasgow_tasmax_hads_19800601-19800630.nc'
     >>> region_crop_file_name(
-    ...     'Glasgow',
-    ...     'tasmax_rcp85_land-cpm_uk_2.2km_05_day_std_year_19861201-19871130.nc')
+    ...     'tasmax_rcp85_land-cpm_uk_2.2km_05_day_std_year_19861201-19871130.nc',
+    ...     'Glasgow')
     'crop_Glasgow_tasmax_cpm_05_19861201-19871130.nc'
     """
     file_name_sections = Path(file_name).name.split("_")
