@@ -21,17 +21,10 @@ from xarray.core.types import T_Dataset
 
 from clim_recal.debiasing.debias_wrapper import VariableOptions
 
-from .utils.core import (
-    _get_source_path,
-    climate_data_mount_path,
-    console,
-    multiprocess_execute,
-)
+from .utils.core import _get_source_path, climate_data_mount_path, multiprocess_execute
 from .utils.data import (
     CPM_END_DATE,
     CPM_OUTPUT_PATH,
-    CPM_RAW_X_COLUMN_NAME,
-    CPM_RAW_Y_COLUMN_NAME,
     CPM_START_DATE,
     CPM_SUB_PATH,
     HADS_END_DATE,
@@ -103,8 +96,8 @@ class ResamplerBase:
     final_crs: str = BRITISH_NATIONAL_GRID_EPSG
     input_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
     export_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
-    input_file_x_column_name: str = ""
-    input_file_y_column_name: str = ""
+    # input_file_x_column_name: str = ""
+    # input_file_y_column_name: str = ""
     start_index: int = 0
     stop_index: int | None = None
     _result_paths: dict[PathLike, PathLike | None] = field(default_factory=dict)
@@ -229,8 +222,9 @@ class ResamplerBase:
         step: int = 1,
         override_export_path: Path | None = None,
         source_to_index: Sequence | None = None,
-        return_path: bool = False,
+        return_path: bool = True,
         write_results: bool = True,
+        progress_bar: bool = True,
     ) -> Iterator[Path]:
         # start = start or self.resample_start_index
         # stop = stop or self.resample_stop_index
@@ -241,14 +235,24 @@ class ResamplerBase:
         if stop is None:
             stop = len(self)
         # export_path: Path = Path(override_export_path or self.output_path)
-        for index in track(range(start, stop, step), description="Processing..."):
-            yield self.to_reprojection(
-                index=index,
-                override_export_path=override_export_path,
-                source_to_index=source_to_index,
-                return_path=return_path,
-                write_results=write_results,
-            )
+        if progress_bar:
+            for index in track(range(start, stop, step), description="Processing..."):
+                yield self.to_reprojection(
+                    index=index,
+                    override_export_path=override_export_path,
+                    source_to_index=source_to_index,
+                    return_path=return_path,
+                    write_results=write_results,
+                )
+        else:
+            for index in range(start, stop, step):
+                yield self.to_reprojection(
+                    index=index,
+                    override_export_path=override_export_path,
+                    source_to_index=source_to_index,
+                    return_path=return_path,
+                    write_results=write_results,
+                )
             # yield self.to_reprojection()
             # export_paths.append(
             #     method(
@@ -488,17 +492,13 @@ class HADsResampler(ResamplerBase):
         source_to_index: Sequence | None = None,
         **kwargs,
     ) -> Path | T_Dataset:
-        # source_path: Path = self._get_source_path(
-        #     index=index, source_to_index=source_to_index
-        # )
         source_path: Path = _get_source_path(
             self, index=index, source_to_index=source_to_index
         )
-        # path PathLike = self.output_path
-        console.log(f"Setting 'cpm_for_coord_alignment' for {self}")
+        # console.log(f"Setting 'cpm_for_coord_alignment' for {self}")
         self.set_cpm_for_coord_alignment()
-        console.log(f"Set 'cpm_for_coord_alignment' for {self}")
-        console.log(f"Starting HADs index {index}...")
+        # console.log(f"Set 'cpm_for_coord_alignment' for {self}")
+        # console.log(f"Starting HADs index {index}...")
         result: T_Dataset = hads_resample_and_reproject(
             source_path,
             variable_name=self.variable_name,
@@ -507,7 +507,7 @@ class HADsResampler(ResamplerBase):
             cpm_to_match=self.cpm_for_coord_alignment,
             **kwargs,
         )
-        console.log(f"Completed HADs index {index}...")
+        # console.log(f"Completed HADs index {index}...")
         self._result_paths[source_path] = None
         if write_results or return_path:
             export_path: Path = override_export_path or resample_output_path(
@@ -556,10 +556,6 @@ class CPMResampler(ResamplerBase):
         Path or file to spatially crop `input_files` with.
     final_crs
         Coordinate Reference System (CRS) to return final format in.
-    input_file_x_column_name
-        Column name in `input_files` or `input` for `x` coordinates.
-    input_file_y_column_name
-        Column name in `input_files` or `input` for `y` coordinates.
     input_file_extension
         File extensions to glob `input_files` with.
 
@@ -587,8 +583,8 @@ class CPMResampler(ResamplerBase):
     input_path: PathLike | None = RAW_CPM_TASMAX_PATH
     output_path: PathLike = RESAMPLING_OUTPUT_PATH / CPM_OUTPUT_PATH
     # crop_path: PathLike = RESAMPLING_OUTPUT_PATH / CPM_CROP_OUTPUT_LOCAL_PATH
-    input_file_x_column_name: str = CPM_RAW_X_COLUMN_NAME
-    input_file_y_column_name: str = CPM_RAW_Y_COLUMN_NAME
+    # input_file_x_column_name: str = CPM_RAW_X_COLUMN_NAME
+    # input_file_y_column_name: str = CPM_RAW_Y_COLUMN_NAME
     prior_time_series: PathLike | Dataset | None = None
     # _resample_func: ReprojectFuncType = cpm_reproject_with_standard_calendar
     # _resample_path_func: Callable
@@ -606,22 +602,14 @@ class CPMResampler(ResamplerBase):
         source_to_index: Sequence | None = None,
         **kwargs,
     ) -> Path | T_Dataset:
-        # source_path: Path = self._get_source_path(
-        #     index=index, source_to_index=source_to_index
-        # )
         source_path: Path = _get_source_path(
             self, index=index, source_to_index=source_to_index
         )
-        # path: PathLike = self.output_path
-        console.log(f"Converting CPM index {index}...")
-        # export_path: Path = Path(source_path)
-        # if new_path_name_func:
-        #     export_path = new_path_name_func(export_path)
-        # export_path = Path(export_folder) / export_path.name
+        # console.log(f"Converting CPM index {index}...")
         result: T_Dataset = cpm_reproject_with_standard_calendar(
             source_path, variable_name=self.cpm_variable_name, **kwargs
         )
-        console.log(f"Completed CPM index {index}...")
+        # console.log(f"Completed CPM index {index}...")
         self._result_paths[source_path] = None
         if write_results or return_path:
             export_path: Path = override_export_path or resample_output_path(
@@ -918,7 +906,8 @@ class ResamplerManagerBase:
         self,
         multiprocess: bool = False,
         cpus: int | None = None,
-        return_resamplers: bool = True,
+        return_resamplers: bool = False,
+        return_path: bool = True,
         **kwargs,
     ) -> tuple[ResamplerBase, ...] | list[T_Dataset | Path]:
         """Run all resampler configurations
@@ -933,22 +922,30 @@ class ResamplerManagerBase:
             Return instances of generated `HADsResampler` or
             `CPMResampler`, or return the `results` of each
             `execute` call.
+        return_path
+            Return `Path` to results object if True, else resampled `Dataset`.
         kwargs
             Parameters to path to sampler `execute` calls.
         """
         resamplers: tuple[ResamplerBase, ...] = tuple(self.yield_configs())
         results: list[tuple[Path, ...]] = []
         if multiprocess:
+            # if kwargs:
+            #     console.print("Note: **kwargs passed ignored if `multiprocess` enabled")
             cpus = cpus or self.cpus
             if self.total_cpus and cpus:
                 cpus = min(cpus, self.total_cpus - 1)
             results = multiprocess_execute(
-                resamplers, method_name="execute", cpus=cpus, **kwargs
+                resamplers,
+                cpus=cpus,
+                return_path=return_path,
+                sub_process_progress_bar=False,
+                **kwargs,
             )
         else:
             for resampler in resamplers:
                 print(resampler)
-                results.append(resampler.execute(**kwargs))
+                results.append(resampler.execute(return_path=return_path, **kwargs))
         if return_resamplers:
             return resamplers
         else:

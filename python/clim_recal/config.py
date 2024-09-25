@@ -114,6 +114,8 @@ class ClimRecalConfig(BaseRunConfig):
     cpm_output_folder: PathLike = CPM_OUTPUT_PATH
     cpm_kwargs: dict = field(default_factory=dict)
     hads_kwargs: dict = field(default_factory=dict)
+    cpm_crop_kwargs: dict = field(default_factory=dict)
+    hads_crop_kwargs: dict = field(default_factory=dict)
     resample_start_index: int = 0
     resample_stop_index: int | None = None
     crop_start_index: int = 0
@@ -275,7 +277,8 @@ class ClimRecalConfig(BaseRunConfig):
             # resample_stop_index=self.resample_stop_index,
             # crop_start_index=self.crop_start_index,
             # crop_stop_index=self.crop_stop_index,
-            **self.cpm_kwargs,
+            check_input_paths_exist=False,
+            **self.cpm_crop_kwargs,
         )
         self.hads_crops_manager = HADsRegionCropManager(
             input_paths=self.hads_output_folder,
@@ -289,7 +292,8 @@ class ClimRecalConfig(BaseRunConfig):
             # resample_stop_index=self.resample_stop_index,
             # crop_start_index=self.crop_start_index,
             # crop_stop_index=self.crop_stop_index,
-            **self.cpm_kwargs,
+            check_input_paths_exist=False,
+            **self.hads_crop_kwargs,
         )
         self.total_cpus: int | None = cpu_count()
         if self.cpus == None or (self.total_cpus and self.cpus >= self.total_cpus):

@@ -68,7 +68,7 @@ def test_execute_crop_configs(
             output_paths=resample_path,
             # crop_paths=crop_path,
             stop_index=1,
-            _strict_fail_if_var_in_input_path=False,
+            # _strict_fail_if_var_in_input_path=False,
             **resampler_manager_kwargs,
         )
     else:
@@ -83,14 +83,14 @@ def test_execute_crop_configs(
             input_paths=raw_input_path,
             output_paths=resample_path,
             stop_index=1,
-            _strict_fail_if_var_in_input_path=False,
+            # _strict_fail_if_var_in_input_path=False,
             **resampler_manager_kwargs,
         )
     crop_config: RegionCropperManagerBase = crop_manager(
         input_paths=resample_path,
         output_paths=crop_path,
-        stop_index=1,
-        _strict_fail_if_var_in_input_path=False,
+        # stop_index=1,
+        # _strict_fail_if_var_in_input_path=False,
         check_input_paths_exist=False,
         **crop_manager_kwargs,
     )

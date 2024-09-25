@@ -23,10 +23,12 @@ from clim_recal.utils.core import (
 )
 from clim_recal.utils.data import (
     CPM_OUTPUT_PATH,
+    CPM_SUB_PATH,
     HADS_OUTPUT_PATH,
     HADS_SUB_PATH,
     BoundsTupleType,
     RunOptions,
+    VariableOptions,
 )
 from clim_recal.utils.server import CondaLockFileManager
 from clim_recal.utils.xarray import (
@@ -134,8 +136,12 @@ def local_cache_fixtures(
             LocalCache(
                 name="tasmax_cpm_1980_raw",
                 source_path=CPM_RAW_TASMAX_EXAMPLE_PATH,
-                # local_cache_path=local_cpm_cache_path / 'tasmax/01/latest' / CPM_RAW_TASMAX_1980_FILE,
-                local_cache_path=local_cpm_cache_path / CPM_RAW_TASMAX_1980_FILE,
+                local_cache_path=local_cpm_cache_path
+                / VariableOptions.TASMAX
+                / RunOptions.ONE
+                / CPM_SUB_PATH
+                / CPM_RAW_TASMAX_1980_FILE,
+                # local_cache_path=local_cpm_cache_path / CPM_RAW_TASMAX_1980_FILE,
                 reader=open_dataset,
                 reader_kwargs={"decode_coords": "all"},
             ),
@@ -153,7 +159,11 @@ def local_cache_fixtures(
             LocalCache(
                 name="tasmax_hads_1980_raw",
                 source_path=HADS_RAW_TASMAX_EXAMPLE_PATH,
-                local_cache_path=local_hads_cache_path / HADS_RAW_TASMAX_1980_FILE,
+                # local_cache_path=local_hads_cache_path / HADS_RAW_TASMAX_1980_FILE,
+                local_cache_path=local_hads_cache_path
+                / VariableOptions.TASMAX
+                / HADS_SUB_PATH
+                / HADS_RAW_TASMAX_1980_FILE,
                 reader=open_dataset,
                 reader_kwargs={"decode_coords": "all"},
             ),

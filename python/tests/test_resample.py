@@ -23,7 +23,6 @@ from clim_recal.utils.xarray import (
     FINAL_RESAMPLE_LON_COL,
     plot_xarray,
 )
-from conftest import hads_data_path, tasmax_cpm_1980_converted
 
 from .utils import (
     CPM_TASMAX_DAY_SERVER_PATH,
@@ -203,7 +202,7 @@ def test_variable_in_base_import_path_error(
 @pytest.mark.localcache
 @pytest.mark.slow
 @pytest.mark.mount
-# @pytest.mark.parametrize("multiprocess", (False, True))
+@pytest.mark.parametrize("multiprocess", (False, True))
 @pytest.mark.parametrize("manager_type", (CPM_NAME, HADS_NAME))
 def test_execute_resample_configs(
     manager_type: str,
@@ -211,7 +210,7 @@ def test_execute_resample_configs(
     hads_data_path: Path,
     cpm_data_path: Path,
     tasmax_cpm_1980_converted: Path,
-    multiprocess: bool = False,
+    multiprocess: bool,
 ) -> None:
     """Test running default HADs spatial projection."""
     test_config: ResamplerManagerBase
@@ -233,18 +232,12 @@ def test_execute_resample_configs(
             stop_index=1,
             # _strict_fail_if_var_in_input_path=False,
         )
-    resamplers: tuple[ResamplerBase, ...] = test_config.execute_configs(
-        multiprocess=multiprocess, return_resamplers=False, return_path=True
+    resamplers: tuple[ResamplerBase, ...] | list = test_config.execute_configs(
+        multiprocess=multiprocess, return_resamplers=False, return_path=True, cpus=2
     )
     export: T_Dataset = open_dataset(resamplers[0][0])
     if manager_type == HADS_NAME:
         check_tasmax_1980_hads(export)
-        # assert len(export.time) == 31
-        # assert not np.isnan(export.tasmax[0][200:300].values).all()
-        # assert (
-        #     HADS_FIRST_DATES.astype(object)
-        #     == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
-        # ).all()
     else:
         assert check_tasmax_1980_cpm(export)
 
