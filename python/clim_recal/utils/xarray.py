@@ -552,6 +552,45 @@ def plot_xarray(
     return Path(path)
 
 
+def join_xr_time_series(
+    path: PathLike,
+    variable_name: str | None = None,
+    method_name: str = "median",
+    regex: str = CPM_REGEX,
+) -> T_Dataset:
+    """Join a set of xr_time_series files chronologically.
+
+    Examples
+    --------
+    >>> tasmax_cpm_1980_raw_path = getfixture('tasmax_cpm_1980_raw_path').parents[1]
+    >>> if not tasmax_cpm_1980_raw_path:
+    ...     pytest.skip(mount_or_cache_doctest_skip_message)
+    >>> results = join_xr_time_series(tasmax_cpm_1980_raw_path,
+    ...                               'tasmax')
+    >>> assert False
+
+    """
+    results: list[dict] = []
+    for nc_path in Path(path).glob(regex):
+        xr_time_series, nc_var_name = check_xarray_path_and_var_name(
+            nc_path, variable_name=variable_name
+        )
+        if not variable_name:
+            variable_name = nc_var_name
+        try:
+            assert variable_name == nc_var_name
+        except AssertionError:
+            raise ValueError(f"'{nc_var_name}' should match '{variable_name}'")
+        # trimmed = xr_time_series.isel(time=slice(0, 10))
+        results.append(
+            {
+                date_obj: getattr(val, method_name)().values.item()
+                for date_obj, val in xr_time_series[variable_name].groupby("time")
+            }
+        )
+    return results
+
+
 def crop_xarray(
     xr_time_series: T_Dataset | PathLike,
     crop_box: BoundingBoxCoords,
