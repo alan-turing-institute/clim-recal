@@ -4,7 +4,7 @@ from logging import getLogger
 from os import PathLike
 from pathlib import Path
 from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
-from typing import Any, Callable, Final, Iterable, Iterator, Sequence
+from typing import Any, Callable, Final, Iterator, Sequence
 
 import numpy as np
 import rioxarray  # nopycln: import
@@ -24,7 +24,6 @@ from osgeo.gdal import (
 from osgeo.gdal import config_option as config_GDAL_option
 from rasterio.enums import Resampling
 from tqdm import tqdm
-from tqdm.rich import trange
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
 from xarray.core.types import (
@@ -38,6 +37,7 @@ from xarray.core.types import (
 from .core import (
     CLI_DATE_FORMAT_STR,
     ISO_DATE_FORMAT_STR,
+    PROG_BAR,
     climate_data_mount_path,
     results_path,
 )
@@ -1355,30 +1355,91 @@ def region_crop_file_name(
     return "_".join(("crop", str(crop_region), final_suffix))
 
 
-def trange_wrapper(
+def progress_wrapper(
     instance: Sequence,
-    calc: Callable,
-    start: int,
-    stop: int | None,
-    step: int,
-    default_export_path: Path,
+    method_name: str,
+    start: int | None = None,
+    stop: int | None = None,
+    step: int = 1,
+    description: str = "",
     override_export_path: Path | None = None,
-    source_to_index: Iterable | None = None,
+    source_to_index: Sequence | None = None,
+    return_path: bool = True,
+    write_results: bool = True,
+    progress_bar: bool = True,
+    **kwargs,
 ) -> Iterator[Path | T_Dataset]:
-    # export_paths: list[Path | T_Dataset] = []
+    """Iterate over `instance` with or without a progress bar.
+
+    Parameters
+    ----------
+    instance
+        An instance of a class with `method_name` for iterating calls.
+    method_name
+        Method name to call on `instance` to iterate calculations.
+    start
+        Index to start iterating from.
+    stop
+        Index to end interating at.
+    step
+        Hops of iterating between `start` and `stop` of `instance`.
+    description
+        What to print in front of progress bar if `progress_bar` is `True`.
+    override_export_path
+        Export `Path` to write to instead of `self.output_path`.
+    source_to_index
+        `Sequence` of paths to iterate over instaed of `self`
+    return_path
+        Whether to return `Path` of export. If not, result objects are returned.
+    write_results
+        Whether to write results to disk. Required if `return_path` is `True`.
+    progress_bar
+        Whether to print progress bar or skip
+    **kwargs
+        Additional parameters to pass to `method_name`.
+    """
+    start = start or instance.start_index
+    stop = stop or instance.stop_index
     if stop is None:
         stop = len(instance)
-    export_path: Path = override_export_path or default_export_path
-    for index in trange(start, stop, step):
-        # export_paths.append(
-        #     method(
-        yield calc(
-            # path=export_path,
-            index=index,
-            # override_export_path=override_export_path,
-            export_path=export_path,
-            source_to_index=source_to_index,
-        )
-        #     )
-        # )
-    # return export_paths
+    if progress_bar:
+        with PROG_BAR:
+            for index in PROG_BAR.track(
+                range(start, stop, step), description=description
+            ):
+                yield getattr(instance, method_name)(
+                    index=index,
+                    override_export_path=override_export_path,
+                    source_to_index=source_to_index,
+                    return_path=return_path,
+                    write_results=write_results,
+                    **kwargs,
+                )
+    else:
+        for index in range(start, stop, step):
+            yield getattr(instance, method_name)(
+                instance,
+                index=index,
+                override_export_path=override_export_path,
+                source_to_index=source_to_index,
+                return_path=return_path,
+                write_results=write_results,
+                **kwargs,
+            )
+    # # export_paths: list[Path | T_Dataset] = []
+    # if stop is None:
+    #     stop = len(instance)
+    # export_path: Path = override_export_path or default_export_path
+    # for index in trange(start, stop, step):
+    #     # export_paths.append(
+    #     #     method(
+    #     yield calc(
+    #         # path=export_path,
+    #         index=index,
+    #         # override_export_path=override_export_path,
+    #         export_path=export_path,
+    #         source_to_index=source_to_index,
+    #     )
+    #     #     )
+    #     # )
+    # # return export_paths

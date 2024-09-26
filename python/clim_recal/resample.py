@@ -15,7 +15,6 @@ from typing import Any, Final, Iterable, Iterator, Literal, Sequence
 import dill as pickle
 import rioxarray  # nopycln: import
 from rich import print
-from rich.progress import track
 from xarray import Dataset
 from xarray.core.types import T_Dataset
 
@@ -45,6 +44,7 @@ from .utils.xarray import (
     cpm_reproject_with_standard_calendar,
     get_cpm_for_coord_alignment,
     hads_resample_and_reproject,
+    progress_wrapper,
 )
 
 logger = getLogger(__name__)
@@ -169,14 +169,15 @@ class ResamplerBase:
         else:
             return source_to_index[index]
 
-    def _output_path(
-        self, relative_output_path: Path, override_export_path: Path | None
-    ) -> Path:
-        path: PathLike = (
-            override_export_path or Path(self.output_path) / relative_output_path
-        )
-        path.mkdir(exist_ok=True, parents=True)
-        return path
+    #
+    # def _output_path(
+    #     self, relative_output_path: Path, override_export_path: Path | None
+    # ) -> Path:
+    #     path: PathLike = (
+    #         override_export_path or Path(self.output_path) / relative_output_path
+    #     )
+    #     path.mkdir(exist_ok=True, parents=True)
+    #     return path
 
     def range_to_reprojection(
         self,
@@ -188,29 +189,45 @@ class ResamplerBase:
         return_path: bool = True,
         write_results: bool = True,
         progress_bar: bool = True,
-    ) -> Iterator[Path]:
-        start = start or self.start_index
-        stop = stop or self.stop_index
-        if stop is None:
-            stop = len(self)
-        if progress_bar:
-            for index in track(range(start, stop, step), description="Resampling..."):
-                yield self.to_reprojection(
-                    index=index,
-                    override_export_path=override_export_path,
-                    source_to_index=source_to_index,
-                    return_path=return_path,
-                    write_results=write_results,
-                )
-        else:
-            for index in range(start, stop, step):
-                yield self.to_reprojection(
-                    index=index,
-                    override_export_path=override_export_path,
-                    source_to_index=source_to_index,
-                    return_path=return_path,
-                    write_results=write_results,
-                )
+        **kwargs,
+    ) -> Iterator[Path | T_Dataset]:
+        yield progress_wrapper(
+            self,
+            "to_reprojection",
+            start=start,
+            stop=stop,
+            step=step,
+            description="Resampling...",
+            override_export_path=override_export_path,
+            source_to_index=source_to_index,
+            return_path=return_path,
+            write_results=write_results,
+            progress_bar=progress_bar,
+            **kwargs,
+        )
+        # start = start or self.start_index
+        # stop = stop or self.stop_index
+        # if stop is None:
+        #     stop = len(self)
+        # if progress_bar:
+        #     with PROG_BAR:
+        #         for index in PROG_BAR.track(range(start, stop, step), description="Resampling..."):
+        #             yield self.to_reprojection(
+        #                 index=index,
+        #                 override_export_path=override_export_path,
+        #                 source_to_index=source_to_index,
+        #                 return_path=return_path,
+        #                 write_results=write_results,
+        #             )
+        # else:
+        #     for index in range(start, stop, step):
+        #         yield self.to_reprojection(
+        #             index=index,
+        #             override_export_path=override_export_path,
+        #             source_to_index=source_to_index,
+        #             return_path=return_path,
+        #             write_results=write_results,
+        #         )
 
     def execute(self, **kwargs) -> tuple[Path, ...]:
         """Run all steps for processing"""

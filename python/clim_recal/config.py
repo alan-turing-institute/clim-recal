@@ -252,7 +252,7 @@ class ClimRecalConfig(BaseRunConfig):
             cpm_for_coord_alignment_path_converted=self.cpm_for_coord_alignment_path_converted,
             **self.hads_kwargs,
         )
-        self.cpm_crops_manager = CPMRegionCropManager(
+        self.cpm_crop_manager = CPMRegionCropManager(
             input_paths=self.cpm_output_folder,
             variables=self.variables,
             runs=self.runs,
@@ -262,7 +262,7 @@ class ClimRecalConfig(BaseRunConfig):
             check_input_paths_exist=False,
             **self.cpm_crop_kwargs,
         )
-        self.hads_crops_manager = HADsRegionCropManager(
+        self.hads_crop_manager = HADsRegionCropManager(
             input_paths=self.hads_output_folder,
             variables=self.variables,
             output_paths=self.cropped_hads_path,

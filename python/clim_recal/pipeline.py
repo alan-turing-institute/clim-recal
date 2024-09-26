@@ -297,15 +297,15 @@ def main(
     console.print(config)
     console.print(config.cpm_manager)
     console.print(config.hads_manager)
+    console.print(config.cpm_crop_manager)
+    console.print(config.hads_crop_manager)
     if execute:
         if not cpm_projection:
             console.print("Skipping CPM Strandard Calendar projection.")
         else:
             console.print("Running CPM Standard Calendar projection...")
             cpm_resamplers: tuple[CPMResampler, ...] = (
-                config.cpm_manager.execute_resample_configs(
-                    multiprocess=multiprocess, cpus=cpus
-                )
+                config.cpm_manager.execute_configs(multiprocess=multiprocess, cpus=cpus)
             )
             console.print(cpm_resamplers[:print_range_length])
             # Leaving assert to remind ease for debugging in future
@@ -315,7 +315,7 @@ def main(
         else:
             console.print("Running HADs aggregation to 2.2km spatial units...")
             hads_resamplers: tuple[HADsResampler, ...] = (
-                config.hads_manager.execute_resample_configs(
+                config.hads_manager.execute_configs(
                     multiprocess=multiprocess, cpus=cpus
                 )
             )
@@ -328,7 +328,7 @@ def main(
             else:
                 console.print(f"Cropping CPMs to regions {config.regions}: ...")
                 region_cropped_cpm_resamples: tuple[CPMRegionCropper, ...] = (
-                    config.cpm_crop_manager.execute_crop_configs(
+                    config.cpm_crop_manager.execute_configs(
                         multiprocess=multiprocess, cpus=cpus
                     )
                 )
@@ -340,7 +340,7 @@ def main(
                     f"Cropping HADS 2.2km projections to regions {config.regions}: ..."
                 )
                 region_cropped_hads_resamples: tuple[HADsRegionCropper, ...] = (
-                    config.hads_crop_manager.execute_crop_configs(
+                    config.hads_crop_manager.execute_configs(
                         multiprocess=multiprocess, cpus=cpus
                     )
                 )
