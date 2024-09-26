@@ -349,8 +349,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#python.clim_recal.utils.xarray.hads_resample_and_reproject" id="toc-python.clim_recal.utils.xarray.hads_resample_and_reproject" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.hads_resample_and_reproject"><span class="header-section-number">3.0.11</span> hads_resample_and_reproject</a></li>
   <li><a href="#python.clim_recal.utils.xarray.interpolate_xr_ts_nans" id="toc-python.clim_recal.utils.xarray.interpolate_xr_ts_nans" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.interpolate_xr_ts_nans"><span class="header-section-number">3.0.12</span> interpolate_xr_ts_nans</a></li>
   <li><a href="#python.clim_recal.utils.xarray.plot_xarray" id="toc-python.clim_recal.utils.xarray.plot_xarray" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.plot_xarray"><span class="header-section-number">3.0.13</span> plot_xarray</a></li>
-  <li><a href="#python.clim_recal.utils.xarray.region_crop_file_name" id="toc-python.clim_recal.utils.xarray.region_crop_file_name" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.region_crop_file_name"><span class="header-section-number">3.0.14</span> region_crop_file_name</a></li>
-  <li><a href="#python.clim_recal.utils.xarray.xr_reproject_crs" id="toc-python.clim_recal.utils.xarray.xr_reproject_crs" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.15</span> xr_reproject_crs</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.progress_wrapper" id="toc-python.clim_recal.utils.xarray.progress_wrapper" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.progress_wrapper"><span class="header-section-number">3.0.14</span> progress_wrapper</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.region_crop_file_name" id="toc-python.clim_recal.utils.xarray.region_crop_file_name" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.region_crop_file_name"><span class="header-section-number">3.0.15</span> region_crop_file_name</a></li>
+  <li><a href="#python.clim_recal.utils.xarray.xr_reproject_crs" id="toc-python.clim_recal.utils.xarray.xr_reproject_crs" class="nav-link" data-scroll-target="#python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.16</span> xr_reproject_crs</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -447,10 +448,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Plot <code>da</code> with <code>**kwargs</code> to <code>path</code>.</td>
 </tr>
 <tr class="odd">
+<td><a href="#python.clim_recal.utils.xarray.progress_wrapper">progress_wrapper</a></td>
+<td>Iterate over <code>instance</code> with or without a progress bar.</td>
+</tr>
+<tr class="even">
 <td><a href="#python.clim_recal.utils.xarray.region_crop_file_name">region_crop_file_name</a></td>
 <td>Generate a file name for a regional crop.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#python.clim_recal.utils.xarray.xr_reproject_crs">xr_reproject_crs</a></td>
 <td>Reproject <code>source_xr</code> to <code>target_xr</code> coordinate structure.</td>
 </tr>
@@ -1609,12 +1614,110 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="op">/</span>...<span class="op">/</span>test<span class="op">-</span>path<span class="op">/</span>example<span class="op">-</span>stamped_...<span class="op">-</span>...<span class="op">-</span>..._...png</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
-<section id="python.clim_recal.utils.xarray.region_crop_file_name" class="level3" data-number="3.0.14">
-<h3 data-number="3.0.14" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.region_crop_file_name"><span class="header-section-number">3.0.14</span> region_crop_file_name</h3>
-<p><code>clim_recal.utils.xarray.region_crop_file_name(file_name, crop_region)</code></p>
-<p>Generate a file name for a regional crop.</p>
+<section id="python.clim_recal.utils.xarray.progress_wrapper" class="level3" data-number="3.0.14">
+<h3 data-number="3.0.14" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.progress_wrapper"><span class="header-section-number">3.0.14</span> progress_wrapper</h3>
+<p><code>clim_recal.utils.xarray.progress_wrapper(instance, method_name, start=None, stop=None, step=1, description='', override_export_path=None, source_to_index=None, return_path=True, write_results=True, progress_bar=True, **kwargs)</code></p>
+<p>Iterate over <code>instance</code> with or without a progress bar.</p>
 <section id="parameters-13" class="level4" data-number="3.0.14.1">
 <h4 data-number="3.0.14.1" class="anchored" data-anchor-id="parameters-13"><span class="header-section-number">3.0.14.1</span> Parameters</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 14%">
+<col style="width: 57%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>instance</code></td>
+<td>Sequence</td>
+<td>An instance of a class with <code>method_name</code> for iterating calls.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>method_name</code></td>
+<td>str</td>
+<td>Method name to call on <code>instance</code> to iterate calculations.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td><code>start</code></td>
+<td>int | None</td>
+<td>Index to start iterating from.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td><code>stop</code></td>
+<td>int | None</td>
+<td>Index to end interating at.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td><code>step</code></td>
+<td>int</td>
+<td>Hops of iterating between <code>start</code> and <code>stop</code> of <code>instance</code>.</td>
+<td><code>1</code></td>
+</tr>
+<tr class="even">
+<td><code>description</code></td>
+<td>str</td>
+<td>What to print in front of progress bar if <code>progress_bar</code> is <code>True</code>.</td>
+<td><code>''</code></td>
+</tr>
+<tr class="odd">
+<td><code>override_export_path</code></td>
+<td>Path | None</td>
+<td>Export <code>Path</code> to write to instead of <code>self.output_path</code>.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td><code>source_to_index</code></td>
+<td>Sequence | None</td>
+<td><code>Sequence</code> of paths to iterate over instaed of <code>self</code></td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td><code>return_path</code></td>
+<td>bool</td>
+<td>Whether to return <code>Path</code> of export. If not, result objects are returned.</td>
+<td><code>True</code></td>
+</tr>
+<tr class="even">
+<td><code>write_results</code></td>
+<td>bool</td>
+<td>Whether to write results to disk. Required if <code>return_path</code> is <code>True</code>.</td>
+<td><code>True</code></td>
+</tr>
+<tr class="odd">
+<td><code>progress_bar</code></td>
+<td>bool</td>
+<td>Whether to print progress bar or skip</td>
+<td><code>True</code></td>
+</tr>
+<tr class="even">
+<td><code>**kwargs</code></td>
+<td></td>
+<td>Additional parameters to pass to <code>method_name</code>.</td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="python.clim_recal.utils.xarray.region_crop_file_name" class="level3" data-number="3.0.15">
+<h3 data-number="3.0.15" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.region_crop_file_name"><span class="header-section-number">3.0.15</span> region_crop_file_name</h3>
+<p><code>clim_recal.utils.xarray.region_crop_file_name(file_name, crop_region)</code></p>
+<p>Generate a file name for a regional crop.</p>
+<section id="parameters-14" class="level4" data-number="3.0.15.1">
+<h4 data-number="3.0.15.1" class="anchored" data-anchor-id="parameters-14"><span class="header-section-number">3.0.15.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 14%">
@@ -1646,8 +1749,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="examples-7" class="level4" data-number="3.0.14.2">
-<h4 data-number="3.0.14.2" class="anchored" data-anchor-id="examples-7"><span class="header-section-number">3.0.14.2</span> Examples</h4>
+<section id="examples-7" class="level4" data-number="3.0.15.2">
+<h4 data-number="3.0.15.2" class="anchored" data-anchor-id="examples-7"><span class="header-section-number">3.0.15.2</span> Examples</h4>
 <div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> region_crop_file_name(</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>...    <span class="st">'tasmax.nc'</span>,</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>...    <span class="st">'Glasgow'</span>)</span>
@@ -1662,12 +1765,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co">'crop_Glasgow_tasmax_cpm_05_19861201-19871130.nc'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
-<section id="python.clim_recal.utils.xarray.xr_reproject_crs" class="level3" data-number="3.0.15">
-<h3 data-number="3.0.15" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.15</span> xr_reproject_crs</h3>
+<section id="python.clim_recal.utils.xarray.xr_reproject_crs" class="level3" data-number="3.0.16">
+<h3 data-number="3.0.16" class="anchored" data-anchor-id="python.clim_recal.utils.xarray.xr_reproject_crs"><span class="header-section-number">3.0.16</span> xr_reproject_crs</h3>
 <p><code>clim_recal.utils.xarray.xr_reproject_crs(xr_time_series, x_dim_name=CPM_RAW_X_COLUMN_NAME, y_dim_name=CPM_RAW_Y_COLUMN_NAME, time_dim_name=TIME_COLUMN_NAME, variable_name=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, match_xr_time_series=None, match_xr_time_series_load_func=None, match_xr_time_series_load_kwargs=None, resampling_method=DEFAULT_RESAMPLING_METHOD, nodata=np.nan, **kwargs)</code></p>
 <p>Reproject <code>source_xr</code> to <code>target_xr</code> coordinate structure.</p>
-<section id="parameters-14" class="level4" data-number="3.0.15.1">
-<h4 data-number="3.0.15.1" class="anchored" data-anchor-id="parameters-14"><span class="header-section-number">3.0.15.1</span> Parameters</h4>
+<section id="parameters-15" class="level4" data-number="3.0.16.1">
+<h4 data-number="3.0.16.1" class="anchored" data-anchor-id="parameters-15"><span class="header-section-number">3.0.16.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 10%">
@@ -1729,8 +1832,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="examples-8" class="level4" data-number="3.0.15.2">
-<h4 data-number="3.0.15.2" class="anchored" data-anchor-id="examples-8"><span class="header-section-number">3.0.15.2</span> Examples</h4>
+<section id="examples-8" class="level4" data-number="3.0.16.2">
+<h4 data-number="3.0.16.2" class="anchored" data-anchor-id="examples-8"><span class="header-section-number">3.0.16.2</span> Examples</h4>
 <div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> tasmax_hads_1980_raw <span class="op">=</span> getfixture(<span class="st">'tasmax_hads_1980_raw'</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> tasmax_hads_1980_raw:</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_or_cache_doctest_skip_message)</span>
