@@ -26,7 +26,7 @@ from typing import (
 )
 
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn, track
+from rich.progress import track
 from tqdm import TqdmExperimentalWarning
 
 logger = getLogger(__name__)
@@ -59,14 +59,6 @@ DARWIN_MOUNT_PATH: Final[Path] = Path("/Volumes/vmfileshare")
 CLIMATE_DATA_PATH: Final[Path] = Path("ClimateData")
 
 DEFAULT_CALLABLE_ATTR_NAME: Final[str] = "execute"
-
-# Todo: Set as configuration to use for consistency or remove
-PROG_BAR: Final[Progress] = Progress(
-    SpinnerColumn(),
-    *Progress.get_default_columns(),
-    TimeElapsedColumn(),
-    refresh_per_second=2,
-)
 
 
 @dataclass

@@ -23,6 +23,7 @@ from osgeo.gdal import (
 )
 from osgeo.gdal import config_option as config_GDAL_option
 from rasterio.enums import Resampling
+from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
 from tqdm import tqdm
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
@@ -37,8 +38,8 @@ from xarray.core.types import (
 from .core import (
     CLI_DATE_FORMAT_STR,
     ISO_DATE_FORMAT_STR,
-    PROG_BAR,
     climate_data_mount_path,
+    multiprocess_execute,
     results_path,
 )
 from .data import (
@@ -1400,11 +1401,19 @@ def progress_wrapper(
     """
     start = start or instance.start_index
     stop = stop or instance.stop_index
+
+    progress_conf: Progress = Progress(
+        SpinnerColumn(),
+        *Progress.get_default_columns(),
+        TimeElapsedColumn(),
+        refresh_per_second=2,
+    )
+
     if stop is None:
         stop = len(instance)
     if progress_bar:
-        with PROG_BAR:
-            for index in PROG_BAR.track(
+        with progress_conf:
+            for index in progress_conf.track(
                 range(start, stop, step), description=description
             ):
                 yield getattr(instance, method_name)(
@@ -1443,3 +1452,54 @@ def progress_wrapper(
     #     #     )
     #     # )
     # # return export_paths
+
+
+def execute_configs(
+    instance: Any,
+    configs_method: str = "yield_configs",
+    multiprocess: bool = False,
+    cpus: int | None = None,
+    return_instances: bool = False,
+    return_path: bool = True,
+    **kwargs,
+) -> tuple | list[T_Dataset | Path]:
+    """Run all resampler configurations
+
+    Parameters
+    ----------
+    multiprocess
+        If `True` run parameters in `resample_configs` with `multiprocess_execute`.
+    configs_method
+        Method name to yield model parameters.
+    cpus
+        Number of `cpus` to pass to `multiprocess_execute`.
+    return_resamplers
+        Return instances of generated classe (e.g. `HADsResampler` or
+        `CPMResampler`), or return the `results` of each
+        `execute` call.
+    return_path
+        Return `Path` to results object if True, else resampled `Dataset`.
+    **kwargs
+        Parameters to path to sampler `execute` calls.
+    """
+    configs: tuple = tuple(getattr(instance, configs_method)())
+    results: list[tuple[Path, ...]] = []
+    if multiprocess:
+        cpus = cpus or instance.cpus
+        if instance.total_cpus and cpus:
+            cpus = min(cpus, instance.total_cpus - 1)
+        results = multiprocess_execute(
+            configs,
+            cpus=cpus,
+            return_path=return_path,
+            sub_process_progress_bar=False,
+            **kwargs,
+        )
+    else:
+        for config in configs:
+            print(config)
+            results.append(config.execute(return_path=return_path, **kwargs))
+    if return_instances:
+        return configs
+    else:
+        return results

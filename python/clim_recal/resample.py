@@ -20,7 +20,7 @@ from xarray.core.types import T_Dataset
 
 from clim_recal.debiasing.debias_wrapper import VariableOptions
 
-from .utils.core import _get_source_path, climate_data_mount_path, multiprocess_execute
+from .utils.core import _get_source_path, climate_data_mount_path
 from .utils.data import (
     CPM_END_DATE,
     CPM_OUTPUT_PATH,
@@ -42,6 +42,7 @@ from .utils.xarray import (
     NETCDF_EXTENSION_STR,
     converted_output_path,
     cpm_reproject_with_standard_calendar,
+    execute_configs,
     get_cpm_for_coord_alignment,
     hads_resample_and_reproject,
     progress_wrapper,
@@ -653,27 +654,35 @@ class ResamplerManagerBase:
         kwargs
             Parameters to path to sampler `execute` calls.
         """
-        resamplers: tuple[ResamplerBase, ...] = tuple(self.yield_configs())
-        results: list[tuple[Path, ...]] = []
-        if multiprocess:
-            cpus = cpus or self.cpus
-            if self.total_cpus and cpus:
-                cpus = min(cpus, self.total_cpus - 1)
-            results = multiprocess_execute(
-                resamplers,
-                cpus=cpus,
-                return_path=return_path,
-                sub_process_progress_bar=False,
-                **kwargs,
-            )
-        else:
-            for resampler in resamplers:
-                print(resampler)
-                results.append(resampler.execute(return_path=return_path, **kwargs))
-        if return_resamplers:
-            return resamplers
-        else:
-            return results
+        return execute_configs(
+            self,
+            multiprocess=multiprocess,
+            cpus=cpus,
+            return_instances=return_resamplers,
+            return_path=return_path,
+            **kwargs,
+        )
+        # resamplers: tuple[ResamplerBase, ...] = tuple(self.yield_configs())
+        # results: list[tuple[Path, ...]] = []
+        # if multiprocess:
+        #     cpus = cpus or self.cpus
+        #     if self.total_cpus and cpus:
+        #         cpus = min(cpus, self.total_cpus - 1)
+        #     results = multiprocess_execute(
+        #         resamplers,
+        #         cpus=cpus,
+        #         return_path=return_path,
+        #         sub_process_progress_bar=False,
+        #         **kwargs,
+        #     )
+        # else:
+        #     for resampler in resamplers:
+        #         print(resampler)
+        #         results.append(resampler.execute(return_path=return_path, **kwargs))
+        # if return_resamplers:
+        #     return resamplers
+        # else:
+        #     return results
 
 
 @dataclass(kw_only=True, repr=False)

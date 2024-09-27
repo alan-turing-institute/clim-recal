@@ -10,7 +10,7 @@ from xarray import Dataset
 from xarray.core.types import T_Dataset
 
 from .resample import ResamplerBase, ResamplerManagerBase
-from .utils.core import _get_source_path, multiprocess_execute
+from .utils.core import _get_source_path
 from .utils.data import (
     CPM_CROP_OUTPUT_PATH,
     CPM_END_DATE,
@@ -26,7 +26,12 @@ from .utils.data import (
     RunOptions,
     VariableOptions,
 )
-from .utils.xarray import converted_output_path, crop_xarray, region_crop_file_name
+from .utils.xarray import (
+    converted_output_path,
+    crop_xarray,
+    execute_configs,
+    region_crop_file_name,
+)
 
 logger = getLogger(__name__)
 
@@ -385,28 +390,37 @@ class RegionCropperManagerBase(ResamplerManagerBase):
         cpus
             Number of `cpus` to pass to `multiprocess_execute`.
         """
-        croppers: tuple[RegionCropperBase, ...] = tuple(self.yield_crop_configs())
-        results: list[list[Path] | None] = []
-        if multiprocess:
-            cpus = cpus or self.cpus
-            if self.total_cpus and cpus:
-                cpus = min(cpus, self.total_cpus - 1)
-            results = multiprocess_execute(
-                croppers,
-                method_name="execute",
-                cpus=cpus,
-                return_path=return_path,
-                sub_process_progress_bar=False,
-                **kwargs,
-            )
-        else:
-            for cropper in croppers:
-                print(cropper)
-                results.append(cropper.execute(return_path=return_path, **kwargs))
-        if return_region_croppers:
-            return croppers
-        else:
-            return results
+        return execute_configs(
+            self,
+            configs_method="yield_crop_configs",
+            multiprocess=multiprocess,
+            cpus=cpus,
+            return_instances=return_region_croppers,
+            return_path=return_path,
+            **kwargs,
+        )
+        # croppers: tuple[RegionCropperBase, ...] = tuple(self.yield_crop_configs())
+        # results: list[list[Path] | None] = []
+        # if multiprocess:
+        #     cpus = cpus or self.cpus
+        #     if self.total_cpus and cpus:
+        #         cpus = min(cpus, self.total_cpus - 1)
+        #     results = multiprocess_execute(
+        #         croppers,
+        #         method_name="execute",
+        #         cpus=cpus,
+        #         return_path=return_path,
+        #         sub_process_progress_bar=False,
+        #         **kwargs,
+        #     )
+        # else:
+        #     for cropper in croppers:
+        #         print(cropper)
+        #         results.append(cropper.execute(return_path=return_path, **kwargs))
+        # if return_region_croppers:
+        #     return croppers
+        # else:
+        #     return results
 
 
 @dataclass(kw_only=True, repr=False)
