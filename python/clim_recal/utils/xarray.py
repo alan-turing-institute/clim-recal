@@ -22,6 +22,7 @@ from osgeo.gdal import (
     WarpOptions,
 )
 from osgeo.gdal import config_option as config_GDAL_option
+from pandas import DataFrame
 from rasterio.enums import Resampling
 from tqdm import tqdm
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
@@ -86,7 +87,6 @@ HADS_DROP_VARS_AFTER_PROJECTION: Final[tuple[str, ...]] = ("longitude", "latitud
 
 FINAL_RESAMPLE_LON_COL: Final[str] = "x"
 FINAL_RESAMPLE_LAT_COL: Final[str] = "y"
-
 
 DEFAULT_WARP_DICT_OPTIONS: dict[str, str | float] = {
     "VARIABLES_AS_BANDS": "YES",
@@ -552,12 +552,12 @@ def plot_xarray(
     return Path(path)
 
 
-def join_xr_time_series(
+def join_xr_time_series_var(
     path: PathLike,
     variable_name: str | None = None,
     method_name: str = "median",
     regex: str = CPM_REGEX,
-) -> T_Dataset:
+) -> T_Dataset | DataFrame:
     """Join a set of xr_time_series files chronologically.
 
     Examples
@@ -565,12 +565,12 @@ def join_xr_time_series(
     >>> tasmax_cpm_1980_raw_path = getfixture('tasmax_cpm_1980_raw_path').parents[1]
     >>> if not tasmax_cpm_1980_raw_path:
     ...     pytest.skip(mount_or_cache_doctest_skip_message)
-    >>> results = join_xr_time_series(tasmax_cpm_1980_raw_path,
+    >>> results = join_xr_time_series_var(tasmax_cpm_1980_raw_path,
     ...                               'tasmax')
     >>> assert False
 
     """
-    results: list[dict] = []
+    results: list[tuple[str, Any]] = []
     for nc_path in Path(path).glob(regex):
         xr_time_series, nc_var_name = check_xarray_path_and_var_name(
             nc_path, variable_name=variable_name
@@ -583,12 +583,14 @@ def join_xr_time_series(
             raise ValueError(f"'{nc_var_name}' should match '{variable_name}'")
         # trimmed = xr_time_series.isel(time=slice(0, 10))
         results.append(
-            {
-                date_obj: getattr(val, method_name)().values.item()
+            *[
+                # (date_obj, getattr(val, method_name)().values.item())
+                (str(date_obj), getattr(val, method_name)().values.item())
                 for date_obj, val in xr_time_series[variable_name].groupby("time")
-            }
+            ]
         )
-    return results
+    assert False
+    return DataFrame(results, columns=("date_str", variable_name))
 
 
 def crop_xarray(
