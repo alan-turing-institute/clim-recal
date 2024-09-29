@@ -27,7 +27,7 @@ from .utils.data import (
     VariableOptions,
 )
 from .utils.xarray import (
-    converted_output_path,
+    _write_and_or_return_results,
     crop_xarray,
     execute_configs,
     region_crop_file_name,
@@ -60,6 +60,7 @@ class RegionCropperBase(ResamplerBase):
     input_path: PathLike | None = Path()
     output_path: PathLike = CROP_OUTPUT_PATH
     crop_region: RegionOptions | str | None = RegionOptions.GLASGOW
+    _iter_calc_method_name: str = "range_crop_projection"
 
     def range_crop_projection(
         self,
@@ -113,7 +114,7 @@ class RegionCropperBase(ResamplerBase):
             assert self.crop_region in RegionOptions
         except AttributeError:
             raise ValueError(
-                f"'{self.crop_path}' not in 'RegionOptions': {RegionOptions.all()}"
+                f"'{self.crop_region}' not in 'RegionOptions': {RegionOptions.all()}"
             )
         logger.info(f"{self} cropping {source_path}")
         result: Dataset = crop_xarray(
@@ -122,24 +123,16 @@ class RegionCropperBase(ResamplerBase):
             **kwargs,
         )
         logger.debug(f"Completed cropping index {index}...")
-        self._result_paths[source_path] = None
-        if write_results or return_path:
-            export_path: Path = override_export_path or converted_output_path(
-                source_path=source_path,
-                export_folder=Path(self.output_path),
-                new_path_name_func=region_crop_file_name,
-                crop_region=self.crop_region,
-            )
-            if write_results:
-                result.to_netcdf(export_path)
-                self._result_paths[source_path] = export_path
-            if return_path:
-                return export_path
-        return result
-
-    def execute(self, **kwargs) -> Iterator[Path] | None:
-        """Crop all paths to `self.crop_region`."""
-        return tuple(self.range_crop_projection(**kwargs))
+        return _write_and_or_return_results(
+            self,
+            result=result,
+            output_path_func=region_crop_file_name,
+            source_path=source_path,
+            write_results=write_results,
+            return_path=return_path,
+            override_export_path=override_export_path,
+            crop_region=self.crop_region,
+        )
 
 
 @dataclass(kw_only=True, repr=False)
@@ -399,28 +392,6 @@ class RegionCropperManagerBase(ResamplerManagerBase):
             return_path=return_path,
             **kwargs,
         )
-        # croppers: tuple[RegionCropperBase, ...] = tuple(self.yield_crop_configs())
-        # results: list[list[Path] | None] = []
-        # if multiprocess:
-        #     cpus = cpus or self.cpus
-        #     if self.total_cpus and cpus:
-        #         cpus = min(cpus, self.total_cpus - 1)
-        #     results = multiprocess_execute(
-        #         croppers,
-        #         method_name="execute",
-        #         cpus=cpus,
-        #         return_path=return_path,
-        #         sub_process_progress_bar=False,
-        #         **kwargs,
-        #     )
-        # else:
-        #     for cropper in croppers:
-        #         print(cropper)
-        #         results.append(cropper.execute(return_path=return_path, **kwargs))
-        # if return_region_croppers:
-        #     return croppers
-        # else:
-        #     return results
 
 
 @dataclass(kw_only=True, repr=False)
@@ -559,7 +530,6 @@ class CPMRegionCropManager(RegionCropperManagerBase):
         `class` to construct all `self.configs` instances with.
     cpus
         Number of `cpu` cores to use during multiprocessing.
-
 
     Examples
     --------

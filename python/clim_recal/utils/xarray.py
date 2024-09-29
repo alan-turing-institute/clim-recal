@@ -1356,6 +1356,54 @@ def region_crop_file_name(
     return "_".join(("crop", str(crop_region), final_suffix))
 
 
+def _write_and_or_return_results(
+    instance,
+    result: T_Dataset,
+    output_path_func: Callable,
+    source_path: Path,
+    write_results: bool,
+    return_path: bool,
+    override_export_path: Path | None = None,
+    **kwargs,
+) -> Path | T_Dataset:
+    """Write and or return `resample` or `crop` results.
+
+    Parameters
+    ----------
+    instance
+        Instance of `ResamplerBase`.
+    result
+        Instance of resambled or croped dataset.
+    output_path_func
+        Callable to return new result file name to write to.
+    source_path
+        `Path` original data used to calculate `result`.
+    write_results
+        Whether to write `ResamplerBase` results to a file.
+    return_path
+        Whether to return the `write_results` `Path` or `T_Dataset` results instance.
+    override_export_path
+        Path to override default calculated output path.
+    **kwargs
+        Addional paths to pass to `converted_output_path`
+        to generate default new path.
+    """
+    instance._result_paths[source_path] = None
+    if write_results or return_path:
+        export_path: Path = override_export_path or converted_output_path(
+            source_path=source_path,
+            export_folder=instance.output_path,
+            new_path_name_func=output_path_func,
+            **kwargs,
+        )
+        if write_results:
+            result.to_netcdf(export_path)
+            instance._result_paths[source_path] = export_path
+        if return_path:
+            return export_path
+    return result
+
+
 def progress_wrapper(
     instance: Sequence,
     method_name: str,
@@ -1491,8 +1539,9 @@ def execute_configs(
         results = multiprocess_execute(
             configs,
             cpus=cpus,
-            return_path=return_path,
+            include_sub_process_config=True,
             sub_process_progress_bar=False,
+            return_path=return_path,
             **kwargs,
         )
     else:

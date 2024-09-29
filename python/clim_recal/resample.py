@@ -40,7 +40,7 @@ from .utils.gdal_formats import TIF_EXTENSION_STR
 from .utils.xarray import (
     BRITISH_NATIONAL_GRID_EPSG,
     NETCDF_EXTENSION_STR,
-    converted_output_path,
+    _write_and_or_return_results,
     cpm_reproject_with_standard_calendar,
     execute_configs,
     get_cpm_for_coord_alignment,
@@ -91,6 +91,7 @@ class ResamplerBase:
     start_index: int = 0
     stop_index: int | None = None
     _result_paths: dict[PathLike, PathLike | None] = field(default_factory=dict)
+    _iter_calc_method_name: str = "range_to_reprojection"
 
     def __post_init__(self) -> None:
         """Generate related attributes."""
@@ -170,16 +171,6 @@ class ResamplerBase:
         else:
             return source_to_index[index]
 
-    #
-    # def _output_path(
-    #     self, relative_output_path: Path, override_export_path: Path | None
-    # ) -> Path:
-    #     path: PathLike = (
-    #         override_export_path or Path(self.output_path) / relative_output_path
-    #     )
-    #     path.mkdir(exist_ok=True, parents=True)
-    #     return path
-
     def range_to_reprojection(
         self,
         start: int | None = None,
@@ -192,7 +183,7 @@ class ResamplerBase:
         progress_bar: bool = True,
         **kwargs,
     ) -> Iterator[Path | T_Dataset]:
-        yield progress_wrapper(
+        return progress_wrapper(
             self,
             "to_reprojection",
             start=start,
@@ -206,33 +197,10 @@ class ResamplerBase:
             progress_bar=progress_bar,
             **kwargs,
         )
-        # start = start or self.start_index
-        # stop = stop or self.stop_index
-        # if stop is None:
-        #     stop = len(self)
-        # if progress_bar:
-        #     with PROG_BAR:
-        #         for index in PROG_BAR.track(range(start, stop, step), description="Resampling..."):
-        #             yield self.to_reprojection(
-        #                 index=index,
-        #                 override_export_path=override_export_path,
-        #                 source_to_index=source_to_index,
-        #                 return_path=return_path,
-        #                 write_results=write_results,
-        #             )
-        # else:
-        #     for index in range(start, stop, step):
-        #         yield self.to_reprojection(
-        #             index=index,
-        #             override_export_path=override_export_path,
-        #             source_to_index=source_to_index,
-        #             return_path=return_path,
-        #             write_results=write_results,
-        #         )
 
     def execute(self, **kwargs) -> tuple[Path, ...]:
         """Run all steps for processing"""
-        return tuple(self.range_to_reprojection(**kwargs))
+        return tuple(getattr(self, self._iter_calc_method_name)(**kwargs))
 
 
 @dataclass(kw_only=True, repr=False)
@@ -334,17 +302,15 @@ class HADsResampler(ResamplerBase):
             **kwargs,
         )
         logger.debug(f"Completed HADs index {index}...")
-        self._result_paths[source_path] = None
-        if write_results or return_path:
-            export_path: Path = override_export_path or converted_output_path(
-                source_path, self.output_path, reproject_2_2km_file_name
-            )
-            if write_results:
-                result.to_netcdf(export_path)
-                self._result_paths[source_path] = export_path
-            if return_path:
-                return export_path
-        return result
+        return _write_and_or_return_results(
+            self,
+            result=result,
+            output_path_func=reproject_2_2km_file_name,
+            source_path=source_path,
+            write_results=write_results,
+            return_path=return_path,
+            override_export_path=override_export_path,
+        )
 
 
 @dataclass(kw_only=True, repr=False)
@@ -416,17 +382,15 @@ class CPMResampler(ResamplerBase):
             source_path, variable_name=self.cpm_variable_name, **kwargs
         )
         logger.debug(f"Completed CPM index {index}...")
-        self._result_paths[source_path] = None
-        if write_results or return_path:
-            export_path: Path = override_export_path or converted_output_path(
-                source_path, self.output_path, reproject_standard_calendar_file_name
-            )
-            if write_results:
-                result.to_netcdf(export_path)
-                self._result_paths[source_path] = export_path
-            if return_path:
-                return export_path
-        return result
+        return _write_and_or_return_results(
+            self,
+            result=result,
+            output_path_func=reproject_standard_calendar_file_name,
+            source_path=source_path,
+            write_results=write_results,
+            return_path=return_path,
+            override_export_path=override_export_path,
+        )
 
     def __getstate__(self):
         """Meanse of testing what aspects of instance have issues multiprocessing.
@@ -662,27 +626,6 @@ class ResamplerManagerBase:
             return_path=return_path,
             **kwargs,
         )
-        # resamplers: tuple[ResamplerBase, ...] = tuple(self.yield_configs())
-        # results: list[tuple[Path, ...]] = []
-        # if multiprocess:
-        #     cpus = cpus or self.cpus
-        #     if self.total_cpus and cpus:
-        #         cpus = min(cpus, self.total_cpus - 1)
-        #     results = multiprocess_execute(
-        #         resamplers,
-        #         cpus=cpus,
-        #         return_path=return_path,
-        #         sub_process_progress_bar=False,
-        #         **kwargs,
-        #     )
-        # else:
-        #     for resampler in resamplers:
-        #         print(resampler)
-        #         results.append(resampler.execute(return_path=return_path, **kwargs))
-        # if return_resamplers:
-        #     return resamplers
-        # else:
-        #     return results
 
 
 @dataclass(kw_only=True, repr=False)
