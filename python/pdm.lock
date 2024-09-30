@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:0cdc21112758f7753fb9320582ff928e8e3629b9e5012128763450e4cfe491d1"
+content_hash = "sha256:b03cfdd867ee8c06b1f7bd172cf73c9ef76f9641f7558d6de3fb9ae70acb4ffb"
 
 [[metadata.targets]]
 requires_python = "~=3.12.5"
@@ -1816,6 +1816,23 @@ dependencies = [
 files = [
     {file = "nbformat-5.10.4-py3-none-any.whl", hash = "sha256:3b48d6c8fbca4b299bf3982ea7db1af21580e4fec269ad087b9e81588891200b"},
     {file = "nbformat-5.10.4.tar.gz", hash = "sha256:322168b14f937a5d11362988ecac2a4952d3d8e3a2cbeb2319584631226d5b3a"},
+]
+
+[[package]]
+name = "nc-time-axis"
+version = "1.4.1"
+requires_python = ">=3.7"
+summary = "Provides support for a cftime axis in matplotlib"
+groups = ["default"]
+marker = "python_full_version ~= \"3.12.5\""
+dependencies = [
+    "cftime>=1.5",
+    "matplotlib",
+    "numpy",
+]
+files = [
+    {file = "nc-time-axis-1.4.1.tar.gz", hash = "sha256:72d80f492f34bbf59490838d8cb3d92f14e88900b0ee35498b2b33c82795eb81"},
+    {file = "nc_time_axis-1.4.1-py3-none-any.whl", hash = "sha256:96a6fb28cede0d07998fcd666599f76e51a086e1929fbcbfb758c1d0f3e7b0d1"},
 ]
 
 [[package]]

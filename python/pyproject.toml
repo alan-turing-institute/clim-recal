@@ -39,6 +39,7 @@ dependencies = [
     "numpy>2",
     "rioxarray>=0.17.0",
     "rasterio==1.4b1",
+    "nc-time-axis>=1.4.1",
 ]
 
 [project.scripts]

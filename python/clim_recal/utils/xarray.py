@@ -22,7 +22,6 @@ from osgeo.gdal import (
     WarpOptions,
 )
 from osgeo.gdal import config_option as config_GDAL_option
-from pandas import DataFrame
 from rasterio.enums import Resampling
 from tqdm import tqdm
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
@@ -556,9 +555,33 @@ def join_xr_time_series_var(
     path: PathLike,
     variable_name: str | None = None,
     method_name: str = "median",
+    time_dim_name: str = "time",
     regex: str = CPM_REGEX,
-) -> T_Dataset | DataFrame:
+    start: int = 0,
+    stop: int | None = None,
+    step: int = 1,
+) -> T_Dataset:
     """Join a set of xr_time_series files chronologically.
+
+    Parameters
+    ----------
+    path
+        Path to collect files to process from, filtered via `regex`.
+    variable_name
+        A variable name to specify for data expected. If none that
+        will be extracted and checked from the files directly.
+    method_name
+        What method to use to summarise each time point results.
+    time_dim_name
+        Name of time dimension in passed files.
+    regex
+        A str to filter files within `path`
+    start
+        What point to start indexing `path` results from.
+    stop
+        What point to stop indexing `path` restuls from.
+    step
+        How many paths to jump between when iterating between `stop` and `start`.
 
     Examples
     --------
@@ -566,12 +589,17 @@ def join_xr_time_series_var(
     >>> if not tasmax_cpm_1980_raw_path:
     ...     pytest.skip(mount_or_cache_doctest_skip_message)
     >>> results = join_xr_time_series_var(tasmax_cpm_1980_raw_path,
-    ...                               'tasmax')
-    >>> assert False
-
+    ...                                   'tasmax', stop=3)
+    >>> results
+    <xarray.Dataset> ...
+    Dimensions:  (time: 1080)
+    Coordinates:
+      * time     (time) object ... 1980-12-01 12:00:00 ... 1983-11-30 12:00:00
+    Data variables:
+        tasmax   (time) float64 ... 8.221 6.716 6.499 7.194 ... 8.456 8.153 5.501
     """
-    results: list[tuple[str, Any]] = []
-    for nc_path in Path(path).glob(regex):
+    results: list[tuple[Any, float]] = []
+    for nc_path in tuple(Path(path).glob(regex))[start:stop:step]:
         xr_time_series, nc_var_name = check_xarray_path_and_var_name(
             nc_path, variable_name=variable_name
         )
@@ -581,16 +609,13 @@ def join_xr_time_series_var(
             assert variable_name == nc_var_name
         except AssertionError:
             raise ValueError(f"'{nc_var_name}' should match '{variable_name}'")
-        # trimmed = xr_time_series.isel(time=slice(0, 10))
-        results.append(
-            *[
-                # (date_obj, getattr(val, method_name)().values.item())
-                (str(date_obj), getattr(val, method_name)().values.item())
-                for date_obj, val in xr_time_series[variable_name].groupby("time")
-            ]
-        )
-    assert False
-    return DataFrame(results, columns=("date_str", variable_name))
+        results += [
+            (date_obj, getattr(val, method_name)().values.item())
+            for date_obj, val in xr_time_series[variable_name].groupby(time_dim_name)
+        ]
+    data_vars = {variable_name: ([time_dim_name], [data[1] for data in results])}
+    coords = {time_dim_name: (time_dim_name, [data[0] for data in results])}
+    return Dataset(data_vars=data_vars, coords=coords)
 
 
 def crop_xarray(
