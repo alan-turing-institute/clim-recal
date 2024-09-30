@@ -1,6 +1,6 @@
 import pytest
 
-from clim_recal.resample import CPMResampler
+from clim_recal.convert import CPMResampler
 from clim_recal.utils.core import multiprocess_execute
 
 

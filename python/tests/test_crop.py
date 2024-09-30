@@ -8,18 +8,18 @@ from numpy.typing import NDArray
 from xarray import open_dataset
 from xarray.core.types import T_Dataset
 
+from clim_recal.convert import (
+    CPMResamplerManager,
+    HADsResamplerManager,
+    IterCalcBase,
+    IterCalcManagerBase,
+)
 from clim_recal.crop import (
     CPMRegionCropManager,
     CPMRegionCropper,
     HADsRegionCropManager,
     HADsRegionCropper,
     RegionCropperManagerBase,
-)
-from clim_recal.resample import (
-    CPMResamplerManager,
-    HADsResamplerManager,
-    ResamplerBase,
-    ResamplerManagerBase,
 )
 from clim_recal.utils.core import CLI_DATE_FORMAT_STR
 from clim_recal.utils.data import (
@@ -141,7 +141,7 @@ def test_execute_crop_configs(
     crop_path: Path
     resampler_manager_kwargs: dict[str, Any] = {}
     crop_manager_kwargs: dict[str, Any] = {}
-    resampler: ResamplerManagerBase
+    resampler: IterCalcManagerBase
     if crop_manager is HADsRegionCropManager:
         # raw_input_path = tasmax_hads_1980_raw_path.parents[2]
         raw_input_path = hads_data_path
@@ -185,7 +185,7 @@ def test_execute_crop_configs(
     if isinstance(resampler, HADsResamplerManager):
         resampler.set_cpm_for_coord_alignment()
 
-    _: tuple[ResamplerBase, ...] = resampler.execute_configs(multiprocess=multiprocess)
+    _: tuple[IterCalcBase, ...] = resampler.execute_configs(multiprocess=multiprocess)
     region_crops: tuple[HADsRegionCropper | CPMRegionCropper] | list = (
         crop_config.execute_configs(
             multiprocess=multiprocess,

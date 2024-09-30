@@ -11,8 +11,8 @@ from osgeo.gdal import Dataset as GDALDataset
 from xarray import Dataset, open_dataset
 from xarray.core.types import T_DataArray, T_Dataset
 
+from clim_recal.convert import CPMResampler, HADsResampler
 from clim_recal.crop import CPM_CROP_OUTPUT_PATH, HADS_CROP_OUTPUT_PATH
-from clim_recal.resample import CPMResampler, HADsResampler
 from clim_recal.utils.core import (
     CLI_DATE_FORMAT_STR,
     DateType,

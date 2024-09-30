@@ -14,6 +14,7 @@ from pandas import to_datetime
 from xarray import DataArray
 from xarray.core.types import T_DataArray, T_DataArrayOrSet
 
+from clim_recal.convert import RAW_CPM_PATH, RAW_CPM_TASMAX_PATH, RAW_HADS_TASMAX_PATH
 from clim_recal.debiasing.debias_wrapper import (
     CALIB_DATES_STR_DEFAULT,
     CMETHODS_FILE_NAME,
@@ -26,7 +27,6 @@ from clim_recal.debiasing.debias_wrapper import (
     PROCESSORS_DEFAULT,
     VALID_DATES_STR_DEFAULT,
 )
-from clim_recal.resample import RAW_CPM_PATH, RAW_CPM_TASMAX_PATH, RAW_HADS_TASMAX_PATH
 from clim_recal.utils.core import (
     CPM_YEAR_DAYS,
     ISO_DATE_FORMAT_STR,

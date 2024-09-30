@@ -77,7 +77,7 @@ def reproject_2_2km_file_name(path: Path) -> Path:
 
 
 @dataclass(kw_only=True)
-class ResamplerBase:
+class IterCalcBase:
     """Base class to inherit for `HADs` and `CPM`."""
 
     input_path: PathLike | None = Path()
@@ -204,7 +204,7 @@ class ResamplerBase:
 
 
 @dataclass(kw_only=True, repr=False)
-class HADsResampler(ResamplerBase):
+class HADsResampler(IterCalcBase):
     """Manage resampling HADs datafiles for modelling.
 
     Attributes
@@ -314,7 +314,7 @@ class HADsResampler(ResamplerBase):
 
 
 @dataclass(kw_only=True, repr=False)
-class CPMResampler(ResamplerBase):
+class CPMResampler(IterCalcBase):
     """CPM specific changes to HADsResampler.
 
     Attributes
@@ -411,7 +411,7 @@ class CPMResampler(ResamplerBase):
 
 
 @dataclass(kw_only=True)
-class ResamplerManagerBase:
+class IterCalcManagerBase:
     """Base class to inherit for `HADs` and `CPM` resampler managers."""
 
     input_paths: PathLike | Sequence[PathLike] = Path()
@@ -548,11 +548,11 @@ class ResamplerManagerBase:
                 )
             )
 
-    def yield_configs(self) -> Iterable[ResamplerBase]:
+    def yield_configs(self) -> Iterable[IterCalcBase]:
         """Generate a `CPMResampler` or `HADsResampler` for `self.input_paths`."""
         self.check_paths()
         assert isinstance(self.output_paths, Iterable)
-        assert isinstance(self.calc_class, type(ResamplerBase))
+        assert isinstance(self.calc_class, type(IterCalcBase))
         for index, var_path in enumerate(self._input_path_dict.items()):
             yield self.calc_class(
                 input_path=var_path[0],
@@ -600,7 +600,7 @@ class ResamplerManagerBase:
         return_resamplers: bool = False,
         return_path: bool = True,
         **kwargs,
-    ) -> tuple[ResamplerBase, ...] | list[T_Dataset | Path]:
+    ) -> tuple[IterCalcBase, ...] | list[T_Dataset | Path]:
         """Run all resampler configurations
 
         Parameters
@@ -629,7 +629,7 @@ class ResamplerManagerBase:
 
 
 @dataclass(kw_only=True, repr=False)
-class HADsResamplerManager(ResamplerManagerBase):
+class HADsResamplerManager(IterCalcManagerBase):
     """Class to manage processing HADs resampling.
 
     Attributes
@@ -728,7 +728,7 @@ class HADsResamplerManager(ResamplerManagerBase):
 
 
 @dataclass(kw_only=True, repr=False)
-class CPMResamplerManager(ResamplerManagerBase):
+class CPMResamplerManager(IterCalcManagerBase):
     """Class to manage processing CPM resampling.
 
     Attributes

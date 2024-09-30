@@ -9,7 +9,7 @@ from rich.progress import track
 from xarray import Dataset
 from xarray.core.types import T_Dataset
 
-from .resample import ResamplerBase, ResamplerManagerBase
+from .convert import IterCalcBase, IterCalcManagerBase
 from .utils.core import _get_source_path
 from .utils.data import (
     CPM_CROP_OUTPUT_PATH,
@@ -37,7 +37,7 @@ logger = getLogger(__name__)
 
 
 @dataclass(kw_only=True, repr=False)
-class RegionCropperBase(ResamplerBase):
+class RegionCropperBase(IterCalcBase):
     """Manage resampling HADs datafiles for modelling.
 
     Attributes
@@ -224,7 +224,7 @@ class CPMRegionCropper(RegionCropperBase):
 
 
 @dataclass(kw_only=True, repr=False)
-class RegionCropperManagerBase(ResamplerManagerBase):
+class RegionCropperManagerBase(IterCalcManagerBase):
     """Base class to inherit for `HADs` and `CPM` resampler managers."""
 
     crop_regions: tuple[RegionOptions | str, ...] = RegionOptions.all()
@@ -346,7 +346,7 @@ class RegionCropperManagerBase(ResamplerManagerBase):
                 )
             )
 
-    def yield_crop_configs(self) -> Iterable[ResamplerBase]:
+    def yield_crop_configs(self) -> Iterable[IterCalcBase]:
         """Generate a `CPMResampler` or `HADsResampler` for `self.input_paths`."""
         self.check_paths()
         try:

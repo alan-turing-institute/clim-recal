@@ -8,13 +8,13 @@ from numpy.typing import NDArray
 from xarray import open_dataset
 from xarray.core.types import T_Dataset
 
-from clim_recal.resample import (
+from clim_recal.convert import (
     CPMResampler,
     CPMResamplerManager,
     HADsResampler,
     HADsResamplerManager,
-    ResamplerBase,
-    ResamplerManagerBase,
+    IterCalcBase,
+    IterCalcManagerBase,
 )
 from clim_recal.utils.core import CLI_DATE_FORMAT_STR
 from clim_recal.utils.data import CPM_NAME, HADS_NAME, RunOptions
@@ -213,7 +213,7 @@ def test_execute_resample_configs(
     multiprocess: bool,
 ) -> None:
     """Test running default HADs spatial projection."""
-    test_config: ResamplerManagerBase
+    test_config: IterCalcManagerBase
     if manager_type == HADS_NAME:
         test_config = HADsResamplerManager(
             input_paths=hads_data_path,
@@ -232,7 +232,7 @@ def test_execute_resample_configs(
             stop_index=1,
             # _strict_fail_if_var_in_input_path=False,
         )
-    resamplers: tuple[ResamplerBase, ...] | list = test_config.execute_configs(
+    resamplers: tuple[IterCalcBase, ...] | list = test_config.execute_configs(
         multiprocess=multiprocess, return_resamplers=False, return_path=True, cpus=2
     )
     export: T_Dataset = open_dataset(resamplers[0][0])
@@ -248,7 +248,7 @@ def test_execute_resample_configs(
 # @pytest.mark.parametrize("manager", (CPMResamplerManager, HADsResamplerManager))
 # # @pytest.mark.parametrize("multiprocess", (False, True))
 # def test_execute_crop_configs(
-#     manager: ResamplerManagerBase,
+#     manager: IterCalcManagerBase,
 #     # multiprocess: bool,
 #     tmp_path: Path,
 #     resample_test_hads_output_path: Path,
@@ -275,7 +275,7 @@ def test_execute_resample_configs(
 #             resample_test_cpm_output_path / "manage" / CPM_CROP_OUTPUT_LOCAL_PATH
 #         )
 #         manager_kwargs["runs"] = (RunOptions.ONE,)
-#     test_config: ResamplerManagerBase = manager(
+#     test_config: IterCalcManagerBase = manager(
 #         input_paths=input_path,
 #         resample_paths=tmp_path,
 #         crop_paths=crop_path,

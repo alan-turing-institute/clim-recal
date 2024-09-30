@@ -13,8 +13,8 @@ from .config import (
     RunOptions,
     VariableOptions,
 )
+from .convert import RAW_CPM_PATH, RAW_HADS_PATH
 from .pipeline import main
-from .resample import RAW_CPM_PATH, RAW_HADS_PATH
 
 clim_recal = typer.Typer()
 
