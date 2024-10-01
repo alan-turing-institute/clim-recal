@@ -1,5 +1,6 @@
 import warnings
 from datetime import date, datetime, timedelta
+from itertools import islice
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
@@ -588,8 +589,9 @@ def join_xr_time_series_var(
     >>> tasmax_cpm_1980_raw_path = getfixture('tasmax_cpm_1980_raw_path').parents[1]
     >>> if not tasmax_cpm_1980_raw_path:
     ...     pytest.skip(mount_or_cache_doctest_skip_message)
-    >>> results = join_xr_time_series_var(tasmax_cpm_1980_raw_path,
-    ...                                   'tasmax', stop=3)
+    >>> results: T_Dataset = join_xr_time_series_var(
+    ...     tasmax_cpm_1980_raw_path,
+    ...     'tasmax', stop=3)
     >>> results
     <xarray.Dataset> ...
     Dimensions:  (time: 1080)
@@ -599,7 +601,7 @@ def join_xr_time_series_var(
         tasmax   (time) float64 ... 8.221 6.716 6.499 7.194 ... 8.456 8.153 5.501
     """
     results: list[tuple[Any, float]] = []
-    for nc_path in tuple(Path(path).glob(regex))[start:stop:step]:
+    for nc_path in islice(Path(path).glob(regex), start, stop, step):
         xr_time_series, nc_var_name = check_xarray_path_and_var_name(
             nc_path, variable_name=variable_name
         )
@@ -616,6 +618,84 @@ def join_xr_time_series_var(
     data_vars = {variable_name: ([time_dim_name], [data[1] for data in results])}
     coords = {time_dim_name: (time_dim_name, [data[0] for data in results])}
     return Dataset(data_vars=data_vars, coords=coords)
+
+
+def annual_group_xr_time_series(
+    path: PathLike,
+    variable_name: str,
+    groupby_method: str = "time.dayofyear",
+    method_name: str = "median",
+    time_dim_name: str = "time",
+    regex: str = CPM_REGEX,
+    start: int = 0,
+    stop: int | None = None,
+    step: int = 1,
+    plot_path: PathLike = "annual-aggregated.png",
+    time_stamp: bool = True,
+    **kwargs,
+) -> Path:
+    """
+    Return and plot a `Dataset` of time series temporally overlayed.
+
+    Parameters
+    ----------
+    path
+        Path to collect files to process from, filtered via `regex`.
+    variable_name
+        A variable name to specify for data expected. If none that
+        will be extracted and checked from the files directly.
+    method_name
+        What method to use to summarise each time point results.
+    time_dim_name
+        Name of time dimension in passed files.
+    regex
+        A str to filter files within `path`
+    start
+        What point to start indexing `path` results from.
+    stop
+        What point to stop indexing `path` restuls from.
+    step
+        How many paths to jump between when iterating between `stop` and `start`.
+
+    Examples
+    --------
+    >>> tasmax_cpm_1980_raw_path = getfixture('tasmax_cpm_1980_raw_path').parents[1]
+    >>> if not tasmax_cpm_1980_raw_path:
+    ...     pytest.skip(mount_or_cache_doctest_skip_message)
+    >>> results: T_Dataset = annual_group_xr_time_series(
+    ...     tasmax_cpm_1980_raw_path, 'tasmax', stop=3)
+    >>> results
+    <xarray.Dataset> ...
+    Dimensions:    (dayofyear: 360)
+    Coordinates:
+      * dayofyear  (dayofyear) int64 ... 1 2 3 4 5 6 7 ... 355 356 357 358 359 360
+    Data variables:
+        tasmax     (dayofyear) float64 ... 9.2 8.95 8.408 8.747 ... 6.387 8.15 9.132
+    """
+    full_ts: T_DataArray = join_xr_time_series_var(
+        path=path,
+        variable_name=variable_name,
+        method_name=method_name,
+        time_dim_name=time_dim_name,
+        regex=regex,
+        start=start,
+        stop=stop,
+        step=step,
+    )
+    summarised_year_groups: T_Dataset = full_ts.groupby(groupby_method)
+    summarised_year: T_Dataset = getattr(summarised_year_groups, method_name)()
+    try:
+        assert 360 <= summarised_year.sizes["time"] <= 366
+    except:
+        ValueError(f"Dimensions are not annual in {summarised_year}.")
+    if plot_path:
+        plot_xarray(
+            getattr(summarised_year, variable_name),
+            path=path,
+            time_stamp=time_stamp,
+            **kwargs,
+        )
+    return summarised_year
 
 
 def crop_xarray(
