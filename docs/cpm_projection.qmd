@@ -1,0 +1,63 @@
+---
+title: "UKCP 2.2 Temporal Interpolation"
+format:
+  html:
+    code-fold: true
+execute:
+  cache: true
+jupyter: python3
+---
+
+To align climate projections with measured records, we interpolate five or six extra time points---standard or leap years respectively---per year.
+
+```{python}
+from typing import Final
+from pathlib import Path
+
+from xarray.typing import T_Dataset
+
+from clim_recal.utils.data import VariableOptions
+from clim_recal.utils.xarray import (
+    annual_group_xr_time_series,
+    join_xr_time_series_var,
+    plot_xarray,
+)
+from clim_recal.utils.core import climate_data_mount_path
+
+raw_tasmax_run_01_path: Final[Path] = climate_data_mount_path() / 'Raw/UKCP2.2/tasmax/01/latest'
+plot_folder: Final[Path] = Path("./assets")
+
+cpm_annual_ts: Final[T_Dataset] = join_xr_time_series_var(raw_tasmax_run_01_path,
+                                                          VariableOptions.TASMAX,
+                                                          stop=2)
+```
+
+With the CPM annual timeseries loaded, we can now plot:
+
+```{python}
+#| label: fig-tasmax-time-series
+#| fig-cap: "Raw CPM tasmax projection 360 day years"
+
+plot_xarray(
+    getattr(cpm_annual_ts, VariableOptions.TASMAX),
+    path=plot_path / f'annual-{VariableOptions.TASMAX}.pdf',
+    time_stamp=False,
+)
+```
+
+Average annual results from 1980 to 2079.
+
+```{python}
+#| label: fig-tasmax-annual-means
+#| fig-cap: "Annaul average of means of raw tasmax CPM 360 day years"
+
+annual_means: T_Dataset = annual_group_xr_time_series(cpm_annual_ts,
+                                                      variable_name=VariableOptions.TASMAX,
+                                                      plot_path=None,
+                                                      time_stamp=None)
+plot_xarray(
+    getattr(cpm_annual_ts, variable_name),
+    path=plot_path / f'annual-aggregated-{VariableOptions.TASMAX}.pdf',
+    time_stamp=False,
+)
+```
