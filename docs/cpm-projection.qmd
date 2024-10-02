@@ -17,7 +17,7 @@ To align climate projections with measured records, we interpolate five or six e
 from typing import Final
 from pathlib import Path
 
-from xarray.typing import T_Dataset
+# from xarray.typing import T_Dataset
 
 from clim_recal.utils.xarray import (
     annual_group_xr_time_series,
@@ -28,25 +28,21 @@ from clim_recal.utils.core import climate_data_mount_path
 # import numpy as np
 # import matplotlib.pyplot as plt
 
-raw_tasmax_run_01: Final[Path] = climate_data_mount_path() / 'Raw/UKCPM2.2/tasmax/01/latest'
-tasmax_var
+raw_tasmax_run_01: Final[Path] = climate_data_mount_path() / 'Raw/UKCP2.2/tasmax/01/latest'
+variable_name, plot_path = "tasmax", "./assets"
+cpm_annual_ts: T_Dataset = join_xr_time_series_var(raw_tasmax_run_01, variable_name)
+```
 
-cpm_annual_ts: T_Dataset = join_xr_time_series_var(raw_tasmax_run_01, 'tas')
-
+With the CPM annual timeseries loaded, we can now plot:
+```{python}
 plot_xarray(
-    getattr(summarised_year, variable_name),
+    getattr(cpm_annual_ts, variable_name),
     path=plot_path,
-    time_stamp=time_stamp,
-    **kwargs,
+    time_stamp=True,
 )
+```
 
-# r = np.arange(0, 2, 0.01)
-# theta = 2 * np.pi * r
-# fig, ax = plt.subplots(
-#   subplot_kw = {'projection': 'polar'}
-# )
-# ax.plot(theta, r)
-# ax.set_rticks([0.5, 1, 1.5, 2])
-# ax.grid(True)
-# plt.show()
+New cell
+```{python}
+annual_group_xr_time_series(cpm_annual_ts, variable_name=variable_name)
 ```
