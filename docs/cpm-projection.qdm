@@ -1,0 +1,52 @@
+---
+title: "UKCP 2.2 Temporal Interpolation"
+format:
+  html:
+    code-fold: true
+execute:
+  cache: true
+jupyter: python3
+---
+
+To align climate projections with measured records, we interpolate five or six extra time points---standard or leap years respectively---per year.
+
+```{python}
+#| label: fig-time-series
+#| fig-cap: "Raw CPM projection 360 day years"
+
+from typing import Final
+from pathlib import Path
+
+from xarray.typing import T_Dataset
+
+from clim_recal.utils.xarray import (
+    annual_group_xr_time_series,
+    join_xr_time_series_var,
+    plot_xarray,
+)
+from clim_recal.utils.core import climate_data_mount_path
+# import numpy as np
+# import matplotlib.pyplot as plt
+
+raw_tasmax_run_01: Final[Path] = climate_data_mount_path() / 'Raw/UKCPM2.2/tasmax/01/latest'
+tasmax_var
+
+cpm_annual_ts: T_Dataset = join_xr_time_series_var(raw_tasmax_run_01, 'tas')
+
+plot_xarray(
+    getattr(summarised_year, variable_name),
+    path=plot_path,
+    time_stamp=time_stamp,
+    **kwargs,
+)
+
+# r = np.arange(0, 2, 0.01)
+# theta = 2 * np.pi * r
+# fig, ax = plt.subplots(
+#   subplot_kw = {'projection': 'polar'}
+# )
+# ax.plot(theta, r)
+# ax.set_rticks([0.5, 1, 1.5, 2])
+# ax.grid(True)
+# plt.show()
+```

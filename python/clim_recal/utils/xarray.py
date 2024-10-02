@@ -621,7 +621,7 @@ def join_xr_time_series_var(
 
 
 def annual_group_xr_time_series(
-    path: PathLike,
+    joined_xr_time_series: T_Dataset | PathLike,
     variable_name: str,
     groupby_method: str = "time.dayofyear",
     method_name: str = "median",
@@ -639,6 +639,8 @@ def annual_group_xr_time_series(
 
     Parameters
     ----------
+    xr_time_series
+        Provide existing `Dataset` to aggregate and plot (otherwise check `path`).
     path
         Path to collect files to process from, filtered via `regex`.
     variable_name
@@ -672,17 +674,18 @@ def annual_group_xr_time_series(
     Data variables:
         tasmax     (dayofyear) float64 ... 9.2 8.95 8.408 8.747 ... 6.387 8.15 9.132
     """
-    full_ts: T_DataArray = join_xr_time_series_var(
-        path=path,
-        variable_name=variable_name,
-        method_name=method_name,
-        time_dim_name=time_dim_name,
-        regex=regex,
-        start=start,
-        stop=stop,
-        step=step,
-    )
-    summarised_year_groups: T_Dataset = full_ts.groupby(groupby_method)
+    if isinstance(joined_xr_time_series, PathLike):
+        joined_xr_time_series = join_xr_time_series_var(
+            path=joined_xr_time_series,
+            variable_name=variable_name,
+            method_name=method_name,
+            time_dim_name=time_dim_name,
+            regex=regex,
+            start=start,
+            stop=stop,
+            step=step,
+        )
+    summarised_year_groups: T_Dataset = joined_xr_time_series.groupby(groupby_method)
     summarised_year: T_Dataset = getattr(summarised_year_groups, method_name)()
     try:
         assert 360 <= summarised_year.sizes["time"] <= 366
@@ -691,7 +694,7 @@ def annual_group_xr_time_series(
     if plot_path:
         plot_xarray(
             getattr(summarised_year, variable_name),
-            path=path,
+            path=plot_path,
             time_stamp=time_stamp,
             **kwargs,
         )

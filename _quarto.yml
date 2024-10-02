@@ -12,6 +12,7 @@ project:
     - "R/README.md"
     - "R/misc/Identifying_Runs.md"
     - "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
+    - "docs/plot-cpm-time-series.qmd"
     - "docs/reference"
     # - "docs/pipeline.qmd"
     - "docs/contributing.md"
