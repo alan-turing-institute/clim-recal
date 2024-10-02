@@ -12,6 +12,7 @@ import rioxarray  # nopycln: import
 import seaborn
 from cftime._cftime import Datetime360Day
 from matplotlib import pyplot as plt
+from matplotlib.figure import Figure
 from numpy.typing import NDArray
 from osgeo.gdal import Dataset as GDALDataset
 from osgeo.gdal import (
@@ -503,8 +504,12 @@ def hads_resample_and_reproject(
 
 
 def plot_xarray(
-    da: T_DataArrayOrSet, path: PathLike, time_stamp: bool = False, **kwargs
-) -> Path:
+    da: T_DataArrayOrSet,
+    path: PathLike | None = None,
+    time_stamp: bool = False,
+    return_path: bool = True,
+    **kwargs,
+) -> Path | Figure | None:
     """Plot `da` with `**kwargs` to `path`.
 
     Parameters
@@ -536,20 +541,24 @@ def plot_xarray(
     >>> print(timed_image_path)
     /.../test-path/example-stamped_...-...-..._...png
     """
-    da.plot(**kwargs)
-    path = Path(path)
-    path.parent.mkdir(exist_ok=True, parents=True)
-    if time_stamp:
-        path = results_path(
-            name=path.stem,
-            path=path.parent,
-            mkdir=True,
-            extension=path.suffix,
-            dot_pre_extension=False,
-        )
-    plt.savefig(path)
-    plt.close()
-    return Path(path)
+    fig: Figure = da.plot(**kwargs)
+    if path:
+        path = Path(path)
+        path.parent.mkdir(exist_ok=True, parents=True)
+        if time_stamp:
+            path = results_path(
+                name=path.stem,
+                path=path.parent,
+                mkdir=True,
+                extension=path.suffix,
+                dot_pre_extension=False,
+            )
+        plt.savefig(path)
+        plt.close()
+    if return_path:
+        return path
+    else:
+        return fig
 
 
 def join_xr_time_series_var(
@@ -643,6 +652,8 @@ def annual_group_xr_time_series(
         Provide existing `Dataset` to aggregate and plot (otherwise check `path`).
     path
         Path to collect files to process from, filtered via `regex`.
+    plot_path
+        Path to save new plot to.
     variable_name
         A variable name to specify for data expected. If none that
         will be extracted and checked from the files directly.
