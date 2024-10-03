@@ -626,7 +626,7 @@ def join_xr_time_series_var(
         ]
     data_vars = {variable_name: ([time_dim_name], [data[1] for data in results])}
     coords = {time_dim_name: (time_dim_name, [data[0] for data in results])}
-    return Dataset(data_vars=data_vars, coords=coords)
+    return Dataset(data_vars=data_vars, coords=coords).sortby(time_dim_name)
 
 
 def annual_group_xr_time_series(

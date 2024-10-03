@@ -17,6 +17,7 @@ from typing import Final
 from pathlib import Path
 
 from xarray.core.types import T_Dataset
+from xarray import open_dataset
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
@@ -28,16 +29,21 @@ from clim_recal.utils.xarray import (
 )
 from clim_recal.utils.core import climate_data_mount_path
 
-raw_tasmax_run_01_path: Final[Path] = (
-    climate_data_mount_path() / 'Raw/UKCP2.2/tasmax/01/latest'
-)
 plot_folder: Final[Path] = Path("./assets")
+cpm_tasmax_run_01_path: Final[Path] = plot_folder / "cpm-tasmax-run-1-mean.nc"
+cpm_tasmax_run_01_annual_ts: Final[T_Dataset]
 
-cpm_annual_ts: Final[T_Dataset] = join_xr_time_series_var(
-    raw_tasmax_run_01_path,
-    VariableOptions.TASMAX,
-)
-cpm_annual_ts.to_netcdf(plot_folder / "annual.nc")
+if cpm_tasmax_run_01_path.is_file():
+    cpm_tasmax_run_01_annual_ts = open_dataset(cpm_tasmax_run_01_path)
+else:
+    raw_tasmax_run_01_path: Final[Path] = (
+        climate_data_mount_path() / 'Raw/UKCP2.2/tasmax/01/latest'
+    )
+    cpm_tasmax_run_01_annual_ts = join_xr_time_series_var(
+        raw_tasmax_run_01_path,
+        VariableOptions.TASMAX,
+    )
+    cpm_tasmax_run_01_annual_ts.to_netcdf(cpm_tasmax_run_01_path)
 ```
 
 With the CPM annual timeseries loaded, we can now plot projections from 1 December 1980 to 30 November 2080:
@@ -46,13 +52,13 @@ With the CPM annual timeseries loaded, we can now plot projections from 1 Decemb
 #| label: fig-tasmax-time-series
 #| fig-cap: "Raw CPM tasmax projection 360 day years"
 
-cpm_ts: Figure = plot_xarray(
-    cpm_annual_ts.data_vars[VariableOptions.TASMAX],
-    path=plot_folder / f'annual-{VariableOptions.TASMAX}.pdf',
-    time_stamp=False,
-    return_path=False,
-)
-cpm_ts
+# cpm_ts: Figure = plot_xarray(
+#     cpm_tasmax_run_01_annual_ts.data_vars[VariableOptions.TASMAX],
+#     path=plot_folder / f'annual-{VariableOptions.TASMAX}.pdf',
+#     time_stamp=False,
+#     return_path=False,
+# )
+# cpm_ts
 plt.show()
 ```
 
@@ -62,7 +68,7 @@ Average annual projections.
 #| label: fig-tasmax-annual-means
 #| fig-cap: "Annual average of means of raw tasmax CPM 360 day years"
 
-annual_means: T_Dataset = annual_group_xr_time_series(cpm_annual_ts,
+annual_means: T_Dataset = annual_group_xr_time_series(cpm_tasmax_run_01_annual_ts,
                                                       variable_name=VariableOptions.TASMAX,
                                                       plot_path=None,
                                                       time_stamp=None)
@@ -74,6 +80,7 @@ plot_xarray(
 plt.show()
 ```
 
+Leap year projection.
 ```{python}
 #| label: fig-tasmax-leap-means
 #| fig-cap: "Leap year average of means of raw tasmax CPM 360 day years"
