@@ -21,7 +21,7 @@ from xarray import open_dataset
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
-from clim_recal.utils.data import VariableOptions
+from clim_recal.utils.data import VariableOptions, RunOptions
 from clim_recal.utils.xarray import (
     annual_group_xr_time_series,
     join_xr_time_series_var,
@@ -30,11 +30,17 @@ from clim_recal.utils.xarray import (
 from clim_recal.utils.core import climate_data_mount_path
 
 plot_folder: Final[Path] = Path("./assets")
-cpm_tasmax_run_01_path: Final[Path] = plot_folder / "cpm-tasmax-run-1-mean.nc"
+cpm_raw_median_folder: Final[Path] = plot_folder / 'cpm-raw-medians'
+
+cpm_tasmax_raw_paths: Final[Path] = [
+    cpm_raw_median_folder / f"median-{variable}-{run}.nc"
+    for run in RunOptions
+    for variable in VariableOptions
+]
 cpm_tasmax_run_01_annual_ts: Final[T_Dataset]
 
-if cpm_tasmax_run_01_path.is_file():
-    cpm_tasmax_run_01_annual_ts = open_dataset(cpm_tasmax_run_01_path)
+if cpm_raw_median_folder.is_folder():
+    cpm_tasmax_run_01_annual_ts = open_dataset(cpm_tasmax_raw_paths[0])
 else:
     raw_tasmax_run_01_path: Final[Path] = (
         climate_data_mount_path() / 'Raw/UKCP2.2/tasmax/01/latest'
@@ -85,7 +91,7 @@ Leap year projection.
 #| label: fig-tasmax-leap-means
 #| fig-cap: "Leap year average of means of raw tasmax CPM 360 day years"
 
-leap_annual_means: T_Dataset = cpm_annual_ts.where(cpm_annual_ts.time.dt.year % 4 == 0)
+leap_annual_means: T_Dataset = cpm_tasmax_run_01_annual_ts.where(cpm_tasmax_run_01_annual_ts % 4 == 0)
 
 plot_xarray(
     leap_annual_means[VariableOptions.TASMAX],

@@ -1,11 +1,12 @@
 import warnings
+from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from itertools import islice
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
 from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
-from typing import Any, Callable, Final
+from typing import Any, Callable, Final, Iterable, Sequence, overload
 
 import numpy as np
 import rioxarray  # nopycln: import
@@ -40,6 +41,7 @@ from .core import (
     CLI_DATE_FORMAT_STR,
     ISO_DATE_FORMAT_STR,
     climate_data_mount_path,
+    console,
     results_path,
 )
 from .data import (
@@ -58,6 +60,7 @@ from .data import (
     CFCalendarSTANDARD,
     ConvertCalendarAlignOptions,
     RegionOptions,
+    RunOptions,
     VariableOptions,
     XArrayEngineType,
 )
@@ -595,9 +598,10 @@ def join_xr_time_series_var(
 
     Examples
     --------
-    >>> tasmax_cpm_1980_raw_path = getfixture('tasmax_cpm_1980_raw_path').parents[1]
-    >>> if not tasmax_cpm_1980_raw_path:
+    >>> tasmax_cpm_1980_raw = getfixture('tasmax_cpm_1980_raw')
+    >>> if not tasmax_cpm_1980_raw:
     ...     pytest.skip(mount_or_cache_doctest_skip_message)
+    >>> tasmax_cpm_1980_raw_path = getfixture('tasmax_cpm_1980_raw_path').parents[1]
     >>> results: T_Dataset = join_xr_time_series_var(
     ...     tasmax_cpm_1980_raw_path,
     ...     'tasmax', stop=3)
@@ -672,9 +676,10 @@ def annual_group_xr_time_series(
 
     Examples
     --------
-    >>> tasmax_cpm_1980_raw_path = getfixture('tasmax_cpm_1980_raw_path').parents[1]
-    >>> if not tasmax_cpm_1980_raw_path:
+    >>> tasmax_cpm_1980_raw = getfixture('tasmax_cpm_1980_raw')
+    >>> if not tasmax_cpm_1980_raw:
     ...     pytest.skip(mount_or_cache_doctest_skip_message)
+    >>> tasmax_cpm_1980_raw_path = getfixture('tasmax_cpm_1980_raw_path').parents[1]
     >>> results: T_Dataset = annual_group_xr_time_series(
     ...     tasmax_cpm_1980_raw_path, 'tasmax', stop=3)
     >>> results
@@ -1472,3 +1477,131 @@ def region_crop_file_name(
     else:
         final_suffix = str(file_name)
     return "_".join(("crop", str(crop_region), final_suffix))
+
+
+@dataclass
+class XarrayTimeSeriesCalcManager(Sequence):
+    """
+    Manage cacluations over time for `.nc` files.
+
+    Attributes
+    ----------
+    path
+        `Path` to aggreate raw files from, following standard `cpm` hierarchy.
+    sub_path
+        A subpath to parse, like 'latest' for `UKCPM2.2`.
+    save_folder
+        Where to save resulting summary `nc` files.
+    variables
+        Which variables to include
+    runs
+        Which `RunOptions` to include.
+    method_name
+        Which method to use to aggreate. Must be a standard `xarray` `Dataset` method.
+    time_dim_name
+        Name of the temporal `dim` on the joined `.nc` files.
+    regex
+        Check `.nc` paths to match and then aggregate.
+    source_folders
+        `List` of folders to iterate over, filled via `path` if None.
+
+    Examples
+    --------
+    >>> tasmax_hads_1980_raw = getfixture('tasmax_hads_1980_raw')
+    >>> if not tasmax_hads_1980_raw:
+    ...     pytest.skip(mount_or_cache_doctest_skip_message)
+    >>> tmp_save: Path = getfixture('tmp_path') / 'xarray-time-series-summary-manager'
+    >>> xr_var_managers = XarrayTimeSeriesCalcManager(save_folder=tmp_save)
+    >>> save_paths: tuple[Path, ...] = xr_var_managers.save_joined_xr_time_series(stop=2, ts_stop=2)
+    Aggregating '05' 'tasmax' ...
+    Aggregating '06' 'tasmax' ...
+    >>> pprint(save_paths)
+    (...Path('.../median-tasmax-05.nc'),
+     ...Path('.../median-tasmax-06.nc'))
+    >>> pprint(sorted(tmp_save.iterdir()))
+    [...Path('.../median-tasmax-05.nc'),
+     ...Path('.../median-tasmax-06.nc')]
+    """
+
+    path: Path = climate_data_mount_path() / "Raw/UKCP2.2/"
+    save_folder: PathLike = Path("../docs/assets/cpm-raw-medians")
+    sub_path: PathLike = Path("latest")
+    variables: Sequence[str | VariableOptions] = VariableOptions.cpm_values()
+    runs: Sequence[str | RunOptions] = RunOptions.preferred()
+    method_name: str = "median"
+    time_dim_name: str = "time"
+    regex: str = CPM_REGEX
+    source_folders: list = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        if not self.source_folders:
+            self._set_source_folders()
+
+    @overload
+    def __getitem__(self, idx: int) -> Path: ...
+
+    @overload
+    def __getitem__(self, s: slice) -> Sequence[Path]: ...
+
+    def __getitem__(self, item):
+        return self.source_folders[item]
+
+    def __len__(self) -> int:
+        return len(self.source_folders)
+
+    def _set_source_folders(self, path: PathLike | None = None):
+        if path:
+            self.path = Path(path)
+        self.source_folders = [
+            self.path / variable_name / run_name / self.sub_path
+            for variable_name in self.variables
+            for run_name in self.runs
+        ]
+
+    def _get_var_run(self, var_path: Path) -> tuple[str, str]:
+        var_run: Sequence[Path]
+        if self.sub_path:
+            var_run = var_path.parents[:2]
+        else:
+            var_run = (Path(var_path.parent.name), Path(var_path.name))
+        return var_run[1].name, var_run[0].name
+
+    def _source_path_to_file_name(self, path: PathLike) -> str:
+        return f"{self.method_name}-{'-'.join(self._get_var_run(Path(path)))}.nc"
+
+    def join_xr_time_series_vars_iter(
+        self,
+        start: int = 0,
+        stop: int | None = None,
+        step: int = 1,
+        ts_start: int = 0,
+        ts_stop: int | None = None,
+        ts_step: int = 1,
+    ) -> Iterable[tuple[T_Dataset, Path]]:
+        if not self.source_folders:
+            self._set_source_folders()
+        for i, var_path in enumerate(islice(self, start, stop, step)):
+            var_path = Path(var_path)
+            run, variable = self._get_var_run(var_path)
+            log_str: str = f"Aggregating '{variable}' '{run}'"
+            if not start and not stop and step == 1:
+                console.print(f"{log_str} ({i + 1}/{len(self)})...")
+            else:
+                console.print(f"{log_str} ...")
+            yield join_xr_time_series_var(
+                var_path, start=ts_start, stop=ts_stop, step=ts_step
+            ), var_path
+
+    def save_joined_xr_time_series(
+        self, save_folder: PathLike | None = None, **kwargs
+    ) -> tuple[Path, ...]:
+        save_folder = save_folder or self.save_folder
+        Path(save_folder).mkdir(parents=True, exist_ok=True)
+        self.results: dict[Path, Path] = {}
+        for ds, var_path in self.join_xr_time_series_vars_iter(**kwargs):
+            write_path: Path = Path(save_folder) / self._source_path_to_file_name(
+                var_path
+            )
+            ds.to_netcdf(write_path)
+            self.results[var_path] = write_path
+        return tuple(self.results.values())
