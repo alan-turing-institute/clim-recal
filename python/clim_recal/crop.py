@@ -161,18 +161,9 @@ class HADsRegionCropper(RegionCropperBase):
     ...     pytest.skip(mount_doctest_skip_message)
     >>> resample_test_hads_output_path: Path = getfixture(
     ...         'resample_test_hads_output_path')
-    >>> hads_cropper: HADsResampler = HADsResampler(  # doctest: +SKIP
-    ...     output_path=resample_test_hads_output_path,
+    >>> hads_cropper: HADsRegionCropper = HADsRegionCropper(  # doctest: +SKIP
+    ...     input_path=resample_test_hads_output_path,
     ... )
-    >>> hads_cropper  # doctest: +SKIP
-    <HADsRegionCropper(...count=504,...
-        ...input_path='.../tasmax/day',...
-        ...output_path='...run-results_..._.../hads')>
-    >>> pprint(hads_resampler.input_files)   # doctest: +SKIP
-    (...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc'),
-     ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800201-19800229.nc'),
-     ...,
-     ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_20211201-20211231.nc'))
     """
 
     input_path: PathLike | None = RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH
@@ -203,20 +194,11 @@ class CPMRegionCropper(RegionCropperBase):
     --------
     >>> if not is_data_mounted:
     ...     pytest.skip(mount_doctest_skip_message)
-    >>> resample_test_hads_output_path: Path = getfixture(
-    ...         'resample_test_hads_output_path')
-    >>> hads_cropper: HADsResampler = HADsResampler(  # doctest: +SKIP
-    ...     output_path=resample_test_hads_output_path,
+    >>> resample_test_cpm_output_path: Path = getfixture(
+    ...         'resample_test_cpm_output_path')
+    >>> cpm_cropper: CPMRegionCropper = CPMRegionCropper(  # doctest: +SKIP
+    ...     input_path=resample_test_cpm_output_path,
     ... )
-    >>> hads_cropper  # doctest: +SKIP
-    <HADsRegionCropper(...count=504,...
-        ...input_path='.../tasmax/day',...
-        ...output_path='...run-results_..._.../hads')>
-    >>> pprint(hads_resampler.input_files)   # doctest: +SKIP
-    (...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc'),
-     ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800201-19800229.nc'),
-     ...,
-     ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_20211201-20211231.nc'))
     """
 
     input_path: PathLike | None = RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH
