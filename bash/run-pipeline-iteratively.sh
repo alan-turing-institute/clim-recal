@@ -21,8 +21,8 @@ output_path="/datadrive/clim-recal-results/group_run_`date +%F-%H-%M`"
 log_path="$output_path/logs"
 
 # Temporary directories which will hold one year of data at a time
-hads_working_dir="$script_dir/working/HadsUKgrid"
-cpm_working_dir="$script_dir/working/UKCP2.2"
+hads_working_dir="$output_path/working/HadsUKgrid"
+cpm_working_dir="$output_path/working/UKCP2.2"
 
 
 mkdir -p $hads_working_dir
@@ -31,7 +31,7 @@ mkdir -p $log_path
 
 
 cpm_start_year=1980
-cpm_end_year=2079
+cpm_end_year=1980
 # cpm_end_year=1982
 
 # First and last year that we have CPM data for
@@ -81,5 +81,8 @@ for year in $(seq $cpm_start_year $cpm_end_year); do
     --run 08 \
     --execute
    } 2>&1 | tee $log_path/log_$year.txt
+
+  # Delete extraneous crop files
+  find $output_path -type d -name 'run_*' | xargs -I {} python $script_dir/remove-extra-cropfiles.py {} --I-am-really-sure-I-want-to-delete-lots-of-files
 
 done
