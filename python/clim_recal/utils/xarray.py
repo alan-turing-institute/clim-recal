@@ -1523,7 +1523,7 @@ class XarrayTimeSeriesCalcManager(Sequence):
      ...Path('.../median-tasmax-06.nc')]
     """
 
-    path: Path = climate_data_mount_path() / "Raw/UKCP2.2/"
+    path: PathLike = climate_data_mount_path() / "Raw/UKCP2.2/"
     save_folder: PathLike = Path("../docs/assets/cpm-raw-medians")
     sub_path: PathLike = Path("latest")
     variables: Sequence[str | VariableOptions] = VariableOptions.cpm_values()
@@ -1534,6 +1534,9 @@ class XarrayTimeSeriesCalcManager(Sequence):
     source_folders: list = field(default_factory=list)
 
     def __post_init__(self) -> None:
+        self.path = Path(self.path)
+        self.save_folder = Path(self.save_folder)
+        self.sub_path = Path(self.sub_path)
         if not self.source_folders:
             self._set_source_folders()
 
