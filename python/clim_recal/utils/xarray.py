@@ -42,6 +42,7 @@ from .core import (
     ISO_DATE_FORMAT_STR,
     climate_data_mount_path,
     console,
+    range_len,
     results_path,
 )
 from .data import (
@@ -1513,8 +1514,8 @@ class XarrayTimeSeriesCalcManager(Sequence):
     >>> tmp_save: Path = getfixture('tmp_path') / 'xarray-time-series-summary-manager'
     >>> xr_var_managers = XarrayTimeSeriesCalcManager(save_folder=tmp_save)
     >>> save_paths: tuple[Path, ...] = xr_var_managers.save_joined_xr_time_series(stop=2, ts_stop=2)
-    Aggregating '05' 'tasmax' ...
-    Aggregating '06' 'tasmax' ...
+    Aggregating '05' 'tasmax' (1/2)...
+    Aggregating '06' 'tasmax' (2/2)...
     >>> pprint(save_paths)
     (...Path('.../median-tasmax-05.nc'),
      ...Path('.../median-tasmax-06.nc'))
@@ -1583,14 +1584,14 @@ class XarrayTimeSeriesCalcManager(Sequence):
     ) -> Iterable[tuple[T_Dataset, Path]]:
         if not self.source_folders:
             self._set_source_folders()
+        aggregate_count: int = range_len(
+            maximum=len(self), start=start, stop=stop, step=step
+        )
         for i, var_path in enumerate(islice(self, start, stop, step)):
             var_path = Path(var_path)
             run, variable = self._get_var_run(var_path)
             log_str: str = f"Aggregating '{variable}' '{run}'"
-            if not start and not stop and step == 1:
-                console.print(f"{log_str} ({i + 1}/{len(self)})...")
-            else:
-                console.print(f"{log_str} ...")
+            console.print(f"{log_str} ({i + 1}/{aggregate_count})...")
             yield join_xr_time_series_var(
                 var_path, start=ts_start, stop=ts_stop, step=ts_step
             ), var_path
