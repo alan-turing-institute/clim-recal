@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>clim_recal.resample – clim-recal</title>
+<title>clim_recal.convert – clim-recal</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -113,7 +113,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../python/README.html">python</a></li><li class="breadcrumb-item"><a href="../../docs/reference/index.html">Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/clim_recal.resample.html">Data Resampling</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../python/README.html">python</a></li><li class="breadcrumb-item"><a href="../../docs/reference/index.html">Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/clim_recal.convert.html">Data Resampling</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -240,7 +240,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/clim_recal.resample.html" class="sidebar-item-text sidebar-link active">
+  <a href="../../docs/reference/clim_recal.convert.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Data Resampling</span></a>
   </div>
 </li>
@@ -322,21 +322,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#python.clim_recal.resample" id="toc-python.clim_recal.resample" class="nav-link active" data-scroll-target="#python.clim_recal.resample"><span class="header-section-number">1</span> clim_recal.resample</a>
+  <li><a href="#python.clim_recal.convert" id="toc-python.clim_recal.convert" class="nav-link active" data-scroll-target="#python.clim_recal.convert"><span class="header-section-number">1</span> clim_recal.convert</a>
   <ul class="collapse">
   <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes"><span class="header-section-number">1.1</span> Classes</a>
   <ul class="collapse">
-  <li><a href="#python.clim_recal.resample.CPMResampler" id="toc-python.clim_recal.resample.CPMResampler" class="nav-link" data-scroll-target="#python.clim_recal.resample.CPMResampler"><span class="header-section-number">1.1.1</span> CPMResampler</a></li>
-  <li><a href="#python.clim_recal.resample.CPMResamplerManager" id="toc-python.clim_recal.resample.CPMResamplerManager" class="nav-link" data-scroll-target="#python.clim_recal.resample.CPMResamplerManager"><span class="header-section-number">1.1.2</span> CPMResamplerManager</a></li>
-  <li><a href="#python.clim_recal.resample.HADsResampler" id="toc-python.clim_recal.resample.HADsResampler" class="nav-link" data-scroll-target="#python.clim_recal.resample.HADsResampler"><span class="header-section-number">1.1.3</span> HADsResampler</a></li>
-  <li><a href="#python.clim_recal.resample.HADsResamplerManager" id="toc-python.clim_recal.resample.HADsResamplerManager" class="nav-link" data-scroll-target="#python.clim_recal.resample.HADsResamplerManager"><span class="header-section-number">1.1.4</span> HADsResamplerManager</a></li>
-  <li><a href="#python.clim_recal.resample.ResamplerBase" id="toc-python.clim_recal.resample.ResamplerBase" class="nav-link" data-scroll-target="#python.clim_recal.resample.ResamplerBase"><span class="header-section-number">1.1.5</span> ResamplerBase</a></li>
-  <li><a href="#python.clim_recal.resample.ResamplerManagerBase" id="toc-python.clim_recal.resample.ResamplerManagerBase" class="nav-link" data-scroll-target="#python.clim_recal.resample.ResamplerManagerBase"><span class="header-section-number">1.1.6</span> ResamplerManagerBase</a></li>
+  <li><a href="#python.clim_recal.convert.CPMResampler" id="toc-python.clim_recal.convert.CPMResampler" class="nav-link" data-scroll-target="#python.clim_recal.convert.CPMResampler"><span class="header-section-number">1.1.1</span> CPMResampler</a></li>
+  <li><a href="#python.clim_recal.convert.CPMResamplerManager" id="toc-python.clim_recal.convert.CPMResamplerManager" class="nav-link" data-scroll-target="#python.clim_recal.convert.CPMResamplerManager"><span class="header-section-number">1.1.2</span> CPMResamplerManager</a></li>
+  <li><a href="#python.clim_recal.convert.HADsResampler" id="toc-python.clim_recal.convert.HADsResampler" class="nav-link" data-scroll-target="#python.clim_recal.convert.HADsResampler"><span class="header-section-number">1.1.3</span> HADsResampler</a></li>
+  <li><a href="#python.clim_recal.convert.HADsResamplerManager" id="toc-python.clim_recal.convert.HADsResamplerManager" class="nav-link" data-scroll-target="#python.clim_recal.convert.HADsResamplerManager"><span class="header-section-number">1.1.4</span> HADsResamplerManager</a></li>
+  <li><a href="#python.clim_recal.convert.IterCalcBase" id="toc-python.clim_recal.convert.IterCalcBase" class="nav-link" data-scroll-target="#python.clim_recal.convert.IterCalcBase"><span class="header-section-number">1.1.5</span> IterCalcBase</a></li>
+  <li><a href="#python.clim_recal.convert.IterCalcManagerBase" id="toc-python.clim_recal.convert.IterCalcManagerBase" class="nav-link" data-scroll-target="#python.clim_recal.convert.IterCalcManagerBase"><span class="header-section-number">1.1.6</span> IterCalcManagerBase</a></li>
   </ul></li>
   <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions"><span class="header-section-number">1.2</span> Functions</a>
   <ul class="collapse">
-  <li><a href="#python.clim_recal.resample.reproject_2_2km_file_name" id="toc-python.clim_recal.resample.reproject_2_2km_file_name" class="nav-link" data-scroll-target="#python.clim_recal.resample.reproject_2_2km_file_name"><span class="header-section-number">1.2.1</span> reproject_2_2km_file_name</a></li>
-  <li><a href="#python.clim_recal.resample.reproject_standard_calendar_file_name" id="toc-python.clim_recal.resample.reproject_standard_calendar_file_name" class="nav-link" data-scroll-target="#python.clim_recal.resample.reproject_standard_calendar_file_name"><span class="header-section-number">1.2.2</span> reproject_standard_calendar_file_name</a></li>
+  <li><a href="#python.clim_recal.convert.reproject_2_2km_file_name" id="toc-python.clim_recal.convert.reproject_2_2km_file_name" class="nav-link" data-scroll-target="#python.clim_recal.convert.reproject_2_2km_file_name"><span class="header-section-number">1.2.1</span> reproject_2_2km_file_name</a></li>
+  <li><a href="#python.clim_recal.convert.reproject_standard_calendar_file_name" id="toc-python.clim_recal.convert.reproject_standard_calendar_file_name" class="nav-link" data-scroll-target="#python.clim_recal.convert.reproject_standard_calendar_file_name"><span class="header-section-number">1.2.2</span> reproject_standard_calendar_file_name</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -348,9 +348,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="python.clim_recal.resample" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> clim_recal.resample</h1>
-<p><code>clim_recal.resample</code></p>
+<section id="python.clim_recal.convert" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> clim_recal.convert</h1>
+<p><code>clim_recal.convert</code></p>
 <p>Resample UKHADS data and UKCP18 data.</p>
 <ul>
 <li>UKCP18 is resampled temporally from a 360 day calendar to a standard (365/366 day) calendar and projected to British National Grid (BNG) EPSG:27700 from its original rotated polar grid.</li>
@@ -367,34 +367,34 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.CPMResampler">CPMResampler</a></td>
+<td><a href="#python.clim_recal.convert.CPMResampler">CPMResampler</a></td>
 <td>CPM specific changes to HADsResampler.</td>
 </tr>
 <tr class="even">
-<td><a href="#python.clim_recal.resample.CPMResamplerManager">CPMResamplerManager</a></td>
+<td><a href="#python.clim_recal.convert.CPMResamplerManager">CPMResamplerManager</a></td>
 <td>Class to manage processing CPM resampling.</td>
 </tr>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.HADsResampler">HADsResampler</a></td>
+<td><a href="#python.clim_recal.convert.HADsResampler">HADsResampler</a></td>
 <td>Manage resampling HADs datafiles for modelling.</td>
 </tr>
 <tr class="even">
-<td><a href="#python.clim_recal.resample.HADsResamplerManager">HADsResamplerManager</a></td>
+<td><a href="#python.clim_recal.convert.HADsResamplerManager">HADsResamplerManager</a></td>
 <td>Class to manage processing HADs resampling.</td>
 </tr>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.ResamplerBase">ResamplerBase</a></td>
+<td><a href="#python.clim_recal.convert.IterCalcBase">IterCalcBase</a></td>
 <td>Base class to inherit for <code>HADs</code> and <code>CPM</code>.</td>
 </tr>
 <tr class="even">
-<td><a href="#python.clim_recal.resample.ResamplerManagerBase">ResamplerManagerBase</a></td>
+<td><a href="#python.clim_recal.convert.IterCalcManagerBase">IterCalcManagerBase</a></td>
 <td>Base class to inherit for <code>HADs</code> and <code>CPM</code> resampler managers.</td>
 </tr>
 </tbody>
 </table>
-<section id="python.clim_recal.resample.CPMResampler" class="level3" data-number="1.1.1">
-<h3 data-number="1.1.1" class="anchored" data-anchor-id="python.clim_recal.resample.CPMResampler"><span class="header-section-number">1.1.1</span> CPMResampler</h3>
-<p><code>clim_recal.resample.CPMResampler(self, *, input_path=RAW_CPM_TASMAX_PATH, output_path=RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH, variable_name=VariableOptions.default(), input_files=None, cpus=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, start_index=0, stop_index=None, _result_paths=dict(), _iter_calc_method_name='range_to_reprojection', prior_time_series=None)</code></p>
+<section id="python.clim_recal.convert.CPMResampler" class="level3" data-number="1.1.1">
+<h3 data-number="1.1.1" class="anchored" data-anchor-id="python.clim_recal.convert.CPMResampler"><span class="header-section-number">1.1.1</span> CPMResampler</h3>
+<p><code>clim_recal.convert.CPMResampler(self, *, input_path=RAW_CPM_TASMAX_PATH, output_path=RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH, variable_name=VariableOptions.default(), input_files=None, cpus=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, start_index=0, stop_index=None, _result_paths=dict(), _iter_calc_method_name='range_to_reprojection', prior_time_series=None)</code></p>
 <p>CPM specific changes to HADsResampler.</p>
 <section id="attributes" class="level4" data-number="1.1.1.1">
 <h4 data-number="1.1.1.1" class="anchored" data-anchor-id="attributes"><span class="header-section-number">1.1.1.1</span> Attributes</h4>
@@ -476,9 +476,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a> ...Path(<span class="st">'.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_20791201-20801130.nc'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
-<section id="python.clim_recal.resample.CPMResamplerManager" class="level3" data-number="1.1.2">
-<h3 data-number="1.1.2" class="anchored" data-anchor-id="python.clim_recal.resample.CPMResamplerManager"><span class="header-section-number">1.1.2</span> CPMResamplerManager</h3>
-<p><code>clim_recal.resample.CPMResamplerManager(self, *, input_paths=RAW_CPM_PATH, output_paths=RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH, variables=(VariableOptions.default()), sub_path=CPM_SUB_PATH, start_index=0, stop_index=None, start_date=CPM_START_DATE, end_date=CPM_END_DATE, configs=list(), config_default_kwargs=dict(), calc_class=CPMResampler, cpus=None, _input_path_dict=dict(), _output_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False, runs=RunOptions.preferred())</code></p>
+<section id="python.clim_recal.convert.CPMResamplerManager" class="level3" data-number="1.1.2">
+<h3 data-number="1.1.2" class="anchored" data-anchor-id="python.clim_recal.convert.CPMResamplerManager"><span class="header-section-number">1.1.2</span> CPMResamplerManager</h3>
+<p><code>clim_recal.convert.CPMResamplerManager(self, *, input_paths=RAW_CPM_PATH, output_paths=RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH, variables=(VariableOptions.default()), sub_path=CPM_SUB_PATH, start_index=0, stop_index=None, start_date=CPM_START_DATE, end_date=CPM_END_DATE, configs=list(), config_default_kwargs=dict(), calc_class=CPMResampler, cpus=None, _input_path_dict=dict(), _output_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False, runs=RunOptions.preferred())</code></p>
 <p>Class to manage processing CPM resampling.</p>
 <section id="attributes-1" class="level4" data-number="1.1.2.1">
 <h4 data-number="1.1.2.1" class="anchored" data-anchor-id="attributes-1"><span class="header-section-number">1.1.2.1</span> Attributes</h4>
@@ -604,9 +604,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>               output_path<span class="op">=</span><span class="st">'.../cpm/tasmax/08'</span>)<span class="op">&gt;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
-<section id="python.clim_recal.resample.HADsResampler" class="level3" data-number="1.1.3">
-<h3 data-number="1.1.3" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResampler"><span class="header-section-number">1.1.3</span> HADsResampler</h3>
-<p><code>clim_recal.resample.HADsResampler(self, *, input_path=RAW_HADS_TASMAX_PATH, output_path=RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH, variable_name=VariableOptions.default(), input_files=None, cpus=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, start_index=0, stop_index=None, _result_paths=dict(), _iter_calc_method_name='range_to_reprojection', input_file_x_column_name=HADS_XDIM, input_file_y_column_name=HADS_YDIM, cpm_for_coord_alignment=RAW_CPM_TASMAX_PATH, cpm_for_coord_alignment_path_converted=False)</code></p>
+<section id="python.clim_recal.convert.HADsResampler" class="level3" data-number="1.1.3">
+<h3 data-number="1.1.3" class="anchored" data-anchor-id="python.clim_recal.convert.HADsResampler"><span class="header-section-number">1.1.3</span> HADsResampler</h3>
+<p><code>clim_recal.convert.HADsResampler(self, *, input_path=RAW_HADS_TASMAX_PATH, output_path=RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH, variable_name=VariableOptions.default(), input_files=None, cpus=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, start_index=0, stop_index=None, _result_paths=dict(), _iter_calc_method_name='range_to_reprojection', input_file_x_column_name=HADS_XDIM, input_file_y_column_name=HADS_YDIM, cpm_for_coord_alignment=RAW_CPM_TASMAX_PATH, cpm_for_coord_alignment_path_converted=False)</code></p>
 <p>Manage resampling HADs datafiles for modelling.</p>
 <section id="attributes-2" class="level4" data-number="1.1.3.1">
 <h4 data-number="1.1.3.1" class="anchored" data-anchor-id="attributes-2"><span class="header-section-number">1.1.3.1</span> Attributes</h4>
@@ -722,21 +722,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.HADsResampler.set_cpm_for_coord_alignment">set_cpm_for_coord_alignment</a></td>
+<td><a href="#python.clim_recal.convert.HADsResampler.set_cpm_for_coord_alignment">set_cpm_for_coord_alignment</a></td>
 <td>Check if <code>cpm_for_coord_alignment</code> is a <code>Dataset</code>, process if a <code>Path</code>.</td>
 </tr>
 </tbody>
 </table>
-<section id="python.clim_recal.resample.HADsResampler.set_cpm_for_coord_alignment" class="level5" data-number="1.1.3.3.1">
-<h5 data-number="1.1.3.3.1" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResampler.set_cpm_for_coord_alignment"><span class="header-section-number">1.1.3.3.1</span> set_cpm_for_coord_alignment</h5>
-<p><code>clim_recal.resample.HADsResampler.set_cpm_for_coord_alignment()</code></p>
+<section id="python.clim_recal.convert.HADsResampler.set_cpm_for_coord_alignment" class="level5" data-number="1.1.3.3.1">
+<h5 data-number="1.1.3.3.1" class="anchored" data-anchor-id="python.clim_recal.convert.HADsResampler.set_cpm_for_coord_alignment"><span class="header-section-number">1.1.3.3.1</span> set_cpm_for_coord_alignment</h5>
+<p><code>clim_recal.convert.HADsResampler.set_cpm_for_coord_alignment()</code></p>
 <p>Check if <code>cpm_for_coord_alignment</code> is a <code>Dataset</code>, process if a <code>Path</code>.</p>
 </section>
 </section>
 </section>
-<section id="python.clim_recal.resample.HADsResamplerManager" class="level3" data-number="1.1.4">
-<h3 data-number="1.1.4" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager"><span class="header-section-number">1.1.4</span> HADsResamplerManager</h3>
-<p><code>clim_recal.resample.HADsResamplerManager(self, *, input_paths=RAW_HADS_PATH, output_paths=RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH, variables=(VariableOptions.default()), sub_path=HADS_SUB_PATH, start_index=0, stop_index=None, start_date=HADS_START_DATE, end_date=HADS_END_DATE, configs=list(), config_default_kwargs=dict(), calc_class=HADsResampler, cpus=None, _input_path_dict=dict(), _output_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False, cpm_for_coord_alignment=RAW_CPM_TASMAX_PATH, cpm_for_coord_alignment_path_converted=False)</code></p>
+<section id="python.clim_recal.convert.HADsResamplerManager" class="level3" data-number="1.1.4">
+<h3 data-number="1.1.4" class="anchored" data-anchor-id="python.clim_recal.convert.HADsResamplerManager"><span class="header-section-number">1.1.4</span> HADsResamplerManager</h3>
+<p><code>clim_recal.convert.HADsResamplerManager(self, *, input_paths=RAW_HADS_PATH, output_paths=RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH, variables=(VariableOptions.default()), sub_path=HADS_SUB_PATH, start_index=0, stop_index=None, start_date=HADS_START_DATE, end_date=HADS_END_DATE, configs=list(), config_default_kwargs=dict(), calc_class=HADsResampler, cpus=None, _input_path_dict=dict(), _output_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False, cpm_for_coord_alignment=RAW_CPM_TASMAX_PATH, cpm_for_coord_alignment_path_converted=False)</code></p>
 <p>Class to manage processing HADs resampling.</p>
 <section id="attributes-3" class="level4" data-number="1.1.4.1">
 <h4 data-number="1.1.4.1" class="anchored" data-anchor-id="attributes-3"><span class="header-section-number">1.1.4.1</span> Attributes</h4>
@@ -861,30 +861,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.HADsResamplerManager.set_cpm_for_coord_alignment">set_cpm_for_coord_alignment</a></td>
+<td><a href="#python.clim_recal.convert.HADsResamplerManager.set_cpm_for_coord_alignment">set_cpm_for_coord_alignment</a></td>
 <td>Check if <code>cpm_for_coord_alignment</code> is a <code>Dataset</code>, process if a <code>Path</code>.</td>
 </tr>
 <tr class="even">
-<td><a href="#python.clim_recal.resample.HADsResamplerManager.yield_configs">yield_configs</a></td>
+<td><a href="#python.clim_recal.convert.HADsResamplerManager.yield_configs">yield_configs</a></td>
 <td>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</td>
 </tr>
 </tbody>
 </table>
-<section id="python.clim_recal.resample.HADsResamplerManager.set_cpm_for_coord_alignment" class="level5" data-number="1.1.4.3.1">
-<h5 data-number="1.1.4.3.1" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.set_cpm_for_coord_alignment"><span class="header-section-number">1.1.4.3.1</span> set_cpm_for_coord_alignment</h5>
-<p><code>clim_recal.resample.HADsResamplerManager.set_cpm_for_coord_alignment()</code></p>
+<section id="python.clim_recal.convert.HADsResamplerManager.set_cpm_for_coord_alignment" class="level5" data-number="1.1.4.3.1">
+<h5 data-number="1.1.4.3.1" class="anchored" data-anchor-id="python.clim_recal.convert.HADsResamplerManager.set_cpm_for_coord_alignment"><span class="header-section-number">1.1.4.3.1</span> set_cpm_for_coord_alignment</h5>
+<p><code>clim_recal.convert.HADsResamplerManager.set_cpm_for_coord_alignment()</code></p>
 <p>Check if <code>cpm_for_coord_alignment</code> is a <code>Dataset</code>, process if a <code>Path</code>.</p>
 </section>
-<section id="python.clim_recal.resample.HADsResamplerManager.yield_configs" class="level5" data-number="1.1.4.3.2">
-<h5 data-number="1.1.4.3.2" class="anchored" data-anchor-id="python.clim_recal.resample.HADsResamplerManager.yield_configs"><span class="header-section-number">1.1.4.3.2</span> yield_configs</h5>
-<p><code>clim_recal.resample.HADsResamplerManager.yield_configs()</code></p>
+<section id="python.clim_recal.convert.HADsResamplerManager.yield_configs" class="level5" data-number="1.1.4.3.2">
+<h5 data-number="1.1.4.3.2" class="anchored" data-anchor-id="python.clim_recal.convert.HADsResamplerManager.yield_configs"><span class="header-section-number">1.1.4.3.2</span> yield_configs</h5>
+<p><code>clim_recal.convert.HADsResamplerManager.yield_configs()</code></p>
 <p>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</p>
 </section>
 </section>
 </section>
-<section id="python.clim_recal.resample.ResamplerBase" class="level3" data-number="1.1.5">
-<h3 data-number="1.1.5" class="anchored" data-anchor-id="python.clim_recal.resample.ResamplerBase"><span class="header-section-number">1.1.5</span> ResamplerBase</h3>
-<p><code>clim_recal.resample.ResamplerBase(self, *, input_path=Path(), output_path=RESAMPLE_OUTPUT_PATH, variable_name=VariableOptions.default(), input_files=None, cpus=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, start_index=0, stop_index=None, _result_paths=dict(), _iter_calc_method_name='range_to_reprojection')</code></p>
+<section id="python.clim_recal.convert.IterCalcBase" class="level3" data-number="1.1.5">
+<h3 data-number="1.1.5" class="anchored" data-anchor-id="python.clim_recal.convert.IterCalcBase"><span class="header-section-number">1.1.5</span> IterCalcBase</h3>
+<p><code>clim_recal.convert.IterCalcBase(self, *, input_path=Path(), output_path=RESAMPLE_OUTPUT_PATH, variable_name=VariableOptions.default(), input_files=None, cpus=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, start_index=0, stop_index=None, _result_paths=dict(), _iter_calc_method_name='range_to_reprojection')</code></p>
 <p>Base class to inherit for <code>HADs</code> and <code>CPM</code>.</p>
 <section id="attributes-4" class="level4" data-number="1.1.5.1">
 <h4 data-number="1.1.5.1" class="anchored" data-anchor-id="attributes-4"><span class="header-section-number">1.1.5.1</span> Attributes</h4>
@@ -897,7 +897,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.ResamplerBase.max_count">max_count</a></td>
+<td><a href="#python.clim_recal.convert.IterCalcBase.max_count">max_count</a></td>
 <td>Maximum length of <code>self.input_files</code> ignoring <code>start_index</code> and <code>start_index</code>.</td>
 </tr>
 </tbody>
@@ -914,30 +914,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.ResamplerBase.execute">execute</a></td>
+<td><a href="#python.clim_recal.convert.IterCalcBase.execute">execute</a></td>
 <td>Run all steps for processing</td>
 </tr>
 <tr class="even">
-<td><a href="#python.clim_recal.resample.ResamplerBase.set_input_files">set_input_files</a></td>
+<td><a href="#python.clim_recal.convert.IterCalcBase.set_input_files">set_input_files</a></td>
 <td>Replace <code>self.input</code> and process <code>self.input_files</code>.</td>
 </tr>
 </tbody>
 </table>
-<section id="python.clim_recal.resample.ResamplerBase.execute" class="level5" data-number="1.1.5.2.1">
-<h5 data-number="1.1.5.2.1" class="anchored" data-anchor-id="python.clim_recal.resample.ResamplerBase.execute"><span class="header-section-number">1.1.5.2.1</span> execute</h5>
-<p><code>clim_recal.resample.ResamplerBase.execute(**kwargs)</code></p>
+<section id="python.clim_recal.convert.IterCalcBase.execute" class="level5" data-number="1.1.5.2.1">
+<h5 data-number="1.1.5.2.1" class="anchored" data-anchor-id="python.clim_recal.convert.IterCalcBase.execute"><span class="header-section-number">1.1.5.2.1</span> execute</h5>
+<p><code>clim_recal.convert.IterCalcBase.execute(**kwargs)</code></p>
 <p>Run all steps for processing</p>
 </section>
-<section id="python.clim_recal.resample.ResamplerBase.set_input_files" class="level5" data-number="1.1.5.2.2">
-<h5 data-number="1.1.5.2.2" class="anchored" data-anchor-id="python.clim_recal.resample.ResamplerBase.set_input_files"><span class="header-section-number">1.1.5.2.2</span> set_input_files</h5>
-<p><code>clim_recal.resample.ResamplerBase.set_input_files(new_input_path=None)</code></p>
+<section id="python.clim_recal.convert.IterCalcBase.set_input_files" class="level5" data-number="1.1.5.2.2">
+<h5 data-number="1.1.5.2.2" class="anchored" data-anchor-id="python.clim_recal.convert.IterCalcBase.set_input_files"><span class="header-section-number">1.1.5.2.2</span> set_input_files</h5>
+<p><code>clim_recal.convert.IterCalcBase.set_input_files(new_input_path=None)</code></p>
 <p>Replace <code>self.input</code> and process <code>self.input_files</code>.</p>
 </section>
 </section>
 </section>
-<section id="python.clim_recal.resample.ResamplerManagerBase" class="level3" data-number="1.1.6">
-<h3 data-number="1.1.6" class="anchored" data-anchor-id="python.clim_recal.resample.ResamplerManagerBase"><span class="header-section-number">1.1.6</span> ResamplerManagerBase</h3>
-<p><code>clim_recal.resample.ResamplerManagerBase(self, *, input_paths=Path(), output_paths=Path(), variables=(VariableOptions.default()), sub_path=Path(), start_index=0, stop_index=None, start_date=None, end_date=None, configs=list(), config_default_kwargs=dict(), calc_class=None, cpus=None, _input_path_dict=dict(), _output_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False)</code></p>
+<section id="python.clim_recal.convert.IterCalcManagerBase" class="level3" data-number="1.1.6">
+<h3 data-number="1.1.6" class="anchored" data-anchor-id="python.clim_recal.convert.IterCalcManagerBase"><span class="header-section-number">1.1.6</span> IterCalcManagerBase</h3>
+<p><code>clim_recal.convert.IterCalcManagerBase(self, *, input_paths=Path(), output_paths=Path(), variables=(VariableOptions.default()), sub_path=Path(), start_index=0, stop_index=None, start_date=None, end_date=None, configs=list(), config_default_kwargs=dict(), calc_class=None, cpus=None, _input_path_dict=dict(), _output_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False)</code></p>
 <p>Base class to inherit for <code>HADs</code> and <code>CPM</code> resampler managers.</p>
 <section id="attributes-5" class="level4" data-number="1.1.6.1">
 <h4 data-number="1.1.6.1" class="anchored" data-anchor-id="attributes-5"><span class="header-section-number">1.1.6.1</span> Attributes</h4>
@@ -950,15 +950,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.ResamplerManagerBase.input_folder">input_folder</a></td>
+<td><a href="#python.clim_recal.convert.IterCalcManagerBase.input_folder">input_folder</a></td>
 <td>Return <code>self._input_path</code> set by <code>set_input_paths()</code>.</td>
 </tr>
 <tr class="even">
-<td><a href="#python.clim_recal.resample.ResamplerManagerBase.max_count">max_count</a></td>
+<td><a href="#python.clim_recal.convert.IterCalcManagerBase.max_count">max_count</a></td>
 <td>Maximum length of <code>self.input_files</code> ignoring <code>start_index</code> and <code>start_index</code>.</td>
 </tr>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.ResamplerManagerBase.output_folder">output_folder</a></td>
+<td><a href="#python.clim_recal.convert.IterCalcManagerBase.output_folder">output_folder</a></td>
 <td>Return <code>self._output_path</code> set by <code>set_output_paths()</code>.</td>
 </tr>
 </tbody>
@@ -975,14 +975,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.ResamplerManagerBase.VarirableInBaseImportPathError">VarirableInBaseImportPathError</a></td>
+<td><a href="#python.clim_recal.convert.IterCalcManagerBase.VarirableInBaseImportPathError">VarirableInBaseImportPathError</a></td>
 <td>Checking import path validity for <code>self.variables</code>.</td>
 </tr>
 </tbody>
 </table>
-<section id="python.clim_recal.resample.ResamplerManagerBase.VarirableInBaseImportPathError" class="level5" data-number="1.1.6.2.1">
-<h5 data-number="1.1.6.2.1" class="anchored" data-anchor-id="python.clim_recal.resample.ResamplerManagerBase.VarirableInBaseImportPathError"><span class="header-section-number">1.1.6.2.1</span> VarirableInBaseImportPathError</h5>
-<p><code>clim_recal.resample.ResamplerManagerBase.VarirableInBaseImportPathError()</code></p>
+<section id="python.clim_recal.convert.IterCalcManagerBase.VarirableInBaseImportPathError" class="level5" data-number="1.1.6.2.1">
+<h5 data-number="1.1.6.2.1" class="anchored" data-anchor-id="python.clim_recal.convert.IterCalcManagerBase.VarirableInBaseImportPathError"><span class="header-section-number">1.1.6.2.1</span> VarirableInBaseImportPathError</h5>
+<p><code>clim_recal.convert.IterCalcManagerBase.VarirableInBaseImportPathError()</code></p>
 <p>Checking import path validity for <code>self.variables</code>.</p>
 </section>
 </section>
@@ -997,35 +997,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.ResamplerManagerBase.check_paths">check_paths</a></td>
+<td><a href="#python.clim_recal.convert.IterCalcManagerBase.check_paths">check_paths</a></td>
 <td>Check and set <code>input</code>, <code>resample</code> and <code>crop</code> paths.</td>
 </tr>
 <tr class="even">
-<td><a href="#python.clim_recal.resample.ResamplerManagerBase.execute_configs">execute_configs</a></td>
+<td><a href="#python.clim_recal.convert.IterCalcManagerBase.execute_configs">execute_configs</a></td>
 <td>Run all resampler configurations</td>
 </tr>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.ResamplerManagerBase.set_input_paths">set_input_paths</a></td>
+<td><a href="#python.clim_recal.convert.IterCalcManagerBase.set_input_paths">set_input_paths</a></td>
 <td>Propagate <code>self.input_paths</code> if needed.</td>
 </tr>
 <tr class="even">
-<td><a href="#python.clim_recal.resample.ResamplerManagerBase.set_output_paths">set_output_paths</a></td>
+<td><a href="#python.clim_recal.convert.IterCalcManagerBase.set_output_paths">set_output_paths</a></td>
 <td>Propagate <code>self.output_paths</code> if needed.</td>
 </tr>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.ResamplerManagerBase.yield_configs">yield_configs</a></td>
+<td><a href="#python.clim_recal.convert.IterCalcManagerBase.yield_configs">yield_configs</a></td>
 <td>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</td>
 </tr>
 </tbody>
 </table>
-<section id="python.clim_recal.resample.ResamplerManagerBase.check_paths" class="level5" data-number="1.1.6.3.1">
-<h5 data-number="1.1.6.3.1" class="anchored" data-anchor-id="python.clim_recal.resample.ResamplerManagerBase.check_paths"><span class="header-section-number">1.1.6.3.1</span> check_paths</h5>
-<p><code>clim_recal.resample.ResamplerManagerBase.check_paths(run_set_data_paths=True)</code></p>
+<section id="python.clim_recal.convert.IterCalcManagerBase.check_paths" class="level5" data-number="1.1.6.3.1">
+<h5 data-number="1.1.6.3.1" class="anchored" data-anchor-id="python.clim_recal.convert.IterCalcManagerBase.check_paths"><span class="header-section-number">1.1.6.3.1</span> check_paths</h5>
+<p><code>clim_recal.convert.IterCalcManagerBase.check_paths(run_set_data_paths=True)</code></p>
 <p>Check and set <code>input</code>, <code>resample</code> and <code>crop</code> paths.</p>
 </section>
-<section id="python.clim_recal.resample.ResamplerManagerBase.execute_configs" class="level5" data-number="1.1.6.3.2">
-<h5 data-number="1.1.6.3.2" class="anchored" data-anchor-id="python.clim_recal.resample.ResamplerManagerBase.execute_configs"><span class="header-section-number">1.1.6.3.2</span> execute_configs</h5>
-<p><code>clim_recal.resample.ResamplerManagerBase.execute_configs(multiprocess=False, cpus=None, return_resamplers=False, return_path=True, **kwargs)</code></p>
+<section id="python.clim_recal.convert.IterCalcManagerBase.execute_configs" class="level5" data-number="1.1.6.3.2">
+<h5 data-number="1.1.6.3.2" class="anchored" data-anchor-id="python.clim_recal.convert.IterCalcManagerBase.execute_configs"><span class="header-section-number">1.1.6.3.2</span> execute_configs</h5>
+<p><code>clim_recal.convert.IterCalcManagerBase.execute_configs(multiprocess=False, cpus=None, return_resamplers=False, return_path=True, **kwargs)</code></p>
 <p>Run all resampler configurations</p>
 <section id="parameters" class="level6" data-number="1.1.6.3.2.1">
 <h6 data-number="1.1.6.3.2.1" class="anchored" data-anchor-id="parameters"><span class="header-section-number">1.1.6.3.2.1</span> Parameters</h6>
@@ -1079,19 +1079,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </section>
 </section>
-<section id="python.clim_recal.resample.ResamplerManagerBase.set_input_paths" class="level5" data-number="1.1.6.3.3">
-<h5 data-number="1.1.6.3.3" class="anchored" data-anchor-id="python.clim_recal.resample.ResamplerManagerBase.set_input_paths"><span class="header-section-number">1.1.6.3.3</span> set_input_paths</h5>
-<p><code>clim_recal.resample.ResamplerManagerBase.set_input_paths()</code></p>
+<section id="python.clim_recal.convert.IterCalcManagerBase.set_input_paths" class="level5" data-number="1.1.6.3.3">
+<h5 data-number="1.1.6.3.3" class="anchored" data-anchor-id="python.clim_recal.convert.IterCalcManagerBase.set_input_paths"><span class="header-section-number">1.1.6.3.3</span> set_input_paths</h5>
+<p><code>clim_recal.convert.IterCalcManagerBase.set_input_paths()</code></p>
 <p>Propagate <code>self.input_paths</code> if needed.</p>
 </section>
-<section id="python.clim_recal.resample.ResamplerManagerBase.set_output_paths" class="level5" data-number="1.1.6.3.4">
-<h5 data-number="1.1.6.3.4" class="anchored" data-anchor-id="python.clim_recal.resample.ResamplerManagerBase.set_output_paths"><span class="header-section-number">1.1.6.3.4</span> set_output_paths</h5>
-<p><code>clim_recal.resample.ResamplerManagerBase.set_output_paths()</code></p>
+<section id="python.clim_recal.convert.IterCalcManagerBase.set_output_paths" class="level5" data-number="1.1.6.3.4">
+<h5 data-number="1.1.6.3.4" class="anchored" data-anchor-id="python.clim_recal.convert.IterCalcManagerBase.set_output_paths"><span class="header-section-number">1.1.6.3.4</span> set_output_paths</h5>
+<p><code>clim_recal.convert.IterCalcManagerBase.set_output_paths()</code></p>
 <p>Propagate <code>self.output_paths</code> if needed.</p>
 </section>
-<section id="python.clim_recal.resample.ResamplerManagerBase.yield_configs" class="level5" data-number="1.1.6.3.5">
-<h5 data-number="1.1.6.3.5" class="anchored" data-anchor-id="python.clim_recal.resample.ResamplerManagerBase.yield_configs"><span class="header-section-number">1.1.6.3.5</span> yield_configs</h5>
-<p><code>clim_recal.resample.ResamplerManagerBase.yield_configs()</code></p>
+<section id="python.clim_recal.convert.IterCalcManagerBase.yield_configs" class="level5" data-number="1.1.6.3.5">
+<h5 data-number="1.1.6.3.5" class="anchored" data-anchor-id="python.clim_recal.convert.IterCalcManagerBase.yield_configs"><span class="header-section-number">1.1.6.3.5</span> yield_configs</h5>
+<p><code>clim_recal.convert.IterCalcManagerBase.yield_configs()</code></p>
 <p>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</p>
 </section>
 </section>
@@ -1108,23 +1108,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#python.clim_recal.resample.reproject_2_2km_file_name">reproject_2_2km_file_name</a></td>
+<td><a href="#python.clim_recal.convert.reproject_2_2km_file_name">reproject_2_2km_file_name</a></td>
 <td>Return tweaked <code>path</code> to indicate standard day projection.</td>
 </tr>
 <tr class="even">
-<td><a href="#python.clim_recal.resample.reproject_standard_calendar_file_name">reproject_standard_calendar_file_name</a></td>
+<td><a href="#python.clim_recal.convert.reproject_standard_calendar_file_name">reproject_standard_calendar_file_name</a></td>
 <td>Return tweaked <code>path</code> to indicate standard day projection.</td>
 </tr>
 </tbody>
 </table>
-<section id="python.clim_recal.resample.reproject_2_2km_file_name" class="level3" data-number="1.2.1">
-<h3 data-number="1.2.1" class="anchored" data-anchor-id="python.clim_recal.resample.reproject_2_2km_file_name"><span class="header-section-number">1.2.1</span> reproject_2_2km_file_name</h3>
-<p><code>clim_recal.resample.reproject_2_2km_file_name(path)</code></p>
+<section id="python.clim_recal.convert.reproject_2_2km_file_name" class="level3" data-number="1.2.1">
+<h3 data-number="1.2.1" class="anchored" data-anchor-id="python.clim_recal.convert.reproject_2_2km_file_name"><span class="header-section-number">1.2.1</span> reproject_2_2km_file_name</h3>
+<p><code>clim_recal.convert.reproject_2_2km_file_name(path)</code></p>
 <p>Return tweaked <code>path</code> to indicate standard day projection.</p>
 </section>
-<section id="python.clim_recal.resample.reproject_standard_calendar_file_name" class="level3" data-number="1.2.2">
-<h3 data-number="1.2.2" class="anchored" data-anchor-id="python.clim_recal.resample.reproject_standard_calendar_file_name"><span class="header-section-number">1.2.2</span> reproject_standard_calendar_file_name</h3>
-<p><code>clim_recal.resample.reproject_standard_calendar_file_name(path)</code></p>
+<section id="python.clim_recal.convert.reproject_standard_calendar_file_name" class="level3" data-number="1.2.2">
+<h3 data-number="1.2.2" class="anchored" data-anchor-id="python.clim_recal.convert.reproject_standard_calendar_file_name"><span class="header-section-number">1.2.2</span> reproject_standard_calendar_file_name</h3>
+<p><code>clim_recal.convert.reproject_standard_calendar_file_name(path)</code></p>
 <p>Return tweaked <code>path</code> to indicate standard day projection.</p>
 
 
