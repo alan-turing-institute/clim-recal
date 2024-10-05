@@ -75,7 +75,7 @@ website:
                 text: "CEDA Data Access"
               - href: "docs/reference/clim_recal.data_loader.qmd"
                 text: "Data Loading"
-              - href: "docs/reference/clim_recal.resample.qmd"
+              - href: "docs/reference/clim_recal.convert.qmd"
                 text: "Data Resampling"
               - section: "Debiasing"
                 contents:
@@ -119,7 +119,7 @@ quartodoc:
         - clim_recal.ceda_ftp_download
         - clim_recal.data_loader
         - clim_recal.config
-        - clim_recal.resample
+        - clim_recal.convert
         - clim_recal.debiasing.debias_wrapper
         - clim_recal.utils.core
         - clim_recal.utils.server
