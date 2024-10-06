@@ -520,6 +520,7 @@ def clim_runner(
     test_runs_output_path: PathLike,
     local_hads_cache_path: PathLike,
     local_cpm_cache_path: PathLike,
+    tasmax_cpm_1980_raw_path: PathLike,
     tasmax_cpm_1980_converted_path: PathLike,
 ) -> ClimRecalConfig:
     """Return default `ClimRecalConfig`."""
@@ -536,7 +537,7 @@ def clim_runner(
             preprocess_out_folder=tmp_path,
             regions=regions,
             output_path=test_runs_output_path,
-            cpm_for_coord_alignment=CPM_RAW_TASMAX_EXAMPLE_PATH,
+            cpm_for_coord_alignment=tasmax_cpm_1980_raw_path,
         )
     except (FileExistsError, AssertionError):
         return ClimRecalConfig(

@@ -37,7 +37,7 @@ Relevant `xarray` utilities:
 
 New approach:
 
-- `resampling.py`
+- `convert.py`
 - check `x_grid` and `y_grid` interpolation
 
 ## Todo
@@ -62,10 +62,10 @@ clim-recal should be a command line function
 $ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written
 clim-recal pipeline configurations:
 <ClimRecalConfig(variables_count=3, runs_count=4, regions_count=1, methods_count=1,
-                 cpm_folders_count=12, hads_folders_count=3, resample_start_index=0,
-                 resample_stop_index=None, cpus=2)>
-<CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)>
-<HADsResamplerManager(variables_count=3, input_paths_count=3)>
+                 cpm_folders_count=12, hads_folders_count=3, convert_start_index=0,
+                 convert_stop_index=None, cpus=2)>
+<CPMConvertManager(variables_count=3, runs_count=4, input_paths_count=12)>
+<HADsConvertManager(variables_count=3, input_paths_count=3)>
 ```
 Otherwise, you can install locally and either run via
 `pdm` from the `python` folder
@@ -93,14 +93,14 @@ assuming a local install:
 $ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written --execute
 clim-recal pipeline configurations:
 <ClimRecalConfig(variables_count=3, runs_count=4, regions_count=1, methods_count=1,
-                 cpm_folders_count=12, hads_folders_count=3, resample_start_index=0,
-                 resample_stop_index=None, cpus=2)>
-<CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)>
-<HADsResamplerManager(variables_count=3, input_paths_count=3)>
+                 cpm_folders_count=12, hads_folders_count=3, convert_start_index=0,
+                 convert_stop_index=None, cpus=2)>
+<CPMConvertManager(variables_count=3, runs_count=4, input_paths_count=12)>
+<HADsConvertManager(variables_count=3, input_paths_count=3)>
 Running CPM Standard Calendar projection...
-<CPMResampler(count=100, max_count=100,
+<CPMConvert(count=100, max_count=100,
               input_path='/mnt/vmfileshare/ClimateData/Raw/UKCP2.2/tasmax/05/latest',
-              output_path='/mnt/vmfileshare/ClimateData/CPM-365/test-run-3-may/resample/
+              output_path='/mnt/vmfileshare/ClimateData/CPM-365/test-run-3-may/convert/
               cpm/tasmax/05/latest')>
  100% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100/100  [ 0:38:27 < 0:00:00 , 0 it/s ]
   87% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 87/100  [ 0:17:42 < 0:03:07 , 0 it/s ]
@@ -145,7 +145,7 @@ from .config import (
     RunOptions,
     VariableOptions,
 )
-from .convert import RAW_CPM_PATH, RAW_HADS_PATH, CPMResampler, HADsResampler
+from .convert import RAW_CPM_PATH, RAW_HADS_PATH, CPMConvert, HADsConvert
 from .crop import CPMRegionCropper, HADsRegionCropper
 from .utils.core import console
 
@@ -167,14 +167,14 @@ def main(
     default_runs: bool = False,
     all_runs: bool = False,
     all_methods: bool = False,
-    hads_projection: bool = False,
-    cpm_projection: bool = False,
+    convert_hads: bool = False,
+    convert_cpm: bool = False,
     crop_hads: bool = True,
     crop_cpm: bool = True,
     cpus: int | None = None,
     multiprocess: bool = False,
-    resample_start_index: int = 0,
-    resample_stop_index: int | None = None,
+    convert_start_index: int = 0,
+    convert_stop_index: int | None = None,
     crop_start_index: int = 0,
     crop_stop_index: int | None = None,
     total: int | None = None,
@@ -200,17 +200,17 @@ def main(
         Number of cpus to use when multiprocessing.
     multiprocess
         Whether to use multiprocessing.
-    resample_start_index
+    convert_start_index
         Index to start all iterations from.
-    resample_stop_index
-        Number of files from `resample_start_index` to resample.
+    convert_stop_index
+        Number of files from `convert_start_index` to convert.
     crop_start_index
         Index to start all crop iterations from.
     crop_stop_index
         Number of files iterating from `crop_start_index` to crop.
     total
         Total number of records to iterate over. 0 and
-        `None` indicate all values from `resample_start_index`.
+        `None` indicate all values from `convert_start_index`.
     **kwargs
         Additional parameters to pass to a `ClimRecalConfig`.
 
@@ -236,36 +236,36 @@ def main(
     <ClimRecalConfig(variables_count=2, runs_count=1,
                      regions_count=1, methods_count=1,
                      cpm_folders_count=2, hads_folders_count=2,
-                     resample_start_index=0, resample_stop_index=None,
+                     convert_start_index=0, convert_stop_index=None,
                      crop_start_index=0, crop_stop_index=None, cpus=...)>
-    <CPMResamplerManager(variables_count=2, runs_count=1,
+    <CPMConvertManager(variables_count=2, runs_count=1,
                          input_paths_count=2)>
-    <HADsResamplerManager(variables_count=2, input_paths_count=2)>
+    <HADsConvertManager(variables_count=2, input_paths_count=2)>
     <CPMRegionCropManager(variables_count=2, input_paths_count=2)>
     <HADsRegionCropManager(variables_count=2, input_paths_count=2)>
     No steps run. Add '--execute' to run steps.
     """
-    if resample_stop_index and total:
+    if convert_stop_index and total:
         console.print(
-            f"Both 'resample_stop_index': {resample_stop_index} and 'total': {total} provided, skipping 'total'."
+            f"Both 'convert_stop_index': {convert_stop_index} and 'total': {total} provided, skipping 'total'."
         )
     elif total:
-        resample_stop_index = (
-            None if total == 0 or total == None else resample_start_index + total
+        convert_stop_index = (
+            None if total == 0 or total == None else convert_start_index + total
         )
         console.print(
-            f"'resample_stop_index': {resample_stop_index} set from 'total': {total} and 'resample_start_index': {resample_start_index}."
+            f"'convert_stop_index': {convert_stop_index} set from 'total': {total} and 'convert_start_index': {convert_start_index}."
         )
-    if resample_stop_index and total:
+    if convert_stop_index and total:
         console.print(
-            f"Both 'resample_stop_index': {resample_stop_index} and 'total': {total} provided, skipping 'total'."
+            f"Both 'convert_stop_index': {convert_stop_index} and 'total': {total} provided, skipping 'total'."
         )
     elif total:
-        resample_stop_index = (
-            None if total == 0 or total == None else resample_start_index + total
+        convert_stop_index = (
+            None if total == 0 or total == None else convert_start_index + total
         )
         console.print(
-            f"'resample_stop_index': {resample_stop_index} set from 'total': {total} and 'resample_start_index': {resample_start_index}."
+            f"'convert_stop_index': {convert_stop_index} set from 'total': {total} and 'convert_start_index': {convert_start_index}."
         )
     variables = VariableOptions.all() if all_variables else tuple(variables)
     regions = (
@@ -289,8 +289,8 @@ def main(
         runs=runs,
         cpus=cpus,
         multiprocess=multiprocess,
-        resample_start_index=resample_start_index,
-        resample_stop_index=resample_stop_index,
+        convert_start_index=convert_start_index,
+        convert_stop_index=convert_stop_index,
         crop_start_index=crop_start_index,
         crop_stop_index=crop_stop_index,
         **kwargs,
@@ -299,29 +299,30 @@ def main(
     console.print(config)
     console.print(config.cpm_manager)
     console.print(config.hads_manager)
-    console.print(config.cpm_crop_manager)
-    console.print(config.hads_crop_manager)
+    if regions:
+        console.print(config.cpm_crop_manager)
+        console.print(config.hads_crop_manager)
     if execute:
-        if not cpm_projection:
+        if not convert_cpm:
             console.print("Skipping CPM Strandard Calendar projection.")
         else:
             console.print("Running CPM Standard Calendar projection...")
-            cpm_resamplers: tuple[CPMResampler, ...] = (
-                config.cpm_manager.execute_configs(multiprocess=multiprocess, cpus=cpus)
+            cpm_converters: tuple[CPMConvert, ...] = config.cpm_manager.execute_configs(
+                multiprocess=multiprocess, cpus=cpus
             )
-            console.print(cpm_resamplers[:print_range_length])
+            console.print(cpm_converters[:print_range_length])
             # Leaving assert to remind ease for debugging in future
             # assert False
-        if not hads_projection:
+        if not convert_hads:
             console.print("Skipping HADs aggregation to 2.2km spatial units.")
         else:
             console.print("Running HADs aggregation to 2.2km spatial units...")
-            hads_resamplers: tuple[HADsResampler, ...] = (
+            hads_converters: tuple[HADsConvert, ...] = (
                 config.hads_manager.execute_configs(
                     multiprocess=multiprocess, cpus=cpus
                 )
             )
-            console.print(hads_resamplers[:print_range_length])
+            console.print(hads_converters[:print_range_length])
         if not crop_hads and not crop_cpm:
             console.print("Skipping region cropping.")
         else:
@@ -329,23 +330,23 @@ def main(
                 console.print("Skipping cropping CPM Standard Calendar projections.")
             else:
                 console.print(f"Cropping CPMs to regions {config.regions}: ...")
-                region_cropped_cpm_resamples: tuple[CPMRegionCropper, ...] = (
+                region_cropped_cpm_converts: tuple[CPMRegionCropper, ...] = (
                     config.cpm_crop_manager.execute_configs(
                         multiprocess=multiprocess, cpus=cpus
                     )
                 )
-                console.print(region_cropped_cpm_resamples[:print_range_length])
+                console.print(region_cropped_cpm_converts[:print_range_length])
             if not crop_hads:
                 console.print("Skipping cropping HADS 2.2km projections.")
             else:
                 console.print(
                     f"Cropping HADS 2.2km projections to regions {config.regions}: ..."
                 )
-                region_cropped_hads_resamples: tuple[HADsRegionCropper, ...] = (
+                region_cropped_hads_converts: tuple[HADsRegionCropper, ...] = (
                     config.hads_crop_manager.execute_configs(
                         multiprocess=multiprocess, cpus=cpus
                     )
                 )
-                console.print(region_cropped_hads_resamples[:print_range_length])
+                console.print(region_cropped_hads_converts[:print_range_length])
     else:
         console.print("No steps run. Add '--execute' to run steps.")

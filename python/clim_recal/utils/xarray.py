@@ -4,7 +4,7 @@ from logging import getLogger
 from os import PathLike
 from pathlib import Path
 from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
-from typing import Any, Callable, Final, Iterator, Sequence
+from typing import Any, Callable, Final, Iterator, Literal, Sequence
 
 import numpy as np
 import rioxarray  # nopycln: import
@@ -1203,6 +1203,35 @@ def file_name_to_start_end_dates(
     return start_date, end_date
 
 
+def date_seq_to_str(datetime_seq: Sequence, join_str: str = " ") -> str:
+    """Return a `str` joining stard print format `dates` from `datetime_seq`."""
+    return join_str.join(str(d.date) for d in datetime_seq)
+
+
+def data_path_to_date_range(
+    path: PathLike, return_type: Literal["raw", "string"] = "string"
+) -> tuple[date, date] | str:
+    """Extract date range as `tuple` or `str` from `path`."""
+    date_range_tuple: tuple[datetime, datetime] = file_name_to_start_end_dates(path)
+    if return_type == "raw":
+        return date_range_tuple[0].date(), date_range_tuple[1].date()
+    elif return_type == "string":
+        return date_seq_to_str(date_range_tuple)
+    else:
+        raise ValueError(f"'return_type' must be 'raw' or 'string'")
+
+
+def path_print_progress(
+    path: PathLike, data_type: Literal["cpm", "hads"] | None = None
+) -> str:
+    """Extract relevant path info to print progress."""
+    path = Path(path)
+    if not data_type:
+        data_type = "cpm" if "cpm" in path.parents else "hads"
+    path_parents_count: int = 3 if data_type == "cpm" else 2
+    return str(path.parents[:path_parents_count])
+
+
 def generate_360_to_standard(array_to_expand: T_DataArray) -> T_DataArray:
     """Return `array_to_expand` 360 days expanded to 365 or 366 days.
 
@@ -1372,7 +1401,7 @@ def _write_and_or_return_results(
     Parameters
     ----------
     instance
-        Instance of `ResamplerBase`.
+        Instance of `ConvertBase`.
     result
         Instance of resambled or croped dataset.
     output_path_func
@@ -1380,7 +1409,7 @@ def _write_and_or_return_results(
     source_path
         `Path` original data used to calculate `result`.
     write_results
-        Whether to write `ResamplerBase` results to a file.
+        Whether to write `ConvertBase` results to a file.
     return_path
         Whether to return the `write_results` `Path` or `T_Dataset` results instance.
     override_export_path
@@ -1418,6 +1447,7 @@ def progress_wrapper(
     write_results: bool = True,
     progress_bar: bool = True,
     progress_bar_refresh_per_sec: int = 1,
+    description_func: Callable[[PathLike, Any], str] | None = None,
     **kwargs,
 ) -> Iterator[Path | T_Dataset]:
     """Iterate over `instance` with or without a progress bar.
@@ -1448,6 +1478,8 @@ def progress_wrapper(
         Whether to print progress bar or skip
     progress_bar_refresh_per_sec
         How many `progress_bar` refreshes per second if `progress_bar` is used.
+    description_func
+        Function to return description.
     **kwargs
         Additional parameters to pass to `method_name`.
     """
@@ -1469,6 +1501,8 @@ def progress_wrapper(
         task_id: float = progress.add_task(description=description, total=total_tasks)
     for index in range(start, stop, step):
         if progress_bar:
+            if description_func:
+                description = description_func(instance[index])
             progress.update(
                 task_id=task_id,
                 advance=1,
@@ -1494,9 +1528,10 @@ def execute_configs(
     cpus: int | None = None,
     return_instances: bool = False,
     return_path: bool = True,
+    description_func: Callable[[str], str] | None = None,
     **kwargs,
 ) -> tuple | list[T_Dataset | Path]:
-    """Run all resampler configurations
+    """Run all converter configurations
 
     Parameters
     ----------
@@ -1506,9 +1541,9 @@ def execute_configs(
         Method name to yield model parameters.
     cpus
         Number of `cpus` to pass to `multiprocess_execute`.
-    return_resamplers
-        Return instances of generated classe (e.g. `HADsResampler` or
-        `CPMResampler`), or return the `results` of each
+    return_converters
+        Return instances of generated classe (e.g. `HADsConvert` or
+        `CPMConvert`), or return the `results` of each
         `execute` call.
     return_path
         Return `Path` to results object if True, else resampled `Dataset`.
@@ -1530,9 +1565,23 @@ def execute_configs(
             **kwargs,
         )
     else:
-        for config in configs:
-            print(config)
-            results.append(config.execute(return_path=return_path, **kwargs))
+        results = tuple(
+            progress_wrapper(
+                configs,
+                method_name="execute",
+                start=self.start,
+                stop=self.stop,
+                step=self.step,
+                return_path=return_path,
+                description_func=description_func,
+                **kwargs,
+            )
+        )
+        # return tuple(getattr(self, self._iter_calc_method_name)(**kwargs))
+        # for config in configs:
+        #     print(config)
+        #     # progress_wrapper(config, method_name="execute")
+        #     results.append(config.execute(return_path=return_path, **kwargs))
     if return_instances:
         return configs
     else:

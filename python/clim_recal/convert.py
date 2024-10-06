@@ -1,7 +1,7 @@
-"""Resample UKHADS data and UKCP18 data.
+"""Convert UKHADS data and UKCP18 data.
 
-- UKCP18 is resampled temporally from a 360 day calendar to a standard (365/366 day) calendar and projected to British National Grid (BNG) EPSG:27700 from its original rotated polar grid.
-- UKHADS is resampled spatially from 1km to 2.2km in BNG aligned with the projected UKCP18
+- UKCP18 is converted temporally from a 360 day calendar to a standard (365/366 day) calendar and projected to British National Grid (BNG) EPSG:27700 from its original rotated polar grid.
+- UKHADS is converted spatially from 1km to 2.2km in BNG aligned with the projected UKCP18
 """
 
 from dataclasses import dataclass, field
@@ -10,7 +10,7 @@ from glob import glob
 from logging import getLogger
 from os import PathLike, cpu_count
 from pathlib import Path
-from typing import Any, Final, Iterable, Iterator, Literal, Sequence
+from typing import Any, Callable, Final, Iterable, Iterator, Literal, Sequence
 
 import dill as pickle
 import rioxarray  # nopycln: import
@@ -22,6 +22,7 @@ from clim_recal.debiasing.debias_wrapper import VariableOptions
 
 from .utils.core import _get_source_path, climate_data_mount_path
 from .utils.data import (
+    CONVERT_OUTPUT_PATH,
     CPM_END_DATE,
     CPM_OUTPUT_PATH,
     CPM_START_DATE,
@@ -32,7 +33,6 @@ from .utils.data import (
     HADS_SUB_PATH,
     HADS_XDIM,
     HADS_YDIM,
-    RESAMPLE_OUTPUT_PATH,
     RunOptions,
     VariableOptions,
 )
@@ -42,9 +42,11 @@ from .utils.xarray import (
     NETCDF_EXTENSION_STR,
     _write_and_or_return_results,
     cpm_reproject_with_standard_calendar,
+    data_path_to_date_range,
     execute_configs,
     get_cpm_for_coord_alignment,
     hads_resample_and_reproject,
+    path_print_progress,
     progress_wrapper,
 )
 
@@ -81,7 +83,7 @@ class IterCalcBase:
     """Base class to inherit for `HADs` and `CPM`."""
 
     input_path: PathLike | None = Path()
-    output_path: PathLike = RESAMPLE_OUTPUT_PATH
+    output_path: PathLike = CONVERT_OUTPUT_PATH
     variable_name: VariableOptions | str = VariableOptions.default()
     input_files: Iterable[PathLike] | None = None
     cpus: int | None = None
@@ -181,6 +183,9 @@ class IterCalcBase:
         return_path: bool = True,
         write_results: bool = True,
         progress_bar: bool = True,
+        description_func: (
+            Callable[[PathLike, Any], str] | None
+        ) = data_path_to_date_range,
         **kwargs,
     ) -> Iterator[Path | T_Dataset]:
         return progress_wrapper(
@@ -195,6 +200,7 @@ class IterCalcBase:
             return_path=return_path,
             write_results=write_results,
             progress_bar=progress_bar,
+            description_func=description_func,
             **kwargs,
         )
 
@@ -204,7 +210,7 @@ class IterCalcBase:
 
 
 @dataclass(kw_only=True, repr=False)
-class HADsResampler(IterCalcBase):
+class HADsConvert(IterCalcBase):
     """Manage resampling HADs datafiles for modelling.
 
     Attributes
@@ -214,7 +220,7 @@ class HADsResampler(IterCalcBase):
     output
         `Path` to save processed `HADS` files.
     input_files
-        `Path` or `Paths` of `NCF` files to resample.
+        `Path` or `Paths` of `NCF` files to convert.
     resampling_func
         Function to call on `self.input_files`.
     crop
@@ -243,14 +249,14 @@ class HADsResampler(IterCalcBase):
     ...     pytest.skip(mount_doctest_skip_message)
     >>> resample_test_hads_output_path: Path = getfixture(
     ...         'resample_test_hads_output_path')
-    >>> hads_resampler: HADsResampler = HADsResampler(  # doctest: +SKIP
+    >>> hads_converter: HADsConvert = HADsConvert(  # doctest: +SKIP
     ...     output_path=resample_test_hads_output_path,
     ... )
-    >>> hads_resampler  # doctest: +SKIP
-    <HADsResampler(...count=504,...
+    >>> hads_converter  # doctest: +SKIP
+    <HADsConvert(...count=504,...
         ...input_path='.../tasmax/day',...
         ...output_path='...run-results_..._.../hads')>
-    >>> pprint(hads_resampler.input_files)   # doctest: +SKIP
+    >>> pprint(hads_converter.input_files)   # doctest: +SKIP
     (...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc'),
      ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800201-19800229.nc'),
      ...,
@@ -258,7 +264,7 @@ class HADsResampler(IterCalcBase):
     """
 
     input_path: PathLike | None = RAW_HADS_TASMAX_PATH
-    output_path: PathLike = RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH
+    output_path: PathLike = CONVERT_OUTPUT_PATH / HADS_OUTPUT_PATH
     input_files: Iterable[PathLike] | None = None
 
     cpus: int | None = None
@@ -314,8 +320,8 @@ class HADsResampler(IterCalcBase):
 
 
 @dataclass(kw_only=True, repr=False)
-class CPMResampler(IterCalcBase):
-    """CPM specific changes to HADsResampler.
+class CPMConvert(IterCalcBase):
+    """CPM specific changes to HADsConvert.
 
     Attributes
     ----------
@@ -342,15 +348,15 @@ class CPMResampler(IterCalcBase):
     ...     pytest.skip(mount_doctest_skip_message)
     >>> resample_test_cpm_output_path: Path = getfixture(
     ...         'resample_test_cpm_output_path')
-    >>> cpm_resampler: CPMResampler = CPMResampler(
+    >>> cpm_converter: CPMConvert = CPMConvert(
     ...     input_path=RAW_CPM_TASMAX_PATH,
     ...     output_path=resample_test_cpm_output_path,
     ... )
-    >>> cpm_resampler
-    <CPMResampler(count=..., max_count=...,...
+    >>> cpm_converter
+    <CPMConvert(count=..., max_count=...,...
         ...input_path='.../tasmax/01/latest',...
         ...output_path='.../test-run-results_..._.../cpm')>
-    >>> pprint(cpm_resampler.input_files)
+    >>> pprint(cpm_converter.input_files)
     (...Path('.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_19801201-19811130.nc'),
      ...Path('.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_19811201-19821130.nc'),
      ...
@@ -358,7 +364,7 @@ class CPMResampler(IterCalcBase):
     """
 
     input_path: PathLike | None = RAW_CPM_TASMAX_PATH
-    output_path: PathLike = RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH
+    output_path: PathLike = CONVERT_OUTPUT_PATH / CPM_OUTPUT_PATH
     prior_time_series: PathLike | Dataset | None = None
 
     @property
@@ -412,7 +418,7 @@ class CPMResampler(IterCalcBase):
 
 @dataclass(kw_only=True)
 class IterCalcManagerBase:
-    """Base class to inherit for `HADs` and `CPM` resampler managers."""
+    """Base class to inherit for `HADs` and `CPM` converter managers."""
 
     input_paths: PathLike | Sequence[PathLike] = Path()
     output_paths: PathLike | Sequence[PathLike] = Path()
@@ -422,9 +428,9 @@ class IterCalcManagerBase:
     stop_index: int | None = None
     start_date: date | None = None
     end_date: date | None = None
-    configs: list[HADsResampler | CPMResampler] = field(default_factory=list)
+    configs: list[HADsConvert | CPMConvert] = field(default_factory=list)
     config_default_kwargs: dict[str, Any] = field(default_factory=dict)
-    calc_class: type[HADsResampler | CPMResampler] | None = None
+    calc_class: type[HADsConvert | CPMConvert] | None = None
     cpus: int | None = None
     _input_path_dict: dict[Path, str] = field(default_factory=dict)
     _output_path_dict: dict[PathLike, VariableOptions | str] = field(
@@ -475,7 +481,7 @@ class IterCalcManagerBase:
         append_input_path_dict: bool = False,
         append_output_path_dict: bool = False,
     ) -> Iterator[tuple[Path, Path]]:
-        """Yield paths of resampled `self.variables` and `self.runs`."""
+        """Yield paths of converted `self.variables` and `self.runs`."""
         for var in self.variables:
             input_path: Path = Path(path) / var / self.sub_path
             output_path: Path = Path(path) / var
@@ -489,7 +495,7 @@ class IterCalcManagerBase:
         self,
         run_set_data_paths: bool = True,
     ):
-        """Check and set `input`, `resample` and `crop` paths."""
+        """Check and set `input`, `convert` and `crop` paths."""
 
         if run_set_data_paths:
             self.set_input_paths()
@@ -549,7 +555,7 @@ class IterCalcManagerBase:
             )
 
     def yield_configs(self) -> Iterable[IterCalcBase]:
-        """Generate a `CPMResampler` or `HADsResampler` for `self.input_paths`."""
+        """Generate a `CPMConvert` or `HADsConvert` for `self.input_paths`."""
         self.check_paths()
         assert isinstance(self.output_paths, Iterable)
         assert isinstance(self.calc_class, type(IterCalcBase))
@@ -597,24 +603,26 @@ class IterCalcManagerBase:
         self,
         multiprocess: bool = False,
         cpus: int | None = None,
-        return_resamplers: bool = False,
+        return_converters: bool = False,
         return_path: bool = True,
+        description_func: Callable[[PathLike, Any], str] | None = path_print_progress,
+        # description_func: Callable[[str], str] | None = lambda x: str(file_name_to_start_end_dates(x)),
         **kwargs,
     ) -> tuple[IterCalcBase, ...] | list[T_Dataset | Path]:
-        """Run all resampler configurations
+        """Run all converter configurations
 
         Parameters
         ----------
         multiprocess
-            If `True` run parameters in `resample_configs` with `multiprocess_execute`.
+            If `True` run parameters in `convert_configs` with `multiprocess_execute`.
         cpus
             Number of `cpus` to pass to `multiprocess_execute`.
-        return_resamplers
-            Return instances of generated `HADsResampler` or
-            `CPMResampler`, or return the `results` of each
+        return_converters
+            Return instances of generated `HADsConvert` or
+            `CPMConvert`, or return the `results` of each
             `execute` call.
         return_path
-            Return `Path` to results object if True, else resampled `Dataset`.
+            Return `Path` to results object if True, else converted `Dataset`.
         kwargs
             Parameters to path to sampler `execute` calls.
         """
@@ -622,14 +630,15 @@ class IterCalcManagerBase:
             self,
             multiprocess=multiprocess,
             cpus=cpus,
-            return_instances=return_resamplers,
+            return_instances=return_converters,
             return_path=return_path,
+            description_func=description_func,
             **kwargs,
         )
 
 
 @dataclass(kw_only=True, repr=False)
-class HADsResamplerManager(IterCalcManagerBase):
+class HADsConvertManager(IterCalcManagerBase):
     """Class to manage processing HADs resampling.
 
     Attributes
@@ -656,7 +665,7 @@ class HADsResamplerManager(IterCalcManagerBase):
     end_date
         Not yet implemented, but in future from what date to generate stop index from.
     configs
-        List of `HADsResampler` instances to iterate `resampling` or `cropping`.
+        List of `HADsConvert` instances to iterate `resampling` or `cropping`.
     config_default_kwargs
         Parameters passed to all running `self.configs`.
     calc_class
@@ -674,24 +683,22 @@ class HADsResamplerManager(IterCalcManagerBase):
     ...     pytest.skip(mount_doctest_skip_message)
     >>> resample_test_hads_output_path: Path = getfixture(
     ...         'resample_test_hads_output_path')
-    >>> hads_resampler_manager: HADsResamplerManager = HADsResamplerManager(
+    >>> hads_converter_manager: HADsConvertManager = HADsConvertManager(
     ...     variables=VariableOptions.all(),
     ...     output_paths=resample_test_hads_output_path,
     ...     )
-    >>> hads_resampler_manager
-    <HADsResamplerManager(variables_count=3, input_paths_count=3)>
+    >>> hads_converter_manager
+    <HADsConvertManager(variables_count=3, input_paths_count=3)>
     """
 
     input_paths: PathLike | Sequence[PathLike] = RAW_HADS_PATH
-    output_paths: PathLike | Sequence[PathLike] = (
-        RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH
-    )
+    output_paths: PathLike | Sequence[PathLike] = CONVERT_OUTPUT_PATH / HADS_OUTPUT_PATH
     sub_path: Path = HADS_SUB_PATH
     start_date: date | None = HADS_START_DATE
     end_date: date | None = HADS_END_DATE
-    configs: list[HADsResampler] = field(default_factory=list)
+    configs: list[HADsConvert] = field(default_factory=list)
     config_default_kwargs: dict[str, Any] = field(default_factory=dict)
-    calc_class: type[HADsResampler] = HADsResampler
+    calc_class: type[HADsConvert] = HADsConvert
     cpm_for_coord_alignment: T_Dataset | PathLike = RAW_CPM_TASMAX_PATH
     cpm_for_coord_alignment_path_converted: bool = False
 
@@ -710,8 +717,8 @@ class HADsResamplerManager(IterCalcManagerBase):
             skip_reproject=self.cpm_for_coord_alignment_path_converted,
         )
 
-    def yield_configs(self) -> Iterable[HADsResampler]:
-        """Generate a `CPMResampler` or `HADsResampler` for `self.input_paths`."""
+    def yield_configs(self) -> Iterable[HADsConvert]:
+        """Generate a `CPMConvert` or `HADsConvert` for `self.input_paths`."""
         self.check_paths()
         assert isinstance(self.output_paths, Iterable)
         for index, var_path in enumerate(self._input_path_dict.items()):
@@ -728,7 +735,7 @@ class HADsResamplerManager(IterCalcManagerBase):
 
 
 @dataclass(kw_only=True, repr=False)
-class CPMResamplerManager(IterCalcManagerBase):
+class CPMConvertManager(IterCalcManagerBase):
     """Class to manage processing CPM resampling.
 
     Attributes
@@ -757,7 +764,7 @@ class CPMResamplerManager(IterCalcManagerBase):
     end_date
         Not yet implemented, but in future from what date to generate stop index from.
     configs
-        List of `HADsResampler` instances to iterate `resampling` or `cropping`.
+        List of `HADsConvert` instances to iterate `resampling` or `cropping`.
     config_default_kwargs
         Parameters passed to all running `self.configs`.
     calc_class
@@ -772,37 +779,37 @@ class CPMResamplerManager(IterCalcManagerBase):
     ...     pytest.skip(mount_doctest_skip_message)
     >>> resample_test_cpm_output_path: Path = getfixture(
     ...         'resample_test_cpm_output_path')
-    >>> cpm_resampler_manager: CPMResamplerManager = CPMResamplerManager(
+    >>> cpm_converter_manager: CPMConvertManager = CPMConvertManager(
     ...     stop_index=9,
     ...     output_paths=resample_test_cpm_output_path,
     ...     )
-    >>> cpm_resampler_manager
-    <CPMResamplerManager(variables_count=1, runs_count=4,
+    >>> cpm_converter_manager
+    <CPMConvertManager(variables_count=1, runs_count=4,
                          input_paths_count=4)>
-    >>> configs: tuple[CPMResampler, ...] = tuple(
-    ...     cpm_resampler_manager.yield_configs())
+    >>> configs: tuple[CPMConvert, ...] = tuple(
+    ...     cpm_converter_manager.yield_configs())
     >>> pprint(configs)
-    (<CPMResampler(count=9, max_count=100,
+    (<CPMConvert(count=9, max_count=100,
                    input_path='.../tasmax/05/latest',
                    output_path='.../cpm/tasmax/05')>,
-     <CPMResampler(count=9, max_count=100,
+     <CPMConvert(count=9, max_count=100,
                    input_path='.../tasmax/06/latest',
                    output_path='.../cpm/tasmax/06')>,
-     <CPMResampler(count=9, max_count=100,
+     <CPMConvert(count=9, max_count=100,
                    input_path='.../tasmax/07/latest',
                    output_path='.../cpm/tasmax/07')>,
-     <CPMResampler(count=9, max_count=100,
+     <CPMConvert(count=9, max_count=100,
                    input_path='.../tasmax/08/latest',
                    output_path='.../cpm/tasmax/08')>)
     """
 
     input_paths: PathLike | Sequence[PathLike] = RAW_CPM_PATH
-    output_paths: PathLike | Sequence[PathLike] = RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH
+    output_paths: PathLike | Sequence[PathLike] = CONVERT_OUTPUT_PATH / CPM_OUTPUT_PATH
     sub_path: Path = CPM_SUB_PATH
     start_date: date | None = CPM_START_DATE
     end_date: date | None = CPM_END_DATE
-    configs: list[CPMResampler] = field(default_factory=list)
-    calc_class: type[CPMResampler] = CPMResampler
+    configs: list[CPMConvert] = field(default_factory=list)
+    calc_class: type[CPMConvert] = CPMConvert
     runs: Sequence[RunOptions | str] = RunOptions.preferred()
 
     # Uncomment if cpm specific paths like 'pr' for 'rainbow'

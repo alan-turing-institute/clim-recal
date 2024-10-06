@@ -40,7 +40,7 @@ CPM_SUB_PATH: Final[Path] = Path("latest")
 
 CPM_RESOLUTION_METERS: Final[int] = 2200
 
-RESAMPLE_OUTPUT_PATH: Final[Path] = Path("resample")
+CONVERT_OUTPUT_PATH: Final[Path] = Path("resample")
 CROP_OUTPUT_PATH: Final[Path] = Path("crop")
 
 HADS_NAME: Final[str] = "hads"

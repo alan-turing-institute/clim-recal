@@ -12,6 +12,7 @@ from xarray.core.types import T_Dataset
 from .convert import IterCalcBase, IterCalcManagerBase
 from .utils.core import _get_source_path
 from .utils.data import (
+    CONVERT_OUTPUT_PATH,
     CPM_CROP_OUTPUT_PATH,
     CPM_END_DATE,
     CPM_OUTPUT_PATH,
@@ -21,7 +22,6 @@ from .utils.data import (
     HADS_END_DATE,
     HADS_OUTPUT_PATH,
     HADS_START_DATE,
-    RESAMPLE_OUTPUT_PATH,
     RegionOptions,
     RunOptions,
     VariableOptions,
@@ -166,7 +166,7 @@ class HADsRegionCropper(RegionCropperBase):
     ... )
     """
 
-    input_path: PathLike | None = RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH
+    input_path: PathLike | None = CONVERT_OUTPUT_PATH / HADS_OUTPUT_PATH
     crop_path: PathLike = CROP_OUTPUT_PATH / HADS_CROP_OUTPUT_PATH
 
 
@@ -201,7 +201,7 @@ class CPMRegionCropper(RegionCropperBase):
     ... )
     """
 
-    input_path: PathLike | None = RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH
+    input_path: PathLike | None = CONVERT_OUTPUT_PATH / CPM_OUTPUT_PATH
     crop_path: PathLike = CROP_OUTPUT_PATH / CPM_CROP_OUTPUT_PATH
 
 
@@ -356,7 +356,7 @@ class RegionCropperManagerBase(IterCalcManagerBase):
         return_path: bool = True,
         **kwargs,
     ) -> tuple[RegionCropperBase, ...] | list[T_Dataset | Path]:
-        """Run all resampler configurations
+        """Run all converter configurations
 
         Parameters
         ----------
@@ -422,18 +422,18 @@ class HADsRegionCropManager(RegionCropperManagerBase):
     ...         'tasmax_hads_1980_converted_path')
     >>> if not tasmax_hads_1980_converted_path:
     ...     pytest.skip(mount_doctest_skip_message)
-    >>> hads_resampler_manager: HADsRegionCropManager = HADsRegionCropManager(
+    >>> hads_crop_manager: HADsRegionCropManager = HADsRegionCropManager(
     ...     input_paths=tasmax_hads_1980_converted_path.parent,
     ...     variables=VariableOptions.all(),
     ...     output_paths=resample_test_hads_output_path,
     ...     )
-    >>> hads_resampler_manager
+    >>> hads_crop_manager
     <HADsRegionCropManager(variables_count=3, input_paths_count=3)>
     """
 
     input_paths: PathLike | Sequence[PathLike] = HADS_OUTPUT_PATH
     output_paths: Sequence[PathLike] | PathLike = (
-        RESAMPLE_OUTPUT_PATH / HADS_CROP_OUTPUT_PATH
+        CONVERT_OUTPUT_PATH / HADS_CROP_OUTPUT_PATH
     )
     start_date: date = HADS_START_DATE
     end_date: date = HADS_END_DATE
@@ -544,9 +544,9 @@ class CPMRegionCropManager(RegionCropperManagerBase):
                    output_path='.../cpm/tasmax/08')>)
     """
 
-    input_paths: PathLike | Sequence[PathLike] = RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH
+    input_paths: PathLike | Sequence[PathLike] = CONVERT_OUTPUT_PATH / CPM_OUTPUT_PATH
     output_paths: PathLike | Sequence[PathLike] = (
-        RESAMPLE_OUTPUT_PATH / CPM_CROP_OUTPUT_PATH
+        CONVERT_OUTPUT_PATH / CPM_CROP_OUTPUT_PATH
     )
     start_date: date = CPM_START_DATE
     end_date: date = CPM_END_DATE

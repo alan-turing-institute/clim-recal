@@ -188,7 +188,7 @@ def multiprocess_execute(
     cpus: int | None = None,
     include_sub_process_config: bool = False,
     sub_process_progress_bar: bool = False,
-    **kwargs: dict[str, Any],
+    **kwargs: Any,
 ) -> list:
     """Run `method_name` as from `iter` via `multiprocessing`.
 

@@ -9,8 +9,8 @@ from xarray import open_dataset
 from xarray.core.types import T_Dataset
 
 from clim_recal.convert import (
-    CPMResamplerManager,
-    HADsResamplerManager,
+    CPMConvertManager,
+    HADsConvertManager,
     IterCalcBase,
     IterCalcManagerBase,
 )
@@ -151,7 +151,7 @@ def test_execute_crop_configs(
             tasmax_cpm_1980_converted_path
         )
         resampler_manager_kwargs["cpm_for_coord_alignment_path_converted"] = True
-        resampler = HADsResamplerManager(
+        resampler = HADsConvertManager(
             input_paths=raw_input_path,
             output_paths=resample_path,
             # crop_paths=crop_path,
@@ -167,7 +167,7 @@ def test_execute_crop_configs(
         resampler_manager_kwargs["runs"] = crop_manager_kwargs["runs"] = (
             RunOptions.ONE,
         )
-        resampler = CPMResamplerManager(
+        resampler = CPMConvertManager(
             input_paths=raw_input_path,
             output_paths=resample_path,
             stop_index=1,
@@ -182,7 +182,7 @@ def test_execute_crop_configs(
         check_input_paths_exist=False,
         **crop_manager_kwargs,
     )
-    if isinstance(resampler, HADsResamplerManager):
+    if isinstance(resampler, HADsConvertManager):
         resampler.set_cpm_for_coord_alignment()
 
     _: tuple[IterCalcBase, ...] = resampler.execute_configs(multiprocess=multiprocess)

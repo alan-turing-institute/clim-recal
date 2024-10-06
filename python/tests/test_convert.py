@@ -9,10 +9,10 @@ from xarray import open_dataset
 from xarray.core.types import T_Dataset
 
 from clim_recal.convert import (
-    CPMResampler,
-    CPMResamplerManager,
-    HADsResampler,
-    HADsResamplerManager,
+    CPMConvert,
+    CPMConvertManager,
+    HADsConvert,
+    HADsConvertManager,
     IterCalcBase,
     IterCalcManagerBase,
 )
@@ -110,7 +110,7 @@ def test_cpm_manager(
     #     ["19801201", "19801202", "19801203", "19801204", "19801205"]
     # )
     output_path: Path = resample_test_cpm_output_path / config
-    test_config = CPMResampler(
+    test_config = CPMConvert(
         input_path=tasmax_cpm_1980_raw_path.parent,
         output_path=output_path,
     )
@@ -145,7 +145,7 @@ def test_hads_manager(
     resample_test_hads_output_path, range: bool, tasmax_hads_1980_raw_path: Path
 ) -> None:
     """Test running default HADs spatial projection."""
-    test_config = HADsResampler(
+    test_config = HADsConvert(
         input_path=tasmax_hads_1980_raw_path.parent,
         output_path=resample_test_hads_output_path / f"range-{range}",
     )
@@ -166,10 +166,10 @@ def test_hads_manager(
 @pytest.mark.localcache
 @pytest.mark.mount
 @pytest.mark.parametrize("strict_fail_bool", (True, False))
-@pytest.mark.parametrize("manager", (HADsResamplerManager, CPMResamplerManager))
+@pytest.mark.parametrize("manager", (HADsConvertManager, CPMConvertManager))
 def test_variable_in_base_import_path_error(
     strict_fail_bool: bool,
-    manager: HADsResamplerManager | CPMResamplerManager,
+    manager: HADsConvertManager | CPMConvertManager,
     tasmax_hads_1980_raw_path: Path,
 ) -> None:
     """Test checking import path validity for a given variable."""
@@ -203,14 +203,14 @@ def test_execute_resample_configs(
     """Test running default HADs spatial projection."""
     test_config: IterCalcManagerBase
     if manager_type == HADS_NAME:
-        test_config = HADsResamplerManager(
+        test_config = HADsConvertManager(
             input_paths=hads_data_path,
             output_paths=tmp_path,
             stop_index=1,
             cpm_for_coord_alignment=tasmax_cpm_1980_converted,
         )
     else:
-        test_config = CPMResamplerManager(
+        test_config = CPMConvertManager(
             input_paths=cpm_data_path,
             output_paths=tmp_path,
             runs=(RunOptions.ONE,),
