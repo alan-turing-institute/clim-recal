@@ -326,10 +326,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes"><span class="header-section-number">1.1</span> Classes</a>
   <ul class="collapse">
-  <li><a href="#python.clim_recal.convert.CPMResampler" id="toc-python.clim_recal.convert.CPMResampler" class="nav-link" data-scroll-target="#python.clim_recal.convert.CPMResampler"><span class="header-section-number">1.1.1</span> CPMResampler</a></li>
-  <li><a href="#python.clim_recal.convert.CPMResamplerManager" id="toc-python.clim_recal.convert.CPMResamplerManager" class="nav-link" data-scroll-target="#python.clim_recal.convert.CPMResamplerManager"><span class="header-section-number">1.1.2</span> CPMResamplerManager</a></li>
-  <li><a href="#python.clim_recal.convert.HADsResampler" id="toc-python.clim_recal.convert.HADsResampler" class="nav-link" data-scroll-target="#python.clim_recal.convert.HADsResampler"><span class="header-section-number">1.1.3</span> HADsResampler</a></li>
-  <li><a href="#python.clim_recal.convert.HADsResamplerManager" id="toc-python.clim_recal.convert.HADsResamplerManager" class="nav-link" data-scroll-target="#python.clim_recal.convert.HADsResamplerManager"><span class="header-section-number">1.1.4</span> HADsResamplerManager</a></li>
+  <li><a href="#python.clim_recal.convert.CPMConvert" id="toc-python.clim_recal.convert.CPMConvert" class="nav-link" data-scroll-target="#python.clim_recal.convert.CPMConvert"><span class="header-section-number">1.1.1</span> CPMConvert</a></li>
+  <li><a href="#python.clim_recal.convert.CPMConvertManager" id="toc-python.clim_recal.convert.CPMConvertManager" class="nav-link" data-scroll-target="#python.clim_recal.convert.CPMConvertManager"><span class="header-section-number">1.1.2</span> CPMConvertManager</a></li>
+  <li><a href="#python.clim_recal.convert.HADsConvert" id="toc-python.clim_recal.convert.HADsConvert" class="nav-link" data-scroll-target="#python.clim_recal.convert.HADsConvert"><span class="header-section-number">1.1.3</span> HADsConvert</a></li>
+  <li><a href="#python.clim_recal.convert.HADsConvertManager" id="toc-python.clim_recal.convert.HADsConvertManager" class="nav-link" data-scroll-target="#python.clim_recal.convert.HADsConvertManager"><span class="header-section-number">1.1.4</span> HADsConvertManager</a></li>
   <li><a href="#python.clim_recal.convert.IterCalcBase" id="toc-python.clim_recal.convert.IterCalcBase" class="nav-link" data-scroll-target="#python.clim_recal.convert.IterCalcBase"><span class="header-section-number">1.1.5</span> IterCalcBase</a></li>
   <li><a href="#python.clim_recal.convert.IterCalcManagerBase" id="toc-python.clim_recal.convert.IterCalcManagerBase" class="nav-link" data-scroll-target="#python.clim_recal.convert.IterCalcManagerBase"><span class="header-section-number">1.1.6</span> IterCalcManagerBase</a></li>
   </ul></li>
@@ -351,10 +351,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="python.clim_recal.convert" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> clim_recal.convert</h1>
 <p><code>clim_recal.convert</code></p>
-<p>Resample UKHADS data and UKCP18 data.</p>
+<p>Convert UKHADS data and UKCP18 data.</p>
 <ul>
-<li>UKCP18 is resampled temporally from a 360 day calendar to a standard (365/366 day) calendar and projected to British National Grid (BNG) EPSG:27700 from its original rotated polar grid.</li>
-<li>UKHADS is resampled spatially from 1km to 2.2km in BNG aligned with the projected UKCP18</li>
+<li>UKCP18 is converted temporally from a 360 day calendar to a standard (365/366 day) calendar and projected to British National Grid (BNG) EPSG:27700 from its original rotated polar grid.</li>
+<li>UKHADS is converted spatially from 1km to 2.2km in BNG aligned with the projected UKCP18</li>
 </ul>
 <section id="classes" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="classes"><span class="header-section-number">1.1</span> Classes</h2>
@@ -367,19 +367,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#python.clim_recal.convert.CPMResampler">CPMResampler</a></td>
-<td>CPM specific changes to HADsResampler.</td>
+<td><a href="#python.clim_recal.convert.CPMConvert">CPMConvert</a></td>
+<td>CPM specific changes to HADsConvert.</td>
 </tr>
 <tr class="even">
-<td><a href="#python.clim_recal.convert.CPMResamplerManager">CPMResamplerManager</a></td>
+<td><a href="#python.clim_recal.convert.CPMConvertManager">CPMConvertManager</a></td>
 <td>Class to manage processing CPM resampling.</td>
 </tr>
 <tr class="odd">
-<td><a href="#python.clim_recal.convert.HADsResampler">HADsResampler</a></td>
+<td><a href="#python.clim_recal.convert.HADsConvert">HADsConvert</a></td>
 <td>Manage resampling HADs datafiles for modelling.</td>
 </tr>
 <tr class="even">
-<td><a href="#python.clim_recal.convert.HADsResamplerManager">HADsResamplerManager</a></td>
+<td><a href="#python.clim_recal.convert.HADsConvertManager">HADsConvertManager</a></td>
 <td>Class to manage processing HADs resampling.</td>
 </tr>
 <tr class="odd">
@@ -388,14 +388,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td><a href="#python.clim_recal.convert.IterCalcManagerBase">IterCalcManagerBase</a></td>
-<td>Base class to inherit for <code>HADs</code> and <code>CPM</code> resampler managers.</td>
+<td>Base class to inherit for <code>HADs</code> and <code>CPM</code> converter managers.</td>
 </tr>
 </tbody>
 </table>
-<section id="python.clim_recal.convert.CPMResampler" class="level3" data-number="1.1.1">
-<h3 data-number="1.1.1" class="anchored" data-anchor-id="python.clim_recal.convert.CPMResampler"><span class="header-section-number">1.1.1</span> CPMResampler</h3>
-<p><code>clim_recal.convert.CPMResampler(self, *, input_path=RAW_CPM_TASMAX_PATH, output_path=RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH, variable_name=VariableOptions.default(), input_files=None, cpus=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, start_index=0, stop_index=None, _result_paths=dict(), _iter_calc_method_name='range_to_reprojection', prior_time_series=None)</code></p>
-<p>CPM specific changes to HADsResampler.</p>
+<section id="python.clim_recal.convert.CPMConvert" class="level3" data-number="1.1.1">
+<h3 data-number="1.1.1" class="anchored" data-anchor-id="python.clim_recal.convert.CPMConvert"><span class="header-section-number">1.1.1</span> CPMConvert</h3>
+<p><code>clim_recal.convert.CPMConvert(self, *, input_path=RAW_CPM_TASMAX_PATH, output_path=CONVERT_OUTPUT_PATH / CPM_OUTPUT_PATH, variable_name=VariableOptions.default(), input_files=None, cpus=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, start_index=0, stop_index=None, _result_paths=dict(), _iter_calc_method_name='range_to_reprojection', prior_time_series=None)</code></p>
+<p>CPM specific changes to HADsConvert.</p>
 <section id="attributes" class="level4" data-number="1.1.1.1">
 <h4 data-number="1.1.1.1" class="anchored" data-anchor-id="attributes"><span class="header-section-number">1.1.1.1</span> Attributes</h4>
 <table class="caption-top table">
@@ -461,24 +461,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_doctest_skip_message)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> resample_test_cpm_output_path: Path <span class="op">=</span> getfixture(</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>...         <span class="st">'resample_test_cpm_output_path'</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cpm_resampler: CPMResampler <span class="op">=</span> CPMResampler(</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cpm_converter: CPMConvert <span class="op">=</span> CPMConvert(</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>...     input_path<span class="op">=</span>RAW_CPM_TASMAX_PATH,</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>...     output_path<span class="op">=</span>resample_test_cpm_output_path,</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>... )</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cpm_resampler</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>CPMResampler(count<span class="op">=</span>..., max_count<span class="op">=</span>...,...</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cpm_converter</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>CPMConvert(count<span class="op">=</span>..., max_count<span class="op">=</span>...,...</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    ...input_path<span class="op">=</span><span class="st">'.../tasmax/01/latest'</span>,...</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    ...output_path<span class="op">=</span><span class="st">'.../test-run-results_..._.../cpm'</span>)<span class="op">&gt;</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pprint(cpm_resampler.input_files)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pprint(cpm_converter.input_files)</span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>(...Path(<span class="st">'.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_19801201-19811130.nc'</span>),</span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a> ...Path(<span class="st">'.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_19811201-19821130.nc'</span>),</span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a> ...</span>
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a> ...Path(<span class="st">'.../tasmax/01/latest/tasmax_...-cpm_uk_2.2km_01_day_20791201-20801130.nc'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
-<section id="python.clim_recal.convert.CPMResamplerManager" class="level3" data-number="1.1.2">
-<h3 data-number="1.1.2" class="anchored" data-anchor-id="python.clim_recal.convert.CPMResamplerManager"><span class="header-section-number">1.1.2</span> CPMResamplerManager</h3>
-<p><code>clim_recal.convert.CPMResamplerManager(self, *, input_paths=RAW_CPM_PATH, output_paths=RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH, variables=(VariableOptions.default()), sub_path=CPM_SUB_PATH, start_index=0, stop_index=None, start_date=CPM_START_DATE, end_date=CPM_END_DATE, configs=list(), config_default_kwargs=dict(), calc_class=CPMResampler, cpus=None, _input_path_dict=dict(), _output_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False, runs=RunOptions.preferred())</code></p>
+<section id="python.clim_recal.convert.CPMConvertManager" class="level3" data-number="1.1.2">
+<h3 data-number="1.1.2" class="anchored" data-anchor-id="python.clim_recal.convert.CPMConvertManager"><span class="header-section-number">1.1.2</span> CPMConvertManager</h3>
+<p><code>clim_recal.convert.CPMConvertManager(self, *, input_paths=RAW_CPM_PATH, output_paths=CONVERT_OUTPUT_PATH / CPM_OUTPUT_PATH, variables=(VariableOptions.default()), sub_path=CPM_SUB_PATH, start_index=0, stop_index=None, start_date=CPM_START_DATE, end_date=CPM_END_DATE, configs=list(), config_default_kwargs=dict(), calc_class=CPMConvert, cpus=None, _input_path_dict=dict(), _output_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False, runs=RunOptions.preferred())</code></p>
 <p>Class to manage processing CPM resampling.</p>
 <section id="attributes-1" class="level4" data-number="1.1.2.1">
 <h4 data-number="1.1.2.1" class="anchored" data-anchor-id="attributes-1"><span class="header-section-number">1.1.2.1</span> Attributes</h4>
@@ -543,18 +543,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td>start_date</td>
-<td>date</td>
+<td>date | None</td>
 <td>Not yet implemented, but in future from what date to generate start index from.</td>
 </tr>
 <tr class="odd">
 <td>end_date</td>
-<td>date</td>
+<td>date | None</td>
 <td>Not yet implemented, but in future from what date to generate stop index from.</td>
 </tr>
 <tr class="even">
 <td>configs</td>
-<td>list[CPMResampler]</td>
-<td>List of <code>HADsResampler</code> instances to iterate <code>resampling</code> or <code>cropping</code>.</td>
+<td>list[CPMConvert]</td>
+<td>List of <code>HADsConvert</code> instances to iterate <code>resampling</code> or <code>cropping</code>.</td>
 </tr>
 <tr class="odd">
 <td>config_default_kwargs</td>
@@ -563,7 +563,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td>calc_class</td>
-<td>type[CPMResampler]</td>
+<td>type[CPMConvert]</td>
 <td><code>class</code> to construct all <code>self.configs</code> instances with.</td>
 </tr>
 <tr class="odd">
@@ -580,33 +580,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_doctest_skip_message)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> resample_test_cpm_output_path: Path <span class="op">=</span> getfixture(</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>...         <span class="st">'resample_test_cpm_output_path'</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cpm_resampler_manager: CPMResamplerManager <span class="op">=</span> CPMResamplerManager(</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cpm_converter_manager: CPMConvertManager <span class="op">=</span> CPMConvertManager(</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>...     stop_index<span class="op">=</span><span class="dv">9</span>,</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>...     output_paths<span class="op">=</span>resample_test_cpm_output_path,</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>...     )</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cpm_resampler_manager</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>CPMResamplerManager(variables_count<span class="op">=</span><span class="dv">1</span>, runs_count<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cpm_converter_manager</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>CPMConvertManager(variables_count<span class="op">=</span><span class="dv">1</span>, runs_count<span class="op">=</span><span class="dv">4</span>,</span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>                     input_paths_count<span class="op">=</span><span class="dv">4</span>)<span class="op">&gt;</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> configs: <span class="bu">tuple</span>[CPMResampler, ...] <span class="op">=</span> <span class="bu">tuple</span>(</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>...     cpm_resampler_manager.yield_configs())</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> configs: <span class="bu">tuple</span>[CPMConvert, ...] <span class="op">=</span> <span class="bu">tuple</span>(</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>...     cpm_converter_manager.yield_configs())</span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pprint(configs)</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>(<span class="op">&lt;</span>CPMResampler(count<span class="op">=</span><span class="dv">9</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>(<span class="op">&lt;</span>CPMConvert(count<span class="op">=</span><span class="dv">9</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
 <span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>               input_path<span class="op">=</span><span class="st">'.../tasmax/05/latest'</span>,</span>
 <span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>               output_path<span class="op">=</span><span class="st">'.../cpm/tasmax/05'</span>)<span class="op">&gt;</span>,</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a> <span class="op">&lt;</span>CPMResampler(count<span class="op">=</span><span class="dv">9</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a> <span class="op">&lt;</span>CPMConvert(count<span class="op">=</span><span class="dv">9</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
 <span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>               input_path<span class="op">=</span><span class="st">'.../tasmax/06/latest'</span>,</span>
 <span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>               output_path<span class="op">=</span><span class="st">'.../cpm/tasmax/06'</span>)<span class="op">&gt;</span>,</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a> <span class="op">&lt;</span>CPMResampler(count<span class="op">=</span><span class="dv">9</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a> <span class="op">&lt;</span>CPMConvert(count<span class="op">=</span><span class="dv">9</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
 <span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>               input_path<span class="op">=</span><span class="st">'.../tasmax/07/latest'</span>,</span>
 <span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>               output_path<span class="op">=</span><span class="st">'.../cpm/tasmax/07'</span>)<span class="op">&gt;</span>,</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a> <span class="op">&lt;</span>CPMResampler(count<span class="op">=</span><span class="dv">9</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a> <span class="op">&lt;</span>CPMConvert(count<span class="op">=</span><span class="dv">9</span>, max_count<span class="op">=</span><span class="dv">100</span>,</span>
 <span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>               input_path<span class="op">=</span><span class="st">'.../tasmax/08/latest'</span>,</span>
 <span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>               output_path<span class="op">=</span><span class="st">'.../cpm/tasmax/08'</span>)<span class="op">&gt;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
-<section id="python.clim_recal.convert.HADsResampler" class="level3" data-number="1.1.3">
-<h3 data-number="1.1.3" class="anchored" data-anchor-id="python.clim_recal.convert.HADsResampler"><span class="header-section-number">1.1.3</span> HADsResampler</h3>
-<p><code>clim_recal.convert.HADsResampler(self, *, input_path=RAW_HADS_TASMAX_PATH, output_path=RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH, variable_name=VariableOptions.default(), input_files=None, cpus=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, start_index=0, stop_index=None, _result_paths=dict(), _iter_calc_method_name='range_to_reprojection', input_file_x_column_name=HADS_XDIM, input_file_y_column_name=HADS_YDIM, cpm_for_coord_alignment=RAW_CPM_TASMAX_PATH, cpm_for_coord_alignment_path_converted=False)</code></p>
+<section id="python.clim_recal.convert.HADsConvert" class="level3" data-number="1.1.3">
+<h3 data-number="1.1.3" class="anchored" data-anchor-id="python.clim_recal.convert.HADsConvert"><span class="header-section-number">1.1.3</span> HADsConvert</h3>
+<p><code>clim_recal.convert.HADsConvert(self, *, input_path=RAW_HADS_TASMAX_PATH, output_path=CONVERT_OUTPUT_PATH / HADS_OUTPUT_PATH, variable_name=VariableOptions.default(), input_files=None, cpus=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, start_index=0, stop_index=None, _result_paths=dict(), _iter_calc_method_name='range_to_reprojection', input_file_x_column_name=HADS_XDIM, input_file_y_column_name=HADS_YDIM, cpm_for_coord_alignment=RAW_CPM_TASMAX_PATH, cpm_for_coord_alignment_path_converted=False)</code></p>
 <p>Manage resampling HADs datafiles for modelling.</p>
 <section id="attributes-2" class="level4" data-number="1.1.3.1">
 <h4 data-number="1.1.3.1" class="anchored" data-anchor-id="attributes-2"><span class="header-section-number">1.1.3.1</span> Attributes</h4>
@@ -637,7 +637,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td>input_files</td>
 <td>Iterable[PathLike] | None</td>
-<td><code>Path</code> or <code>Paths</code> of <code>NCF</code> files to resample.</td>
+<td><code>Path</code> or <code>Paths</code> of <code>NCF</code> files to convert.</td>
 </tr>
 <tr class="even">
 <td>resampling_func</td>
@@ -698,14 +698,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_doctest_skip_message)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> resample_test_hads_output_path: Path <span class="op">=</span> getfixture(</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>...         <span class="st">'resample_test_hads_output_path'</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> hads_resampler: HADsResampler <span class="op">=</span> HADsResampler(</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> hads_converter: HADsConvert <span class="op">=</span> HADsConvert(</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>...     output_path<span class="op">=</span>resample_test_hads_output_path,</span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>... )</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> hads_resampler</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>HADsResampler(...count<span class="op">=</span><span class="dv">504</span>,...</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> hads_converter</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>HADsConvert(...count<span class="op">=</span><span class="dv">504</span>,...</span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    ...input_path<span class="op">=</span><span class="st">'.../tasmax/day'</span>,...</span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    ...output_path<span class="op">=</span><span class="st">'...run-results_..._.../hads'</span>)<span class="op">&gt;</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pprint(hads_resampler.input_files)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pprint(hads_converter.input_files)</span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>(...Path(<span class="st">'.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc'</span>),</span>
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a> ...Path(<span class="st">'.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800201-19800229.nc'</span>),</span>
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a> ...,</span>
@@ -722,21 +722,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#python.clim_recal.convert.HADsResampler.set_cpm_for_coord_alignment">set_cpm_for_coord_alignment</a></td>
+<td><a href="#python.clim_recal.convert.HADsConvert.set_cpm_for_coord_alignment">set_cpm_for_coord_alignment</a></td>
 <td>Check if <code>cpm_for_coord_alignment</code> is a <code>Dataset</code>, process if a <code>Path</code>.</td>
 </tr>
 </tbody>
 </table>
-<section id="python.clim_recal.convert.HADsResampler.set_cpm_for_coord_alignment" class="level5" data-number="1.1.3.3.1">
-<h5 data-number="1.1.3.3.1" class="anchored" data-anchor-id="python.clim_recal.convert.HADsResampler.set_cpm_for_coord_alignment"><span class="header-section-number">1.1.3.3.1</span> set_cpm_for_coord_alignment</h5>
-<p><code>clim_recal.convert.HADsResampler.set_cpm_for_coord_alignment()</code></p>
+<section id="python.clim_recal.convert.HADsConvert.set_cpm_for_coord_alignment" class="level5" data-number="1.1.3.3.1">
+<h5 data-number="1.1.3.3.1" class="anchored" data-anchor-id="python.clim_recal.convert.HADsConvert.set_cpm_for_coord_alignment"><span class="header-section-number">1.1.3.3.1</span> set_cpm_for_coord_alignment</h5>
+<p><code>clim_recal.convert.HADsConvert.set_cpm_for_coord_alignment()</code></p>
 <p>Check if <code>cpm_for_coord_alignment</code> is a <code>Dataset</code>, process if a <code>Path</code>.</p>
 </section>
 </section>
 </section>
-<section id="python.clim_recal.convert.HADsResamplerManager" class="level3" data-number="1.1.4">
-<h3 data-number="1.1.4" class="anchored" data-anchor-id="python.clim_recal.convert.HADsResamplerManager"><span class="header-section-number">1.1.4</span> HADsResamplerManager</h3>
-<p><code>clim_recal.convert.HADsResamplerManager(self, *, input_paths=RAW_HADS_PATH, output_paths=RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH, variables=(VariableOptions.default()), sub_path=HADS_SUB_PATH, start_index=0, stop_index=None, start_date=HADS_START_DATE, end_date=HADS_END_DATE, configs=list(), config_default_kwargs=dict(), calc_class=HADsResampler, cpus=None, _input_path_dict=dict(), _output_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False, cpm_for_coord_alignment=RAW_CPM_TASMAX_PATH, cpm_for_coord_alignment_path_converted=False)</code></p>
+<section id="python.clim_recal.convert.HADsConvertManager" class="level3" data-number="1.1.4">
+<h3 data-number="1.1.4" class="anchored" data-anchor-id="python.clim_recal.convert.HADsConvertManager"><span class="header-section-number">1.1.4</span> HADsConvertManager</h3>
+<p><code>clim_recal.convert.HADsConvertManager(self, *, input_paths=RAW_HADS_PATH, output_paths=CONVERT_OUTPUT_PATH / HADS_OUTPUT_PATH, variables=(VariableOptions.default()), sub_path=HADS_SUB_PATH, start_index=0, stop_index=None, start_date=HADS_START_DATE, end_date=HADS_END_DATE, configs=list(), config_default_kwargs=dict(), calc_class=HADsConvert, cpus=None, _input_path_dict=dict(), _output_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False, cpm_for_coord_alignment=RAW_CPM_TASMAX_PATH, cpm_for_coord_alignment_path_converted=False)</code></p>
 <p>Class to manage processing HADs resampling.</p>
 <section id="attributes-3" class="level4" data-number="1.1.4.1">
 <h4 data-number="1.1.4.1" class="anchored" data-anchor-id="attributes-3"><span class="header-section-number">1.1.4.1</span> Attributes</h4>
@@ -796,18 +796,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td>start_date</td>
-<td>date</td>
+<td>date | None</td>
 <td>Not yet implemented, but in future from what date to generate start index from.</td>
 </tr>
 <tr class="even">
 <td>end_date</td>
-<td>date</td>
+<td>date | None</td>
 <td>Not yet implemented, but in future from what date to generate stop index from.</td>
 </tr>
 <tr class="odd">
 <td>configs</td>
-<td>list[HADsResampler]</td>
-<td>List of <code>HADsResampler</code> instances to iterate <code>resampling</code> or <code>cropping</code>.</td>
+<td>list[HADsConvert]</td>
+<td>List of <code>HADsConvert</code> instances to iterate <code>resampling</code> or <code>cropping</code>.</td>
 </tr>
 <tr class="even">
 <td>config_default_kwargs</td>
@@ -816,7 +816,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td>calc_class</td>
-<td>type[HADsResampler]</td>
+<td>type[HADsConvert]</td>
 <td><code>class</code> to construct all <code>self.configs</code> instances with.</td>
 </tr>
 <tr class="even">
@@ -843,12 +843,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_doctest_skip_message)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> resample_test_hads_output_path: Path <span class="op">=</span> getfixture(</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>...         <span class="st">'resample_test_hads_output_path'</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> hads_resampler_manager: HADsResamplerManager <span class="op">=</span> HADsResamplerManager(</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> hads_converter_manager: HADsConvertManager <span class="op">=</span> HADsConvertManager(</span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>...     variables<span class="op">=</span>VariableOptions.<span class="bu">all</span>(),</span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>...     output_paths<span class="op">=</span>resample_test_hads_output_path,</span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>...     )</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> hads_resampler_manager</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>HADsResamplerManager(variables_count<span class="op">=</span><span class="dv">3</span>, input_paths_count<span class="op">=</span><span class="dv">3</span>)<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> hads_converter_manager</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>HADsConvertManager(variables_count<span class="op">=</span><span class="dv">3</span>, input_paths_count<span class="op">=</span><span class="dv">3</span>)<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="methods-1" class="level4" data-number="1.1.4.3">
 <h4 data-number="1.1.4.3" class="anchored" data-anchor-id="methods-1"><span class="header-section-number">1.1.4.3</span> Methods</h4>
@@ -861,30 +861,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#python.clim_recal.convert.HADsResamplerManager.set_cpm_for_coord_alignment">set_cpm_for_coord_alignment</a></td>
+<td><a href="#python.clim_recal.convert.HADsConvertManager.set_cpm_for_coord_alignment">set_cpm_for_coord_alignment</a></td>
 <td>Check if <code>cpm_for_coord_alignment</code> is a <code>Dataset</code>, process if a <code>Path</code>.</td>
 </tr>
 <tr class="even">
-<td><a href="#python.clim_recal.convert.HADsResamplerManager.yield_configs">yield_configs</a></td>
-<td>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</td>
+<td><a href="#python.clim_recal.convert.HADsConvertManager.yield_configs">yield_configs</a></td>
+<td>Generate a <code>CPMConvert</code> or <code>HADsConvert</code> for <code>self.input_paths</code>.</td>
 </tr>
 </tbody>
 </table>
-<section id="python.clim_recal.convert.HADsResamplerManager.set_cpm_for_coord_alignment" class="level5" data-number="1.1.4.3.1">
-<h5 data-number="1.1.4.3.1" class="anchored" data-anchor-id="python.clim_recal.convert.HADsResamplerManager.set_cpm_for_coord_alignment"><span class="header-section-number">1.1.4.3.1</span> set_cpm_for_coord_alignment</h5>
-<p><code>clim_recal.convert.HADsResamplerManager.set_cpm_for_coord_alignment()</code></p>
+<section id="python.clim_recal.convert.HADsConvertManager.set_cpm_for_coord_alignment" class="level5" data-number="1.1.4.3.1">
+<h5 data-number="1.1.4.3.1" class="anchored" data-anchor-id="python.clim_recal.convert.HADsConvertManager.set_cpm_for_coord_alignment"><span class="header-section-number">1.1.4.3.1</span> set_cpm_for_coord_alignment</h5>
+<p><code>clim_recal.convert.HADsConvertManager.set_cpm_for_coord_alignment()</code></p>
 <p>Check if <code>cpm_for_coord_alignment</code> is a <code>Dataset</code>, process if a <code>Path</code>.</p>
 </section>
-<section id="python.clim_recal.convert.HADsResamplerManager.yield_configs" class="level5" data-number="1.1.4.3.2">
-<h5 data-number="1.1.4.3.2" class="anchored" data-anchor-id="python.clim_recal.convert.HADsResamplerManager.yield_configs"><span class="header-section-number">1.1.4.3.2</span> yield_configs</h5>
-<p><code>clim_recal.convert.HADsResamplerManager.yield_configs()</code></p>
-<p>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</p>
+<section id="python.clim_recal.convert.HADsConvertManager.yield_configs" class="level5" data-number="1.1.4.3.2">
+<h5 data-number="1.1.4.3.2" class="anchored" data-anchor-id="python.clim_recal.convert.HADsConvertManager.yield_configs"><span class="header-section-number">1.1.4.3.2</span> yield_configs</h5>
+<p><code>clim_recal.convert.HADsConvertManager.yield_configs()</code></p>
+<p>Generate a <code>CPMConvert</code> or <code>HADsConvert</code> for <code>self.input_paths</code>.</p>
 </section>
 </section>
 </section>
 <section id="python.clim_recal.convert.IterCalcBase" class="level3" data-number="1.1.5">
 <h3 data-number="1.1.5" class="anchored" data-anchor-id="python.clim_recal.convert.IterCalcBase"><span class="header-section-number">1.1.5</span> IterCalcBase</h3>
-<p><code>clim_recal.convert.IterCalcBase(self, *, input_path=Path(), output_path=RESAMPLE_OUTPUT_PATH, variable_name=VariableOptions.default(), input_files=None, cpus=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, start_index=0, stop_index=None, _result_paths=dict(), _iter_calc_method_name='range_to_reprojection')</code></p>
+<p><code>clim_recal.convert.IterCalcBase(self, *, input_path=Path(), output_path=CONVERT_OUTPUT_PATH, variable_name=VariableOptions.default(), input_files=None, cpus=None, final_crs=BRITISH_NATIONAL_GRID_EPSG, input_file_extension=NETCDF_EXTENSION_STR, export_file_extension=NETCDF_EXTENSION_STR, start_index=0, stop_index=None, _result_paths=dict(), _iter_calc_method_name='range_to_reprojection')</code></p>
 <p>Base class to inherit for <code>HADs</code> and <code>CPM</code>.</p>
 <section id="attributes-4" class="level4" data-number="1.1.5.1">
 <h4 data-number="1.1.5.1" class="anchored" data-anchor-id="attributes-4"><span class="header-section-number">1.1.5.1</span> Attributes</h4>
@@ -938,7 +938,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="python.clim_recal.convert.IterCalcManagerBase" class="level3" data-number="1.1.6">
 <h3 data-number="1.1.6" class="anchored" data-anchor-id="python.clim_recal.convert.IterCalcManagerBase"><span class="header-section-number">1.1.6</span> IterCalcManagerBase</h3>
 <p><code>clim_recal.convert.IterCalcManagerBase(self, *, input_paths=Path(), output_paths=Path(), variables=(VariableOptions.default()), sub_path=Path(), start_index=0, stop_index=None, start_date=None, end_date=None, configs=list(), config_default_kwargs=dict(), calc_class=None, cpus=None, _input_path_dict=dict(), _output_path_dict=dict(), _strict_fail_if_var_in_input_path=True, _allow_check_fail=False)</code></p>
-<p>Base class to inherit for <code>HADs</code> and <code>CPM</code> resampler managers.</p>
+<p>Base class to inherit for <code>HADs</code> and <code>CPM</code> converter managers.</p>
 <section id="attributes-5" class="level4" data-number="1.1.6.1">
 <h4 data-number="1.1.6.1" class="anchored" data-anchor-id="attributes-5"><span class="header-section-number">1.1.6.1</span> Attributes</h4>
 <table class="caption-top table">
@@ -998,11 +998,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><a href="#python.clim_recal.convert.IterCalcManagerBase.check_paths">check_paths</a></td>
-<td>Check and set <code>input</code>, <code>resample</code> and <code>crop</code> paths.</td>
+<td>Check and set <code>input</code>, <code>convert</code> and <code>crop</code> paths.</td>
 </tr>
 <tr class="even">
 <td><a href="#python.clim_recal.convert.IterCalcManagerBase.execute_configs">execute_configs</a></td>
-<td>Run all resampler configurations</td>
+<td>Run all converter configurations</td>
 </tr>
 <tr class="odd">
 <td><a href="#python.clim_recal.convert.IterCalcManagerBase.set_input_paths">set_input_paths</a></td>
@@ -1014,27 +1014,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td><a href="#python.clim_recal.convert.IterCalcManagerBase.yield_configs">yield_configs</a></td>
-<td>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</td>
+<td>Generate a <code>CPMConvert</code> or <code>HADsConvert</code> for <code>self.input_paths</code>.</td>
 </tr>
 </tbody>
 </table>
 <section id="python.clim_recal.convert.IterCalcManagerBase.check_paths" class="level5" data-number="1.1.6.3.1">
 <h5 data-number="1.1.6.3.1" class="anchored" data-anchor-id="python.clim_recal.convert.IterCalcManagerBase.check_paths"><span class="header-section-number">1.1.6.3.1</span> check_paths</h5>
 <p><code>clim_recal.convert.IterCalcManagerBase.check_paths(run_set_data_paths=True)</code></p>
-<p>Check and set <code>input</code>, <code>resample</code> and <code>crop</code> paths.</p>
+<p>Check and set <code>input</code>, <code>convert</code> and <code>crop</code> paths.</p>
 </section>
 <section id="python.clim_recal.convert.IterCalcManagerBase.execute_configs" class="level5" data-number="1.1.6.3.2">
 <h5 data-number="1.1.6.3.2" class="anchored" data-anchor-id="python.clim_recal.convert.IterCalcManagerBase.execute_configs"><span class="header-section-number">1.1.6.3.2</span> execute_configs</h5>
-<p><code>clim_recal.convert.IterCalcManagerBase.execute_configs(multiprocess=False, cpus=None, return_resamplers=False, return_path=True, **kwargs)</code></p>
-<p>Run all resampler configurations</p>
+<p><code>clim_recal.convert.IterCalcManagerBase.execute_configs(multiprocess=False, cpus=None, return_converters=False, return_path=True, description_func=path_print_progress, **kwargs)</code></p>
+<p>Run all converter configurations</p>
 <section id="parameters" class="level6" data-number="1.1.6.3.2.1">
 <h6 data-number="1.1.6.3.2.1" class="anchored" data-anchor-id="parameters"><span class="header-section-number">1.1.6.3.2.1</span> Parameters</h6>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 13%">
 <col style="width: 8%">
-<col style="width: 71%">
-<col style="width: 6%">
+<col style="width: 70%">
+<col style="width: 7%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1048,7 +1048,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td><code>multiprocess</code></td>
 <td>bool</td>
-<td>If <code>True</code> run parameters in <code>resample_configs</code> with <code>multiprocess_execute</code>.</td>
+<td>If <code>True</code> run parameters in <code>convert_configs</code> with <code>multiprocess_execute</code>.</td>
 <td><code>False</code></td>
 </tr>
 <tr class="even">
@@ -1058,15 +1058,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><code>None</code></td>
 </tr>
 <tr class="odd">
-<td><code>return_resamplers</code></td>
+<td><code>return_converters</code></td>
 <td>bool</td>
-<td>Return instances of generated <code>HADsResampler</code> or <code>CPMResampler</code>, or return the <code>results</code> of each <code>execute</code> call.</td>
+<td>Return instances of generated <code>HADsConvert</code> or <code>CPMConvert</code>, or return the <code>results</code> of each <code>execute</code> call.</td>
 <td><code>False</code></td>
 </tr>
 <tr class="even">
 <td><code>return_path</code></td>
 <td>bool</td>
-<td>Return <code>Path</code> to results object if True, else resampled <code>Dataset</code>.</td>
+<td>Return <code>Path</code> to results object if True, else converted <code>Dataset</code>.</td>
 <td><code>True</code></td>
 </tr>
 <tr class="odd">
@@ -1092,7 +1092,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="python.clim_recal.convert.IterCalcManagerBase.yield_configs" class="level5" data-number="1.1.6.3.5">
 <h5 data-number="1.1.6.3.5" class="anchored" data-anchor-id="python.clim_recal.convert.IterCalcManagerBase.yield_configs"><span class="header-section-number">1.1.6.3.5</span> yield_configs</h5>
 <p><code>clim_recal.convert.IterCalcManagerBase.yield_configs()</code></p>
-<p>Generate a <code>CPMResampler</code> or <code>HADsResampler</code> for <code>self.input_paths</code>.</p>
+<p>Generate a <code>CPMConvert</code> or <code>HADsConvert</code> for <code>self.input_paths</code>.</p>
 </section>
 </section>
 </section>

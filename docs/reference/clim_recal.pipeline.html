@@ -387,7 +387,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1 data-number="4"><span class="header-section-number">4</span> Resample CPM</h1>
 <p>New approach:</p>
 <ul>
-<li><code>resampling.py</code></li>
+<li><code>convert.py</code></li>
 <li>check <code>x_grid</code> and <code>y_grid</code> interpolation</li>
 </ul>
 <section id="todo" class="level2" data-number="4.1">
@@ -407,10 +407,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre class="console"><code>$ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written
 clim-recal pipeline configurations:
 &lt;ClimRecalConfig(variables_count=3, runs_count=4, regions_count=1, methods_count=1,
-                 cpm_folders_count=12, hads_folders_count=3, resample_start_index=0,
-                 resample_stop_index=None, cpus=2)&gt;
-&lt;CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)&gt;
-&lt;HADsResamplerManager(variables_count=3, input_paths_count=3)&gt;</code></pre>
+                 cpm_folders_count=12, hads_folders_count=3, convert_start_index=0,
+                 convert_stop_index=None, cpus=2)&gt;
+&lt;CPMConvertManager(variables_count=3, runs_count=4, input_paths_count=12)&gt;
+&lt;HADsConvertManager(variables_count=3, input_paths_count=3)&gt;</code></pre>
 <p>Otherwise, you can install locally and either run via <code>pdm</code> from the <code>python</code> folder</p>
 <pre class="console"><code>$ cd clim-recal/python
 $ pdm run clim-recal --all-variables --default-runs --output-path /where/results/should/be/written
@@ -424,14 +424,14 @@ $ pdm run clim-recal --all-variables --default-runs --output-path /where/results
 <pre class="console"><code>$ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written --execute
 clim-recal pipeline configurations:
 &lt;ClimRecalConfig(variables_count=3, runs_count=4, regions_count=1, methods_count=1,
-                 cpm_folders_count=12, hads_folders_count=3, resample_start_index=0,
-                 resample_stop_index=None, cpus=2)&gt;
-&lt;CPMResamplerManager(variables_count=3, runs_count=4, input_paths_count=12)&gt;
-&lt;HADsResamplerManager(variables_count=3, input_paths_count=3)&gt;
+                 cpm_folders_count=12, hads_folders_count=3, convert_start_index=0,
+                 convert_stop_index=None, cpus=2)&gt;
+&lt;CPMConvertManager(variables_count=3, runs_count=4, input_paths_count=12)&gt;
+&lt;HADsConvertManager(variables_count=3, input_paths_count=3)&gt;
 Running CPM Standard Calendar projection...
-&lt;CPMResampler(count=100, max_count=100,
+&lt;CPMConvert(count=100, max_count=100,
               input_path='/mnt/vmfileshare/ClimateData/Raw/UKCP2.2/tasmax/05/latest',
-              output_path='/mnt/vmfileshare/ClimateData/CPM-365/test-run-3-may/resample/
+              output_path='/mnt/vmfileshare/ClimateData/CPM-365/test-run-3-may/convert/
               cpm/tasmax/05/latest')&gt;
  100% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100/100  [ 0:38:27 &lt; 0:00:00 , 0 it/s ]
   87% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 87/100  [ 0:17:42 &lt; 0:03:07 , 0 it/s ]</code></pre>
@@ -485,14 +485,14 @@ Running CPM Standard Calendar projection...
 </table>
 <section id="python.clim_recal.pipeline.main" class="level3" data-number="8.1.1">
 <h3 data-number="8.1.1" class="anchored" data-anchor-id="python.clim_recal.pipeline.main"><span class="header-section-number">8.1.1</span> main</h3>
-<p><code>clim_recal.pipeline.main(execute=False, hads_input_path=RAW_HADS_PATH, cpm_input_path=RAW_CPM_PATH, output_path=DEFAULT_OUTPUT_PATH, variables=(VariableOptions.default()), regions=(RegionOptions.default()), runs=(RunOptions.default()), methods=(MethodOptions.default()), all_variables=False, all_regions=False, default_runs=False, all_runs=False, all_methods=False, hads_projection=False, cpm_projection=False, crop_hads=True, crop_cpm=True, cpus=None, multiprocess=False, resample_start_index=0, resample_stop_index=None, crop_start_index=0, crop_stop_index=None, total=None, print_range_length=5, **kwargs)</code></p>
+<p><code>clim_recal.pipeline.main(execute=False, hads_input_path=RAW_HADS_PATH, cpm_input_path=RAW_CPM_PATH, output_path=DEFAULT_OUTPUT_PATH, variables=(VariableOptions.default()), regions=(RegionOptions.default()), runs=(RunOptions.default()), methods=(MethodOptions.default()), all_variables=False, all_regions=False, default_runs=False, all_runs=False, all_methods=False, convert_hads=False, convert_cpm=False, crop_hads=True, crop_cpm=True, cpus=None, multiprocess=False, convert_start_index=0, convert_stop_index=None, crop_start_index=0, crop_stop_index=None, total=None, print_range_length=5, **kwargs)</code></p>
 <p>Run all elements of the pipeline.</p>
 <section id="parameters" class="level4" data-number="8.1.1.1">
 <h4 data-number="8.1.1.1" class="anchored" data-anchor-id="parameters"><span class="header-section-number">8.1.1.1</span> Parameters</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 11%">
-<col style="width: 20%">
+<col style="width: 21%">
 <col style="width: 51%">
 <col style="width: 15%">
 </colgroup>
@@ -548,15 +548,15 @@ Running CPM Standard Calendar projection...
 <td><code>False</code></td>
 </tr>
 <tr class="even">
-<td><code>resample_start_index</code></td>
+<td><code>convert_start_index</code></td>
 <td>int</td>
 <td>Index to start all iterations from.</td>
 <td><code>0</code></td>
 </tr>
 <tr class="odd">
-<td><code>resample_stop_index</code></td>
+<td><code>convert_stop_index</code></td>
 <td>int | None</td>
-<td>Number of files from <code>resample_start_index</code> to resample.</td>
+<td>Number of files from <code>convert_start_index</code> to convert.</td>
 <td><code>None</code></td>
 </tr>
 <tr class="even">
@@ -574,7 +574,7 @@ Running CPM Standard Calendar projection...
 <tr class="even">
 <td><code>total</code></td>
 <td>int | None</td>
-<td>Total number of records to iterate over. 0 and <code>None</code> indicate all values from <code>resample_start_index</code>.</td>
+<td>Total number of records to iterate over. 0 and <code>None</code> indicate all values from <code>convert_start_index</code>.</td>
 <td><code>None</code></td>
 </tr>
 <tr class="odd">
@@ -604,12 +604,14 @@ Running CPM Standard Calendar projection...
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>ClimRecalConfig(variables_count<span class="op">=</span><span class="dv">2</span>, runs_count<span class="op">=</span><span class="dv">1</span>,</span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>                 regions_count<span class="op">=</span><span class="dv">1</span>, methods_count<span class="op">=</span><span class="dv">1</span>,</span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>                 cpm_folders_count<span class="op">=</span><span class="dv">2</span>, hads_folders_count<span class="op">=</span><span class="dv">2</span>,</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>                 resample_start_index<span class="op">=</span><span class="dv">0</span>, resample_stop_index<span class="op">=</span><span class="va">None</span>,</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>                 crop_star_index<span class="op">=</span><span class="dv">0</span>, cpus<span class="op">=</span>...)<span class="op">&gt;</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>CPMResamplerManager(variables_count<span class="op">=</span><span class="dv">2</span>, runs_count<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>                 convert_start_index<span class="op">=</span><span class="dv">0</span>, convert_stop_index<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>                 crop_start_index<span class="op">=</span><span class="dv">0</span>, crop_stop_index<span class="op">=</span><span class="va">None</span>, cpus<span class="op">=</span>...)<span class="op">&gt;</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>CPMConvertManager(variables_count<span class="op">=</span><span class="dv">2</span>, runs_count<span class="op">=</span><span class="dv">1</span>,</span>
 <span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>                     input_paths_count<span class="op">=</span><span class="dv">2</span>)<span class="op">&gt;</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>HADsResamplerManager(variables_count<span class="op">=</span><span class="dv">2</span>, input_paths_count<span class="op">=</span><span class="dv">2</span>)<span class="op">&gt;</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>No steps run. Add <span class="st">'--execute'</span> to run steps.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>HADsConvertManager(variables_count<span class="op">=</span><span class="dv">2</span>, input_paths_count<span class="op">=</span><span class="dv">2</span>)<span class="op">&gt;</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>CPMRegionCropManager(variables_count<span class="op">=</span><span class="dv">2</span>, input_paths_count<span class="op">=</span><span class="dv">2</span>)<span class="op">&gt;</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>HADsRegionCropManager(variables_count<span class="op">=</span><span class="dv">2</span>, input_paths_count<span class="op">=</span><span class="dv">2</span>)<span class="op">&gt;</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>No steps run. Add <span class="st">'--execute'</span> to run steps.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>
