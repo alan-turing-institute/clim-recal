@@ -13,7 +13,6 @@ from xarray.core.types import T_Dataset
 
 from clim_recal.config import ClimRecalConfig
 from clim_recal.debiasing.debias_wrapper import RegionOptions
-from clim_recal.resample import CPM_OUTPUT_LOCAL_PATH, HADS_OUTPUT_LOCAL_PATH
 from clim_recal.utils.core import (
     ISO_DATE_FORMAT_STR,
     check_package_path,
@@ -22,11 +21,22 @@ from clim_recal.utils.core import (
     is_platform_darwin,
     results_path,
 )
-from clim_recal.utils.data import BoundsTupleType
+from clim_recal.utils.data import (
+    CPM_CROP_OUTPUT_PATH,
+    CPM_OUTPUT_PATH,
+    CPM_SUB_PATH,
+    HADS_CROP_OUTPUT_PATH,
+    HADS_OUTPUT_PATH,
+    HADS_SUB_PATH,
+    BoundsTupleType,
+    RunOptions,
+    VariableOptions,
+)
 from clim_recal.utils.server import CondaLockFileManager
 from clim_recal.utils.xarray import (
     GLASGOW_GEOM_LOCAL_PATH,
     cpm_reproject_with_standard_calendar,
+    hads_resample_and_reproject,
 )
 from tests.utils import (
     CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT,
@@ -38,6 +48,7 @@ from tests.utils import (
     CPM_CONVERTED_TASMAX_1980_FILE,
     CPM_RAW_TASMAX_1980_FILE,
     CPM_RAW_TASMAX_EXAMPLE_PATH,
+    HADS_CONVERTED_TASMAX_1980_FILE,
     HADS_RAW_TASMAX_1980_FILE,
     HADS_RAW_TASMAX_EXAMPLE_PATH,
     MOD_FOLDER_FILES_COUNT_CORRECT,
@@ -59,8 +70,6 @@ MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE: Final[str] = (
 )
 
 BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
-CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData")
-CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateData")
 
 TEST_RUN_PATH: Final[Path] = Path().absolute()
 TEST_FILE_PATH: Final[Path] = TEST_RUN_PATH / "tests"
@@ -131,15 +140,22 @@ def local_cache_fixtures(
             LocalCache(
                 name="tasmax_cpm_1980_raw",
                 source_path=CPM_RAW_TASMAX_EXAMPLE_PATH,
-                # local_cache_path=local_cpm_cache_path / 'tasmax/01/latest' / CPM_RAW_TASMAX_1980_FILE,
-                local_cache_path=local_cpm_cache_path / CPM_RAW_TASMAX_1980_FILE,
+                local_cache_path=local_cpm_cache_path
+                / VariableOptions.TASMAX
+                / RunOptions.ONE
+                / CPM_SUB_PATH
+                / CPM_RAW_TASMAX_1980_FILE,
+                # local_cache_path=local_cpm_cache_path / CPM_RAW_TASMAX_1980_FILE,
                 reader=open_dataset,
                 reader_kwargs={"decode_coords": "all"},
             ),
             LocalCache(
                 name="tasmax_cpm_1980_converted",
                 source_path=CPM_RAW_TASMAX_EXAMPLE_PATH,
-                local_cache_path=local_cpm_cache_path / CPM_CONVERTED_TASMAX_1980_FILE,
+                local_cache_path=local_cache_path
+                / "converted"
+                / CPM_OUTPUT_PATH
+                / CPM_CONVERTED_TASMAX_1980_FILE,
                 reader=open_dataset,
                 reader_kwargs={"decode_coords": "all"},
                 parser=cpm_reproject_with_standard_calendar,
@@ -147,9 +163,24 @@ def local_cache_fixtures(
             LocalCache(
                 name="tasmax_hads_1980_raw",
                 source_path=HADS_RAW_TASMAX_EXAMPLE_PATH,
-                local_cache_path=local_hads_cache_path / HADS_RAW_TASMAX_1980_FILE,
+                # local_cache_path=local_hads_cache_path / HADS_RAW_TASMAX_1980_FILE,
+                local_cache_path=local_hads_cache_path
+                / VariableOptions.TASMAX
+                / HADS_SUB_PATH
+                / HADS_RAW_TASMAX_1980_FILE,
                 reader=open_dataset,
                 reader_kwargs={"decode_coords": "all"},
+            ),
+            LocalCache(
+                name="tasmax_hads_1980_converted",
+                source_path=HADS_RAW_TASMAX_EXAMPLE_PATH,
+                local_cache_path=local_cache_path
+                / "converted"
+                / HADS_OUTPUT_PATH
+                / HADS_CONVERTED_TASMAX_1980_FILE,
+                reader=open_dataset,
+                reader_kwargs={"decode_coords": "all"},
+                parser=hads_resample_and_reproject,
             ),
             # LocalCache(
             #     name="railfall_hads_1980_raw",
@@ -226,6 +257,34 @@ def tasmax_hads_1980_raw_path(
 
 
 @pytest.fixture(scope="session")
+def hads_data_path(
+    local_cache: bool,
+    local_cache_fixtures: LocalCachesManager,
+    local_hads_cache_path: Path,
+    # local_hads_tasmax_cache_path: Path,
+    # local_hads_tasmax_cache_path: Path,
+) -> T_Dataset:
+    if local_cache:
+        # return local_cache_fixtures["tasmax_hads_1980_raw"].local_cache_path.parents[2]
+        return local_hads_cache_path
+    else:
+        return local_cache_fixtures["tasmax_hads_1980_raw"].source_path.parents[2]
+
+
+@pytest.fixture(scope="session")
+def cpm_data_path(
+    local_cache: bool,
+    local_cache_fixtures: LocalCachesManager,
+    local_cpm_cache_path: Path,
+) -> T_Dataset:
+    if local_cache:
+        # return local_cache_fixtures["tasmax_cpm_1980_raw"].local_cache_path.parents[1]
+        return local_cpm_cache_path
+    else:
+        return local_cache_fixtures["tasmax_cpm_1980_raw"].source_path.parents[2]
+
+
+@pytest.fixture(scope="session")
 def tasmax_cpm_1980_converted(
     local_cache: bool,
     local_cpm_cache_path: Path,
@@ -243,11 +302,36 @@ def tasmax_cpm_1980_converted(
 def tasmax_cpm_1980_converted_path(
     local_cache: bool,
     local_cache_fixtures: LocalCachesManager,
-) -> T_Dataset:
+) -> T_Dataset | None:
     if local_cache:
         return local_cache_fixtures["tasmax_cpm_1980_converted"].local_cache_path
     else:
-        return local_cache_fixtures["tasmax_cpm_1980_converted"].source_path
+        return None
+
+
+@pytest.fixture(scope="session")
+def tasmax_hads_1980_converted(
+    local_cache: bool,
+    local_hads_cache_path: Path,
+    local_cache_fixtures: LocalCachesManager,
+) -> T_Dataset | None:
+    if local_cache:
+        return local_cache_fixtures["tasmax_hads_1980_converted"].read(
+            cache_path=local_hads_cache_path
+        )
+    else:
+        return None
+
+
+@pytest.fixture(scope="session")
+def tasmax_hads_1980_converted_path(
+    local_cache: bool,
+    local_cache_fixtures: LocalCachesManager,
+) -> T_Dataset | None:
+    if local_cache:
+        return local_cache_fixtures["tasmax_hads_1980_converted"].local_cache_path
+    else:
+        return None
 
 
 # This may be removed in future
@@ -384,8 +468,18 @@ def local_hads_cache_path(local_cache_path: Path) -> Path:
 
 
 @pytest.fixture(scope="session")
+def local_hads_tasmax_cache_path(local_hads_cache_path: Path) -> Path:
+    return local_hads_cache_path / "tasmax" / HADS_SUB_PATH
+
+
+@pytest.fixture(scope="session")
 def local_cpm_cache_path(local_cache_path: Path) -> Path:
     return local_cache_path / "ukcp"
+
+
+@pytest.fixture(scope="session")
+def local_cpm_tasmax_01_cache_path(local_hads_cache_path: Path) -> Path:
+    return local_hads_cache_path / "tasmax" / RunOptions.ONE / HADS_SUB_PATH
 
 
 @pytest.fixture
@@ -426,6 +520,7 @@ def clim_runner(
     test_runs_output_path: PathLike,
     local_hads_cache_path: PathLike,
     local_cpm_cache_path: PathLike,
+    tasmax_cpm_1980_raw_path: PathLike,
     tasmax_cpm_1980_converted_path: PathLike,
 ) -> ClimRecalConfig:
     """Return default `ClimRecalConfig`."""
@@ -442,7 +537,7 @@ def clim_runner(
             preprocess_out_folder=tmp_path,
             regions=regions,
             output_path=test_runs_output_path,
-            # cpm_for_coord_alignment=tasmax_cpm_1980_converted_path,
+            cpm_for_coord_alignment=tasmax_cpm_1980_raw_path,
         )
     except (FileExistsError, AssertionError):
         return ClimRecalConfig(
@@ -462,14 +557,28 @@ def clim_runner(
 def resample_test_cpm_output_path(
     test_runs_output_path: Path,
 ) -> Path:
-    return test_runs_output_path / CPM_OUTPUT_LOCAL_PATH
+    return test_runs_output_path / CPM_OUTPUT_PATH
 
 
 @pytest.fixture
 def resample_test_hads_output_path(
     test_runs_output_path: Path,
 ) -> Path:
-    return test_runs_output_path / HADS_OUTPUT_LOCAL_PATH
+    return test_runs_output_path / HADS_OUTPUT_PATH
+
+
+@pytest.fixture
+def crop_test_cpm_output_path(
+    test_runs_output_path: Path,
+) -> Path:
+    return test_runs_output_path / CPM_CROP_OUTPUT_PATH
+
+
+@pytest.fixture
+def crop_test_hads_output_path(
+    test_runs_output_path: Path,
+) -> Path:
+    return test_runs_output_path / HADS_CROP_OUTPUT_PATH
 
 
 @pytest.fixture
@@ -506,10 +615,9 @@ def doctest_auto_fixtures(
     glasgow_epsg_27700_bounds: BoundsTupleType,
     glasgow_shape_file_path: Path,
     test_runs_output_path: Path,
-    # resample_test_cpm_output_path: Path,
-    # resample_test_hads_output_path: Path,
     glasgow_example_cropped_cpm_rainfall_path: Path,
-    # clim_runner: ClimRecalConfig,
+    crop_test_hads_output_path: Path,
+    crop_test_cpm_output_path: Path,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
     doctest_namespace["CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT"] = (
@@ -554,8 +662,6 @@ def doctest_auto_fixtures(
     doctest_namespace["glasgow_epsg_27700_bounds"] = glasgow_epsg_27700_bounds
     doctest_namespace["glasgow_shape_file_path"] = glasgow_shape_file_path
     doctest_namespace["test_runs_output_path"] = test_runs_output_path
-    # doctest_namespace["resample_test_hads_output_path"] = resample_test_hads_output_path
-    # doctest_namespace["resample_test_cpm_output_path"] = resample_test_cpm_output_path
     doctest_namespace["mount_doctest_skip_message"] = MOUNT_DOCTEST_SKIP_MESSAGE
     doctest_namespace["mount_or_cache_doctest_skip_message"] = (
         MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE
@@ -563,7 +669,8 @@ def doctest_auto_fixtures(
     doctest_namespace["glasgow_example_cropped_cpm_rainfall_path"] = (
         glasgow_example_cropped_cpm_rainfall_path
     )
-    # doctest_namespace["clim_runner"] = clim_runner
+    doctest_namespace["crop_test_hads_output_path"] = crop_test_hads_output_path
+    doctest_namespace["crop_test_cpm_output_path"] = crop_test_cpm_output_path
 
 
 def pytest_sessionfinish(session, exitstatus):

@@ -4,7 +4,7 @@ from logging import getLogger
 from os import PathLike
 from pathlib import Path
 from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
-from typing import Any, Callable, Final
+from typing import Any, Callable, Final, Iterator, Literal, Sequence
 
 import numpy as np
 import rioxarray  # nopycln: import
@@ -23,6 +23,7 @@ from osgeo.gdal import (
 )
 from osgeo.gdal import config_option as config_GDAL_option
 from rasterio.enums import Resampling
+from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
 from tqdm import tqdm
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
@@ -38,6 +39,8 @@ from .core import (
     CLI_DATE_FORMAT_STR,
     ISO_DATE_FORMAT_STR,
     climate_data_mount_path,
+    console,
+    multiprocess_execute,
     results_path,
 )
 from .data import (
@@ -1028,6 +1031,42 @@ def gdal_warp_wrapper(
     return output_path if return_path else projection
 
 
+def converted_output_path(
+    source_path: PathLike | None,
+    export_folder: PathLike,
+    new_path_name_func: Callable[..., Path] | None = None,
+    **kwargs,
+) -> Path:
+    """`source_path` in `export_folder` via `new_path_name_func`.
+
+    Parameters
+    ----------
+    source_path
+        Original path to extract file name via `Path(source_path).name`
+    export_folder
+        Folder to save new path in.
+    new_path_name_func
+        Function to convert old file name to new file name.
+    **kwargs
+        Additional parameters passed to `new_path_name_func`
+
+    Returns
+    -------
+    Converted path of `export_folder` / then either
+    `source_path` or results of `new_path_name_func(source_path)`.
+    """
+    if not source_path:
+        raise ValueError(
+            f"Source path must be a folder, currently '{source_path}'. "
+            f"May need to mount drive."
+        )
+    # Generate export_path following source_path name
+    source_as_path: Path = Path(source_path)
+    if new_path_name_func:
+        source_as_path = Path(new_path_name_func(source_as_path, **kwargs))
+    return Path(export_folder) / source_as_path.name
+
+
 def apply_geo_func(
     source_path: PathLike,
     func: ReprojectFuncType,
@@ -1164,6 +1203,35 @@ def file_name_to_start_end_dates(
     return start_date, end_date
 
 
+def date_seq_to_str(datetime_seq: Sequence, join_str: str = " ") -> str:
+    """Return a `str` joining stard print format `dates` from `datetime_seq`."""
+    return join_str.join(str(d.date) for d in datetime_seq)
+
+
+def data_path_to_date_range(
+    path: PathLike, return_type: Literal["raw", "string"] = "string"
+) -> tuple[date, date] | str:
+    """Extract date range as `tuple` or `str` from `path`."""
+    date_range_tuple: tuple[datetime, datetime] = file_name_to_start_end_dates(path)
+    if return_type == "raw":
+        return date_range_tuple[0].date(), date_range_tuple[1].date()
+    elif return_type == "string":
+        return date_seq_to_str(date_range_tuple)
+    else:
+        raise ValueError(f"'return_type' must be 'raw' or 'string'")
+
+
+def path_print_progress(
+    path: PathLike, data_type: Literal["cpm", "hads"] | None = None
+) -> str:
+    """Extract relevant path info to print progress."""
+    path = Path(path)
+    if not data_type:
+        data_type = "cpm" if "cpm" in path.parents else "hads"
+    path_parents_count: int = 3 if data_type == "cpm" else 2
+    return str(path.parents[:path_parents_count])
+
+
 def generate_360_to_standard(array_to_expand: T_DataArray) -> T_DataArray:
     """Return `array_to_expand` 360 days expanded to 365 or 366 days.
 
@@ -1225,8 +1293,12 @@ def get_cpm_for_coord_alignment(
         raise ValueError("'cpm_for_coord_alignment' must be a Path or xarray Dataset.")
     elif isinstance(cpm_for_coord_alignment, PathLike):
         path: Path = Path(cpm_for_coord_alignment)
-        if Path(path).is_dir():
-            path = next(Path(path).glob(cpm_regex))
+        try:
+            assert path.exists()
+        except:
+            raise FileExistsError(f"No 'cpm_for_coord_alignment' at '{path}'")
+        if path.is_dir():
+            path = next(path.glob(cpm_regex))
         if skip_reproject:
             logger.info(f"Skipping reprojection and loading '{path}'...")
             cpm_for_coord_alignment, variable = check_xarray_path_and_var_name(
@@ -1263,30 +1335,30 @@ def get_cpm_for_coord_alignment(
 
 
 def region_crop_file_name(
-    crop_region: str | RegionOptions | None, file_name: PathLike
+    file_name: PathLike, crop_region: str | RegionOptions | None
 ) -> str:
     """Generate a file name for a regional crop.
 
     Parameters
     ----------
-    crop_region
-        Region name to include in cropped file name.
     file_name
         File name to add `crop_region` name to.
+    crop_region
+        Region name to include in cropped file name.
 
     Examples
     --------
     >>> region_crop_file_name(
-    ...    'Glasgow',
-    ...    'tasmax.nc')
+    ...    'tasmax.nc',
+    ...    'Glasgow')
     'crop_Glasgow_tasmax.nc'
     >>> region_crop_file_name(
-    ...    'Glasgow',
-    ...    'tasmax_hadukgrid_uk_2_2km_day_19800601-19800630.nc')
+    ...    'tasmax_hadukgrid_uk_2_2km_day_19800601-19800630.nc',
+    ...    'Glasgow')
     'crop_Glasgow_tasmax_hads_19800601-19800630.nc'
     >>> region_crop_file_name(
-    ...     'Glasgow',
-    ...     'tasmax_rcp85_land-cpm_uk_2.2km_05_day_std_year_19861201-19871130.nc')
+    ...     'tasmax_rcp85_land-cpm_uk_2.2km_05_day_std_year_19861201-19871130.nc',
+    ...     'Glasgow')
     'crop_Glasgow_tasmax_cpm_05_19861201-19871130.nc'
     """
     file_name_sections = Path(file_name).name.split("_")
@@ -1312,3 +1384,205 @@ def region_crop_file_name(
     else:
         final_suffix = str(file_name)
     return "_".join(("crop", str(crop_region), final_suffix))
+
+
+def _write_and_or_return_results(
+    instance,
+    result: T_Dataset,
+    output_path_func: Callable,
+    source_path: Path,
+    write_results: bool,
+    return_path: bool,
+    override_export_path: Path | None = None,
+    **kwargs,
+) -> Path | T_Dataset:
+    """Write and or return `resample` or `crop` results.
+
+    Parameters
+    ----------
+    instance
+        Instance of `ConvertBase`.
+    result
+        Instance of resambled or croped dataset.
+    output_path_func
+        Callable to return new result file name to write to.
+    source_path
+        `Path` original data used to calculate `result`.
+    write_results
+        Whether to write `ConvertBase` results to a file.
+    return_path
+        Whether to return the `write_results` `Path` or `T_Dataset` results instance.
+    override_export_path
+        Path to override default calculated output path.
+    **kwargs
+        Addional paths to pass to `converted_output_path`
+        to generate default new path.
+    """
+    instance._result_paths[source_path] = None
+    if write_results or return_path:
+        export_path: Path = override_export_path or converted_output_path(
+            source_path=source_path,
+            export_folder=instance.output_path,
+            new_path_name_func=output_path_func,
+            **kwargs,
+        )
+        if write_results:
+            result.to_netcdf(export_path)
+            instance._result_paths[source_path] = export_path
+        if return_path:
+            return export_path
+    return result
+
+
+def progress_wrapper(
+    instance: Sequence,
+    method_name: str,
+    start: int | None = None,
+    stop: int | None = None,
+    step: int = 1,
+    description: str = "",
+    override_export_path: Path | None = None,
+    source_to_index: Sequence | None = None,
+    return_path: bool = True,
+    write_results: bool = True,
+    progress_bar: bool = True,
+    progress_bar_refresh_per_sec: int = 1,
+    description_func: Callable[[PathLike, Any], str] | None = None,
+    **kwargs,
+) -> Iterator[Path | T_Dataset]:
+    """Iterate over `instance` with or without a progress bar.
+
+    Parameters
+    ----------
+    instance
+        An instance of a class with `method_name` for iterating calls.
+    method_name
+        Method name to call on `instance` to iterate calculations.
+    start
+        Index to start iterating from.
+    stop
+        Index to end interating at.
+    step
+        Hops of iterating between `start` and `stop` of `instance`.
+    description
+        What to print in front of progress bar if `progress_bar` is `True`.
+    override_export_path
+        Export `Path` to write to instead of `self.output_path`.
+    source_to_index
+        `Sequence` of paths to iterate over instaed of `self`
+    return_path
+        Whether to return `Path` of export. If not, result objects are returned.
+    write_results
+        Whether to write results to disk. Required if `return_path` is `True`.
+    progress_bar
+        Whether to print progress bar or skip
+    progress_bar_refresh_per_sec
+        How many `progress_bar` refreshes per second if `progress_bar` is used.
+    description_func
+        Function to return description.
+    **kwargs
+        Additional parameters to pass to `method_name`.
+    """
+    start = start or instance.start_index
+    stop = stop or instance.stop_index
+
+    if stop is None:
+        stop = len(instance)
+    if progress_bar:
+        progress: Progress = Progress(
+            SpinnerColumn(),
+            *Progress.get_default_columns(),
+            TimeElapsedColumn(),
+            console=console,
+            refresh_per_second=progress_bar_refresh_per_sec,
+        )
+        # TODO: replace below with function call
+        total_tasks: int = (stop - start - 1) // step + 1
+        task_id: float = progress.add_task(description=description, total=total_tasks)
+    for index in range(start, stop, step):
+        if progress_bar:
+            if description_func:
+                description = description_func(instance[index])
+            progress.update(
+                task_id=task_id,
+                advance=1,
+                description=Path(instance[index]).name[-20:-3],
+                refresh=True,
+            )
+        yield getattr(instance, method_name)(
+            index=index,
+            override_export_path=override_export_path,
+            source_to_index=source_to_index,
+            return_path=return_path,
+            write_results=write_results,
+            **kwargs,
+        )
+    if progress_bar:
+        progress.stop()
+
+
+def execute_configs(
+    instance: Any,
+    configs_method: str = "yield_configs",
+    multiprocess: bool = False,
+    cpus: int | None = None,
+    return_instances: bool = False,
+    return_path: bool = True,
+    description_func: Callable[[str], str] | None = None,
+    **kwargs,
+) -> tuple | list[T_Dataset | Path]:
+    """Run all converter configurations
+
+    Parameters
+    ----------
+    multiprocess
+        If `True` run parameters in `resample_configs` with `multiprocess_execute`.
+    configs_method
+        Method name to yield model parameters.
+    cpus
+        Number of `cpus` to pass to `multiprocess_execute`.
+    return_converters
+        Return instances of generated classe (e.g. `HADsConvert` or
+        `CPMConvert`), or return the `results` of each
+        `execute` call.
+    return_path
+        Return `Path` to results object if True, else resampled `Dataset`.
+    **kwargs
+        Parameters to path to sampler `execute` calls.
+    """
+    configs: tuple = tuple(getattr(instance, configs_method)())
+    results: list[tuple[Path, ...]] = []
+    if multiprocess:
+        cpus = cpus or instance.cpus
+        if instance.total_cpus and cpus:
+            cpus = min(cpus, instance.total_cpus - 1)
+        results = multiprocess_execute(
+            configs,
+            cpus=cpus,
+            include_sub_process_config=True,
+            sub_process_progress_bar=False,
+            return_path=return_path,
+            **kwargs,
+        )
+    else:
+        results = tuple(
+            progress_wrapper(
+                configs,
+                method_name="execute",
+                start=self.start,
+                stop=self.stop,
+                step=self.step,
+                return_path=return_path,
+                description_func=description_func,
+                **kwargs,
+            )
+        )
+        # return tuple(getattr(self, self._iter_calc_method_name)(**kwargs))
+        # for config in configs:
+        #     print(config)
+        #     # progress_wrapper(config, method_name="execute")
+        #     results.append(config.execute(return_path=return_path, **kwargs))
+    if return_instances:
+        return configs
+    else:
+        return results

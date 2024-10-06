@@ -14,6 +14,7 @@ from pandas import to_datetime
 from xarray import DataArray
 from xarray.core.types import T_DataArray, T_DataArrayOrSet
 
+from clim_recal.convert import RAW_CPM_PATH, RAW_CPM_TASMAX_PATH, RAW_HADS_TASMAX_PATH
 from clim_recal.debiasing.debias_wrapper import (
     CALIB_DATES_STR_DEFAULT,
     CMETHODS_FILE_NAME,
@@ -26,7 +27,6 @@ from clim_recal.debiasing.debias_wrapper import (
     PROCESSORS_DEFAULT,
     VALID_DATES_STR_DEFAULT,
 )
-from clim_recal.resample import RAW_CPM_PATH, RAW_CPM_TASMAX_PATH, RAW_HADS_TASMAX_PATH
 from clim_recal.utils.core import (
     CPM_YEAR_DAYS,
     ISO_DATE_FORMAT_STR,
@@ -79,6 +79,9 @@ CPM_CONVERTED_TASMAX_1980_FILE: Final[Path] = Path(
 )
 HADS_RAW_TASMAX_1980_FILE: Final[Path] = Path(
     "tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc"
+)
+HADS_CONVERTED_TASMAX_1980_FILE: Final[Path] = Path(
+    "tasmax_hadukgrid_uk_2_2km_day_19800101-19800131.nc"
 )
 
 HADS_UK_TASMAX_LOCAL_TEST_PATH: Final[Path] = (

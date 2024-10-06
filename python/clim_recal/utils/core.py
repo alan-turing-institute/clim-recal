@@ -7,7 +7,7 @@ from csv import DictReader
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from enum import StrEnum
-from itertools import product
+from itertools import product, repeat
 from logging import getLogger
 from multiprocessing import Pool
 from os import PathLike, chdir, cpu_count
@@ -26,7 +26,8 @@ from typing import (
 )
 
 from rich.console import Console
-from tqdm import TqdmExperimentalWarning, tqdm
+from rich.progress import track
+from tqdm import TqdmExperimentalWarning
 
 logger = getLogger(__name__)
 
@@ -56,6 +57,8 @@ RUN_TIME_STAMP_FORMAT: Final[str] = "%y-%m-%d_%H-%M"
 DEBIAN_MOUNT_PATH: Final[Path] = Path("/mnt/vmfileshare")
 DARWIN_MOUNT_PATH: Final[Path] = Path("/Volumes/vmfileshare")
 CLIMATE_DATA_PATH: Final[Path] = Path("ClimateData")
+
+DEFAULT_CALLABLE_ATTR_NAME: Final[str] = "execute"
 
 
 @dataclass
@@ -138,7 +141,7 @@ DEFAULT_CPM_START_MONTH_DAY: Final[MonthDay] = MonthDay(month=12, day=1)
 
 
 def run_callable_attr(
-    instance: object, method_name: str = "execute", *args, **kwargs
+    instance: object, *args, method_name: str = DEFAULT_CALLABLE_ATTR_NAME, **kwargs
 ) -> Any:
     """Extract `method_name` from `instance` to call.
 
@@ -146,10 +149,10 @@ def run_callable_attr(
     ----------
     instance
         `object` to call `method_name` from.
-    method_name
-        Name of method on `object` to call.
     *args
         Parameters passed to `method_name` from `instance`.
+    method_name
+        Name of method on `object` to call.
     **kwargs
         Parameters passed to `method_name` from `instance`.
 
@@ -161,15 +164,31 @@ def run_callable_attr(
     Examples
     --------
     >>> jan_1: MonthDay = MonthDay()
-    >>> run_callable_attr(jan_1, 'from_year', 1984)
+    >>> run_callable_attr(jan_1, 1984, method_name='from_year')
     datetime.date(1984, 1, 1)
     """
+    if isinstance(args[-1], dict) and "method_name" in args[-1]:
+        logger.debug(
+            f"Replacing 'method_name' param '{method_name}' "
+            f"with '{args[-1]["method_name"]}'."
+        )
+        kwargs |= args[-1]
+        args = args[:-1]
+        method_name = kwargs.pop("method_name")
     method: Callable = getattr(instance, method_name)
     return method(*args, **kwargs)
 
 
 def multiprocess_execute(
-    iter: Sequence, method_name: str | None = None, cpus: int | None = None
+    iter: Sequence,
+    *args: Any,
+    method_name: str = DEFAULT_CALLABLE_ATTR_NAME,
+    progress_bar: bool = False,
+    bar_name: str = "",
+    cpus: int | None = None,
+    include_sub_process_config: bool = False,
+    sub_process_progress_bar: bool = False,
+    **kwargs: Any,
 ) -> list:
     """Run `method_name` as from `iter` via `multiprocessing`.
 
@@ -177,45 +196,69 @@ def multiprocess_execute(
     ----------
     iter
         `Sequence` of instances to iterate over calling `method_name` from.
+    *args
+        Args to pass to `method_name`
     method_name
         What to call from objects in `inter`.
+    progress_bar
+        Whether to render a progress bar.
+    bar_name
+        Passed to `description` parameter for progress bar.
     cpus
         Number of cpus to pass to `Pool` for multiprocessing.
+    include_sub_process_config
+        Include configurations specific to multiprocessess
+        (eg. `progress_bar` config)
+    sub_process_progress_bar
+        Whether to include `progress_bar` within each `multiprocess` run.
+    **kwargs
+        Args to pass to `method_name`
 
     Examples
     --------
-    >>> if not is_data_mounted:
-    ...     pytest.skip(mount_doctest_skip_message)
-    >>> from clim_recal.resample import CPMResampler
-    >>> resample_test_hads_output_path: Path = getfixture(
-    ...         'resample_test_cpm_output_path')
-    >>> cpm_resampler: CPMResampler = CPMResampler(
-    ...     stop_index=3,
-    ...     output_path=resample_test_hads_output_path,
-    ... )
-    >>> multiprocess_execute(cpm_resampler, method_name="exists")
-    [True, True, True]
+    >>> test_strs: tuple[tuple[str], ...] = (('the third'), ('man'))
+    >>> multiprocess_execute(test_strs, method_name="split")
+    [['the', 'third'], ['man']]
+    >>> test_strs = (('lumbar'), ('puncture'))
+    >>> multiprocess_execute(test_strs, 'u', method_name="split")
+    [['l', 'mbar'], ['p', 'nct', 're']]
+    >>> multiprocess_execute(test_strs, 'u', method_name="split",
+    ...                      progress_bar=True)
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100%...
+    [['l', 'mbar'], ['p', 'nct', 're']]
 
     Notes
     -----
-    Failed asserting cpus <= total - 1
+    Failed asserting cpus <= total - 1.
     """
+    results: list
     total_cpus: int | None = cpu_count()
     cpus = cpus or 1
-    # if isinstance(total_cpus, int) and cpus is not None:
     if isinstance(total_cpus, int):
         cpus = min(cpus, total_cpus - 1)
     else:
         logger.warning(f"'total_cpus' not checkable, running with 'cpus': {cpus}")
-    params_tuples: list[tuple[Any, str]] = [(item, method_name) for item in iter]
+    kwargs["method_name"] = method_name
+    if include_sub_process_config:
+        kwargs["progress_bar"] = sub_process_progress_bar
+    param_tuples: tuple[tuple[Any, ...], ...] = (
+        tuple(zip(iter, repeat(*args), repeat(kwargs)))
+        if args
+        else tuple(zip(iter, repeat(kwargs)))
+    )
+
     # Had build errors when generating a wheel,
     # Followed solution here:
     # https://stackoverflow.com/questions/45720153/python-multiprocessing-error-attributeerror-module-main-has-no-attribute
     __spec__ = None
     with Pool(processes=cpus) as pool:
-        results = list(
-            tqdm(pool.starmap(run_callable_attr, params_tuples), total=len(iter))
-        )
+        if progress_bar:
+            results = pool.starmap(
+                run_callable_attr,
+                track(param_tuples, description=bar_name),
+            )
+        else:
+            results = pool.starmap(run_callable_attr, param_tuples)
     return results
 
 
@@ -761,6 +804,18 @@ def climate_data_mount_path(
         return path / CLIMATE_DATA_PATH
     else:
         return path
+
+
+def _get_source_path(
+    instance, index: int, source_to_index: Sequence | None = None
+) -> Path:
+    """Return a path indexed from `source_to_index` or `self`."""
+    if source_to_index is None:
+        return instance[index]
+    elif isinstance(source_to_index, str):
+        return getattr(instance, source_to_index)[index]
+    else:
+        return source_to_index[index]
 
 
 def is_climate_data_mounted(mount_path: PathLike | None = None) -> bool:

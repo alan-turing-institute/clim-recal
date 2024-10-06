@@ -13,8 +13,8 @@ from .config import (
     RunOptions,
     VariableOptions,
 )
+from .convert import RAW_CPM_PATH, RAW_HADS_PATH
 from .pipeline import main
-from .resample import RAW_CPM_PATH, RAW_HADS_PATH
 
 clim_recal = typer.Typer()
 
@@ -74,7 +74,10 @@ def pipeline(
     crop_hads: Annotated[bool, typer.Option("--crop-hads/--skip-crop-hads")] = True,
     crop_cpm: Annotated[bool, typer.Option("--crop-cpm/--skip-crop-cpm")] = True,
     execute: Annotated[bool, typer.Option("--execute")] = False,
-    start_index: Annotated[int, typer.Option("--start-index", "-s", min=0)] = 0,
+    resample_start_index: Annotated[
+        int, typer.Option("--resample-start-index", min=0)
+    ] = 0,
+    crop_start_index: Annotated[int, typer.Option("--crop-start-index", min=0)] = 0,
     total: Annotated[int, typer.Option("--total-from-index", "-t", min=0)] = 0,
     cpus: Annotated[int, typer.Option("--cpus", min=1, max=MAX_CPUS)] = DEFAULT_CPUS,
     multiprocess: Annotated[bool, typer.Option("--use-multiprocessing")] = False,
@@ -90,11 +93,12 @@ def pipeline(
         output_path=output_path,
         cpus=cpus,
         execute=execute,
-        cpm_projection=cpm_projection,
-        hads_projection=hads_projection,
+        convert_cpm=cpm_projection,
+        convert_hads=hads_projection,
         crop_hads=crop_hads,
         crop_cpm=crop_cpm,
-        start_index=start_index,
+        resample_start_index=resample_start_index,
+        crop_start_index=crop_start_index,
         total=total,
         multiprocess=multiprocess,
         all_variables=all_variables,
