@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:0cdc21112758f7753fb9320582ff928e8e3629b9e5012128763450e4cfe491d1"
+content_hash = "sha256:2e9dbcd487bb5a87d434ca1d6e6772f17e0aec13e4b2080553f5672c0b3b97d9"
 
 [[metadata.targets]]
 requires_python = "~=3.12.5"
@@ -2017,7 +2017,7 @@ files = [
 
 [[package]]
 name = "pdm"
-version = "2.18.1"
+version = "2.19.1"
 requires_python = ">=3.8"
 summary = "A modern Python package and dependency manager supporting the latest PEP standards"
 groups = ["default"]
@@ -2043,13 +2043,13 @@ dependencies = [
     "shellingham>=1.3.2",
     "tomli>=1.1.0; python_version < \"3.11\"",
     "tomlkit<1,>=0.11.1",
-    "truststore; python_version >= \"3.10\"",
+    "truststore>=0.9; python_version >= \"3.10\"",
     "unearth>=0.17.0",
     "virtualenv>=20",
 ]
 files = [
-    {file = "pdm-2.18.1-py3-none-any.whl", hash = "sha256:6a86b9a6fbe071dc26f266006ac8d688e8d16e5115ee115135713af95a860c0a"},
-    {file = "pdm-2.18.1.tar.gz", hash = "sha256:acef692477a7190731ee7c1f626e97516eeb7473e4eeeeede4fef2bf0fb743ee"},
+    {file = "pdm-2.19.1-py3-none-any.whl", hash = "sha256:3b63ef645aaa4f4010ed9390550bda5cdfa7a9e70bc7780a555c8496cedfccc2"},
+    {file = "pdm-2.19.1.tar.gz", hash = "sha256:7fe235a9cb27b7ec17b762dc85bc9ae71e0776e4b7a8b6f64203f24bb915aa2c"},
 ]
 
 [[package]]
@@ -2600,7 +2600,7 @@ files = [
 
 [[package]]
 name = "rasterio"
-version = "1.4b1"
+version = "1.4.1"
 requires_python = ">=3.9"
 summary = "Fast and direct raster I/O for use with Numpy and SciPy"
 groups = ["default"]
@@ -2613,15 +2613,15 @@ dependencies = [
     "click>=4.0",
     "cligj>=0.5",
     "importlib-metadata; python_version < \"3.10\"",
-    "numpy",
+    "numpy>=1.24",
     "pyparsing",
 ]
 files = [
-    {file = "rasterio-1.4b1-cp312-cp312-macosx_10_15_x86_64.whl", hash = "sha256:3f21b1606a0150af778d1344d592c02c205361f5a4530cc9f73a00573aeb6188"},
-    {file = "rasterio-1.4b1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:360f335bf29eb1a9f2b6a8d3cdc3f6b881e699d7a5d308bb165fae605079e422"},
-    {file = "rasterio-1.4b1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:21e4491ff7dc00f952ed8aaec589ae288d0e8bc301453b544e50405fa62bd552"},
-    {file = "rasterio-1.4b1-cp312-cp312-win_amd64.whl", hash = "sha256:c585652c426c8d608b737c1ad2bbb9f38424d3d7497f7d45b9e504c051578e51"},
-    {file = "rasterio-1.4b1.tar.gz", hash = "sha256:a7c2f490aa8fc6245eb2ffb2c8b16c817be6857855378ce7856515c305e10b2d"},
+    {file = "rasterio-1.4.1-cp312-cp312-macosx_10_15_x86_64.whl", hash = "sha256:a0cd7b8eda7d3b0097a42a047d2604c3f1f27b4093e2a4e1e7ad379c9f639f65"},
+    {file = "rasterio-1.4.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:af5e0559eb8da3cf0adbc1d26ce86e505ea82814012b7b6711855674ae3f6425"},
+    {file = "rasterio-1.4.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5b85f7d912b868ce8dd25e01d5042c8426cc9208a715f093081503ee864e870b"},
+    {file = "rasterio-1.4.1-cp312-cp312-win_amd64.whl", hash = "sha256:e7b18c4ccf0d813b6056704af86e14d6841e29ec558a9bce2f1ce2e3ee2ef70d"},
+    {file = "rasterio-1.4.1.tar.gz", hash = "sha256:d750362bb792d2311f94803ff309baec48486ecba75c9b905ea9b1f5eb06ef9f"},
 ]
 
 [[package]]
