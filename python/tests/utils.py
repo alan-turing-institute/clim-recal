@@ -80,6 +80,9 @@ CPM_CONVERTED_TASMAX_1980_FILE: Final[Path] = Path(
 HADS_RAW_TASMAX_1980_FILE: Final[Path] = Path(
     "tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc"
 )
+HADS_CONVERTED_TASMAX_1980_FILE: Final[Path] = Path(
+    "tasmax_hadukgrid_uk_2_2km_day_19800101-19800131.nc"
+)
 
 HADS_UK_TASMAX_LOCAL_TEST_PATH: Final[Path] = (
     Path(HadUKGrid.slug) / HADS_RAW_TASMAX_1980_FILE

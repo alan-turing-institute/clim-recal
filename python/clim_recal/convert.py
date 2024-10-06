@@ -687,8 +687,8 @@ class HADsResamplerManager(IterCalcManagerBase):
         RESAMPLE_OUTPUT_PATH / HADS_OUTPUT_PATH
     )
     sub_path: Path = HADS_SUB_PATH
-    start_date: date = HADS_START_DATE
-    end_date: date = HADS_END_DATE
+    start_date: date | None = HADS_START_DATE
+    end_date: date | None = HADS_END_DATE
     configs: list[HADsResampler] = field(default_factory=list)
     config_default_kwargs: dict[str, Any] = field(default_factory=dict)
     calc_class: type[HADsResampler] = HADsResampler
@@ -799,8 +799,8 @@ class CPMResamplerManager(IterCalcManagerBase):
     input_paths: PathLike | Sequence[PathLike] = RAW_CPM_PATH
     output_paths: PathLike | Sequence[PathLike] = RESAMPLE_OUTPUT_PATH / CPM_OUTPUT_PATH
     sub_path: Path = CPM_SUB_PATH
-    start_date: date = CPM_START_DATE
-    end_date: date = CPM_END_DATE
+    start_date: date | None = CPM_START_DATE
+    end_date: date | None = CPM_END_DATE
     configs: list[CPMResampler] = field(default_factory=list)
     calc_class: type[CPMResampler] = CPMResampler
     runs: Sequence[RunOptions | str] = RunOptions.preferred()

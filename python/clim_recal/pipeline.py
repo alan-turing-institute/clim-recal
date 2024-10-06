@@ -237,10 +237,12 @@ def main(
                      regions_count=1, methods_count=1,
                      cpm_folders_count=2, hads_folders_count=2,
                      resample_start_index=0, resample_stop_index=None,
-                     crop_star_index=0, cpus=...)>
+                     crop_start_index=0, crop_stop_index=None, cpus=...)>
     <CPMResamplerManager(variables_count=2, runs_count=1,
                          input_paths_count=2)>
     <HADsResamplerManager(variables_count=2, input_paths_count=2)>
+    <CPMRegionCropManager(variables_count=2, input_paths_count=2)>
+    <HADsRegionCropManager(variables_count=2, input_paths_count=2)>
     No steps run. Add '--execute' to run steps.
     """
     if resample_stop_index and total:

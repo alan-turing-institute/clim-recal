@@ -92,11 +92,14 @@ class ClimRecalConfig(BaseRunConfig):
     ...     regions=('Manchester', 'Glasgow'),
     ...     output_path=test_runs_output_path,
     ...     cpus=1)
+    'set_cpm_for_coord_alignment' for 'HADs' not speficied.
+    Defaulting to 'self.cpm_input_path': '.../ClimateData/Raw/UKCP2.2'
     >>> run_config
     <ClimRecalConfig(variables_count=1, runs_count=1, regions_count=2,
                      methods_count=1, cpm_folders_count=1,
                      hads_folders_count=1, resample_start_index=0,
-                     resample_stop_index=None, cpus=1)>
+                     resample_stop_index=None, crop_start_index=0,
+                     crop_stop_index=None, cpus=1)>
     """
 
     variables: Sequence[VariableOptions] = (VariableOptions.default(),)
@@ -307,6 +310,7 @@ class ClimRecalConfig(BaseRunConfig):
             f"resample_start_index={self.resample_start_index}, "
             f"resample_stop_index={self.resample_stop_index if self.resample_stop_index else 'None'}, "
             f"crop_start_index={self.crop_start_index}, "
+            f"crop_stop_index={self.crop_stop_index if self.crop_stop_index else 'None'}, "
             f"cpus={self.cpus})>"
         )
 

@@ -47,7 +47,7 @@ class RegionCropperBase(IterCalcBase):
     output
         `Path` to save processed `HADS` files.
     input_files
-        `Path` or `Paths` of `NCF` files to resample.
+        `Path` or `Paths` of `NCF` files to crop.
     crop
         Path or file to spatially crop `input_files` with.
     start_index
@@ -146,7 +146,7 @@ class HADsRegionCropper(RegionCropperBase):
     output
         `Path` to save processed `HADS` files.
     input_files
-        `Path` or `Paths` of `NCF` files to resample.
+        `Path` or `Paths` of `NCF` files to crop.
     crop
         Path or file to spatially crop `input_files` with.
     start_index
@@ -181,7 +181,7 @@ class CPMRegionCropper(RegionCropperBase):
     output
         `Path` to save processed `HADS` files.
     input_files
-        `Path` or `Paths` of `NCF` files to resample.
+        `Path` or `Paths` of `NCF` files to crop.
     crop
         Path or file to spatially crop `input_files` with.
     start_index
@@ -207,7 +207,7 @@ class CPMRegionCropper(RegionCropperBase):
 
 @dataclass(kw_only=True, repr=False)
 class RegionCropperManagerBase(IterCalcManagerBase):
-    """Base class to inherit for `HADs` and `CPM` resampler managers."""
+    """Base class to inherit for `HADs` and `CPM` cropr managers."""
 
     crop_regions: tuple[RegionOptions | str, ...] = RegionOptions.all()
     configs: list[HADsRegionCropper | CPMRegionCropper] = field(default_factory=list)
@@ -318,7 +318,7 @@ class RegionCropperManagerBase(IterCalcManagerBase):
         raise NotImplementedError
 
     def set_output_paths(self) -> None:
-        """Propagate `self.resample_paths` if needed."""
+        """Propagate `self.crop_paths` if needed."""
         if isinstance(self.output_paths, PathLike):
             self._output_paths = self.output_paths
             self.output_paths = tuple(
@@ -329,7 +329,7 @@ class RegionCropperManagerBase(IterCalcManagerBase):
             )
 
     def yield_crop_configs(self) -> Iterable[IterCalcBase]:
-        """Generate a `CPMResampler` or `HADsResampler` for `self.input_paths`."""
+        """Generate a `CPMRegionCrop` or `HADsRegionCrop` for `self.input_paths`."""
         self.check_paths()
         try:
             assert isinstance(self.input_paths, Iterable)
@@ -404,7 +404,7 @@ class HADsRegionCropManager(RegionCropperManagerBase):
     end_date
         Not yet implemented, but in future from what date to generate stop index from.
     configs
-        List of `HADsResampler` instances to iterate `resampling` or `cropping`.
+        List of `HADsRegionCrop` instances to iterate `resampling` or `cropping`.
     config_default_kwargs
         Parameters passed to all running `self.configs`.
     calc_class
@@ -418,16 +418,17 @@ class HADsRegionCropManager(RegionCropperManagerBase):
 
     Examples
     --------
-    >>> if not is_data_mounted:
+    >>> tasmax_hads_1980_converted_path: Path = getfixture(
+    ...         'tasmax_hads_1980_converted_path')
+    >>> if not tasmax_hads_1980_converted_path:
     ...     pytest.skip(mount_doctest_skip_message)
-    >>> resample_test_hads_output_path: Path = getfixture(
-    ...         'resample_test_hads_output_path')
-    >>> hads_resampler_manager: HADsResamplerManager = HADsResamplerManager(
+    >>> hads_resampler_manager: HADsRegionCropManager = HADsRegionCropManager(
+    ...     input_paths=tasmax_hads_1980_converted_path.parent,
     ...     variables=VariableOptions.all(),
     ...     output_paths=resample_test_hads_output_path,
     ...     )
     >>> hads_resampler_manager
-    <HADsResamplerManager(variables_count=3, input_paths_count=3)>
+    <HADsRegionCropManager(variables_count=3, input_paths_count=3)>
     """
 
     input_paths: PathLike | Sequence[PathLike] = HADS_OUTPUT_PATH
@@ -505,7 +506,7 @@ class CPMRegionCropManager(RegionCropperManagerBase):
     end_date
         Not yet implemented, but in future from what date to generate stop index from.
     configs
-        List of `HADsResampler` instances to iterate `resampling` or `cropping`.
+        List of `HADsRegionCrop` instances to iterate `resampling` or `cropping`.
     config_default_kwargs
         Parameters passed to all running `self.configs`.
     calc_class
@@ -515,18 +516,17 @@ class CPMRegionCropManager(RegionCropperManagerBase):
 
     Examples
     --------
-    >>> if not is_data_mounted:
+    >>> tasmax_cpm_1980_converted_path: Path = getfixture(
+    ...         'tasmax_cpm_1980_converted_path')
+    >>> if not tasmax_cpm_1980_converted_path:
     ...     pytest.skip(mount_doctest_skip_message)
-    >>> resample_test_cpm_output_path: Path = getfixture(
-    ...         'resample_test_cpm_output_path')
-    >>> cpm_crop_manager: CPMResamplerManager = CPMResamplerManager(
-    ...     stop_index=9,
-    ...     resample_paths=resample_test_cpm_output_path,
-    ...     output_paths=resample_test_cpm_output_path,
+    >>> cpm_crop_manager: CPMRegionCropManager = CPMRegionCropManager(
+    ...     input_paths=tasmax_cpm_1980_converted_path.parent,
+    ...     output_paths=crop_test_cpm_output_path,
     ...     )
     >>> cpm_crop_manager
     <CPMRegionCropManager(variables_count=1, runs_count=4,
-                         input_paths_count=4)>
+                         input_paths_count=1)>
     >>> configs: tuple[CPMRegionCrop, ...] = tuple(
     ...     cpm_crop_manager.yield_configs())
     >>> pprint(configs)

@@ -39,6 +39,7 @@ from .core import (
     CLI_DATE_FORMAT_STR,
     ISO_DATE_FORMAT_STR,
     climate_data_mount_path,
+    console,
     multiprocess_execute,
     results_path,
 )
@@ -1416,6 +1417,7 @@ def progress_wrapper(
     return_path: bool = True,
     write_results: bool = True,
     progress_bar: bool = True,
+    progress_bar_refresh_per_sec: int = 1,
     **kwargs,
 ) -> Iterator[Path | T_Dataset]:
     """Iterate over `instance` with or without a progress bar.
@@ -1444,62 +1446,45 @@ def progress_wrapper(
         Whether to write results to disk. Required if `return_path` is `True`.
     progress_bar
         Whether to print progress bar or skip
+    progress_bar_refresh_per_sec
+        How many `progress_bar` refreshes per second if `progress_bar` is used.
     **kwargs
         Additional parameters to pass to `method_name`.
     """
     start = start or instance.start_index
     stop = stop or instance.stop_index
 
-    progress_conf: Progress = Progress(
-        SpinnerColumn(),
-        *Progress.get_default_columns(),
-        TimeElapsedColumn(),
-        refresh_per_second=2,
-    )
-
     if stop is None:
         stop = len(instance)
     if progress_bar:
-        with progress_conf:
-            for index in progress_conf.track(
-                range(start, stop, step), description=description
-            ):
-                yield getattr(instance, method_name)(
-                    index=index,
-                    override_export_path=override_export_path,
-                    source_to_index=source_to_index,
-                    return_path=return_path,
-                    write_results=write_results,
-                    **kwargs,
-                )
-    else:
-        for index in range(start, stop, step):
-            yield getattr(instance, method_name)(
-                instance,
-                index=index,
-                override_export_path=override_export_path,
-                source_to_index=source_to_index,
-                return_path=return_path,
-                write_results=write_results,
-                **kwargs,
+        progress: Progress = Progress(
+            SpinnerColumn(),
+            *Progress.get_default_columns(),
+            TimeElapsedColumn(),
+            console=console,
+            refresh_per_second=progress_bar_refresh_per_sec,
+        )
+        # TODO: replace below with function call
+        total_tasks: int = (stop - start - 1) // step + 1
+        task_id: float = progress.add_task(description=description, total=total_tasks)
+    for index in range(start, stop, step):
+        if progress_bar:
+            progress.update(
+                task_id=task_id,
+                advance=1,
+                description=Path(instance[index]).name[-20:-3],
+                refresh=True,
             )
-    # # export_paths: list[Path | T_Dataset] = []
-    # if stop is None:
-    #     stop = len(instance)
-    # export_path: Path = override_export_path or default_export_path
-    # for index in trange(start, stop, step):
-    #     # export_paths.append(
-    #     #     method(
-    #     yield calc(
-    #         # path=export_path,
-    #         index=index,
-    #         # override_export_path=override_export_path,
-    #         export_path=export_path,
-    #         source_to_index=source_to_index,
-    #     )
-    #     #     )
-    #     # )
-    # # return export_paths
+        yield getattr(instance, method_name)(
+            index=index,
+            override_export_path=override_export_path,
+            source_to_index=source_to_index,
+            return_path=return_path,
+            write_results=write_results,
+            **kwargs,
+        )
+    if progress_bar:
+        progress.stop()
 
 
 def execute_configs(
