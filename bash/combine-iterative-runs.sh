@@ -6,6 +6,9 @@
 # Manaually add in 1981 data from 
 # /datadrive/clim-recal-results/group_run_2024-09-30-16-04/run_24-09-30_16-07
 
+# Manaually add in 1981 data from 
+# /datadrive/clim-recal-results/group_run_2024-09-30-16-04/run_24-09-30_16-07
+
 
 combined_dir=./combined_output
 
@@ -22,6 +25,7 @@ for output_dir in $output_dirs; do
     rsync \
       --recursive \
       --verbose \
+      --ignore-existing \
       $output_dir/ \
       $combined_dir
 done
