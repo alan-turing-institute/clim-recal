@@ -278,13 +278,18 @@ class RunOptions(StrEnumReprName):
 
     @classmethod
     def preferred(cls) -> tuple[str, ...]:
-        """Return the prferred runs determined by initial results.
+        """Return the preferred runs determined by initial results.
 
         Notes
         -----
         See `R/misc/Identifying_Runs.md` for motivation and results.
         """
         return (cls.FIVE.value, cls.SIX.value, cls.SEVEN.value, cls.EIGHT.value)
+
+    @classmethod
+    def preferred_and_first(cls) -> tuple[str, ...]:
+        """Return the preferred and first runs."""
+        return (cls.ONE.value, cls.FIVE.value, cls.SIX.value, cls.SEVEN.value, cls.EIGHT.value)
 
     @classmethod
     def all(cls) -> tuple[str, ...]:

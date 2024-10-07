@@ -1526,9 +1526,9 @@ class XarrayTimeSeriesCalcManager(Sequence):
 
     path: PathLike = climate_data_mount_path() / "Raw/UKCP2.2/"
     save_folder: PathLike = Path("../docs/assets/cpm-raw-medians")
-    sub_path: PathLike = Path("latest")
+    sub_path: PathLike | None = Path("latest")
     variables: Sequence[str | VariableOptions] = VariableOptions.cpm_values()
-    runs: Sequence[str | RunOptions] = RunOptions.preferred()
+    runs: Sequence[str | RunOptions] = RunOptions.preferred_and_first()
     method_name: str = "median"
     time_dim_name: str = "time"
     regex: str = CPM_REGEX
@@ -1536,7 +1536,7 @@ class XarrayTimeSeriesCalcManager(Sequence):
 
     def __post_init__(self) -> None:
         self.path = Path(self.path)
-        self.save_folder = Path(self.save_folder)
+        self.save_folder = Path(self.save_folder) if self.save_folder else Path()
         self.sub_path = Path(self.sub_path)
         if not self.source_folders:
             self._set_source_folders()
@@ -1564,7 +1564,7 @@ class XarrayTimeSeriesCalcManager(Sequence):
 
     def _get_var_run(self, var_path: Path) -> tuple[str, str]:
         var_run: Sequence[Path]
-        if self.sub_path:
+        if self.sub_path and self.sub_path.name:
             var_run = var_path.parents[:2]
         else:
             var_run = (Path(var_path.parent.name), Path(var_path.name))
