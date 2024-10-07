@@ -1536,8 +1536,8 @@ class XarrayTimeSeriesCalcManager(Sequence):
 
     def __post_init__(self) -> None:
         self.path = Path(self.path)
-        self.save_folder = Path(self.save_folder) if self.save_folder else Path()
-        self.sub_path = Path(self.sub_path)
+        self.save_folder = Path(self.save_folder)
+        self.sub_path = Path(self.sub_path) if self.sub_path else Path()
         if not self.source_folders:
             self._set_source_folders()
 
@@ -1567,7 +1567,7 @@ class XarrayTimeSeriesCalcManager(Sequence):
         if self.sub_path and self.sub_path.name:
             var_run = var_path.parents[:2]
         else:
-            var_run = (Path(var_path.parent.name), Path(var_path.name))
+            var_run = Path(var_path.name), Path(var_path.parent.name) 
         return var_run[1].name, var_run[0].name
 
     def _source_path_to_file_name(self, path: PathLike) -> str:
