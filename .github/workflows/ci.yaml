@@ -122,7 +122,7 @@ jobs:
         with:
           python-version: '3.12'
           cache: 'pip'
-      - run: pip install jupyter
+      - run: pip install jupyter jupyter-cache
 
       - name: Render and Publish
         uses: quarto-dev/quarto-actions/publish@v2
