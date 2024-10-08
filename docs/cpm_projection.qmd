@@ -80,8 +80,8 @@ plt.show()
 check_days: Final[int] = 6
 trimmed_raw_to_standard = cpm_tasmax_raw_run_01.tasmax[:check_days].convert_calendar('standard', align_on="year")
 
-trimmed_raw_to_standard.plot(label="raw")
-cpm_tasmax_convert_run_01.tasmax[:check_days + 1].plot(label="convert")
+trimmed_raw_to_standard.plot(label="raw", marker=".")
+cpm_tasmax_convert_run_01.tasmax[:check_days + 1].plot(label="convert", marker=".")
 plt.legend()
 
 plt.show()
