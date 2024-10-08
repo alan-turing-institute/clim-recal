@@ -653,17 +653,15 @@ def annual_group_xr_time_series(
 
     Parameters
     ----------
-    xr_time_series
+    joined_xr_time_series
         Provide existing `Dataset` to aggregate and plot (otherwise check `path`).
-    path
-        Path to collect files to process from, filtered via `regex`.
-    plot_path
-        Path to save new plot to.
     variable_name
         A variable name to specify for data expected. If none that
         will be extracted and checked from the files directly.
+    groupby_method
+        `xarray` method to aggregate time of `xr_time_series`.
     method_name
-        What method to use to summarise each time point results.
+        `xarray` method to calculate for plot.
     time_dim_name
         Name of time dimension in passed files.
     regex
@@ -674,6 +672,12 @@ def annual_group_xr_time_series(
         What point to stop indexing `path` restuls from.
     step
         How many paths to jump between when iterating between `stop` and `start`.
+    plot_path
+        `Path` to save plot to.
+    time_stamp
+        Whether to include a time stamp in the `plot_path` name.
+    **kwargs
+        Additional parameters to pass to `plot_xarray`.
 
     Examples
     --------
@@ -866,8 +870,6 @@ def convert_xr_calendar(
         Columns to check `cftime` format on
     cftime_range_gen_kwargs
         Any `kwargs` to pass to `cftime_range_gen`
-    **kwargs
-        Any additional parameters to pass to `interpolate_na`.
 
     Raises
     ------
