@@ -1569,7 +1569,7 @@ class XarrayTimeSeriesCalcManager(Sequence):
         if self.sub_path and self.sub_path.name:
             var_run = var_path.parents[:2]
         else:
-            var_run = Path(var_path.name), Path(var_path.parent.name) 
+            var_run = Path(var_path.name), Path(var_path.parent.name)
         return var_run[1].name, var_run[0].name
 
     def _source_path_to_file_name(self, path: PathLike) -> str:
