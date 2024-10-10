@@ -294,3 +294,5 @@ objects.json
 python/tests/test_auth.csv
 python/debiasing/python-cmethods
 python/clim_recal/debiasing/python-cmethods
+/bash/example_files
+/bash/working

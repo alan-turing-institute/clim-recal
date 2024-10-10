@@ -60,9 +60,10 @@ CLIMATE_DATA_MOUNT_PATH: Path = climate_data_mount_path()
 
 CFCalendarSTANDARD: Final[str] = "standard"
 
-RESAMPLING_OUTPUT_PATH: Final[PathLike] = (
-    CLIMATE_DATA_MOUNT_PATH / "CPM-365/andys-two-gdal-step-approach/resample"
-)
+# RESAMPLING_OUTPUT_PATH: Final[PathLike] = (
+#    CLIMATE_DATA_MOUNT_PATH / "CPM-365/andys-two-gdal-step-approach/resample"
+# )
+RESAMPLING_OUTPUT_PATH: Final[PathLike] = "/datadrive/clim-recal-results/cropped"
 RAW_HADS_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/HadsUKgrid"
 RAW_CPM_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/UKCP2.2"
 RAW_HADS_TASMAX_PATH: Final[PathLike] = RAW_HADS_PATH / "tasmax/day"
