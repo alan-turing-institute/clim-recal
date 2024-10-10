@@ -1,6 +1,6 @@
-import sys
 import pathlib
 import re
+import sys
 
 # get input dir
 root_dir = sys.argv[1]

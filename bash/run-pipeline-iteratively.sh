@@ -38,7 +38,7 @@ cpm_end_year=1982
 for year in $(seq $cpm_start_year $cpm_end_year); do
   echo "Running for year={$year}"
 
-  # Including `1201` in the filter, guarantees that we only match on the 
+  # Including `1201` in the filter, guarantees that we only match on the
   # start year for each file, not the end year.
   cpm_filter="*_${year}1201-*.nc"
   # cpm_filter="*_198?1201-*.nc"

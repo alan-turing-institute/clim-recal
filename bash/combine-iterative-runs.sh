@@ -3,10 +3,10 @@
 # Run this script from the root of the `group_run_*` directory
 
 # /datadrive/clim-recal-results/group_run_2024-09-26-15-11
-# Manaually add in 1981 data from 
+# Manaually add in 1981 data from
 # /datadrive/clim-recal-results/group_run_2024-09-30-16-04/run_24-09-30_16-07
 
-# Manaually add in 1982 data from 
+# Manaually add in 1982 data from
 # /datadrive/clim-recal-results/group_run_2024-10-07-12-31/run_24-10-07_12-37
 
 
