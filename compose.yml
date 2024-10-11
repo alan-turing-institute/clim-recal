@@ -15,6 +15,7 @@ services:
       - JUPYTER_ENABLE_LAB=yes
     volumes:
       - .:/home/jovyan:rw
+      - /datadrive:/datadrive
 
   docs:
     build:
