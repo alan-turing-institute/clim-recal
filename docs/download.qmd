@@ -3,8 +3,50 @@ title: "Dataset Links"
 format: html
 ---
 
-Thanks for your interest in `clim-recal` data and metrics. We plan to release a set of combined observation and simulation datasets for three cities in the UK and invite authors of bias correction methods to benchmark their methods for those cities.
+Thanks for your interest in `clim-recal` data and metrics. Below are instructions for downloading observation and simulation datasets for three cities in the UK (Glasgow, Manchester and London) and Scotland. We invite authors of bias correction methods to benchmark their methods for those cities.
 
-We are still completing this work. As soon as the data are ready for publication, we will update this page with information on how to access them - check back soon.
+Please also see [our blog article](https://urban-analytics-technology-platform.github.io/blog/platform_v2_release/) describing this work.
 
-In the meantime, please check [our blog article](https://urban-analytics-technology-platform.github.io/blog/platform_v2_release/) describing this work.
+Below are shell commands that can be passed to the command-line to download subsets of the data as required having first downloaded the [full list of file URLs](urls/data-v1.0-rc.1.txt) (`data-v1.0-rc.1.txt`).
+
+## Resample
+### HAD
+For a given measurement `<MEASURE>` (either `tasmax`, `tasmin` or `rainfall`), the monthly data can be downloaded with the command:
+```shell
+grep -iE "resample.*hads.*<MEASURE>.*_[0-9]{8}-[0-9]{8}.*" data-v1.0-rc.1.txt | xargs -n 1 curl -O
+```
+For example, for `rainfall`:
+```shell
+grep -iE "resample.*hads.*rainfall.*_[0-9]{8}-[0-9]{8}.*" data-v1.0-rc.1.txt | xargs -n 1 curl -O
+```
+
+### CPM
+For a given measurement `<MEASURE>` (either `tasmax`, `tasmin` or `pr`), for run `<RUN>` (either `01`, `05`, `06`, `07`, `08`), the yearly data can be downloaded with the command:
+```shell
+grep -iE "resample.*cpm.*<MEASURE>.*<RUN>.*_[0-9]{8}-[0-9]{8}.*" data-v1.0-rc.1.txt | xargs -n 1 curl -O
+```
+For exmample, for `rainfall` and `01`:
+```shell
+grep -iE "resample.*cpm.*rainfall.*01.*_[0-9]{8}-[0-9]{8}.*" data-v1.0-rc.1.txt | xargs -n 1 curl -O
+```
+
+## Crops
+### HADS
+For a given region `<REGION>` (either `Scotland`, `Glasgow`, `Manchester` or `London`), for measurement `<MEASURE>` (either `tasmax`, `tasmin` or `pr`), the monthly data can be downloaded with the command:
+```shell
+grep -iE "crop.*hads.*<REGION>.*<MEASURE>.*<RUN>_[0-9]{8}-[0-9]{8}.*" data-v1.0-rc.1.txt | xargs -n 1 curl -O
+```
+For example, for region is `Manchester`, measure is `tasmax`:
+```shell
+grep -iE ".*crop.*hads.*manchester.*tasmax.*_[0-9]{8}-[0-9]{8}\.nc\.gz" data-v1.0-rc.1.txt | xargs -n 1 curl -O
+```
+
+### CPM
+For a given region `<REGION>` (either `Scotland`, `Glasgow`, `Manchester` or `London`), for measurement `<MEASURE>` (either `tasmax`, `tasmin` or `pr`), for run `<RUN>` (either `01`, `05`, `06`, `07`, `08`), the yearly data can be downloaded with the command:
+```shell
+grep -iE "crop.*cpm.*<REGION>.*<MEASURE>.*<RUN>_[0-9]{8}-[0-9]{8}.*" data-v1.0-rc.1.txt | xargs -n 1 curl -O
+```
+For example, for region `Manchester`, measure `tasmax`, run `01`:
+```shell
+grep -iE ".*crop.*cpm.*manchester.*tasmax.*01_[0-9]{8}-[0-9]{8}\.nc\.gz" data-v1.0-rc.1.txt | xargs -n 1 curl -O
+```
