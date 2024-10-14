@@ -56,8 +56,8 @@ def test_main(
         execute=execute,
         variables=variables,
         output_path=output_path,
-        convert_hads=True,
-        convert_cpm=False,
+        convert=True,
+        cpm=False,
         regions=regions,
         convert_stop_index=1,
         cpus=2,
@@ -69,5 +69,5 @@ def test_main(
     captured = capsys.readouterr()
     assert f"variables_count={len(variables)}" in captured.out
     assert results == None
-    # if execute:
-    #     assert False
+    if execute:
+        assert False

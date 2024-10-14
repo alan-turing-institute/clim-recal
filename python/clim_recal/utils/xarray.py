@@ -4,7 +4,7 @@ from logging import getLogger
 from os import PathLike
 from pathlib import Path
 from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
-from typing import Any, Callable, Final, Iterator, Literal, Sequence
+from typing import Any, Callable, Final, Iterable, Iterator, Literal, Sequence
 
 import numpy as np
 import rioxarray  # nopycln: import
@@ -23,7 +23,14 @@ from osgeo.gdal import (
 )
 from osgeo.gdal import config_option as config_GDAL_option
 from rasterio.enums import Resampling
-from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
+from rich.live import Live
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TimeElapsedColumn,
+)
 from tqdm import tqdm
 from xarray import CFTimeIndex, DataArray, Dataset, cftime_range, open_dataset
 from xarray.coding.calendar_ops import convert_calendar
@@ -45,12 +52,14 @@ from .core import (
 )
 from .data import (
     BRITISH_NATIONAL_GRID_EPSG,
+    CPM_NAME,
     CPM_RAW_X_COLUMN_NAME,
     CPM_RAW_Y_COLUMN_NAME,
     DEFAULT_CALENDAR_ALIGN,
     DEFAULT_INTERPOLATION_METHOD,
     DEFAULT_RESAMPLING_METHOD,
     GLASGOW_GEOM_LOCAL_PATH,
+    HADS_NAME,
     HADS_RAW_X_COLUMN_NAME,
     HADS_RAW_Y_COLUMN_NAME,
     NETCDF4_XARRAY_ENGINE,
@@ -1203,15 +1212,39 @@ def file_name_to_start_end_dates(
     return start_date, end_date
 
 
-def date_seq_to_str(datetime_seq: Sequence, join_str: str = " ") -> str:
-    """Return a `str` joining stard print format `dates` from `datetime_seq`."""
-    return join_str.join(str(d.date) for d in datetime_seq)
+def date_seq_to_str(datetime_seq: Sequence[datetime], join_str: str = " ") -> str:
+    """Return a `str` joining `str` of `dates` from `datetime_seq`.
+    Parameters
+    ----------
+    datetime_seq
+        Iterable of `datetimes` to convert to `strs` to join via `join_str`.
+    join_str
+        `str` to join `datetime_seq` elements with.
+
+    Examples
+    --------
+    >>> date_seq_to_str((datetime(1980, 12, 1), datetime(1981, 11, 30)))
+    '1980-12-01 1981-11-30'
+    >>> date_seq_to_str((date(1980, 12, 1), datetime(1981, 11, 30)))
+    '1980-12-01 1981-11-30'
+    """
+    return join_str.join(
+        str(d.date()) if isinstance(d, datetime) else str(d) for d in datetime_seq
+    )
 
 
 def data_path_to_date_range(
     path: PathLike, return_type: Literal["raw", "string"] = "string"
 ) -> tuple[date, date] | str:
-    """Extract date range as `tuple` or `str` from `path`."""
+    """Extract date range as `tuple` or `str` from `path`.
+
+    Examples
+    --------
+    >>> data_path_to_date_range('cpm/tasmax_19801201-19811130.nc')
+    '1980-12-01 1981-11-30'
+    >>> data_path_to_date_range('cpm/tasmax_19801201-19811130.nc', return_type="raw")
+    (datetime.date(1980, 12, 1), datetime.date(1981, 11, 30))
+    """
     date_range_tuple: tuple[datetime, datetime] = file_name_to_start_end_dates(path)
     if return_type == "raw":
         return date_range_tuple[0].date(), date_range_tuple[1].date()
@@ -1221,15 +1254,46 @@ def data_path_to_date_range(
         raise ValueError(f"'return_type' must be 'raw' or 'string'")
 
 
-def path_print_progress(
-    path: PathLike, data_type: Literal["cpm", "hads"] | None = None
+def path_parent_types(
+    path_or_instance: PathLike | Iterable,
+    data_type: Literal[HADS_NAME, CPM_NAME],
+    trim_tail: int | None = None,
+    nc_file: bool = False,  # crop: bool = False
 ) -> str:
-    """Extract relevant path info to print progress."""
-    path = Path(path)
-    if not data_type:
-        data_type = "cpm" if "cpm" in path.parents else "hads"
-    path_parents_count: int = 3 if data_type == "cpm" else 2
-    return str(path.parents[:path_parents_count])
+    """Extract relevant path info to print progress.
+
+    Examples
+    --------
+    >>> path_parent_types(
+    ...     'UKCP2.2/tasmax/05/latest/',
+    ...     data_type=CPM_NAME)
+    'tasmax-05-latest'
+    >>> path_parent_types(
+    ...     'UKCP2.2/tasmax/05/latest/', trim_tail=-1,
+    ...     data_type=CPM_NAME)
+    'tasmax-05'
+    >>> path_parent_types(
+    ...     'crop/Glasgow/tasmax/05/',
+    ...     data_type=CPM_NAME)
+    'Glasgow-tasmax-05'
+    >>> path_parent_types(
+    ...     'HadsUKgrid/tasmax/day',
+    ...     data_type=HADS_NAME, trim_tail=-1)
+    'tasmax'
+    >>> path_parent_types(
+    ...     'HadsUKgrid/tasmax/day/hads-1980-1982.nc',
+    ...     data_type=HADS_NAME, trim_tail=-1, nc_file=True)
+    'tasmax'
+    """
+    if hasattr(path_or_instance, "input_path"):
+        path_or_instance = path_or_instance.input_path
+    assert isinstance(path_or_instance, PathLike | str)
+    path_or_instance = Path(path_or_instance)
+    path_parents_count: int = -3 if data_type == CPM_NAME else -2
+    if nc_file:
+        path_parents_count -= 1
+        trim_tail = trim_tail - 1 if trim_tail else -1
+    return "-".join(path_or_instance.parts[path_parents_count:trim_tail])
 
 
 def generate_360_to_standard(array_to_expand: T_DataArray) -> T_DataArray:
@@ -1437,7 +1501,7 @@ def _write_and_or_return_results(
 def progress_wrapper(
     instance: Sequence,
     method_name: str,
-    start: int | None = None,
+    start: int = 0,
     stop: int | None = None,
     step: int = 1,
     description: str = "",
@@ -1445,9 +1509,12 @@ def progress_wrapper(
     source_to_index: Sequence | None = None,
     return_path: bool = True,
     write_results: bool = True,
-    progress_bar: bool = True,
+    use_progress_bar: bool = True,
     progress_bar_refresh_per_sec: int = 1,
-    description_func: Callable[[PathLike, Any], str] | None = None,
+    description_func: Callable[..., str] | None = None,
+    description_kwargs: dict[str, Any] | None = None,
+    progress_instance: Progress | None = None,
+    methods_to_skip_progress: Sequence[str] = ["to_reprojection"],
     **kwargs,
 ) -> Iterator[Path | T_Dataset]:
     """Iterate over `instance` with or without a progress bar.
@@ -1480,35 +1547,48 @@ def progress_wrapper(
         How many `progress_bar` refreshes per second if `progress_bar` is used.
     description_func
         Function to return description.
+    description_kwargs
+        Parameters to pass to description_func.
     **kwargs
         Additional parameters to pass to `method_name`.
     """
-    start = start or instance.start_index
-    stop = stop or instance.stop_index
-
-    if stop is None:
-        stop = len(instance)
-    if progress_bar:
-        progress: Progress = Progress(
+    # progress_bar = True
+    start = start or 0
+    stop = stop or len(instance)
+    # TODO: replace below with function call
+    total_tasks: int = (stop - start - 1) // step + 1
+    if not progress_instance:
+        progress_instance = Progress(
             SpinnerColumn(),
             *Progress.get_default_columns(),
             TimeElapsedColumn(),
             console=console,
             refresh_per_second=progress_bar_refresh_per_sec,
         )
-        # TODO: replace below with function call
-        total_tasks: int = (stop - start - 1) // step + 1
-        task_id: float = progress.add_task(description=description, total=total_tasks)
+    assert progress_instance
+    task_id: float = progress_instance.add_task(
+        description=description, total=total_tasks, visible=use_progress_bar
+    )
     for index in range(start, stop, step):
-        if progress_bar:
-            if description_func:
-                description = description_func(instance[index])
-            progress.update(
-                task_id=task_id,
-                advance=1,
-                description=Path(instance[index]).name[-20:-3],
-                refresh=True,
-            )
+        if description_func:
+            # print(description_kwargs)
+            # print(instance[index])
+            description = description_func(instance[index], **description_kwargs)
+            print(description)
+        else:
+            description = f"task {index}"
+        # progress_instance.update(task_id, description=description, refresh=True)
+        progress_instance.update(task_id, description=description)
+        if "index" in kwargs:
+            popped_index = kwargs.pop("index")
+            console.log(f"popping index {popped_index} vs actual index {index}")
+        if not method_name == "to_reprojection":
+            kwargs["progress_instance"] = progress_instance
+            if "end" in kwargs:
+                popped_end = kwargs.pop("end")
+                console.log(f"popping end {popped_end} vs actual end {stop}")
+            else:
+                print("end not in kwargs")
         yield getattr(instance, method_name)(
             index=index,
             override_export_path=override_export_path,
@@ -1517,21 +1597,29 @@ def progress_wrapper(
             write_results=write_results,
             **kwargs,
         )
-    if progress_bar:
-        progress.stop()
+        progress_instance.update(task_id=task_id, advance=1)
 
 
 def execute_configs(
     instance: Any,
+    data_type: Literal[CPM_NAME, HADS_NAME],
     configs_method: str = "yield_configs",
     multiprocess: bool = False,
     cpus: int | None = None,
     return_instances: bool = False,
     return_path: bool = True,
-    description_func: Callable[[str], str] | None = None,
+    # start: int = 0,
+    # stop: int | None = None,
+    # step: int = 1,
+    # # start_calc_index: int =0,
+    # # stop_calc_index: int | None =None,
+    # # step_calc_index: int =1,
+    use_progress_bar: bool = True,
+    description_iter_func: Callable[..., str] | None = path_parent_types,
+    description_iter_kwargs: dict[str, Any] | None = None,
     **kwargs,
 ) -> tuple | list[T_Dataset | Path]:
-    """Run all converter configurations
+    """Run all converter configurations.
 
     Parameters
     ----------
@@ -1550,13 +1638,19 @@ def execute_configs(
     **kwargs
         Parameters to path to sampler `execute` calls.
     """
+    # config: tuple = getattr(instance, configs_method)()
     configs: tuple = tuple(getattr(instance, configs_method)())
+    # configs: tuple = tuple(instance) if isinstance(instance, Generator) else tuple(getattr(instance, configs_method)())
+    # console.print(f"Processing {len(configs)} config(s)...")
     results: list[tuple[Path, ...]] = []
+    multiprocess = False
     if multiprocess:
         cpus = cpus or instance.cpus
         if instance.total_cpus and cpus:
             cpus = min(cpus, instance.total_cpus - 1)
         results = multiprocess_execute(
+            # tuple(config),
+            # config,
             configs,
             cpus=cpus,
             include_sub_process_config=True,
@@ -1565,23 +1659,40 @@ def execute_configs(
             **kwargs,
         )
     else:
-        results = tuple(
-            progress_wrapper(
-                configs,
-                method_name="execute",
-                start=self.start,
-                stop=self.stop,
-                step=self.step,
-                return_path=return_path,
-                description_func=description_func,
-                **kwargs,
-            )
+        config_progress = Progress(
+            "{task.description}",
+            SpinnerColumn(),
+            BarColumn(),
+            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+            TimeElapsedColumn(),
         )
-        # return tuple(getattr(self, self._iter_calc_method_name)(**kwargs))
-        # for config in configs:
-        #     print(config)
-        #     # progress_wrapper(config, method_name="execute")
-        #     results.append(config.execute(return_path=return_path, **kwargs))
+        configs_count: int = len(configs)
+        progress_task = config_progress.add_task(
+            f"{configs_count} {data_type} configs...",
+            total=configs_count,
+            visible=use_progress_bar,
+        )
+        with Live(config_progress, console=console, refresh_per_second=1):
+            for i, config in enumerate(configs):
+                progress_results: tuple = tuple(
+                    progress_wrapper(
+                        config,
+                        method_name="execute",
+                        return_path=True,
+                        start=config.start_index,
+                        end=config.stop_index,
+                        description=f"{i}/{len(config)} configs...",
+                        description_func=description_iter_func,
+                        description_kwargs=description_iter_kwargs,
+                        use_progress_bar=use_progress_bar,
+                        progress_instance=config_progress,
+                        **kwargs,
+                    )
+                )
+                results.append(progress_results)
+                config_progress.update(
+                    progress_task, advance=1, description=config.input_path.name
+                )
     if return_instances:
         return configs
     else:

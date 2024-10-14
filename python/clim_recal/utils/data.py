@@ -46,6 +46,11 @@ CROP_OUTPUT_PATH: Final[Path] = Path("crop")
 HADS_NAME: Final[str] = "hads"
 CPM_NAME: Final[str] = "cpm"
 
+ClimDataType: Literal[HADS_NAME, CPM_NAME] = HADS_NAME
+ClimDataTypeTuple = tuple[ClimDataType, ...]
+HADS_AND_CPM: Final[ClimDataTypeTuple] = (HADS_NAME, CPM_NAME)
+
+
 HADS_OUTPUT_PATH: Final[Path] = Path(HADS_NAME)
 CPM_OUTPUT_PATH: Final[Path] = Path(CPM_NAME)
 
@@ -63,6 +68,15 @@ BoundsTupleType = tuple[float, float, float, float]
 """`GeoPandas` bounds: (`minx`, `miny`, `maxx`, `maxy`)."""
 
 
+def get_clim_types(hads: bool = True, cpm: bool = True) -> ClimDataTypeTuple:
+    if hads and cpm:
+        return HADS_AND_CPM
+    elif hads:
+        return (HADS_NAME,)
+    elif cpm:
+        return (CPM_NAME,)
+    else:
+        return tuple()
 
 @dataclass
 class BoundingBoxCoords:

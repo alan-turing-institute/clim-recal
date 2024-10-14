@@ -7,6 +7,7 @@
 from dataclasses import dataclass, field
 from datetime import date
 from glob import glob
+from itertools import islice
 from logging import getLogger
 from os import PathLike, cpu_count
 from pathlib import Path
@@ -15,6 +16,7 @@ from typing import Any, Callable, Final, Iterable, Iterator, Literal, Sequence
 import dill as pickle
 import rioxarray  # nopycln: import
 from rich import print
+from rich.progress import Progress
 from xarray import Dataset
 from xarray.core.types import T_Dataset
 
@@ -24,15 +26,18 @@ from .utils.core import _get_source_path, climate_data_mount_path
 from .utils.data import (
     CONVERT_OUTPUT_PATH,
     CPM_END_DATE,
+    CPM_NAME,
     CPM_OUTPUT_PATH,
     CPM_START_DATE,
     CPM_SUB_PATH,
     HADS_END_DATE,
+    HADS_NAME,
     HADS_OUTPUT_PATH,
     HADS_START_DATE,
     HADS_SUB_PATH,
     HADS_XDIM,
     HADS_YDIM,
+    ClimDataType,
     RunOptions,
     VariableOptions,
 )
@@ -46,7 +51,7 @@ from .utils.xarray import (
     execute_configs,
     get_cpm_for_coord_alignment,
     hads_resample_and_reproject,
-    path_print_progress,
+    path_parent_types,
     progress_wrapper,
 )
 
@@ -186,6 +191,8 @@ class IterCalcBase:
         description_func: (
             Callable[[PathLike, Any], str] | None
         ) = data_path_to_date_range,
+        # description_kwargs: dict[str, Any] =
+        progress_instance: Progress | None = None,
         **kwargs,
     ) -> Iterator[Path | T_Dataset]:
         return progress_wrapper(
@@ -199,8 +206,10 @@ class IterCalcBase:
             source_to_index=source_to_index,
             return_path=return_path,
             write_results=write_results,
-            progress_bar=progress_bar,
+            use_progress_bar=progress_bar,
             description_func=description_func,
+            description_kwargs={"return_type": "string"},
+            progress_instance=progress_instance,
             **kwargs,
         )
 
@@ -407,7 +416,7 @@ class CPMConvert(IterCalcBase):
         on the server configured Linux architecture. This may relate
         to differences between Linux using `fork` while `win` and `macOS`
         use `spawn`. This `method` helps test that on instances of this
-        `class`.
+        `class`. This can probably be removed now the `dill` package is used.
         """
         for variable_name, value in vars(self).items():
             try:
@@ -428,6 +437,8 @@ class IterCalcManagerBase:
     stop_index: int | None = None
     start_date: date | None = None
     end_date: date | None = None
+    start_calc_index: int | None = None
+    stop_calc_index: int | None = None
     configs: list[HADsConvert | CPMConvert] = field(default_factory=list)
     config_default_kwargs: dict[str, Any] = field(default_factory=dict)
     calc_class: type[HADsConvert | CPMConvert] | None = None
@@ -450,6 +461,10 @@ class IterCalcManagerBase:
         self.total_cpus: int | None = cpu_count()
         if not self.cpus:
             self.cpus = 1 if not self.total_cpus else self.total_cpus
+        if not self.start_index:
+            self.start_index = 0
+        if not self.start_calc_index:
+            self.start_calc_index = self.start_index
 
     @property
     def input_folder(self) -> Path | None:
@@ -554,19 +569,27 @@ class IterCalcManagerBase:
                 )
             )
 
-    def yield_configs(self) -> Iterable[IterCalcBase]:
+    def yield_configs(self, **kwargs) -> Iterable[IterCalcBase]:
         """Generate a `CPMConvert` or `HADsConvert` for `self.input_paths`."""
         self.check_paths()
         assert isinstance(self.output_paths, Iterable)
         assert isinstance(self.calc_class, type(IterCalcBase))
-        for index, var_path in enumerate(self._input_path_dict.items()):
+        if self.calc_class == HADsConvert:
+            kwargs["cpm_for_coord_alignment"] = self.cpm_for_coord_alignment
+            kwargs["cpm_for_coord_alignment_path_converted"] = (
+                self.cpm_for_coord_alignment_path_converted
+            )
+        for index, var_path in enumerate(
+            islice(self._input_path_dict.items(), self.start_index, self.stop_index)
+        ):
             yield self.calc_class(
                 input_path=var_path[0],
                 output_path=self.output_paths[index],
                 variable_name=var_path[1],
-                start_index=self.start_index,
-                stop_index=self.stop_index,
+                start_index=self.start_calc_index or 0,
+                stop_index=self.stop_calc_index,
                 **self.config_default_kwargs,
+                **kwargs,
             )
 
     def __len__(self) -> int:
@@ -605,7 +628,7 @@ class IterCalcManagerBase:
         cpus: int | None = None,
         return_converters: bool = False,
         return_path: bool = True,
-        description_func: Callable[[PathLike, Any], str] | None = path_print_progress,
+        # description_func: Callable[..., str] | None = path_parent_types,
         # description_func: Callable[[str], str] | None = lambda x: str(file_name_to_start_end_dates(x)),
         **kwargs,
     ) -> tuple[IterCalcBase, ...] | list[T_Dataset | Path]:
@@ -626,13 +649,23 @@ class IterCalcManagerBase:
         kwargs
             Parameters to path to sampler `execute` calls.
         """
+        data_type: ClimDataType = (
+            HADS_NAME if type(self).__name__ == "HADsConvertManager" else CPM_NAME
+        )
         return execute_configs(
             self,
+            configs_method="yield_configs",
             multiprocess=multiprocess,
             cpus=cpus,
             return_instances=return_converters,
             return_path=return_path,
-            description_func=description_func,
+            data_type=data_type,
+            description_iter_func=path_parent_types,
+            description_iter_kwargs={
+                "data_type": data_type,
+                "trim_tail": -1,
+                "nc_file": True,
+            },
             **kwargs,
         )
 
@@ -682,13 +715,23 @@ class HADsConvertManager(IterCalcManagerBase):
     >>> if not is_data_mounted:
     ...     pytest.skip(mount_doctest_skip_message)
     >>> resample_test_hads_output_path: Path = getfixture(
-    ...         'resample_test_hads_output_path')
+    ...     'resample_test_hads_output_path')
     >>> hads_converter_manager: HADsConvertManager = HADsConvertManager(
     ...     variables=VariableOptions.all(),
+    ...     stop_index=2, stop_calc_index=10,
     ...     output_paths=resample_test_hads_output_path,
     ...     )
     >>> hads_converter_manager
     <HADsConvertManager(variables_count=3, input_paths_count=3)>
+    >>> configs: tuple[HADsConvert, ...] = tuple(
+    ...     hads_converter_manager.yield_configs())
+    >>> pprint(configs)
+    (<HADsConvert(count=10, max_count=504,
+                  input_path='.../tasmax/day',
+                  output_path='.../hads/tasmax')>,
+     <HADsConvert(count=10, max_count=504,
+                  input_path='.../rainfall/day',
+                  output_path='.../hads/rainfall')>)
     """
 
     input_paths: PathLike | Sequence[PathLike] = RAW_HADS_PATH
@@ -702,36 +745,12 @@ class HADsConvertManager(IterCalcManagerBase):
     cpm_for_coord_alignment: T_Dataset | PathLike = RAW_CPM_TASMAX_PATH
     cpm_for_coord_alignment_path_converted: bool = False
 
-    def __repr__(self) -> str:
-        """Summary of `self` configuration as a `str`."""
-        return (
-            f"<{self.__class__.__name__}("
-            f"variables_count={len(self.variables)}, "
-            f"input_paths_count={len(self.input_paths) if isinstance(self.input_paths, Sequence) else 1})>"
-        )
-
     def set_cpm_for_coord_alignment(self) -> None:
         """Check if `cpm_for_coord_alignment` is a `Dataset`, process if a `Path`."""
         self.cpm_for_coord_alignment = get_cpm_for_coord_alignment(
             self.cpm_for_coord_alignment,
             skip_reproject=self.cpm_for_coord_alignment_path_converted,
         )
-
-    def yield_configs(self) -> Iterable[HADsConvert]:
-        """Generate a `CPMConvert` or `HADsConvert` for `self.input_paths`."""
-        self.check_paths()
-        assert isinstance(self.output_paths, Iterable)
-        for index, var_path in enumerate(self._input_path_dict.items()):
-            yield self.calc_class(
-                input_path=var_path[0],
-                output_path=self.output_paths[index],
-                variable_name=var_path[1],
-                start_index=self.start_index,
-                stop_index=self.stop_index,
-                cpm_for_coord_alignment=self.cpm_for_coord_alignment,
-                cpm_for_coord_alignment_path_converted=self.cpm_for_coord_alignment_path_converted,
-                **self.config_default_kwargs,
-            )
 
 
 @dataclass(kw_only=True, repr=False)
@@ -780,27 +799,24 @@ class CPMConvertManager(IterCalcManagerBase):
     >>> resample_test_cpm_output_path: Path = getfixture(
     ...         'resample_test_cpm_output_path')
     >>> cpm_converter_manager: CPMConvertManager = CPMConvertManager(
-    ...     stop_index=9,
+    ...     stop_index=3, stop_calc_index=10,
     ...     output_paths=resample_test_cpm_output_path,
     ...     )
     >>> cpm_converter_manager
     <CPMConvertManager(variables_count=1, runs_count=4,
-                         input_paths_count=4)>
+                       input_paths_count=4)>
     >>> configs: tuple[CPMConvert, ...] = tuple(
     ...     cpm_converter_manager.yield_configs())
     >>> pprint(configs)
-    (<CPMConvert(count=9, max_count=100,
-                   input_path='.../tasmax/05/latest',
-                   output_path='.../cpm/tasmax/05')>,
-     <CPMConvert(count=9, max_count=100,
-                   input_path='.../tasmax/06/latest',
-                   output_path='.../cpm/tasmax/06')>,
-     <CPMConvert(count=9, max_count=100,
-                   input_path='.../tasmax/07/latest',
-                   output_path='.../cpm/tasmax/07')>,
-     <CPMConvert(count=9, max_count=100,
-                   input_path='.../tasmax/08/latest',
-                   output_path='.../cpm/tasmax/08')>)
+    (<CPMConvert(count=10, max_count=100,
+                 input_path='.../tasmax/05/latest',
+                 output_path='.../cpm/tasmax/05')>,
+     <CPMConvert(count=10, max_count=100,
+                 input_path='.../tasmax/06/latest',
+                 output_path='.../cpm/tasmax/06')>,
+     <CPMConvert(count=10, max_count=100,
+                 input_path='.../tasmax/07/latest',
+                 output_path='.../cpm/tasmax/07')>)
     """
 
     input_paths: PathLike | Sequence[PathLike] = RAW_CPM_PATH

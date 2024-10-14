@@ -1,6 +1,7 @@
 import subprocess
 import warnings
 from dataclasses import dataclass, field
+from logging import DEBUG, FileHandler, getLogger
 from os import PathLike, chdir, cpu_count
 from pathlib import Path
 from typing import Any, Final, Sequence, TypedDict
@@ -13,13 +14,19 @@ from .crop import CPMRegionCropManager, HADsRegionCropManager
 from .debiasing.debias_wrapper import BaseRunConfig, RunConfig, RunConfigType
 from .utils.core import console, product_dict, results_path
 from .utils.data import (
+    CPM_NAME,
     CPM_OUTPUT_PATH,
+    HADS_AND_CPM,
+    HADS_NAME,
     HADS_OUTPUT_PATH,
+    ClimDataTypeTuple,
     MethodOptions,
     RegionOptions,
     RunOptions,
     VariableOptions,
 )
+
+logger = getLogger(__name__)
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 
@@ -40,6 +47,11 @@ class ClimRecalRunsConfigType(TypedDict):
 
 
 ClimRecalRunResultsType = dict[RunConfig, dict[str, subprocess.CompletedProcess]]
+
+
+# Todo: replace ValueError with clearer Exception.
+class ClimRecanConfigError(Exception):
+    pass
 
 
 @dataclass
@@ -101,7 +113,10 @@ class ClimRecalConfig(BaseRunConfig):
     runs: Sequence[RunOptions] = (RunOptions.default(),)
     regions: Sequence[RegionOptions] | None = (RegionOptions.default(),)
     methods: Sequence[MethodOptions] = (MethodOptions.default(),)
+    convert: bool = True
+    crop: bool = True
     multiprocess: bool = False
+    clim_types: ClimDataTypeTuple = HADS_AND_CPM
     cpus: int | None = DEFAULT_CPUS
     hads_input_path: PathLike = RAW_HADS_PATH
     cpm_input_path: PathLike = RAW_CPM_PATH
@@ -118,6 +133,8 @@ class ClimRecalConfig(BaseRunConfig):
     convert_stop_index: int | None = None
     crop_start_index: int = 0
     crop_stop_index: int | None = None
+    calc_start_index: int = 0
+    calc_stop_index: int | None = None
     add_local_dated_results_path: bool = True
     add_local_dated_crops_path: bool = True
     local_dated_results_path_prefix: str = "run"
@@ -125,6 +142,8 @@ class ClimRecalConfig(BaseRunConfig):
     cpm_for_coord_alignment: PathLike | None = None
     process_cmp_for_coord_alignment: bool = False
     cpm_for_coord_alignment_path_converted: bool = False
+    log_file: bool = True
+    file_log_level: int = DEBUG
     debug_mode: bool = False
 
     @property
@@ -138,14 +157,22 @@ class ClimRecalConfig(BaseRunConfig):
         return Path(self.exec_path) / self.crops_folder
 
     @property
+    def include_hads(self) -> bool:
+        """Whether `HADS_NAME` is in `self.clim_types`."""
+        return HADS_NAME in self.clim_types
+
+    @property
+    def include_cpm(self) -> bool:
+        """Whether `CPM_NAME` is in `self.clim_types`."""
+        return CPM_NAME in self.clim_types
+
+    @property
     def exec_path(self) -> Path:
         """Path to save preparation and intermediate files.
 
         Examples
         --------
         >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
-        'set_cpm_for_coord_alignment' for 'HADs' not speficied.
-        Defaulting to 'self.cpm_input_path': '...'
         >>> print(clim_runner.exec_path)
         <BLANKLINE>
         ...test-run-results.../run...
@@ -167,8 +194,6 @@ class ClimRecalConfig(BaseRunConfig):
         Examples
         --------
         >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
-        'set_cpm_for_coord_alignment' for 'HADs' not speficied.
-        Defaulting to 'self.cpm_input_path': '...'
         >>> print(clim_runner.dated_results_path)
         <BLANKLINE>
         ...test-run-results.../run...
@@ -190,8 +215,6 @@ class ClimRecalConfig(BaseRunConfig):
         Examples
         --------
         >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
-        'set_cpm_for_coord_alignment' for 'HADs' not speficied.
-        Defaulting to 'self.cpm_input_path': '...'
         >>> print(clim_runner.dated_crops_path)
         <BLANKLINE>
         ...test-run-results.../crop...
@@ -226,6 +249,26 @@ class ClimRecalConfig(BaseRunConfig):
         """The convert_cpm_path property."""
         return self.crops_path / self.cpm_output_folder
 
+    @property
+    def log_path(self) -> Path:
+        if not hasattr(self, "_log_path"):
+            self._log_path = results_path(
+                name="run",
+                path=self.exec_path,
+                extension="log",
+                mkdir=True,
+            )
+            self._log_path.touch()
+        return self._log_path
+
+    def _init_logger(self) -> Path | None:
+        """Inititialise logger for current run."""
+        if self.log_file:
+            self.file_log_handler: FileHandler = FileHandler(self.log_path)
+            self.file_log_handler.setLevel(self.file_log_level)
+            logger.addHandler(self.file_log_handler)
+            return self.log_path
+
     def __post_init__(self) -> None:
         """Initiate related `HADs` and `CPM` managers.
 
@@ -235,49 +278,64 @@ class ClimRecalConfig(BaseRunConfig):
         `VariableOptions.cpm_values()`, that occurs within `CPMConvertManager`
         for ease of comparability with HADs.
         """
+        if self.log_file:
+            self._init_logger()
         gdal.UseExceptions() if self.debug_mode else gdal.DontUseExceptions()
-        self.cpm_manager = CPMConvertManager(
-            input_paths=self.cpm_input_path,
-            variables=self.variables,
-            runs=self.runs,
-            output_paths=self.convert_cpm_path,
-            start_index=self.convert_start_index,
-            stop_index=self.convert_stop_index,
-            **self.cpm_kwargs,
-        )
-        self.set_cpm_for_coord_alignment()
-        self.hads_manager = HADsConvertManager(
-            input_paths=self.hads_input_path,
-            variables=self.variables,
-            output_paths=self.convert_hads_path,
-            start_index=self.convert_start_index,
-            stop_index=self.convert_stop_index,
-            cpm_for_coord_alignment=self.cpm_for_coord_alignment,
-            cpm_for_coord_alignment_path_converted=self.cpm_for_coord_alignment_path_converted,
-            **self.hads_kwargs,
-        )
-        if self.regions:
-            self.cpm_crop_manager = CPMRegionCropManager(
-                input_paths=self.cpm_output_folder,
-                crop_regions=tuple(self.regions),
-                variables=self.variables,
-                runs=self.runs,
-                output_paths=self.cropped_cpm_path,
-                start_index=self.crop_start_index,
-                stop_index=self.crop_stop_index,
-                check_input_paths_exist=False,
-                **self.cpm_crop_kwargs,
-            )
-            self.hads_crop_manager = HADsRegionCropManager(
-                input_paths=self.hads_output_folder,
-                crop_regions=tuple(self.regions),
-                variables=self.variables,
-                output_paths=self.cropped_hads_path,
-                start_index=self.crop_start_index,
-                stop_index=self.crop_stop_index,
-                check_input_paths_exist=False,
-                **self.hads_crop_kwargs,
-            )
+        if self.convert:
+            if self.include_cpm:
+                self.cpm_manager = CPMConvertManager(
+                    input_paths=self.cpm_input_path,
+                    variables=self.variables,
+                    runs=self.runs,
+                    output_paths=self.convert_cpm_path,
+                    start_index=self.convert_start_index,
+                    stop_index=self.convert_stop_index,
+                    start_calc_index=self.calc_start_index,
+                    stop_calc_index=self.calc_stop_index,
+                    **self.cpm_kwargs,
+                )
+            if self.include_hads:
+                self.set_cpm_for_coord_alignment()
+                self.hads_manager = HADsConvertManager(
+                    input_paths=self.hads_input_path,
+                    variables=self.variables,
+                    output_paths=self.convert_hads_path,
+                    start_index=self.convert_start_index,
+                    stop_index=self.convert_stop_index,
+                    start_calc_index=self.calc_start_index,
+                    stop_calc_index=self.calc_stop_index,
+                    cpm_for_coord_alignment=self.cpm_for_coord_alignment,
+                    cpm_for_coord_alignment_path_converted=self.cpm_for_coord_alignment_path_converted,
+                    **self.hads_kwargs,
+                )
+        if self.crop and self.regions:
+            if self.include_cpm:
+                self.cpm_crop_manager = CPMRegionCropManager(
+                    input_paths=self.cpm_output_folder,
+                    crop_regions=tuple(self.regions),
+                    variables=self.variables,
+                    runs=self.runs,
+                    output_paths=self.cropped_cpm_path,
+                    start_index=self.crop_start_index,
+                    stop_index=self.crop_stop_index,
+                    start_calc_index=self.calc_start_index,
+                    stop_calc_index=self.calc_stop_index,
+                    check_input_paths_exist=False,
+                    **self.cpm_crop_kwargs,
+                )
+            if self.include_hads:
+                self.hads_crop_manager = HADsRegionCropManager(
+                    input_paths=self.hads_output_folder,
+                    crop_regions=tuple(self.regions),
+                    variables=self.variables,
+                    output_paths=self.cropped_hads_path,
+                    start_index=self.crop_start_index,
+                    stop_index=self.crop_stop_index,
+                    start_calc_index=self.calc_start_index,
+                    stop_calc_index=self.calc_stop_index,
+                    check_input_paths_exist=False,
+                    **self.hads_crop_kwargs,
+                )
         self.total_cpus: int | None = cpu_count()
         if self.cpus == None or (self.total_cpus and self.cpus >= self.total_cpus):
             self.cpus = 1 if not self.total_cpus else self.total_cpus - 1
@@ -309,8 +367,8 @@ class ClimRecalConfig(BaseRunConfig):
             f"runs_count={len(self.runs)}, "
             f"regions_count={len(self.regions) if self.regions else None}, "
             f"methods_count={len(self.methods)}, "
-            f"cpm_folders_count={len(self.cpm_manager)}, "
-            f"hads_folders_count={len(self.hads_manager)}, "
+            f"cpm_folders_count={len(self.cpm_manager) if hasattr(self, 'cpm_manager') else None}, "
+            f"hads_folders_count={len(self.hads_manager) if hasattr(self, 'hads_manager') else None}, "
             f"convert_start_index={self.convert_start_index}, "
             f"convert_stop_index={self.convert_stop_index if self.convert_stop_index else 'None'}, "
             f"crop_start_index={self.crop_start_index}, "
@@ -325,8 +383,6 @@ class ClimRecalConfig(BaseRunConfig):
         Examples
         --------
         >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
-        'set_cpm_for_coord_alignment' for 'HADs' not speficied.
-        Defaulting to 'self.cpm_input_path': '...'
         >>> pprint(clim_runner.model_vars)
         {'methods': ('quantile_delta_mapping',),
          'regions': ('Glasgow', 'Manchester'),
@@ -347,8 +403,6 @@ class ClimRecalConfig(BaseRunConfig):
         Examples
         --------
         >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
-        'set_cpm_for_coord_alignment' for 'HADs' not speficied.
-        Defaulting to 'self.cpm_input_path': '...'
         >>> pprint(clim_runner.model_configs)
         ({'method': 'quantile_delta_mapping',
           'region': 'Glasgow',
@@ -433,8 +487,6 @@ class ClimRecalConfig(BaseRunConfig):
         Examples
         --------
         >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
-        'set_cpm_for_coord_alignment' for 'HADs' not speficied.
-        Defaulting to 'self.cpm_input_path': '...'
         >>> runs: dict[tuple, dict] = clim_runner.run_models()
         >>> pprint(tuple(runs.keys()))
         (('Glasgow', 'tasmax', '05', 'quantile_delta_mapping'),

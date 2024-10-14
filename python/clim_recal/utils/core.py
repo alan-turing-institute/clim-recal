@@ -723,8 +723,23 @@ def results_path(
 
     Examples
     --------
-    >>> str(results_path('hads', 'test_example/folder', extension='cat'))
-    'test_example/folder/hads_..._...-....cat'
+    >>> temp_path = getfixture('tmpdir')
+    >>> path: Path = results_path('hads', path='temp_path/folder',
+    ...                           extension='cat')
+    >>> str(path)
+    'temp_path/folder/hads_..._...-....cat'
+    >>> path.exists()
+    False
+    >>> path = results_path('run', path='temp_path/other-folder', extension='log', mkdir=True)
+    >>> str(path)
+    'temp_path/other-folder/run_..._...-....log'
+    >>> path.parent.is_dir()
+    True
+    >>> path.is_file()
+    False
+    >>> path.touch()
+    >>> path.is_file()
+    True
     """
     path = Path() if path is None else Path(path)
     if mkdir:
