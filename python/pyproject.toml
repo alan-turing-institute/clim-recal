@@ -28,7 +28,7 @@ dependencies = [
     "matplotlib<3.9",
     "geopandas>=0.14.3",
     "openpyxl>=3.1.2",
-    "gdal==3.8.5",
+    "gdal==3.8.4",
     "conda-lock>=2.5.5",
     "rich>=13.7.1",
     "netcdf4>=1.6.5",
@@ -39,6 +39,8 @@ dependencies = [
     "numpy>2",
     "rioxarray>=0.17.0",
     "rasterio==1.4b1",
+    "nc-time-axis>=1.4.1",
+    "jupyter-cache>=1.0.0",
 ]
 
 [project.scripts]
