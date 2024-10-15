@@ -11,10 +11,11 @@ jupyter: python3
 To align climate projections with measured records, we interpolate five or six extra time points---standard or leap years respectively---per year.
 
 ```{python}
-#| label: tasmax-time-series
+#| label: cpm-time-series
 
 from typing import Final
 from pathlib import Path
+from pprint import pprint
 
 from xarray.core.types import T_Dataset
 from xarray import open_dataset
@@ -29,39 +30,81 @@ from clim_recal.utils.xarray import (
     plot_xarray,
 )
 from clim_recal.utils.core import climate_data_mount_path
+from clim_recal.utils.gdal_formats import NETCDF_EXTENSION_STR
 
-plot_folder: Final[Path] = Path("./assets")
-cpm_raw_median_folder: Final[Path] = plot_folder / 'cpm-raw-medians'
-cpm_convert_median_folder: Final[Path] = plot_folder / 'cpm-converted-medians'
 
-cpm_tasmax_raw_paths: Final[list[Path]] = [
-    cpm_raw_median_folder / f"median-{variable}-{run}.nc"
-    for run in RunOptions.preferred_and_first()
-    for variable in VariableOptions.cpm_values()
-]
-cpm_tasmax_convert_paths: Final[list[Path]] = [
-    cpm_convert_median_folder / f"median-{variable}-{run}.nc"
-    for run in RunOptions.preferred_and_first()
-    for variable in VariableOptions.cpm_values()
-]
+DATA_TYPES: tuple[str] = ('raw', 'linear', 'nearest')
+RUN_TYPES: tuple[str] = (RunOptions.ONE,)
+VARIABLE_TYPES: tuple[str] = VariableOptions.cpm_values()
 
-cpm_raw_medians: dict[str, T_Dataset] = {
-    path.stem[7:]: open_dataset(path)
-    for path in cpm_tasmax_raw_paths
-}
-cpm_convert_medians: dict[str, T_Dataset] = {
-    path.stem[7:]: open_dataset(path)
-    for path in cpm_tasmax_convert_paths
-}
+BYTES_MODE: Final[str] = "#mode=bytes"
+REMOTE_EXT_LEN: Final[int] = len('.' + NETCDF_EXTENSION_STR + BYTES_MODE)
 
 cal_360_day_4_years: Final[int] = 360*4
 cal_standard_4_years: Final[int] = 365*3 + 366
 
-var_indicies: dict[str, int] = {'tasmax': 0, 'tasmin': 1, 'pr': 2}
-run_indicies: dict[int, int] = {'01': 0, '05': 1, '06': 2, '07': 3, '08': 4}
+vars: tuple[str] = ('tasmax', 'tasmin', 'pr')
+# runs: tuple[str] = ('01', '05', '06', '07', '08')
+runs: tuple[str] = ('01', )
 
 fig: Figure
 axs: Axes
+
+hosting_url: Final[str] = 'https://dymestorage1.blob.core.windows.net/analysis/cpm-median-time-series'
+local_assets_folder: Final[Path] = Path("./assets")
+
+cpm_medians: dict[str, dict[tuple[str, str], T_Dataset]]
+
+REMOTE: bool = True
+
+if REMOTE:
+  median_remote_folders: Final[dict[str, str]] = {
+    'raw': hosting_url + '/cpm-raw-medians',
+    'linear': hosting_url + '/cpm-converted-linear-medians',
+    'nearest': hosting_url + '/cpm-converted-nearest-medians',
+  }
+  median_remote_paths: dict[str, list[str]] = {
+    data_type: [
+      median_remote_folders[data_type] + f"/median-{variable}-{run}.nc{BYTES_MODE}"
+        for variable in VARIABLE_TYPES
+        for run in RUN_TYPES
+      ]
+    for data_type in DATA_TYPES
+  }
+  cpm_medians = {
+    data_type: {
+      tuple(url.split('/')[-1][:-REMOTE_EXT_LEN].split('-')[1:3]): open_dataset(url)
+      for url_list in median_remote_paths.values()
+      for url in url_list
+    }
+    for data_type in DATA_TYPES
+  }
+else:
+  median_local_folders: Final[dict[str, Path]] = {
+    'raw': local_assets_folder / 'cpm-raw-medians',
+    'linear': local_assets_folder / 'cpm-converted-linear-medians',
+    'nearest': local_assets_folder / 'cpm-converted-nearest-medians',
+  }
+
+  median_local_paths: dict[str, list[Path]] = {
+    data_type: [
+      median_local_folders[data_type] / f"median-{variable}-{run}.nc"
+        for variable in VARIABLE_TYPES
+        for run in RUN_TYPES
+      ]
+    for data_type in DATA_TYPES
+  }
+  cpm_medians = {
+    data_type: {
+      tuple(path.stem.split('-')[1:3]): open_dataset(path)
+      for path_list in median_local_paths.values()
+      for path in path_list
+    }
+    for data_type in DATA_TYPES
+  }
+# pprint(median_local_paths)
+# pprint(median_remote_paths)
+# pprint(cpm_medians)
 ```
 
 With the CPM annual timeseries loaded, we can now plot projections from 1 December 1980 to 30 November 2080:
@@ -71,11 +114,11 @@ With the CPM annual timeseries loaded, we can now plot projections from 1 Decemb
 #| fig-cap: "Raw CPM projection 360 day years"
 
 fig, axs = plt.subplots(3, sharex=True)
-for run_id, cpm_tasmax_raw_median in cpm_raw_medians.items():
-    var, run = run_id.split("-")
-    cpm_tasmax_raw_median[var][:cal_360_day_4_years*2].plot(
+for run_id, cpm_raw_median in cpm_medians['raw'].items():
+    var, run = run_id
+    cpm_raw_median[var][:cal_360_day_4_years*2].plot(
         label=f"run-{run}",
-        ax=axs[var_indicies[var]],
+        ax=axs[vars.index(var)],
     )
 
 plt.legend()
@@ -87,11 +130,11 @@ plt.show()
 #| fig-cap: "Converted CPM to standard years"
 
 fig, axs = plt.subplots(3, sharex=True)
-for run_id, cpm_convert_median in cpm_convert_medians.items():
-    var, run = run_id.split("-")
-    cpm_convert_median[var][:cal_standard_4_years*2].plot(
+for run_id, cpm_convert_linear_median in cpm_medians['linear'].items():
+    var, run = run_id
+    cpm_convert_linear_median[var][:cal_standard_4_years*2].plot(
         label=f"run-{run}",
-        ax=axs[var_indicies[var]],
+        ax=axs[vars.index(var)],
     )
 
 plt.legend()
@@ -106,12 +149,14 @@ check_days: Final[int] = 6
 
 var = 'tasmax'
 run = '01'
-run_id = f"{var}-{run}"
-cpm_convert_median = cpm_convert_medians[run_id]
-trimmed_raw_to_standard = cpm_raw_medians[run_id][var][:check_days].convert_calendar('standard', align_on="year")
+run_id = (var, run)
+cpm_convert_linear_median = cpm_medians['linear'][run_id]
+trimmed_raw_to_standard = (
+    cpm_medians['raw'][run_id][var][:check_days].convert_calendar('standard', align_on="year")
+)
 
 trimmed_raw_to_standard.plot(label="raw", marker=".")
-cpm_convert_median[var][:check_days + 1].plot(label="convert", marker=".")
+cpm_convert_linear_median[var][:check_days + 1].plot(label="convert", marker=".")
 
 plt.legend()
 plt.show()
@@ -124,22 +169,22 @@ plt.show()
 check_days: Final[int] = 6
 
 fig, axs = plt.subplots(3, 5, sharex=True, sharey=True)
-for run_id, cpm_convert_median in cpm_convert_medians.items():
-    var, run = run_id.split("-")
+for run_id, cpm_convert_linear_median in cpm_medians['linear'].items():
+    var, run = run_id
     trimmed_raw_to_standard = (
-        cpm_raw_medians[run_id][var][:check_days].convert_calendar(
+        cpm_medians['raw'][run_id][var][:check_days].convert_calendar(
             'standard', align_on="year"
         )
     )
-    cpm_convert_median[var][:check_days + 1].plot(
+    cpm_convert_linear_median[var][:check_days + 1].plot(
         label="convert",
         marker=".",
-        ax=axs[var_indicies[var], run_indicies[run]]
+        ax=axs[vars.index(var), runs.index(run)]
       )
     trimmed_raw_to_standard.plot(
         label="raw",
         marker=".",
-        ax=axs[var_indicies[var], run_indicies[run]]
+        ax=axs[vars.index(var), runs.index(run)]
       )
 
 plt.legend()
@@ -153,13 +198,13 @@ Average annual projections.
 #| fig-cap: "Annual average of means of raw tasmax CPM 360 day years"
 
 annual_raw_means: T_Dataset = annual_group_xr_time_series(
-  cpm_raw_medians['tasmax-01'].tasmax,
+  cpm_medians['raw']['tasmax', '01'].tasmax,
   variable_name=VariableOptions.TASMAX,
   plot_path=None,
   time_stamp=None)
 
 annual_convert_means: T_Dataset = annual_group_xr_time_series(
-  cpm_convert_medians['tasmax-01'].tasmax,
+  cpm_medians['linear']['tasmax', '01'].tasmax,
   variable_name=VariableOptions.TASMAX,
   plot_path=None,
   time_stamp=None)
@@ -176,8 +221,8 @@ Leap year projection.
 #| label: fig-tasmax-leap-means
 #| fig-cap: "Leap year average of means of raw tasmax CPM 360 day years"
 
-leap_annual_means_raw: T_Dataset = cpm_raw_medians['tasmax-01'].where(
-  cpm_raw_medians['tasmax-01'].time.dt.year % 4 == 0
+leap_annual_means_raw: T_Dataset = cpm_medians['raw']['tasmax', '01'].where(
+  cpm_medians['raw']['tasmax', '01'].time.dt.year % 4 == 0
 )
 
 leap_annual_means_raw.tasmax.plot(label="raw")
