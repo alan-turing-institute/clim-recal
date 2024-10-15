@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
 from datetime import date
 from logging import getLogger
-from os import PathLike, cpu_count
+from os import PathLike
 from pathlib import Path
-from typing import Any, Iterable, Iterator, Sequence
+from typing import Any, Callable, Iterable, Iterator, Sequence
 
-from rich.progress import track
+from rich.progress import Progress
 from xarray import Dataset
 from xarray.core.types import T_Dataset
 
@@ -29,7 +29,9 @@ from .utils.data import (
 from .utils.xarray import (
     _write_and_or_return_results,
     crop_xarray,
+    data_path_to_date_range,
     execute_configs,
+    progress_wrapper,
     region_crop_file_name,
 )
 
@@ -64,7 +66,7 @@ class RegionCropperBase(IterCalcBase):
 
     def range_crop_projection(
         self,
-        start: int | None = None,
+        start: int = 0,
         stop: int | None = None,
         step: int = 1,
         override_export_path: Path | None = None,
@@ -72,30 +74,50 @@ class RegionCropperBase(IterCalcBase):
         return_path: bool = True,
         write_results: bool = True,
         progress_bar: bool = True,
-    ) -> Iterator[Path]:
-        start = start or self.start_index
-        stop = stop or self.stop_index
-        if stop is None:
-            stop = len(self)
-        logger.info(f"Cropping to '{self.output_path}'")
-        if progress_bar:
-            for index in track(range(start, stop, step), description="Cropping..."):
-                yield self.crop_projection(
-                    index=index,
-                    override_export_path=override_export_path,
-                    source_to_index=source_to_index,
-                    return_path=return_path,
-                    write_results=write_results,
-                )
-        else:
-            for index in track(range(start, stop, step), description="Cropping..."):
-                yield self.crop_projection(
-                    index=index,
-                    override_export_path=override_export_path,
-                    source_to_index=source_to_index,
-                    return_path=return_path,
-                    write_results=write_results,
-                )
+        description_func: Callable[..., str] | None = data_path_to_date_range,
+        progress_instance: Progress | None = None,
+        **kwargs,
+    ) -> Iterator[Path | T_Dataset]:
+        return progress_wrapper(
+            self,
+            "to_reprojection",
+            start=start,
+            stop=stop,
+            step=step,
+            description="Cropping...",
+            override_export_path=override_export_path,
+            source_to_index=source_to_index,
+            return_path=return_path,
+            write_results=write_results,
+            use_progress_bar=progress_bar,
+            description_func=description_func,
+            description_kwargs={"return_type": "string"},
+            progress_instance=progress_instance,
+            **kwargs,
+        )
+        # start = start or self.start_index
+        # stop = stop or self.stop_index
+        # if stop is None:
+        #     stop = len(self)
+        # logger.info(f"Cropping to '{self.output_path}'")
+        # if progress_bar:
+        #     for index in track(range(start, stop, step), description="Cropping..."):
+        #         yield self.crop_projection(
+        #             index=index,
+        #             override_export_path=override_export_path,
+        #             source_to_index=source_to_index,
+        #             return_path=return_path,
+        #             write_results=write_results,
+        #         )
+        # else:
+        #     for index in track(range(start, stop, step), description="Cropping..."):
+        #         yield self.crop_projection(
+        #             index=index,
+        #             override_export_path=override_export_path,
+        #             source_to_index=source_to_index,
+        #             return_path=return_path,
+        #             write_results=write_results,
+        #         )
 
     def crop_projection(
         self,
@@ -220,12 +242,13 @@ class RegionCropperManagerBase(IterCalcManagerBase):
 
     def __post_init__(self) -> None:
         """Populate config attributes."""
+        super().__post_init__()
         if not self.crop_regions:
             self.crop_regions = ()
-        self.check_paths()
-        self.total_cpus: int | None = cpu_count()
-        if not self.cpus:
-            self.cpus = 1 if not self.total_cpus else self.total_cpus
+        # self.check_paths()
+        # self.total_cpus: int | None = cpu_count()
+        # if not self.cpus:
+        #     self.cpus = 1 if not self.total_cpus else self.total_cpus
 
     def __repr__(self) -> str:
         """Summary of `self` configuration as a `str`."""
