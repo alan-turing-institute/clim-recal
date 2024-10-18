@@ -18,7 +18,6 @@ from pathlib import Path
 from pprint import pprint
 
 from xarray.core.types import T_Dataset
-from xarray import open_dataset
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
@@ -26,85 +25,21 @@ from matplotlib.axes import Axes
 from clim_recal.utils.data import VariableOptions, RunOptions
 from clim_recal.utils.xarray import (
     annual_group_xr_time_series,
-    join_xr_time_series_var,
     plot_xarray,
 )
-from clim_recal.utils.core import climate_data_mount_path
-from clim_recal.utils.gdal_formats import NETCDF_EXTENSION_STR
+from clim_recal.utils.docs import CPMSummaryTimeSeries
 
+vars: tuple[str] = ('tasmax', 'tasmin', 'pr')
+runs: tuple[str] = ('01', '05', '06', '07', '08')
 
-DATA_TYPES: tuple[str] = ('raw', 'linear', 'nearest')
-RUN_TYPES: tuple[str] = (RunOptions.ONE,)
-VARIABLE_TYPES: tuple[str] = VariableOptions.cpm_values()
+cpm_summary_ts = CPMSummaryTimeSeries(runs=runs, variables=vars)
 
-BYTES_MODE: Final[str] = "#mode=bytes"
-REMOTE_EXT_LEN: Final[int] = len('.' + NETCDF_EXTENSION_STR + BYTES_MODE)
+cpm_medians: dict[str, dict[tuple[str, str], T_Dataset]] = cpm_summary_ts.get_local_xarrays_dict()
 
 cal_360_day_4_years: Final[int] = 360*4
 cal_standard_4_years: Final[int] = 365*3 + 366
 
-vars: tuple[str] = ('tasmax', 'tasmin', 'pr')
-# runs: tuple[str] = ('01', '05', '06', '07', '08')
-runs: tuple[str] = ('01', )
-
-fig: Figure
-axs: Axes
-
-hosting_url: Final[str] = 'https://dymestorage1.blob.core.windows.net/analysis/cpm-median-time-series'
-local_assets_folder: Final[Path] = Path("./assets")
-
-cpm_medians: dict[str, dict[tuple[str, str], T_Dataset]]
-
-REMOTE: bool = True
-
-if REMOTE:
-  median_remote_folders: Final[dict[str, str]] = {
-    'raw': hosting_url + '/cpm-raw-medians',
-    'linear': hosting_url + '/cpm-converted-linear-medians',
-    'nearest': hosting_url + '/cpm-converted-nearest-medians',
-  }
-  median_remote_paths: dict[str, list[str]] = {
-    data_type: [
-      median_remote_folders[data_type] + f"/median-{variable}-{run}.nc{BYTES_MODE}"
-        for variable in VARIABLE_TYPES
-        for run in RUN_TYPES
-      ]
-    for data_type in DATA_TYPES
-  }
-  cpm_medians = {
-    data_type: {
-      tuple(url.split('/')[-1][:-REMOTE_EXT_LEN].split('-')[1:3]): open_dataset(url)
-      for url_list in median_remote_paths.values()
-      for url in url_list
-    }
-    for data_type in DATA_TYPES
-  }
-else:
-  median_local_folders: Final[dict[str, Path]] = {
-    'raw': local_assets_folder / 'cpm-raw-medians',
-    'linear': local_assets_folder / 'cpm-converted-linear-medians',
-    'nearest': local_assets_folder / 'cpm-converted-nearest-medians',
-  }
-
-  median_local_paths: dict[str, list[Path]] = {
-    data_type: [
-      median_local_folders[data_type] / f"median-{variable}-{run}.nc"
-        for variable in VARIABLE_TYPES
-        for run in RUN_TYPES
-      ]
-    for data_type in DATA_TYPES
-  }
-  cpm_medians = {
-    data_type: {
-      tuple(path.stem.split('-')[1:3]): open_dataset(path)
-      for path_list in median_local_paths.values()
-      for path in path_list
-    }
-    for data_type in DATA_TYPES
-  }
-# pprint(median_local_paths)
-# pprint(median_remote_paths)
-# pprint(cpm_medians)
+check_days: Final[int] = 6
 ```
 
 With the CPM annual timeseries loaded, we can now plot projections from 1 December 1980 to 30 November 2080:
@@ -144,8 +79,6 @@ plt.show()
 ```{python}
 #| label: fig-tasmax-run-01-december-overlayed
 #| fig-cap: "Compare CPM tasmax run 01 360 vs projected standard leap year December"
-
-check_days: Final[int] = 6
 
 var = 'tasmax'
 run = '01'
