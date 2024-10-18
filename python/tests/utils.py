@@ -67,9 +67,6 @@ FINAL_CPM_DEC_10_X_2_Y_200_210: Final[NDArray] = array(
 )
 
 HADS_UK_TASMAX_DAY_SERVER_PATH: Final[Path] = Path("Raw/HadsUKgrid/tasmax/day")
-HADS_UK_RESAMPLED_DAY_SERVER_PATH: Final[Path] = Path(
-    "Processed/HadsUKgrid/resampled_2.2km/tasmax/day"
-)
 
 CPM_RAW_TASMAX_1980_FILE: Final[Path] = Path(
     "tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc"

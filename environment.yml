@@ -6,7 +6,7 @@ channels:
 dependencies:
   # - r-quarto=1.4
   - python=3.12
-  - gdal=3.8.5
+  - gdal=3.8.4
   - pdm
   - parallel
   - rsync
