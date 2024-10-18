@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>readme – clim-recal</title>
+<title>UKCP 2.2 Temporal Interpolation – clim-recal</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -79,7 +113,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../R/README.html">R</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/pipeline_guidance.html">Pipeline</a></li><li class="breadcrumb-item"><a href="../docs/cpm_projection.html">CPM Projection</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -139,7 +173,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/cpm_projection.html" class="sidebar-item-text sidebar-link">
+  <a href="../docs/cpm_projection.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">CPM Projection</span></a>
   </div>
 </li>
@@ -153,7 +187,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../R/README.html" class="sidebar-item-text sidebar-link active">
+            <a href="../R/README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">R</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -306,39 +340,255 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#methods-implemented-in-r" id="toc-methods-implemented-in-r" class="nav-link active" data-scroll-target="#methods-implemented-in-r"><span class="header-section-number">1</span> Methods implemented in R</a></li>
-  </ul>
-</nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/pipeline_guidance.html">Pipeline</a></li><li class="breadcrumb-item"><a href="../docs/cpm_projection.html">CPM Projection</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">UKCP 2.2 Temporal Interpolation</h1>
+</div>
 
 
 
-<section id="methods-implemented-in-r" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> Methods implemented in R</h1>
-<ul>
-<li><strong>/Resampling</strong> - code for Resampling data to different extents (grid sizes)</li>
-<li><strong>/bias-correction-methods</strong> - bias correction methods implemented in R</li>
-<li><strong>/comparing-r-and-python</strong> - Comparing various pipeline aspects between R and python</li>
-</ul>
-<!--
-### R
+<div class="quarto-title-meta">
 
-In the `R` subdirectory you can find code for replicating the different data processing and debiasing steps as above, along with comparisons of methods between the two languages.
-- **bias-correction-methods** for bias correction (debiasing) methods available specifically in `R` libraries
-- **comparing-r-and-python** for replication of resampling and reviewing the bias correction methods applied in `python`.
-- **Resampling** for resampling the HADsUK datasets from 1km to 2.2km grid in `R`.
--->
+    
+  
+    
+  </div>
+  
 
 
-</section>
+</header>
+
+
+<p>To align climate projections with measured records, we interpolate five or six extra time points—standard or leap years respectively—per year.</p>
+<div id="cpm-time-series" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> Final</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pprint <span class="im">import</span> pprint</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> xarray.core.types <span class="im">import</span> T_Dataset</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib <span class="im">import</span> pyplot <span class="im">as</span> plt</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.figure <span class="im">import</span> Figure</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.axes <span class="im">import</span> Axes</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> clim_recal.utils.data <span class="im">import</span> VariableOptions, RunOptions</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> clim_recal.utils.xarray <span class="im">import</span> (</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    annual_group_xr_time_series,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    plot_xarray,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> clim_recal.utils.docs <span class="im">import</span> CPMSummaryTimeSeries</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="bu">vars</span>: <span class="bu">tuple</span>[<span class="bu">str</span>] <span class="op">=</span> (<span class="st">'tasmax'</span>, <span class="st">'tasmin'</span>, <span class="st">'pr'</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>runs: <span class="bu">tuple</span>[<span class="bu">str</span>] <span class="op">=</span> (<span class="st">'01'</span>, <span class="st">'05'</span>, <span class="st">'06'</span>, <span class="st">'07'</span>, <span class="st">'08'</span>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>cpm_summary_ts <span class="op">=</span> CPMSummaryTimeSeries(runs<span class="op">=</span>runs, variables<span class="op">=</span><span class="bu">vars</span>)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>cpm_medians: <span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">dict</span>[<span class="bu">tuple</span>[<span class="bu">str</span>, <span class="bu">str</span>], T_Dataset]] <span class="op">=</span> cpm_summary_ts.get_local_xarrays_dict()</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>cal_360_day_4_years: Final[<span class="bu">int</span>] <span class="op">=</span> <span class="dv">360</span><span class="op">*</span><span class="dv">4</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>cal_standard_4_years: Final[<span class="bu">int</span>] <span class="op">=</span> <span class="dv">365</span><span class="op">*</span><span class="dv">3</span> <span class="op">+</span> <span class="dv">366</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>check_days: Final[<span class="bu">int</span>] <span class="op">=</span> <span class="dv">6</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning 3: Cannot find header.dxf (GDAL_DATA is not defined)</code></pre>
+</div>
+</div>
+<p>With the CPM annual timeseries loaded, we can now plot projections from 1 December 1980 to 30 November 2080:</p>
+<div id="cell-fig-tasmax-raw-time-series" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">3</span>, sharex<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> run_id, cpm_raw_median <span class="kw">in</span> cpm_medians[<span class="st">'raw'</span>].items():</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    var, run <span class="op">=</span> run_id</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    cpm_raw_median[var][:cal_360_day_4_years<span class="op">*</span><span class="dv">2</span>].plot(</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span><span class="ss">f"run-</span><span class="sc">{</span>run<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        ax<span class="op">=</span>axs[<span class="bu">vars</span>.index(var)],</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="fig-tasmax-raw-time-series" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-tasmax-raw-time-series-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="cpm_projection_files/figure-html/fig-tasmax-raw-time-series-output-1.png" width="599" height="436" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-tasmax-raw-time-series-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Raw CPM projection 360 day years
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-fig-convert-time-series" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">3</span>, sharex<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> run_id, cpm_convert_linear_median <span class="kw">in</span> cpm_medians[<span class="st">'linear'</span>].items():</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    var, run <span class="op">=</span> run_id</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    cpm_convert_linear_median[var][:cal_standard_4_years<span class="op">*</span><span class="dv">2</span>].plot(</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span><span class="ss">f"run-</span><span class="sc">{</span>run<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        ax<span class="op">=</span>axs[<span class="bu">vars</span>.index(var)],</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="fig-convert-time-series" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-convert-time-series-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="cpm_projection_files/figure-html/fig-convert-time-series-output-1.png" width="592" height="436" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-convert-time-series-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Converted CPM to standard years
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-fig-tasmax-run-01-december-overlayed" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>var <span class="op">=</span> <span class="st">'tasmax'</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>run <span class="op">=</span> <span class="st">'01'</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>run_id <span class="op">=</span> (var, run)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>cpm_convert_linear_median <span class="op">=</span> cpm_medians[<span class="st">'linear'</span>][run_id]</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>trimmed_raw_to_standard <span class="op">=</span> (</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    cpm_medians[<span class="st">'raw'</span>][run_id][var][:check_days].convert_calendar(<span class="st">'standard'</span>, align_on<span class="op">=</span><span class="st">"year"</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>trimmed_raw_to_standard.plot(label<span class="op">=</span><span class="st">"raw"</span>, marker<span class="op">=</span><span class="st">"."</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>cpm_convert_linear_median[var][:check_days <span class="op">+</span> <span class="dv">1</span>].plot(label<span class="op">=</span><span class="st">"convert"</span>, marker<span class="op">=</span><span class="st">"."</span>)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="fig-tasmax-run-01-december-overlayed" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-tasmax-run-01-december-overlayed-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="cpm_projection_files/figure-html/fig-tasmax-run-01-december-overlayed-output-1.png" width="592" height="436" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-tasmax-run-01-december-overlayed-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Compare CPM tasmax run 01 360 vs projected standard leap year December
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-fig-december-overlayed" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>check_days: Final[<span class="bu">int</span>] <span class="op">=</span> <span class="dv">6</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">3</span>, <span class="dv">5</span>, sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> run_id, cpm_convert_linear_median <span class="kw">in</span> cpm_medians[<span class="st">'linear'</span>].items():</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    var, run <span class="op">=</span> run_id</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    trimmed_raw_to_standard <span class="op">=</span> (</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        cpm_medians[<span class="st">'raw'</span>][run_id][var][:check_days].convert_calendar(</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>            <span class="st">'standard'</span>, align_on<span class="op">=</span><span class="st">"year"</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    cpm_convert_linear_median[var][:check_days <span class="op">+</span> <span class="dv">1</span>].plot(</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span><span class="st">"convert"</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        marker<span class="op">=</span><span class="st">"."</span>,</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        ax<span class="op">=</span>axs[<span class="bu">vars</span>.index(var), runs.index(run)]</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    trimmed_raw_to_standard.plot(</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span><span class="st">"raw"</span>,</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>        marker<span class="op">=</span><span class="st">"."</span>,</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>        ax<span class="op">=</span>axs[<span class="bu">vars</span>.index(var), runs.index(run)]</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="fig-december-overlayed" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-december-overlayed-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="cpm_projection_files/figure-html/fig-december-overlayed-output-1.png" width="592" height="436" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-december-overlayed-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Compare CPM 360 vs projected standard leap year December
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Average annual projections.</p>
+<div id="cell-fig-tasmax-annual-means" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>annual_raw_means: T_Dataset <span class="op">=</span> annual_group_xr_time_series(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  cpm_medians[<span class="st">'raw'</span>][<span class="st">'tasmax'</span>, <span class="st">'01'</span>].tasmax,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  variable_name<span class="op">=</span>VariableOptions.TASMAX,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  plot_path<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  time_stamp<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>annual_convert_means: T_Dataset <span class="op">=</span> annual_group_xr_time_series(</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  cpm_medians[<span class="st">'linear'</span>][<span class="st">'tasmax'</span>, <span class="st">'01'</span>].tasmax,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  variable_name<span class="op">=</span>VariableOptions.TASMAX,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  plot_path<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  time_stamp<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>annual_raw_means.plot(label<span class="op">=</span><span class="st">'raw'</span>)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>annual_convert_means.plot(label<span class="op">=</span><span class="st">'convert'</span>)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="fig-tasmax-annual-means" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-tasmax-annual-means-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="cpm_projection_files/figure-html/fig-tasmax-annual-means-output-1.png" width="592" height="436" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-tasmax-annual-means-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: Annual average of means of raw tasmax CPM 360 day years
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Leap year projection.</p>
+<div id="cell-fig-tasmax-leap-means" class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>leap_annual_means_raw: T_Dataset <span class="op">=</span> cpm_medians[<span class="st">'raw'</span>][<span class="st">'tasmax'</span>, <span class="st">'01'</span>].where(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  cpm_medians[<span class="st">'raw'</span>][<span class="st">'tasmax'</span>, <span class="st">'01'</span>].time.dt.year <span class="op">%</span> <span class="dv">4</span> <span class="op">==</span> <span class="dv">0</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>leap_annual_means_raw.tasmax.plot(label<span class="op">=</span><span class="st">"raw"</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="fig-tasmax-leap-means" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-tasmax-leap-means-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="cpm_projection_files/figure-html/fig-tasmax-leap-means-output-1.png" width="592" height="438" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-tasmax-leap-means-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: Leap year average of means of raw tasmax CPM 360 day years
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+
+
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
