@@ -1,6 +1,7 @@
 import subprocess
 import warnings
 from dataclasses import dataclass, field
+from datetime import date
 from logging import DEBUG, FileHandler, getLogger
 from os import PathLike, chdir, cpu_count
 from pathlib import Path
@@ -12,13 +13,25 @@ from tqdm import TqdmExperimentalWarning, tqdm
 from .convert import RAW_CPM_PATH, RAW_HADS_PATH, CPMConvertManager, HADsConvertManager
 from .crop import CPMRegionCropManager, HADsRegionCropManager
 from .debiasing.debias_wrapper import BaseRunConfig, RunConfig, RunConfigType
-from .utils.core import console, product_dict, results_path
+from .utils.core import (
+    console,
+    dataclass_to_dict,
+    ensure_all_attr_paths,
+    product_dict,
+    read_json_config,
+    results_path,
+    save_config,
+)
 from .utils.data import (
+    CPM_END_DATE,
     CPM_NAME,
     CPM_OUTPUT_PATH,
+    CPM_START_DATE,
     HADS_AND_CPM,
+    HADS_END_DATE,
     HADS_NAME,
     HADS_OUTPUT_PATH,
+    HADS_START_DATE,
     ClimDataTypeTuple,
     MethodOptions,
     RegionOptions,
@@ -135,6 +148,10 @@ class ClimRecalConfig(BaseRunConfig):
     crop_stop_index: int | None = None
     calc_start_index: int = 0
     calc_stop_index: int | None = None
+    hads_start_date: date | None = HADS_START_DATE
+    hads_end_date: date | None = HADS_END_DATE
+    cpm_start_date: date | None = CPM_START_DATE
+    cpm_end_date: date | None = CPM_END_DATE
     add_local_dated_results_path: bool = True
     add_local_dated_crops_path: bool = True
     local_dated_results_path_prefix: str = "run"
@@ -142,9 +159,45 @@ class ClimRecalConfig(BaseRunConfig):
     cpm_for_coord_alignment: PathLike | None = None
     process_cmp_for_coord_alignment: bool = False
     cpm_for_coord_alignment_path_converted: bool = False
+    config_save_path: Path | None = None
     log_file: bool = True
     file_log_level: int = DEBUG
     debug_mode: bool = False
+
+    def to_dict(self, force_serialise: bool = True) -> dict[str, Any]:
+        """Convert core self configs to a dict.
+
+        Examples
+        --------
+        >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+        >>> config_from_dict: ClimRecalConfig = ClimRecalConfig(
+        ...     **clim_runner.to_dict(force_serialise=False))
+        >>> clim_runner == config_from_dict
+        True
+        >>> config_from_dict = ClimRecalConfig(
+        ...     **clim_runner.to_dict(force_serialise=True))
+        >>> clim_runner == config_from_dict
+        False
+        """
+        return dataclass_to_dict(self, force_serialise=force_serialise)
+
+    def save_config(
+        self, path: PathLike | None = None, indent: int = 2, **kwargs
+    ) -> Path:
+        """Save config to `path` and return saved path.
+
+        Examples
+        --------
+        >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+        >>> save_path: Path = getfixture('tmp_path') / 'config_test.json'
+        >>> json_path: Path = clim_runner.save_config(path=save_path)
+        >>> clim_config: ClimRecalConfig = read_json_clim_recal_config(json_path)
+        >>> clim_runner == clim_config
+        True
+        >>> json_path == save_path
+        True
+        """
+        return save_config(self, path=path, indent=indent, **kwargs)
 
     @property
     def convert_path(self) -> Path:
@@ -269,6 +322,10 @@ class ClimRecalConfig(BaseRunConfig):
             logger.addHandler(self.file_log_handler)
             return self.log_path
 
+    def ensure_all_paths(self) -> None:
+        """Ensure `PathLike` attributes are converted to `Path` type."""
+        ensure_all_attr_paths(self)
+
     def __post_init__(self) -> None:
         """Initiate related `HADs` and `CPM` managers.
 
@@ -281,6 +338,7 @@ class ClimRecalConfig(BaseRunConfig):
         if self.log_file:
             self._init_logger()
         gdal.UseExceptions() if self.debug_mode else gdal.DontUseExceptions()
+        self.ensure_all_paths()
         if self.convert:
             if self.include_cpm:
                 self.cpm_manager = CPMConvertManager(
@@ -527,3 +585,28 @@ class ClimRecalConfig(BaseRunConfig):
     def command_path(self) -> Path:
         """Return command path relative to running tests."""
         return (Path() / self.command_dir).absolute()
+
+
+def read_json_clim_recal_config(
+    path: PathLike,
+    seq_to_tuples: bool = True,
+    ensure_all_dates: bool = True,
+    ensure_all_paths: bool = True,
+) -> ClimRecalConfig:
+    """Create a `ClimRecalConfig` from `path`.
+
+    Examples
+    --------
+    >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+    >>> save_path: Path = getfixture('tmp_path') / 'config.json'
+    >>> json_path: Path = clim_runner.save_config(path=save_path)
+    >>> clim_config: ClimRecalConfig = read_json_clim_recal_config(json_path)
+    >>> assert clim_runner == clim_config
+    """
+    return read_json_config(
+        path,
+        constructor=ClimRecalConfig,
+        seq_to_tuples=seq_to_tuples,
+        ensure_all_dates=ensure_all_dates,
+        ensure_all_paths=ensure_all_paths,
+    )

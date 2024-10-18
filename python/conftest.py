@@ -549,7 +549,9 @@ def clim_runner(
             # Todo: refactor to use caching to speed up runs
             cpm_kwargs=dict(_allow_check_fail=True),
             hads_kwargs=dict(_allow_check_fail=True),
-            cpm_for_coord_alignment=tasmax_cpm_1980_converted_path,
+            cpm_for_coord_alignment=local_cache_fixtures[
+                "tasmax_cpm_1980_converted"
+            ].local_cache_path,
         )
 
 

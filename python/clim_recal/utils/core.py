@@ -1,10 +1,11 @@
 """Utility functions."""
 
+import json
 import sys
 import warnings
 from collections.abc import KeysView
 from csv import DictReader
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, fields, is_dataclass
 from datetime import date, datetime, timedelta
 from enum import StrEnum
 from itertools import product, repeat
@@ -851,3 +852,259 @@ class StrEnumReprName(StrEnum):
     def __repr__(self) -> str:
         """Return value as `str`."""
         return f"'{self.value}'"
+
+
+def ensure_all_attr_types(
+    instance, types: Sequence[type], converter: Callable[[Any], Any], **kwargs
+) -> Any:
+    """Check all `instance` attributes of `types` are converted.
+
+    Parameters
+    ----------
+    instance
+        `object` to check `date` attributes of.
+    types
+        Attribute types to check and apply `converter` to.
+
+    Examples
+    --------
+    >>> from ..config import ClimRecalConfig
+    >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+    >>> clim_runner.hads_start_date = str(clim_runner.hads_start_date)
+    >>> clim_runner.hads_start_date
+    '1980-01-01'
+    >>> clim_runner = ensure_all_attr_types(
+    ...     clim_runner, types=(date | None,),
+    ...     converter=ensure_date, format_str=ISO_DATE_FORMAT_STR)
+    >>> clim_runner.hads_start_date
+    datetime.date(1980, 1, 1)
+    """
+    for instance_field in fields(instance):
+        if instance_field.type in types:
+            value: Any = getattr(instance, instance_field.name)
+            if value:
+                setattr(instance, instance_field.name, converter(value, **kwargs))
+    return instance
+
+
+def ensure_all_attr_dates(
+    instance,
+    date_types: tuple[type, ...] = (date, date | None, date | str),
+    format_str: str = ISO_DATE_FORMAT_STR,
+) -> Any:
+    """Check all `date` attributes are converted to `date`.
+
+    Parameters
+    ----------
+    instance
+        `object` to check `date` attributes of.
+    date_types
+        Attribute types to check are `date` instances.
+    format_str
+        `str` format to convert dates.
+
+    Examples
+    --------
+    >>> from ..config import ClimRecalConfig
+    >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+    >>> clim_runner.hads_start_date = str(clim_runner.hads_start_date)
+    >>> clim_runner.hads_start_date
+    '1980-01-01'
+    >>> clim_runner = ensure_all_attr_dates(clim_runner)
+    >>> clim_runner.hads_start_date
+    datetime.date(1980, 1, 1)
+    """
+    return ensure_all_attr_types(
+        instance=instance,
+        types=date_types,
+        converter=ensure_date,
+        format_str=format_str,
+    )
+
+
+def ensure_all_attr_paths(
+    instance, path_types: tuple[type, ...] = (PathLike, Path, PathLike | None)
+) -> Any:
+    """Check all `PathLike` attributes are converted to `Path`.
+
+    Parameters
+    ----------
+    instance
+        `object` to check `Path` attributes of.
+    path_types
+        What attributes on `object` to ensure are `Path` instances if not
+        `None`.
+
+    Examples
+    --------
+    >>> from ..config import ClimRecalConfig
+    >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+    >>> clim_runner.output_path = str(clim_runner.output_path)
+    >>> clim_runner.output_path
+    <BLANKLINE>
+    '.../test-run-results...'
+    >>> clim_runner = ensure_all_attr_paths(clim_runner)
+    >>> clim_runner.output_path
+    <BLANKLINE>
+    ...Path('.../test-run-results...')
+    """
+    return ensure_all_attr_types(instance=instance, types=path_types, converter=Path)
+
+
+def ensure_attr_tuples(
+    instance,
+    sequence_type_strs: tuple[str, ...] = ("Sequence", "tuple"),
+) -> Any:
+    """Ensure attributes of `instance` set to `tuples`.
+
+    Parameters
+    ----------
+    instance
+        `object` to check `tuple` attributes of.
+    sequence_type_strs
+        `str` of types to check `attrs` of `instance` of. Using `str` of
+        `type` rather than `type` instances to be more flexible.
+
+    Examples
+    --------
+    >>> from ..config import ClimRecalConfig
+    >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+    >>> clim_runner.regions = list(clim_runner.regions)
+    >>> clim_runner.regions
+    ['Glasgow', 'Manchester']
+    >>> clim_runner = ensure_attr_tuples(clim_runner)
+    >>> clim_runner.regions
+    ('Glasgow', 'Manchester')
+    """
+    for var_field in fields(instance):
+        if any(class_str in str(var_field.type) for class_str in sequence_type_strs):
+            setattr(instance, var_field.name, tuple(getattr(instance, var_field.name)))
+    return instance
+
+
+def read_json_config(
+    path: PathLike,
+    constructor: Any,
+    seq_to_tuples: bool = True,
+    ensure_all_dates: bool = True,
+    date_format_str: str = ISO_DATE_FORMAT_STR,
+    ensure_all_paths: bool = True,
+) -> Any:
+    """Create an instance of `constructor` from `path`.
+
+    Parameters
+    ----------
+    path
+        `Path` to read `json` format from.
+    constructor
+        `Class` to pass parameters from `path` `json` as `**kwargs`.
+    seq_to_tuples
+        Whether to pass new instance to `ensure_attr_tuples` to convert
+        `Sequence` typed attributes to `tuples`.
+    ensure_all_dates
+        Whether to check and convert `date` typed attributes from `str` to
+        `date` objects using `date_format_str`.
+    date_format_str
+        `date` `strftime` format for `ensure_all_dates`.
+    ensure_all_paths
+        Whether to check and convert all `Path` typed attributes to `Path`.
+
+    Examples
+    --------
+    >>> from ..config import ClimRecalConfig
+    >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+    >>> save_path: Path = getfixture('tmp_path') / 'config.json'
+    >>> json_path: Path = clim_runner.save_config(path=save_path)
+    >>> clim_config: ClimRecalConfig = read_json_config(
+    ...     json_path, constructor=ClimRecalConfig)
+    >>> assert clim_config == clim_runner
+    """
+    with open(path) as json_config_path:
+        config: Any = constructor(**json.load(json_config_path))
+    if seq_to_tuples:
+        ensure_attr_tuples(config)
+    if ensure_all_paths:
+        ensure_all_attr_paths(config)
+    if ensure_all_dates:
+        ensure_all_attr_dates(config, format_str=date_format_str)
+    return config
+
+
+def save_config(
+    instance: Any,
+    path: PathLike | None = None,
+    indent: int = 2,
+    save_path_attr_name: str = "exec_path",
+    **kwargs,
+) -> Path:
+    """Save `dataclass` instance config to `path` and return saved path.
+
+    Parameters
+    ----------
+    instance
+        Instance to save in `json` format.
+    path
+        `Path` to save instance `json` to. If `None` a `path` is
+        generated from calling the `save_path_attr_name` on `instance`.
+    indent
+        How many spaces to indent generated `json`.
+    **kwargs
+        Any additional parameters to pass to `json.dump`.
+
+    Examples
+    --------
+    >>> clim_runner = getfixture('clim_runner')
+    >>> save_path: Path = getfixture('tmp_path') / 'save_config_test.json'
+    >>> json_path: Path = save_config(clim_runner, path=save_path)
+    >>> save_path == json_path
+    True
+    >>> with open(save_path) as source:
+    ...     loaded_config = json.load(source)
+    >>> loaded_config['regions']
+    ['Glasgow', 'Manchester']
+    """
+    try:
+        assert is_dataclass(instance)
+    except AssertionError:
+        raise ValueError(f"'{instance.__class__.__name__}' is not a dataclass.")
+    path = path or results_path(
+        name="config",
+        path=getattr(instance, save_path_attr_name),
+        extension="json",
+        mkdir=True,
+    )
+    with open(path, "w") as write_path:
+        json.dump(instance.to_dict(), write_path, indent=indent, **kwargs)
+    return path
+
+
+def dataclass_to_dict(instance, force_serialise: bool = True) -> dict[str, Any]:
+    """Convert `dataclass` instance to a `dict`.
+
+    Examples
+    --------
+    >>> from clim_recal.config import ClimRecalConfig, VariableOptions
+    >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+    >>> config_from_dict: ClimRecalConfig  = ClimRecalConfig(
+    ...     **dataclass_to_dict(clim_runner, force_serialise=False))
+    >>> clim_runner == config_from_dict
+    True
+    >>> config_from_dict.variables = VariableOptions.all()
+    >>> clim_runner == config_from_dict
+    False
+    >>> from tests.utils import compare_dataclass_instances
+    >>> compare_dataclass_instances(clim_runner, config_from_dict)
+    {'variables': (('tasmax',), ('tasmax', 'rainfall', 'tasmin'))}
+    """
+    try:
+        assert is_dataclass(instance)
+    except AssertionError:
+        raise ValueError(f"'{instance.__class__.__name__}' is not a dataclass.")
+    if force_serialise:
+        serialiser: dict[str, Any] = asdict(instance)
+        for name, value in serialiser.items():
+            if isinstance(value, Path | date):
+                serialiser[name] = str(value)
+        return serialiser
+    else:
+        return asdict(instance)

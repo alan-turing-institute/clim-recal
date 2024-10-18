@@ -1,6 +1,6 @@
 import asyncio
 from collections import UserDict
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields, is_dataclass
 from datetime import date, datetime
 from logging import getLogger
 from os import PathLike
@@ -593,6 +593,10 @@ class LocalCachesManager(UserDict):
     ----------
     caches
         A `Sequence` of `LocalCache` instances to manage
+    fail_if_no_source
+        Whether to raise an exception if `souce` is not available
+    default_local_cache_path
+        `Path` to default to if none specified
 
     Examples
     --------
@@ -678,3 +682,25 @@ class LocalCachesManager(UserDict):
             for result in async_results
         }
         return self.cached_paths
+
+
+def compare_dataclass_instances(a: Any, b: Any, print_all: bool = False) -> dict:
+    """Test compare and print attributes shared by `a` and `b`."""
+    try:
+        for instance in a, b:
+            assert is_dataclass(instance)
+    except AssertionError:
+        raise ValueError(
+            f"'{instance}' class '{instance.__class__.__name__}' is not a dataclass."
+        )
+    try:
+        assert type(b) is type(a)
+    except AssertionError:
+        raise ValueError(f"Classes of 'a': {a} and 'b': {b} are not the same.")
+    diffs: dict[str, tuple[Any, Any]] = {}
+    for var_field in fields(a):
+        a_attr = getattr(a, var_field.name)
+        b_attr = getattr(b, var_field.name)
+        if print_all or a_attr != b_attr:
+            diffs[var_field.name] = a_attr, b_attr
+    return diffs
