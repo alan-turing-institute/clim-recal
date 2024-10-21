@@ -30,8 +30,8 @@ mkdir -p $cpm_working_dir
 mkdir -p $log_path
 
 
-cpm_start_year=1982
-cpm_end_year=1982
+cpm_start_year=1980
+cpm_end_year=2079
 # cpm_end_year=1982
 
 # First and last year that we have CPM data for
@@ -75,6 +75,10 @@ for year in $(seq $cpm_start_year $cpm_end_year); do
     --all-variables \
     --all-regions \
     --run 01 \
+    --run 05 \
+    --run 06 \
+    --run 07 \
+    --run 08 \
     --execute
    } 2>&1 | tee $log_path/log_$year.txt
 
