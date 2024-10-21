@@ -5,9 +5,11 @@ format: html
 
 Thanks for your interest in `clim-recal` data and metrics. Below are instructions for downloading observation and simulation datasets for three cities in the UK (Glasgow, Manchester and London) and Scotland. We invite authors of bias correction methods to benchmark their methods for those cities.
 
-Please also see [our blog article](https://urban-analytics-technology-platform.github.io/blog/platform_v2_release/) describing this work.
+Since there are 15,060 files that make up the dataset, and not all users will require all files, there is a [text file](urls/data-v1.0.txt) providing URLs for each of the data files. There is also an associated [manifest file](urls/manifest_data-v1.0.txt) that can be used for validating the downloaded data.
 
-Below are shell commands that can be passed to the command-line to download subsets of the data as required having first downloaded the [full list of file URLs](urls/data-v1.0.txt) (`data-v1.0.txt`).
+Below are some shell commands that can be can be passed to the command-line to download subsets of the data as required having first downloaded the [full list of file URLs](urls/data-v1.0.txt) (`data-v1.0.txt`), that assume some familiary with the linux-like command-line.
+
+Please also see [our blog article](https://urban-analytics-technology-platform.github.io/blog/platform_v2_release/) describing this work.
 
 ## Resample
 ### HAD
