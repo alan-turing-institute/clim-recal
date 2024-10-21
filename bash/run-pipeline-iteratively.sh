@@ -30,9 +30,8 @@ mkdir -p $cpm_working_dir
 mkdir -p $log_path
 
 
-cpm_start_year=1982
-cpm_end_year=1982
-# cpm_end_year=1982
+cpm_start_year=1980
+cpm_end_year=2079
 
 # First and last year that we have CPM data for
 for year in $(seq $cpm_start_year $cpm_end_year); do
