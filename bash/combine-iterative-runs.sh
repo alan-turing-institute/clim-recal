@@ -8,8 +8,6 @@
 
 combined_dir=./combined_output
 
-# combined_dir=/mnt/vmfileshare/ClimateData/processed_2024_09_26/combined_output
-
 mkdir -p $combined_dir
 
 # Get all output directories
