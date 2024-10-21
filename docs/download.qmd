@@ -5,48 +5,50 @@ format: html
 
 Thanks for your interest in `clim-recal` data and metrics. Below are instructions for downloading observation and simulation datasets for three cities in the UK (Glasgow, Manchester and London) and Scotland. We invite authors of bias correction methods to benchmark their methods for those cities.
 
-Please also see [our blog article](https://urban-analytics-technology-platform.github.io/blog/platform_v2_release/) describing this work.
+Since there are 15,060 files that make up the dataset, and not all users will require all files, there is a [text file](urls/data-v1.0.txt) providing URLs for each of the data files. There is also an associated [manifest file](urls/manifest_data-v1.0.txt) that can be used for validating the downloaded data.
 
-Below are shell commands that can be passed to the command-line to download subsets of the data as required having first downloaded the [full list of file URLs](urls/data-v1.0-rc.1.txt) (`data-v1.0-rc.1.txt`).
+Below are some shell commands that can be can be passed to the command-line to download subsets of the data as required having first downloaded the [full list of file URLs](urls/data-v1.0.txt) (`data-v1.0.txt`), that assume some familiary with the linux-like command-line.
+
+Please also see [our blog article](https://urban-analytics-technology-platform.github.io/blog/platform_v2_release/) describing this work.
 
 ## Resample
 ### HAD
 For a given measurement `<MEASURE>` (either `tasmax`, `tasmin` or `rainfall`), the monthly data can be downloaded and decompressed with:
 ```shell
-grep -iE "resample.*hads.*<MEASURE>.*_[0-9]{8}-[0-9]{8}.*" data-v1.0-rc.1.txt | xargs -n 1 curl -O; gunzip *.nc.gz
+grep -iE "resample.*hads.*<MEASURE>.*_[0-9]{8}-[0-9]{8}.*" data-v1.0.txt | xargs -n 1 curl -O; gunzip *.nc.gz
 ```
 For example, for `rainfall`:
 ```shell
-grep -iE "resample.*hads.*rainfall.*_[0-9]{8}-[0-9]{8}.*" data-v1.0-rc.1.txt | xargs -n 1 curl -O; gunzip *.nc.gz
+grep -iE "resample.*hads.*rainfall.*_[0-9]{8}-[0-9]{8}.*" data-v1.0.txt | xargs -n 1 curl -O; gunzip *.nc.gz
 ```
 
 ### CPM
 For a given measurement `<MEASURE>` (either `tasmax`, `tasmin` or `pr`), for run `<RUN>` (either `01`, `05`, `06`, `07`, `08`), the yearly data can be downloaded and decompressed with:
 ```shell
-grep -iE "resample.*cpm.*<MEASURE>.*<RUN>.*_[0-9]{8}-[0-9]{8}.*" data-v1.0-rc.1.txt | xargs -n 1 curl -O; gunzip *.nc.gz
+grep -iE "resample.*cpm.*<MEASURE>.*<RUN>.*_[0-9]{8}-[0-9]{8}.*" data-v1.0.txt | xargs -n 1 curl -O; gunzip *.nc.gz
 ```
 For exmample, for `rainfall` and `01`:
 ```shell
-grep -iE "resample.*cpm.*rainfall.*01.*_[0-9]{8}-[0-9]{8}.*" data-v1.0-rc.1.txt | xargs -n 1 curl -O; gunzip *.nc.gz
+grep -iE "resample.*cpm.*rainfall.*01.*_[0-9]{8}-[0-9]{8}.*" data-v1.0.txt | xargs -n 1 curl -O; gunzip *.nc.gz
 ```
 
 ## Crops
 ### HADS
 For a given region `<REGION>` (either `Scotland`, `Glasgow`, `Manchester` or `London`), for measurement `<MEASURE>` (either `tasmax`, `tasmin` or `pr`), the monthly data can be downloaded and decompressed with:
 ```shell
-grep -iE "crop.*hads.*<REGION>.*<MEASURE>.*<RUN>_[0-9]{8}-[0-9]{8}.*" data-v1.0-rc.1.txt | xargs -n 1 curl -O; gunzip *.nc.gz
+grep -iE "crop.*hads.*<REGION>.*<MEASURE>.*<RUN>_[0-9]{8}-[0-9]{8}.*" data-v1.0.txt | xargs -n 1 curl -O; gunzip *.nc.gz
 ```
 For example, for region is `Manchester`, measure is `tasmax`:
 ```shell
-grep -iE ".*crop.*hads.*manchester.*tasmax.*_[0-9]{8}-[0-9]{8}\.nc\.gz" data-v1.0-rc.1.txt | xargs -n 1 curl -O; gunzip *.nc.gz
+grep -iE ".*crop.*hads.*manchester.*tasmax.*_[0-9]{8}-[0-9]{8}\.nc\.gz" data-v1.0.txt | xargs -n 1 curl -O; gunzip *.nc.gz
 ```
 
 ### CPM
 For a given region `<REGION>` (either `Scotland`, `Glasgow`, `Manchester` or `London`), for measurement `<MEASURE>` (either `tasmax`, `tasmin` or `pr`), for run `<RUN>` (either `01`, `05`, `06`, `07`, `08`), the yearly data can be downloaded and decompressed with:
 ```shell
-grep -iE "crop.*cpm.*<REGION>.*<MEASURE>.*<RUN>_[0-9]{8}-[0-9]{8}.*" data-v1.0-rc.1.txt | xargs -n 1 curl -O; gunzip *.nc.gz
+grep -iE "crop.*cpm.*<REGION>.*<MEASURE>.*<RUN>_[0-9]{8}-[0-9]{8}.*" data-v1.0.txt | xargs -n 1 curl -O; gunzip *.nc.gz
 ```
 For example, for region `Manchester`, measure `tasmax`, run `01`:
 ```shell
-grep -iE ".*crop.*cpm.*manchester.*tasmax.*01_[0-9]{8}-[0-9]{8}\.nc\.gz" data-v1.0-rc.1.txt | xargs -n 1 curl -O; gunzip *.nc.gz
+grep -iE ".*crop.*cpm.*manchester.*tasmax.*01_[0-9]{8}-[0-9]{8}\.nc\.gz" data-v1.0.txt | xargs -n 1 curl -O; gunzip *.nc.gz
 ```
