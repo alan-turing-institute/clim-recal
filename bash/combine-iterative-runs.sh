@@ -2,8 +2,9 @@
 
 # Run this script from the root of the `group_run_*` directory
 
-# The directory for "nearest" interpolation method (eg `data-v1.0-rc.2`) is:
-# `/datadrive/clim-recal-results/group_run_2024-10-14-16-27``
+# For example, the directory for "nearest" interpolation method (eg `data-v1.0-rc.2`) is:
+#   `/datadrive/clim-recal-results/group_run_2024-10-14-16-27``
+# but this directory is temporary before publishing
 
 combined_dir=./combined_output
 
