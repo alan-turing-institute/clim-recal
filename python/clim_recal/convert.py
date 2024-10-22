@@ -4,6 +4,7 @@
 - UKHADS is converted spatially from 1km to 2.2km in BNG aligned with the projected UKCP18
 """
 
+from collections import OrderedDict
 from dataclasses import dataclass, field
 from datetime import date
 from glob import glob
@@ -22,7 +23,11 @@ from xarray.core.types import T_Dataset
 
 from clim_recal.debiasing.debias_wrapper import VariableOptions
 
-from .utils.core import _get_source_path, climate_data_mount_path
+from .utils.core import (
+    _get_source_path,
+    climate_data_mount_path,
+    dates_path_to_date_tuple,
+)
 from .utils.data import (
     CONVERT_OUTPUT_PATH,
     CPM_END_DATE,
@@ -97,6 +102,8 @@ class IterCalcBase:
     export_file_extension: NETCDF_OR_TIF = NETCDF_EXTENSION_STR
     start_index: int = 0
     stop_index: int | None = None
+    start_date: date | None = None
+    end_date: date | None = None
     _result_paths: dict[PathLike, PathLike | None] = field(default_factory=dict)
     _iter_calc_method_name: str = "range_to_reprojection"
 
@@ -109,6 +116,7 @@ class IterCalcBase:
                 f"'input_path' or 'input_file' are None; at least one must be set."
             )
         self.set_input_files()
+        self.set_file_dates()
         Path(self.output_path).mkdir(parents=True, exist_ok=True)
         self.total_cpus: int | None = cpu_count()
         if not self.cpus:
@@ -128,21 +136,61 @@ class IterCalcBase:
         return len(self.input_files) if isinstance(self.input_files, Sequence) else 0
 
     def __iter__(self) -> Iterator[Path] | None:
-        if self.input_files and isinstance(self.input_files, Sequence):
-            for file_path in self.input_files[self.start_index : self.stop_index]:
+        if self.file_dates and isinstance(self.file_dates, Iterable):
+            # for file_path in self.input_files[self.start_index : self.stop_index]:
+            for file_path in tuple(self.file_dates)[self.start_index : self.stop_index]:
                 yield Path(file_path)
         else:
             return None
 
     def __getitem__(self, key: int | slice) -> Path | tuple[Path] | None:
-        if not self.input_files:
+        if not self.file_dates:
             return None
         elif isinstance(key, int):
-            return Path(self.input_files[key])
+            # return Path(self.input_files[key])
+            return Path(tuple(self.file_dates)[key])
         elif isinstance(key, slice):
-            return tuple(Path(path) for path in self.input_files[key])
+            # return tuple(Path(path) for path in self.input_files[key])
+            return tuple(Path(path) for path in tuple(self.file_dates)[key])
         else:
             raise IndexError(f"Can only index with 'int', not: '{key}'")
+
+    @property
+    def max_start_date(self) -> date:
+        """Return the earlest start date in the maximum full time series."""
+        return tuple(self.max_file_dates.values())[0][0]
+
+    @property
+    def max_end_date(self) -> date:
+        """Return the latest end date in the maximum full time series."""
+        return tuple(self.max_file_dates.values())[-1][1]
+
+    def set_file_dates(self) -> None:
+        if not hasattr(self, "max_input_files"):
+            self.set_input_files()
+        self.max_file_dates: dict[Path, tuple[date, date]] = OrderedDict(
+            (path, dates_path_to_date_tuple(path)) for path in self.max_input_files
+        )
+        self.start_date = (
+            max(self.start_date, self.max_start_date)
+            if self.start_date
+            else self.max_start_date
+        )
+        self.end_date = self.end_date = (
+            min(self.end_date, self.max_end_date)
+            if self.end_date
+            else self.max_end_date
+        )
+        # else:
+        #     self.end_date = tuple(self.max_file_dates.values())[-1][1]
+        # self.start_date = self.start_date or tuple(self.max_file_dates.values())[0][0]
+        # self.start_date = max(self.start_date, )
+        # self.end_date = self.end_date or tuple(self.max_file_dates.values())[-1][1]
+        self.file_dates: dict[Path, tuple[date, date]] = OrderedDict(
+            (path, (start_date, end_date))
+            for path, (start_date, end_date) in self.max_file_dates.items()
+            if self.start_date <= start_date or self.end_date <= end_date
+        )
 
     def set_input_files(self, new_input_path: PathLike | None = None) -> None:
         """Replace `self.input` and process `self.input_files`."""
@@ -151,11 +199,15 @@ class IterCalcBase:
             self.input = new_input_path
         if not self.input_files or new_input_path:
             self.input_files = tuple(
-                Path(path)
-                for path in glob(
-                    f"{self.input_path}/*.{self.input_file_extension}", recursive=True
+                sorted(
+                    Path(path)
+                    for path in glob(
+                        f"{self.input_path}/*.{self.input_file_extension}",
+                        recursive=True,
+                    )
                 )
             )
+            self.max_input_files = self.input_files
 
     def __repr__(self) -> str:
         """Summary of `self` configuration as a `str`."""
@@ -163,6 +215,8 @@ class IterCalcBase:
             f"<{self.__class__.__name__}("
             f"count={len(self)}, "
             f"max_count={self.max_count}, "
+            f"start_date={repr(self.start_date)[9:]}, "
+            f"end_date={repr(self.end_date)[9:]}, "
             f"input_path='{self.input_path}', "
             f"output_path='{self.output_path}')>"
         )
@@ -191,7 +245,6 @@ class IterCalcBase:
         description_func: (
             Callable[[PathLike, Any], str] | None
         ) = data_path_to_date_range,
-        # description_kwargs: dict[str, Any] =
         progress_instance: Progress | None = None,
         **kwargs,
     ) -> Iterator[Path | T_Dataset]:
@@ -254,18 +307,21 @@ class HADsConvert(IterCalcBase):
 
     Examples
     --------
-    >>> if not is_data_mounted:
+    >>> if not is_data_mounted or local_cache:
     ...     pytest.skip(mount_doctest_skip_message)
     >>> resample_test_hads_output_path: Path = getfixture(
     ...         'resample_test_hads_output_path')
-    >>> hads_converter: HADsConvert = HADsConvert(  # doctest: +SKIP
+    >>> hads_converter: HADsConvert = HADsConvert(
     ...     output_path=resample_test_hads_output_path,
     ... )
-    >>> hads_converter  # doctest: +SKIP
-    <HADsConvert(...count=504,...
-        ...input_path='.../tasmax/day',...
-        ...output_path='...run-results_..._.../hads')>
-    >>> pprint(hads_converter.input_files)   # doctest: +SKIP
+    >>> hads_converter
+    <HADsConvert(count=504,
+                 max_count=504,
+                 start_date=date(1980, 1, 1),
+                 end_date=date(2021, 12, 31),
+                 input_path='.../tasmax/day',
+                 output_path='...run-results_..._.../hads')>
+    >>> pprint(hads_converter.input_files)
     (...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800101-19800131.nc'),
      ...Path('.../tasmax/day/tasmax_hadukgrid_uk_1km_day_19800201-19800229.nc'),
      ...,
@@ -353,7 +409,7 @@ class CPMConvert(IterCalcBase):
 
     Examples
     --------
-    >>> if not is_data_mounted:
+    >>> if not is_data_mounted or local_cache:
     ...     pytest.skip(mount_doctest_skip_message)
     >>> resample_test_cpm_output_path: Path = getfixture(
     ...         'resample_test_cpm_output_path')
@@ -486,6 +542,8 @@ class IterCalcManagerBase:
         """Summary of `self` configuration as a `str`."""
         return (
             f"<{self.__class__.__name__}("
+            f"start_date={repr(self.start_date)[9:]}, "
+            f"end_date={repr(self.end_date)[9:]}, "
             f"variables_count={len(self.variables)}, "
             f"input_paths_count={len(self.input_paths) if isinstance(self.input_paths, Sequence) else 1})>"
         )
@@ -712,7 +770,7 @@ class HADsConvertManager(IterCalcManagerBase):
 
     Examples
     --------
-    >>> if not is_data_mounted:
+    >>> if not is_data_mounted or local_cache:
     ...     pytest.skip(mount_doctest_skip_message)
     >>> resample_test_hads_output_path: Path = getfixture(
     ...     'resample_test_hads_output_path')
@@ -722,14 +780,21 @@ class HADsConvertManager(IterCalcManagerBase):
     ...     output_paths=resample_test_hads_output_path,
     ...     )
     >>> hads_converter_manager
-    <HADsConvertManager(variables_count=3, input_paths_count=3)>
+    <HADsConvertManager(start_date=date(1980, 1, 1),
+                        end_date=date(2021, 12, 31),
+                        variables_count=3,
+                        input_paths_count=3)>
     >>> configs: tuple[HADsConvert, ...] = tuple(
     ...     hads_converter_manager.yield_configs())
     >>> pprint(configs)
     (<HADsConvert(count=10, max_count=504,
+                  start_date=date(1980, 1, 1),
+                  end_date=date(2021, 12, 31),
                   input_path='.../tasmax/day',
                   output_path='.../hads/tasmax')>,
      <HADsConvert(count=10, max_count=504,
+                  start_date=date(1980, 1, 1),
+                  end_date=date(2021, 12, 31),
                   input_path='.../rainfall/day',
                   output_path='.../hads/rainfall')>)
     """
@@ -794,7 +859,7 @@ class CPMConvertManager(IterCalcManagerBase):
 
     Examples
     --------
-    >>> if not is_data_mounted:
+    >>> if not is_data_mounted or local_cache:
     ...     pytest.skip(mount_doctest_skip_message)
     >>> resample_test_cpm_output_path: Path = getfixture(
     ...         'resample_test_cpm_output_path')
@@ -803,18 +868,27 @@ class CPMConvertManager(IterCalcManagerBase):
     ...     output_paths=resample_test_cpm_output_path,
     ...     )
     >>> cpm_converter_manager
-    <CPMConvertManager(variables_count=1, runs_count=4,
+    <CPMConvertManager(start_date=date(1980, 12, 1),
+                       end_date=date(2080, 11, 30),
+                       variables_count=1,
+                       runs_count=4,
                        input_paths_count=4)>
     >>> configs: tuple[CPMConvert, ...] = tuple(
     ...     cpm_converter_manager.yield_configs())
     >>> pprint(configs)
     (<CPMConvert(count=10, max_count=100,
+                 start_date=date(1980, 12, 1),
+                 end_date=date(2080, 11, 30),
                  input_path='.../tasmax/05/latest',
                  output_path='.../cpm/tasmax/05')>,
      <CPMConvert(count=10, max_count=100,
+                 start_date=date(1980, 12, 1),
+                 end_date=date(2080, 11, 30),
                  input_path='.../tasmax/06/latest',
                  output_path='.../cpm/tasmax/06')>,
      <CPMConvert(count=10, max_count=100,
+                 start_date=date(1980, 12, 1),
+                 end_date=date(2080, 11, 30),
                  input_path='.../tasmax/07/latest',
                  output_path='.../cpm/tasmax/07')>)
     """
@@ -839,6 +913,8 @@ class CPMConvertManager(IterCalcManagerBase):
         """Summary of `self` configuration as a `str`."""
         return (
             f"<{self.__class__.__name__}("
+            f"start_date={repr(self.start_date)[9:]}, "
+            f"end_date={repr(self.end_date)[9:]}, "
             f"variables_count={len(self.variables)}, "
             f"runs_count={len(self.runs)}, "
             f"input_paths_count={len(self.input_paths) if isinstance(self.input_paths, Sequence) else 1})>"

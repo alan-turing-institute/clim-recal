@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Collection, Union, Callable, Any, Literal, Final, Iterable
 from os import PathLike
-from datetime import date
+from datetime import date, datetime
 from enum import auto
 from pathlib import Path
 
@@ -16,11 +16,17 @@ DEFAULT_RESAMPLING_METHOD: Final[Resampling] = Resampling.average
 BRITISH_NATION_GRID_COORDS_NUMBER: Final[int] = 27700
 BRITISH_NATIONAL_GRID_EPSG: Final[str] = f"EPSG:{BRITISH_NATION_GRID_COORDS_NUMBER}"
 
-HADS_START_DATE: Final[date] = date(1980, 1, 1)
-HADS_END_DATE: Final[date] = date(2021, 12, 31)
+HADS_START_DATETIME: Final[datetime] = datetime.fromisoformat('1980-01-01T12:00:00.000000000')
+HADS_END_DATETIME: Final[datetime] = datetime.fromisoformat('2021-12-31T12:00:00.000000000')
+HADS_START_DATE: Final[date] = HADS_START_DATETIME.date()
+HADS_END_DATE: Final[date] = HADS_END_DATETIME.date()
 
-CPM_START_DATE: Final[date] = date(1980, 12, 1)
-CPM_END_DATE: Final[date] = date(2060, 11, 30)
+# Note: CPM raw files are in 360 day years, using datetime to ease
+# compatibility after conversions to standard datetime formats
+CPM_START_DATETIME: Final[datetime] = datetime.fromisoformat('1980-12-01T12:00:00.000000000')
+CPM_END_DATETIME: Final[datetime] = datetime.fromisoformat('2080-11-30T12:00:00.000000000')
+CPM_START_DATE: Final[date] = CPM_START_DATETIME.date()
+CPM_END_DATE: Final[date] = CPM_END_DATETIME.date()
 
 HADS_RAW_X_COLUMN_NAME: Final[str] = "projection_x_coordinate"
 HADS_RAW_Y_COLUMN_NAME: Final[str] = "projection_y_coordinate"

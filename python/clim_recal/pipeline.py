@@ -132,8 +132,8 @@ New approach:
 
 """
 
+from datetime import date
 from os import PathLike
-from pathlib import Path
 from typing import Final, Sequence
 
 from xarray.core.types import T_Dataset
@@ -154,17 +154,24 @@ from .config import (
 from .convert import RAW_CPM_PATH, RAW_HADS_PATH, CPMConvert, HADsConvert
 from .crop import CPMRegionCropper, HADsRegionCropper
 from .utils.core import console
-from .utils.data import CPM_NAME, HADS_NAME
+from .utils.data import (
+    CPM_END_DATE,
+    CPM_NAME,
+    CPM_START_DATE,
+    HADS_END_DATE,
+    HADS_NAME,
+    HADS_START_DATE,
+)
 
-REPROJECTION_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_one.sh")
-REPROJECTION_WRAPPER_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_all.sh")
+# REPROJECTION_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_one.sh")
+# REPROJECTION_WRAPPER_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_all.sh")
+EXECUTE_INFO_TEXT: Final[str] = "Add '--execute' to run."
 
 
 def get_config(
     hads_input_path: PathLike = RAW_HADS_PATH,
     cpm_input_path: PathLike = RAW_CPM_PATH,
     output_path: PathLike = DEFAULT_OUTPUT_PATH,
-    # clim_types: ClimDataTypeSet = HADS_AND_CPM_SET,
     cpm: bool = True,
     hads: bool = True,
     variables: Sequence[VariableOptions | str] = (VariableOptions.default(),),
@@ -179,6 +186,10 @@ def get_config(
     cpus: int | None = None,
     multiprocess: bool = False,
     convert: bool = True,
+    hads_start_date: date = HADS_START_DATE,
+    hads_end_date: date = HADS_END_DATE,
+    cpm_start_date: date = CPM_START_DATE,
+    cpm_end_date: date = CPM_END_DATE,
     convert_start_index: int = 0,
     convert_stop_index: int | None = None,
     crop: bool = True,
@@ -225,7 +236,8 @@ def get_config(
         regions = None
 
     variables = VariableOptions.all() if all_variables else tuple(variables)
-    methods = MethodOptions.all() if all_methods else tuple(methods)
+    if methods:
+        methods = MethodOptions.all() if all_methods else tuple(methods)
     if all_runs:
         runs = RunOptions.all()
     elif default_runs:
@@ -244,6 +256,10 @@ def get_config(
         runs=runs,
         cpus=cpus,
         multiprocess=multiprocess,
+        hads_start_date=hads_start_date,
+        hads_end_date=hads_end_date,
+        cpm_start_date=cpm_start_date,
+        cpm_end_date=cpm_end_date,
         convert_start_index=convert_start_index,
         convert_stop_index=convert_stop_index,
         crop_start_index=crop_start_index,
@@ -253,9 +269,20 @@ def get_config(
     )
 
 
-def run_convert(config: ClimRecalConfig, print_range_length: int | None = 5) -> None:
+def run_convert(
+    config: ClimRecalConfig | None,
+    print_range_length: int | None = 5,
+    execute: bool = False,
+    pipeline: bool = False,
+    **kwargs,
+) -> None:
     """Run `convert` parts of passed `config`."""
-    if config.convert:
+    config = config or get_config(**kwargs)
+    if config.include_cpm:
+        console.print(config.cpm_manager)
+    if config.include_hads:
+        console.print(config.hads_manager)
+    if execute and config.convert:
         if config.include_cpm:
             console.print(f"Running {CPM_NAME} conversion...")
             cpm_converters: tuple[CPMConvert, ...] = config.cpm_manager.execute_configs(
@@ -277,12 +304,27 @@ def run_convert(config: ClimRecalConfig, print_range_length: int | None = 5) -> 
         else:
             console.print(f"Skipping {HADS_NAME} aggregation to 2.2km spatial units.")
     else:
-        console.print(f"Skipping {HADS_NAME} and {CPM_NAME} conversion.")
+        if pipeline:
+            console.print(f"Skipping conversion.")
+        else:
+            console.print(EXECUTE_INFO_TEXT)
 
 
-def run_crop(config: ClimRecalConfig, print_range_length: int | None = 5) -> None:
+def run_crop(
+    config: ClimRecalConfig | None,
+    print_range_length: int | None = 5,
+    execute: bool = False,
+    pipeline: bool = False,
+    **kwargs,
+) -> None:
     """Run `crop` parts of passed `config`."""
-    if config.crop:
+    config = config or get_config(**kwargs)
+    if config.regions:
+        if config.include_cpm:
+            console.print(config.cpm_crop_manager)
+        if config.include_hads:
+            console.print(config.hads_crop_manager)
+    if execute and config.crop:
         if config.include_cpm:
             console.print(
                 f"Cropping {CPM_NAME} conversions to regions {config.regions}: ..."
@@ -309,7 +351,10 @@ def run_crop(config: ClimRecalConfig, print_range_length: int | None = 5) -> Non
         else:
             console.print(f"Skipping cropping {HADS_NAME} conversions.")
     else:
-        console.print("Skipping region cropping.")
+        if pipeline:
+            console.print("Skipping region cropping.")
+        else:
+            console.print(EXECUTE_INFO_TEXT)
 
 
 def main(
@@ -322,7 +367,7 @@ def main(
     variables: Sequence[VariableOptions | str] = (VariableOptions.default(),),
     regions: Sequence[RegionOptions | str] | None = (RegionOptions.default(),),
     runs: Sequence[RunOptions | str] = (RunOptions.default(),),
-    methods: Sequence[MethodOptions | str] = (MethodOptions.default(),),
+    methods: Sequence[MethodOptions | str] | None = (MethodOptions.default(),),
     all_variables: bool = False,
     all_regions: bool = False,
     default_runs: bool = False,
@@ -402,11 +447,25 @@ def main(
                      cpm_folders_count=2, hads_folders_count=2,
                      convert_start_index=0, convert_stop_index=None,
                      crop_start_index=0, crop_stop_index=None, cpus=...)>
-    <CPMConvertManager(variables_count=2, runs_count=1,
-                         input_paths_count=2)>
-    <HADsConvertManager(variables_count=2, input_paths_count=2)>
-    <CPMRegionCropManager(variables_count=2, input_paths_count=2)>
-    <HADsRegionCropManager(variables_count=2, input_paths_count=2)>
+    <CPMConvertManager(start_date=date(1980, 12, 1),
+                       end_date=date(2080, 11, 30),
+                       variables_count=2,
+                       runs_count=1,
+                       input_paths_count=2)>
+    <HADsConvertManager(start_date=date(1980, 1, 1),
+                        end_date=date(2021, 12, 31),
+                        variables_count=2,
+                        input_paths_count=2)>
+    Skipping conversion.
+    <CPMRegionCropManager(start_date=date(1980, 12, 1),
+                          end_date=date(2080, 11, 30),
+                          variables_count=2,
+                          input_paths_count=2)>
+    <HADsRegionCropManager(start_date=date(1980, 1, 1),
+                           end_date=date(2021, 12, 31),
+                           variables_count=2,
+                           input_paths_count=2)>
+    Skipping region cropping.
     Add '--execute' to run.
     """
     config: ClimRecalConfig = get_config(
@@ -438,17 +497,11 @@ def main(
     )
     console.print("clim-recal pipeline configurations:")
     console.print(config)
-    if config.include_cpm:
-        console.print(config.cpm_manager)
-    if config.include_hads:
-        console.print(config.hads_manager)
-    if regions:
-        if config.include_cpm:
-            console.print(config.cpm_crop_manager)
-        if config.include_hads:
-            console.print(config.hads_crop_manager)
-    if execute:
-        run_convert(config, print_range_length=print_range_length)
-        run_crop(config, print_range_length=print_range_length)
-    else:
-        console.print("Add '--execute' to run.")
+    run_convert(
+        config, execute=execute, pipeline=True, print_range_length=print_range_length
+    )
+    run_crop(
+        config, execute=execute, pipeline=True, print_range_length=print_range_length
+    )
+    if not execute:
+        console.print(EXECUTE_INFO_TEXT)

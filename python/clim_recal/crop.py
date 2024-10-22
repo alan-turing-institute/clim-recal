@@ -254,6 +254,8 @@ class RegionCropperManagerBase(IterCalcManagerBase):
         """Summary of `self` configuration as a `str`."""
         return (
             f"<{self.__class__.__name__}("
+            f"start_date={repr(self.start_date)[9:]}, "
+            f"end_date={repr(self.end_date)[9:]}, "
             f"variables_count={len(self.variables)}, "
             f"input_paths_count={len(self.input_paths) if isinstance(self.input_paths, Sequence) else 1})>"
         )

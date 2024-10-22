@@ -8,8 +8,8 @@ runner: CliRunner = CliRunner()
 
 @pytest.mark.darwin
 def test_pipeline_cli() -> None:
-    """Test basic cli"""
-    result = runner.invoke(clim_recal, ["--help"])
+    """Test cli for entire pipeline."""
+    result = runner.invoke(clim_recal, ["pipeline", "--help"])
     assert result.exit_code == 0
     for text in ("[Glasgow|Manc", "--execute"):
         assert text in result.stdout

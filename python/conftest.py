@@ -603,6 +603,7 @@ def test_users_cache(data_fixtures_path: Path, tmp_path: Path) -> LocalCache:
 @pytest.fixture(autouse=True)
 def doctest_auto_fixtures(
     doctest_namespace: dict,
+    local_cache: bool,
     is_data_mounted: bool,
     preprocess_out_folder_files_count_correct: int,
     xarray_spatial_4_days: DataArray,
@@ -622,6 +623,7 @@ def doctest_auto_fixtures(
     crop_test_cpm_output_path: Path,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
+    doctest_namespace["local_cache"] = local_cache
     doctest_namespace["CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT"] = (
         CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT
     )

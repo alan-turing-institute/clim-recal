@@ -3,6 +3,7 @@
 import json
 import sys
 import warnings
+from calendar import monthrange
 from collections.abc import KeysView
 from csv import DictReader
 from dataclasses import asdict, dataclass, fields, is_dataclass
@@ -40,6 +41,14 @@ DateType = Union[date, str]
 DateRange = tuple[DateType, DateType]
 CLI_DATE_FORMAT_STR: Final[str] = "%Y%m%d"
 ISO_DATE_FORMAT_STR: Final[str] = "%Y-%m-%d"
+YEAR_DATE_FORMAT_STR: Final[str] = "%Y"
+YEAR_MONTH_DATE_FORMAT_STR: Final[str] = "%Y-%m"
+CLI_DATE_FORMATS: Final[tuple[str, ...]] = (
+    YEAR_DATE_FORMAT_STR,
+    YEAR_MONTH_DATE_FORMAT_STR,
+    ISO_DATE_FORMAT_STR,
+    CLI_DATE_FORMAT_STR,
+)
 DATE_FORMAT_SPLIT_STR: Final[str] = "-"
 
 NORMAL_YEAR_DAYS: Final[int] = 365
@@ -360,6 +369,39 @@ def ensure_date(date_to_check: DateType, format_str: str = CLI_DATE_FORMAT_STR) 
         return date_to_check
     else:
         return datetime.strptime(date_to_check, format_str).date()
+
+
+def date_strs_from_met_office_file_name(path: PathLike) -> tuple[str, ...]:
+    """Extract date range from MetOffice file name.
+
+    Examples
+    --------
+    >>> date_strs_from_met_office_file_name(
+    ...     'test/path/'
+    ...     'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc')
+    ('19801201', '19811130')
+    """
+    return tuple(Path(path).stem.split("_")[-1].split("-"))
+
+
+def dates_path_to_date_tuple(
+    path: PathLike,
+    date_str_extractor: Callable[[PathLike], str] = date_strs_from_met_office_file_name,
+    date_str_format: str = CLI_DATE_FORMAT_STR,
+) -> tuple[date, ...]:
+    """Extract date range from MetOffice file name.
+
+    Examples
+    --------
+    >>> dates_path_to_date_tuple(
+    ...     'test/path/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc')
+    (datetime.date(1980, 12, 1), datetime.date(1981, 11, 30))
+
+    """
+    return tuple(
+        ensure_date(date_str, format_str=date_str_format)
+        for date_str in date_str_extractor(path)
+    )
 
 
 def date_range_generator(
@@ -1108,3 +1150,102 @@ def dataclass_to_dict(instance, force_serialise: bool = True) -> dict[str, Any]:
         return serialiser
     else:
         return asdict(instance)
+
+
+def infer_end_date(
+    date_obj: date, check_month: bool = False, check_day: bool = False
+) -> date:
+    """Infer the last of a date range.
+
+    Parameters
+    ----------
+    date_obj
+        Date object to infer latest date from.
+    check_month
+        Whether to check latest month within year.
+    check_day
+        Whether to check latest day within month.
+
+    Examples
+    --------
+    >>> infer_end_date(date(2024, 11, 5), check_month=True, check_day=True)
+    datetime.date(2024, 11, 5)
+    >>> infer_end_date(date(2024, 11, 1), check_month=True)
+    datetime.date(2024, 11, 1)
+    >>> infer_end_date(date(2024, 11, 1), check_day=True)
+    datetime.date(2024, 11, 30)
+    >>> infer_end_date(date(2024, 1, 1), check_month=True)
+    datetime.date(2024, 12, 1)
+    >>> infer_end_date(date(2024, 1, 1), check_month=True, check_day=True)
+    datetime.date(2024, 12, 31)
+    """
+    if check_month and date_obj.month == 1 and date_obj.day == 1:
+        date_obj = date(year=date_obj.year, month=12, day=date_obj.day)
+    if check_day and date_obj.day == 1:
+        day: int = monthrange(date_obj.year, date_obj.month)[1]
+        date_obj = date(year=date_obj.year, month=date_obj.month, day=day)
+    return date_obj
+
+
+def date_str_infer_end(
+    date_or_str: str | datetime | date, formats: Sequence[str] = CLI_DATE_FORMATS
+) -> date | None:
+    """Infer latest date from `date_str`.
+
+    Parameters
+    ----------
+    date_or_str
+        Instance to infer potential latest implied date from.
+    formats
+        `strptime` formats to check for date parsing.
+
+    Examples
+    --------
+    >>> date_str_infer_end(None)
+    >>> date_str_infer_end("")
+    >>> date_str_infer_end(datetime(2021, 12, 31, 12, 0))
+    datetime.date(2021, 12, 31)
+    >>> date_str_infer_end("2024-11-5")
+    datetime.date(2024, 11, 5)
+    >>> date_str_infer_end("2024-11-1")
+    datetime.date(2024, 11, 1)
+    >>> date_str_infer_end("2024-1-1")
+    datetime.date(2024, 1, 1)
+    >>> date_str_infer_end("2024")
+    datetime.date(2024, 12, 31)
+    >>> date_str_infer_end("2024-1")
+    datetime.date(2024, 1, 31)
+    >>> date_str_infer_end("2024-11")
+    datetime.date(2024, 11, 30)
+    >>> date_str_infer_end("2024-11-")
+    Traceback (most recent call last):
+        ...
+    ValueError: 'date_or_str': '2024-11-' doesn't match
+    'formats': ('%Y', '%Y-%m', '%Y-%m-%d', '%Y%m%d')
+    """
+    if not date_or_str:
+        return None
+    elif isinstance(date_or_str, datetime):
+        return date_or_str.date()
+    elif isinstance(date_or_str, date):
+        return date_or_str
+    elif YEAR_DATE_FORMAT_STR in formats and len(date_or_str) == 4:
+        return infer_end_date(
+            datetime.strptime(date_or_str, YEAR_DATE_FORMAT_STR).date(),
+            check_month=True,
+            check_day=True,
+        )
+    elif YEAR_MONTH_DATE_FORMAT_STR in formats and 6 <= len(date_or_str) <= 7:
+        return infer_end_date(
+            datetime.strptime(date_or_str, YEAR_MONTH_DATE_FORMAT_STR).date(),
+            check_day=True,
+        )
+    else:
+        for format in set(formats) - {YEAR_DATE_FORMAT_STR, YEAR_MONTH_DATE_FORMAT_STR}:
+            try:
+                return datetime.strptime(date_or_str, format).date()
+            except ValueError:
+                pass
+        raise ValueError(
+            f"'date_or_str': '{date_or_str}' doesn't match 'formats': {formats}"
+        )

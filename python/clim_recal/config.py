@@ -122,10 +122,10 @@ class ClimRecalConfig(BaseRunConfig):
                      crop_stop_index=None, cpus=1)>
     """
 
-    variables: Sequence[VariableOptions] = (VariableOptions.default(),)
-    runs: Sequence[RunOptions] = (RunOptions.default(),)
-    regions: Sequence[RegionOptions] | None = (RegionOptions.default(),)
-    methods: Sequence[MethodOptions] = (MethodOptions.default(),)
+    variables: Sequence[VariableOptions | str] = (VariableOptions.default(),)
+    runs: Sequence[RunOptions | str] = (RunOptions.default(),)
+    regions: Sequence[RegionOptions | str] | None = (RegionOptions.default(),)
+    methods: Sequence[MethodOptions | str] | None = (MethodOptions.default(),)
     convert: bool = True
     crop: bool = True
     multiprocess: bool = False
@@ -346,6 +346,8 @@ class ClimRecalConfig(BaseRunConfig):
                     variables=self.variables,
                     runs=self.runs,
                     output_paths=self.convert_cpm_path,
+                    start_date=self.cpm_start_date,
+                    end_date=self.cpm_end_date,
                     start_index=self.convert_start_index,
                     stop_index=self.convert_stop_index,
                     start_calc_index=self.calc_start_index,
@@ -358,6 +360,8 @@ class ClimRecalConfig(BaseRunConfig):
                     input_paths=self.hads_input_path,
                     variables=self.variables,
                     output_paths=self.convert_hads_path,
+                    start_date=self.hads_start_date,
+                    end_date=self.hads_end_date,
                     start_index=self.convert_start_index,
                     stop_index=self.convert_stop_index,
                     start_calc_index=self.calc_start_index,
@@ -374,6 +378,8 @@ class ClimRecalConfig(BaseRunConfig):
                     variables=self.variables,
                     runs=self.runs,
                     output_paths=self.cropped_cpm_path,
+                    start_date=self.cpm_start_date,
+                    end_date=self.cpm_end_date,
                     start_index=self.crop_start_index,
                     stop_index=self.crop_stop_index,
                     start_calc_index=self.calc_start_index,
@@ -387,6 +393,8 @@ class ClimRecalConfig(BaseRunConfig):
                     crop_regions=tuple(self.regions),
                     variables=self.variables,
                     output_paths=self.cropped_hads_path,
+                    start_date=self.hads_start_date,
+                    end_date=self.hads_end_date,
                     start_index=self.crop_start_index,
                     stop_index=self.crop_stop_index,
                     start_calc_index=self.calc_start_index,
@@ -394,6 +402,7 @@ class ClimRecalConfig(BaseRunConfig):
                     check_input_paths_exist=False,
                     **self.hads_crop_kwargs,
                 )
+        self.methods = self.methods or ()
         self.total_cpus: int | None = cpu_count()
         if self.cpus == None or (self.total_cpus and self.cpus >= self.total_cpus):
             self.cpus = 1 if not self.total_cpus else self.total_cpus - 1
