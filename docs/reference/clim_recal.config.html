@@ -240,7 +240,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/clim_recal.resample.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.convert.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data Resampling</span></a>
   </div>
 </li>
@@ -329,6 +329,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#python.clim_recal.config.ClimRecalConfig" id="toc-python.clim_recal.config.ClimRecalConfig" class="nav-link" data-scroll-target="#python.clim_recal.config.ClimRecalConfig"><span class="header-section-number">1.1.1</span> ClimRecalConfig</a></li>
   <li><a href="#python.clim_recal.config.ClimRecalRunsConfigType" id="toc-python.clim_recal.config.ClimRecalRunsConfigType" class="nav-link" data-scroll-target="#python.clim_recal.config.ClimRecalRunsConfigType"><span class="header-section-number">1.1.2</span> ClimRecalRunsConfigType</a></li>
   </ul></li>
+  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions"><span class="header-section-number">1.2</span> Functions</a>
+  <ul class="collapse">
+  <li><a href="#python.clim_recal.config.read_json_clim_recal_config" id="toc-python.clim_recal.config.read_json_clim_recal_config" class="nav-link" data-scroll-target="#python.clim_recal.config.read_json_clim_recal_config"><span class="header-section-number">1.2.1</span> read_json_clim_recal_config</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 </nav>
@@ -364,15 +368,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <section id="python.clim_recal.config.ClimRecalConfig" class="level3" data-number="1.1.1">
 <h3 data-number="1.1.1" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalConfig"><span class="header-section-number">1.1.1</span> ClimRecalConfig</h3>
-<p><code>clim_recal.config.ClimRecalConfig(self, command_dir=COMMAND_DIR_DEFAULT, run_prefix=RUN_PREFIX_DEFAULT, preprocess_data_file=PREPROCESS_FILE_NAME, run_cmethods_file=CMETHODS_FILE_NAME, data_path=DATA_PATH_DEFAULT, mod_folder=MOD_FOLDER_DEFAULT, obs_folder=OBS_FOLDER_DEFAULT, preprocess_out_folder=PREPROCESS_OUT_FOLDER_DEFAULT, cmethods_out_folder=CMETHODS_OUT_FOLDER_DEFAULT, calib_date_start=CALIB_DATE_START_DEFAULT, calib_date_end=CALIB_DATE_END_DEFAULT, valid_date_start=VALID_DATE_START_DEFAULT, valid_date_end=VALID_DATE_END_DEFAULT, processors=PROCESSORS_DEFAULT, date_format_str=CLI_DATE_FORMAT_STR, date_split_str=DATE_FORMAT_SPLIT_STR, variables=(VariableOptions.default()), runs=(RunOptions.default()), regions=(RegionOptions.default()), methods=(MethodOptions.default()), multiprocess=False, cpus=DEFAULT_CPUS, hads_input_path=RAW_HADS_PATH, cpm_input_path=RAW_CPM_PATH, output_path=DEFAULT_OUTPUT_PATH, resample_folder=DEFAULT_RESAMPLE_FOLDER, crops_folder=DEFAULT_CROPS_FOLDER, hads_output_folder=HADS_OUTPUT_LOCAL_PATH, cpm_output_folder=CPM_OUTPUT_LOCAL_PATH, cpm_kwargs=dict(), hads_kwargs=dict(), start_index=0, stop_index=None, add_local_dated_results_path=True, add_local_dated_crops_path=True, local_dated_results_path_prefix='run', local_dated_crops_path_prefix='crop', cpm_for_coord_alignment=None, process_cmp_for_coord_alignment=False, cpm_for_coord_alignment_path_converted=False, debug_mode=False)</code></p>
+<p><code>clim_recal.config.ClimRecalConfig(self, command_dir=COMMAND_DIR_DEFAULT, run_prefix=RUN_PREFIX_DEFAULT, preprocess_data_file=PREPROCESS_FILE_NAME, run_cmethods_file=CMETHODS_FILE_NAME, data_path=DATA_PATH_DEFAULT, mod_folder=MOD_FOLDER_DEFAULT, obs_folder=OBS_FOLDER_DEFAULT, preprocess_out_folder=PREPROCESS_OUT_FOLDER_DEFAULT, cmethods_out_folder=CMETHODS_OUT_FOLDER_DEFAULT, calib_date_start=CALIB_DATE_START_DEFAULT, calib_date_end=CALIB_DATE_END_DEFAULT, valid_date_start=VALID_DATE_START_DEFAULT, valid_date_end=VALID_DATE_END_DEFAULT, processors=PROCESSORS_DEFAULT, date_format_str=CLI_DATE_FORMAT_STR, date_split_str=DATE_FORMAT_SPLIT_STR, variables=(VariableOptions.default()), runs=(RunOptions.default()), regions=(RegionOptions.default()), methods=(MethodOptions.default()), convert=True, crop=True, multiprocess=False, clim_types=HADS_AND_CPM, cpus=DEFAULT_CPUS, hads_input_path=RAW_HADS_PATH, cpm_input_path=RAW_CPM_PATH, output_path=DEFAULT_OUTPUT_PATH, convert_folder=DEFAULT_CONVERT_FOLDER, crops_folder=DEFAULT_CROPS_FOLDER, hads_output_folder=HADS_OUTPUT_PATH, cpm_output_folder=CPM_OUTPUT_PATH, cpm_kwargs=dict(), hads_kwargs=dict(), cpm_crop_kwargs=dict(), hads_crop_kwargs=dict(), convert_start_index=0, convert_stop_index=None, crop_start_index=0, crop_stop_index=None, calc_start_index=0, calc_stop_index=None, hads_start_date=HADS_START_DATE, hads_end_date=HADS_END_DATE, cpm_start_date=CPM_START_DATE, cpm_end_date=CPM_END_DATE, add_local_dated_results_path=True, add_local_dated_crops_path=True, local_dated_results_path_prefix='run', local_dated_crops_path_prefix='crop', cpm_for_coord_alignment=None, process_cmp_for_coord_alignment=False, cpm_for_coord_alignment_path_converted=False, config_save_path=None, log_file=True, file_log_level=DEBUG, debug_mode=False)</code></p>
 <p>Manage creating command line scripts to run <code>debiasing</code> <code>cli</code>.</p>
 <section id="attributes" class="level4" data-number="1.1.1.1">
 <h4 data-number="1.1.1.1" class="anchored" data-anchor-id="attributes"><span class="header-section-number">1.1.1.1</span> Attributes</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 13%">
-<col style="width: 18%">
-<col style="width: 68%">
+<col style="width: 12%">
+<col style="width: 21%">
+<col style="width: 65%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -384,22 +388,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td>variables</td>
-<td>Sequence[VariableOptions]</td>
+<td>Sequence[VariableOptions | str]</td>
 <td>Variables to include in the model, eg. <code>tasmax</code>, <code>tasmin</code>.</td>
 </tr>
 <tr class="even">
 <td>runs</td>
-<td>Sequence[RunOptions]</td>
+<td>Sequence[RunOptions | str]</td>
 <td>Which model runs to include, eg. “01”, “08”, “11”.</td>
 </tr>
 <tr class="odd">
 <td>regions</td>
-<td>Sequence[RegionOptions] | None</td>
+<td>Sequence[RegionOptions | str] | None</td>
 <td>Which regions to crop both HADs and CPM data to.</td>
 </tr>
 <tr class="even">
 <td>methods</td>
-<td>Sequence[MethodOptions]</td>
+<td>Sequence[MethodOptions | str] | None</td>
 <td>Which debiasing methods to apply.</td>
 </tr>
 <tr class="odd">
@@ -418,34 +422,34 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><code>Path</code> to save all intermediate and final results to.</td>
 </tr>
 <tr class="even">
-<td>resample_folder</td>
+<td>convert_folder</td>
 <td>PathLike</td>
 <td><code>Path</code> to append to <code>output_path</code> for resampling result files.</td>
 </tr>
 <tr class="odd">
 <td>crops_folder</td>
 <td>PathLike</td>
-<td><code>Path</code> to append to <code>output_path</code> for cropped resample files.</td>
+<td><code>Path</code> to append to <code>output_path</code> for cropped convert files.</td>
 </tr>
 <tr class="even">
 <td>hads_output_folder</td>
 <td>PathLike</td>
-<td><code>Path</code> to append to <code>output_path</code> / <code>resample_folder</code> for resampling <code>HADs</code> files and to <code>output_path</code> / <code>crop_folder</code> for crops.</td>
+<td><code>Path</code> to append to <code>output_path</code> / <code>convert_folder</code> for resampling <code>HADs</code> files and to <code>output_path</code> / <code>crop_folder</code> for crops.</td>
 </tr>
 <tr class="odd">
 <td>cpm_output_folder</td>
 <td>PathLike</td>
-<td><code>Path</code> to append to <code>output_path</code> / <code>resample_folder</code> for resampling <code>CPM</code> files and to <code>output_path</code> / <code>crop_folder</code> for crops.</td>
+<td><code>Path</code> to append to <code>output_path</code> / <code>convert_folder</code> for resampling <code>CPM</code> files and to <code>output_path</code> / <code>crop_folder</code> for crops.</td>
 </tr>
 <tr class="even">
 <td>cpm_kwargs</td>
 <td>dict</td>
-<td>A <code>dict</code> of parameters to pass to a <code>CPMResamplerManager</code>.</td>
+<td>A <code>dict</code> of parameters to pass to a <code>CPMConvertManager</code>.</td>
 </tr>
 <tr class="odd">
 <td>hads_kwargs</td>
 <td>dict</td>
-<td>A <code>dict</code> of parameters to pass to <code>HADsResamplerManager</code>.</td>
+<td>A <code>dict</code> of parameters to pass to <code>HADsConvertManager</code>.</td>
 </tr>
 <tr class="even">
 <td>cpm_for_coord_alignment</td>
@@ -468,11 +472,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>...     regions<span class="op">=</span>(<span class="st">'Manchester'</span>, <span class="st">'Glasgow'</span>),</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>...     output_path<span class="op">=</span>test_runs_output_path,</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>...     cpus<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> run_config</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>ClimRecalConfig(variables_count<span class="op">=</span><span class="dv">1</span>, runs_count<span class="op">=</span><span class="dv">1</span>, regions_count<span class="op">=</span><span class="dv">2</span>,</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                 methods_count<span class="op">=</span><span class="dv">1</span>, cpm_folders_count<span class="op">=</span><span class="dv">1</span>,</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                 hads_folders_count<span class="op">=</span><span class="dv">1</span>, start_index<span class="op">=</span><span class="dv">0</span>,</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                 stop_index<span class="op">=</span><span class="va">None</span>, cpus<span class="op">=</span><span class="dv">1</span>)<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">'set_cpm_for_coord_alignment'</span> <span class="cf">for</span> <span class="st">'HADs'</span> <span class="kw">not</span> speficied.</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>Defaulting to <span class="st">'self.cpm_input_path'</span>: <span class="st">'.../ClimateData/Raw/UKCP2.2'</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> run_config</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>ClimRecalConfig(variables_count<span class="op">=</span><span class="dv">1</span>, runs_count<span class="op">=</span><span class="dv">1</span>, regions_count<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                 methods_count<span class="op">=</span><span class="dv">1</span>, cpm_folders_count<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                 hads_folders_count<span class="op">=</span><span class="dv">1</span>, convert_start_index<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                 convert_stop_index<span class="op">=</span><span class="va">None</span>, crop_start_index<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>                 crop_stop_index<span class="op">=</span><span class="va">None</span>, cpus<span class="op">=</span><span class="dv">1</span>)<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="methods" class="level4" data-number="1.1.1.3">
 <h4 data-number="1.1.1.3" class="anchored" data-anchor-id="methods"><span class="header-section-number">1.1.1.3</span> Methods</h4>
@@ -485,21 +492,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
+<td><a href="#python.clim_recal.config.ClimRecalConfig.ensure_all_paths">ensure_all_paths</a></td>
+<td>Ensure <code>PathLike</code> attributes are converted to <code>Path</code> type.</td>
+</tr>
+<tr class="even">
 <td><a href="#python.clim_recal.config.ClimRecalConfig.run_models">run_models</a></td>
 <td>Run all specified models.</td>
+</tr>
+<tr class="odd">
+<td><a href="#python.clim_recal.config.ClimRecalConfig.save_config">save_config</a></td>
+<td>Save config to <code>path</code> and return saved path.</td>
 </tr>
 <tr class="even">
 <td><a href="#python.clim_recal.config.ClimRecalConfig.set_cpm_for_coord_alignment">set_cpm_for_coord_alignment</a></td>
 <td>If <code>cpm_for_coord_alignment</code> is <code>None</code> use <code>self.cpm_input_path</code>.</td>
 </tr>
+<tr class="odd">
+<td><a href="#python.clim_recal.config.ClimRecalConfig.to_dict">to_dict</a></td>
+<td>Convert core self configs to a dict.</td>
+</tr>
 </tbody>
 </table>
-<section id="python.clim_recal.config.ClimRecalConfig.run_models" class="level5" data-number="1.1.1.3.1">
-<h5 data-number="1.1.1.3.1" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalConfig.run_models"><span class="header-section-number">1.1.1.3.1</span> run_models</h5>
+<section id="python.clim_recal.config.ClimRecalConfig.ensure_all_paths" class="level5" data-number="1.1.1.3.1">
+<h5 data-number="1.1.1.3.1" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalConfig.ensure_all_paths"><span class="header-section-number">1.1.1.3.1</span> ensure_all_paths</h5>
+<p><code>clim_recal.config.ClimRecalConfig.ensure_all_paths()</code></p>
+<p>Ensure <code>PathLike</code> attributes are converted to <code>Path</code> type.</p>
+</section>
+<section id="python.clim_recal.config.ClimRecalConfig.run_models" class="level5" data-number="1.1.1.3.2">
+<h5 data-number="1.1.1.3.2" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalConfig.run_models"><span class="header-section-number">1.1.1.3.2</span> run_models</h5>
 <p><code>clim_recal.config.ClimRecalConfig.run_models()</code></p>
 <p>Run all specified models.</p>
-<section id="examples-1" class="level6" data-number="1.1.1.3.1.1">
-<h6 data-number="1.1.1.3.1.1" class="anchored" data-anchor-id="examples-1"><span class="header-section-number">1.1.1.3.1.1</span> Examples</h6>
+<section id="examples-1" class="level6" data-number="1.1.1.3.2.1">
+<h6 data-number="1.1.1.3.2.1" class="anchored" data-anchor-id="examples-1"><span class="header-section-number">1.1.1.3.2.1</span> Examples</h6>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> clim_runner: ClimRecalConfig <span class="op">=</span> getfixture(<span class="st">'clim_runner'</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> runs: <span class="bu">dict</span>[<span class="bu">tuple</span>, <span class="bu">dict</span>] <span class="op">=</span> clim_runner.run_models()</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pprint(<span class="bu">tuple</span>(runs.keys()))</span>
@@ -507,11 +531,44 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a> (<span class="st">'Manchester'</span>, <span class="st">'tasmax'</span>, <span class="st">'05'</span>, <span class="st">'quantile_delta_mapping'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
-<section id="python.clim_recal.config.ClimRecalConfig.set_cpm_for_coord_alignment" class="level5" data-number="1.1.1.3.2">
-<h5 data-number="1.1.1.3.2" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalConfig.set_cpm_for_coord_alignment"><span class="header-section-number">1.1.1.3.2</span> set_cpm_for_coord_alignment</h5>
+<section id="python.clim_recal.config.ClimRecalConfig.save_config" class="level5" data-number="1.1.1.3.3">
+<h5 data-number="1.1.1.3.3" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalConfig.save_config"><span class="header-section-number">1.1.1.3.3</span> save_config</h5>
+<p><code>clim_recal.config.ClimRecalConfig.save_config(path=None, indent=2, **kwargs)</code></p>
+<p>Save config to <code>path</code> and return saved path.</p>
+<section id="examples-2" class="level6" data-number="1.1.1.3.3.1">
+<h6 data-number="1.1.1.3.3.1" class="anchored" data-anchor-id="examples-2"><span class="header-section-number">1.1.1.3.3.1</span> Examples</h6>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> clim_runner: ClimRecalConfig <span class="op">=</span> getfixture(<span class="st">'clim_runner'</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> save_path: Path <span class="op">=</span> getfixture(<span class="st">'tmp_path'</span>) <span class="op">/</span> <span class="st">'config_test.json'</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> json_path: Path <span class="op">=</span> clim_runner.save_config(path<span class="op">=</span>save_path)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> clim_config: ClimRecalConfig <span class="op">=</span> read_json_clim_recal_config(json_path)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> clim_runner <span class="op">==</span> clim_config</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="va">True</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> json_path <span class="op">==</span> save_path</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="va">True</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="python.clim_recal.config.ClimRecalConfig.set_cpm_for_coord_alignment" class="level5" data-number="1.1.1.3.4">
+<h5 data-number="1.1.1.3.4" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalConfig.set_cpm_for_coord_alignment"><span class="header-section-number">1.1.1.3.4</span> set_cpm_for_coord_alignment</h5>
 <p><code>clim_recal.config.ClimRecalConfig.set_cpm_for_coord_alignment()</code></p>
 <p>If <code>cpm_for_coord_alignment</code> is <code>None</code> use <code>self.cpm_input_path</code>.</p>
-<p>It would be more efficient to use <code>self.resample_cpm_path</code> as long as that option is used, but support cases of only</p>
+<p>It would be more efficient to use <code>self.convert_cpm_path</code> as long as that option is used, but support cases of only</p>
+</section>
+<section id="python.clim_recal.config.ClimRecalConfig.to_dict" class="level5" data-number="1.1.1.3.5">
+<h5 data-number="1.1.1.3.5" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalConfig.to_dict"><span class="header-section-number">1.1.1.3.5</span> to_dict</h5>
+<p><code>clim_recal.config.ClimRecalConfig.to_dict(force_serialise=True)</code></p>
+<p>Convert core self configs to a dict.</p>
+<section id="examples-3" class="level6" data-number="1.1.1.3.5.1">
+<h6 data-number="1.1.1.3.5.1" class="anchored" data-anchor-id="examples-3"><span class="header-section-number">1.1.1.3.5.1</span> Examples</h6>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> clim_runner: ClimRecalConfig <span class="op">=</span> getfixture(<span class="st">'clim_runner'</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> config_from_dict: ClimRecalConfig <span class="op">=</span> ClimRecalConfig(</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>...     <span class="op">**</span>clim_runner.to_dict(force_serialise<span class="op">=</span><span class="va">False</span>))</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> clim_runner <span class="op">==</span> config_from_dict</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="va">True</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> config_from_dict <span class="op">=</span> ClimRecalConfig(</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>...     <span class="op">**</span>clim_runner.to_dict(force_serialise<span class="op">=</span><span class="va">True</span>))</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> clim_runner <span class="op">==</span> config_from_dict</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="va">False</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
 </section>
 </section>
 </section>
@@ -519,8 +576,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 data-number="1.1.2" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalRunsConfigType"><span class="header-section-number">1.1.2</span> ClimRecalRunsConfigType</h3>
 <p><code>clim_recal.config.ClimRecalRunsConfigType()</code></p>
 <p>Lists of parameters to generate <code>RunConfigType</code> instances.</p>
+</section>
+</section>
+<section id="functions" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="functions"><span class="header-section-number">1.2</span> Functions</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#python.clim_recal.config.read_json_clim_recal_config">read_json_clim_recal_config</a></td>
+<td>Create a <code>ClimRecalConfig</code> from <code>path</code>.</td>
+</tr>
+</tbody>
+</table>
+<section id="python.clim_recal.config.read_json_clim_recal_config" class="level3" data-number="1.2.1">
+<h3 data-number="1.2.1" class="anchored" data-anchor-id="python.clim_recal.config.read_json_clim_recal_config"><span class="header-section-number">1.2.1</span> read_json_clim_recal_config</h3>
+<p><code>clim_recal.config.read_json_clim_recal_config(path, seq_to_tuples=True, ensure_all_dates=True, ensure_all_paths=True)</code></p>
+<p>Create a <code>ClimRecalConfig</code> from <code>path</code>.</p>
+<section id="examples-4" class="level4" data-number="1.2.1.1">
+<h4 data-number="1.2.1.1" class="anchored" data-anchor-id="examples-4"><span class="header-section-number">1.2.1.1</span> Examples</h4>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> clim_runner: ClimRecalConfig <span class="op">=</span> getfixture(<span class="st">'clim_runner'</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> save_path: Path <span class="op">=</span> getfixture(<span class="st">'tmp_path'</span>) <span class="op">/</span> <span class="st">'config.json'</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> json_path: Path <span class="op">=</span> clim_runner.save_config(path<span class="op">=</span>save_path)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> clim_config: ClimRecalConfig <span class="op">=</span> read_json_clim_recal_config(json_path)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">assert</span> clim_runner <span class="op">==</span> clim_config</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
+</section>
 </section>
 </section>
 </section>
