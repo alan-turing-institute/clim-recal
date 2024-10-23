@@ -45,7 +45,6 @@ AuthorshipType = Union[
     dict[str, dict[str, str]] | dict[str, Collection[str]]
 ]
 DropDayType = set[tuple[int, int]]
-ChangeDayType = set[tuple[int, int]]
 
 BoundsTupleType = tuple[float, float, float, float]
 """`GeoPandas` bounds: (`minx`, `miny`, `maxx`, `maxy`)."""
@@ -131,6 +130,7 @@ MONTH_DAY_XARRAY_NO_LEAP_YEAR_DROP: DropDayType = {
     (11, 25),
 }
 """A `set` of month and day tuples dropped for `xarray.day_360` non leap years."""
+
 
 # Default temporal interpolation method (used for `data-v1.0-rc.1`)
 # DEFAULT_INTERPOLATION_METHOD: str = "linear"
@@ -282,13 +282,18 @@ class RunOptions(StrEnumReprName):
 
     @classmethod
     def preferred(cls) -> tuple[str, ...]:
-        """Return the prferred runs determined by initial results.
+        """Return the preferred runs determined by initial results.
 
         Notes
         -----
         See `R/misc/Identifying_Runs.md` for motivation and results.
         """
         return (cls.FIVE.value, cls.SIX.value, cls.SEVEN.value, cls.EIGHT.value)
+
+    @classmethod
+    def preferred_and_first(cls) -> tuple[str, ...]:
+        """Return the preferred and first runs."""
+        return (cls.ONE.value, cls.FIVE.value, cls.SIX.value, cls.SEVEN.value, cls.EIGHT.value)
 
     @classmethod
     def all(cls) -> tuple[str, ...]:
