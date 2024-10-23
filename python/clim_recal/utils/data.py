@@ -131,6 +131,11 @@ MONTH_DAY_XARRAY_NO_LEAP_YEAR_DROP: DropDayType = {
 }
 """A `set` of month and day tuples dropped for `xarray.day_360` non leap years."""
 
+
+# Default temporal interpolation method (used for `data-v1.0-rc.1`)
+# DEFAULT_INTERPOLATION_METHOD: str = "linear"
+
+# Default temporal interpolation method (used for `data-v1.0-rc.2`)
 DEFAULT_INTERPOLATION_METHOD: str = "nearest"
 """Default method to infer missing estimates in a time series."""
 
