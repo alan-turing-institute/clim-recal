@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from logging import getLogger
 from pathlib import Path
-from typing import Final
+from typing import Final, Sequence
 from urllib.error import URLError
 from urllib.request import urlopen
 
@@ -32,6 +32,33 @@ HOSTING_URL: Final[str] = (
     "https://climrecal.blob.core.windows.net/analysis/cpm-median-time-series"
 )
 LOCAL_ASSETS_FOLDER: Final[Path] = Path("./assets")
+
+
+def gap_360_days(is_leap_year: bool) -> tuple[int, ...]:
+    if not is_leap_year:
+        # https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html
+        #  February 6th (36), April 19th (109), July 2nd (183), September 12th (255), November 25th (329).
+        # First missing day should be 37, not 36 since February 6th is 37
+        return tuple([37, 109, 183, 255, 329])
+    else:
+        # January 31st (31), March 31st (91), June 1st (153), July 31st (213), September 31st (275) and November 30th (335).
+        return tuple([31, 91, 153, 213, 275, 335])
+
+
+def plot_axvlines(
+    plot_obj,
+    coords: Sequence,
+    zorder: int = 1,
+    linewidth: float = 1,
+    color: str = "k",
+    ls: str = ":",
+    **kwargs,
+) -> None:
+    """Add `coords` as full vertical lines to `plot_obj`."""
+    for x_value in coords:
+        plot_obj.axvline(
+            x=x_value, zorder=zorder, linewidth=linewidth, color=color, ls=ls, **kwargs
+        )
 
 
 @dataclass
