@@ -1087,7 +1087,7 @@ def read_json_config(
     >>> from ..config import ClimRecalConfig
     >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
     >>> save_path: Path = getfixture('tmp_path') / 'config.json'
-    >>> json_path: Path = clim_runner.save_config(path=save_path)
+    >>> json_path: Path = clim_runner.write_config(path=save_path)
     >>> clim_config: ClimRecalConfig = read_json_config(
     ...     json_path, constructor=ClimRecalConfig)
     >>> assert clim_config == clim_runner
@@ -1157,6 +1157,7 @@ def dataclass_to_dict(instance, force_serialise: bool = True) -> dict[str, Any]:
     Examples
     --------
     >>> from clim_recal.config import ClimRecalConfig, VariableOptions
+    >>> from clim_recal.cli import cli
     >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
     >>> config_from_dict: ClimRecalConfig  = ClimRecalConfig(
     ...     **dataclass_to_dict(clim_runner, force_serialise=False))
@@ -1173,11 +1174,16 @@ def dataclass_to_dict(instance, force_serialise: bool = True) -> dict[str, Any]:
         assert is_dataclass(instance)
     except AssertionError:
         raise ValueError(f"'{instance.__class__.__name__}' is not a dataclass.")
+    fields_to_set_to_none: Sequence[str] = []
+    if hasattr(instance, "_skip_json_serialise"):
+        fields_to_set_to_none = instance._skip_json_serialise
     if force_serialise:
         serialiser: dict[str, Any] = asdict(instance)
         for name, value in serialiser.items():
             if isinstance(value, Path | date):
                 serialiser[name] = str(value)
+            if name in fields_to_set_to_none:
+                serialiser[name] = None
         return serialiser
     else:
         return asdict(instance)
@@ -1280,3 +1286,90 @@ def date_str_infer_end(
         raise ValueError(
             f"'date_or_str': '{date_or_str}' doesn't match 'formats': {formats}"
         )
+
+
+def check_parent_sub_paths(
+    parent_path: PathLike | None = None,
+    sub_path: PathLike | None = None,
+    data_name: str | None = None,
+) -> Path:
+    """Check combination of `input_path` and `sub_path`.
+
+    Parameters
+    ----------
+    input_path
+        Expected to be a parent path for `sub_path`.
+    sub_path
+        Expected to a path within `input_path`.
+
+    Examples
+    --------
+    >>> caplob = getfixture('caplog')
+    >>> str(check_parent_sub_paths('mount/path', 'HadsUKgrid'))
+    'mount/path/HadsUKgrid'
+    >>> str(check_parent_sub_paths('mount/path', '/HadsUKgrid'))
+    '/HadsUKgrid'
+    >>> str(check_parent_sub_paths('mount/path'))
+    'mount/path'
+    >>> str(check_parent_sub_paths(None, 'HadsUKgrid'))
+    'HadsUKgrid'
+    >>> str(check_parent_sub_paths())
+    '.'
+    """
+    final_path: Path
+    parent_path = Path(parent_path) if parent_path else parent_path
+    sub_path = Path(sub_path) if sub_path else sub_path
+    data_name_info_text: str = " for " + data_name if data_name else ""
+    if parent_path:
+        if sub_path:
+            if sub_path.is_absolute():
+                logger.info(
+                    f"Overriding 'parent_path': '{parent_path}' with absolute: '{sub_path}'"
+                )
+                final_path = sub_path
+            else:
+                final_path = parent_path / sub_path
+        else:
+            logger.debug(
+                f"No 'sub_path'{data_name_info_text}. Using 'parent_path': {parent_path}"
+            )
+            final_path = parent_path
+    else:
+        if sub_path:
+            logger.info(f"No 'parent_path', using '{sub_path}'{data_name_info_text}.")
+            final_path = sub_path
+        else:
+            logger.info(f"Neither 'parent_path' nor 'sub_path'{data_name_info_text}.")
+            final_path = Path()
+    return final_path
+
+
+def resolve_parent_sub_paths(
+    parent_path: PathLike, paths_dict: dict[str, PathLike]
+) -> dict[str, Path]:
+    """
+    Return `check_parent_sub_paths` applied to `paths_dict` with `parent_path`.
+
+    Parameters
+    ----------
+    parent_path
+        `Path` meant to serve as default parent to `paths_dict` values.
+    paths_dict
+        Label to `Path` intended to by default be subpaths of `parent_path`.
+
+    Examples
+    --------
+    >>> caplob = getfixture('caplog')
+    >>> pprint(resolve_parent_sub_paths(
+    ...     'mount/path', {'hads': 'HadsUKgrid', 'cpm': 'UKCP2.2'}))
+    {'cpm': ...Path('mount/path/UKCP2.2'),
+     'hads': ...Path('mount/path/HadsUKgrid')}
+    >>> pprint(resolve_parent_sub_paths(
+    ...     'mount/path', {'hads': '/HadsUKgrid', 'cpm': ''}))
+    {'cpm': ...Path('mount/path'),
+     'hads': ...Path('/HadsUKgrid')}
+    """
+    return {
+        label: check_parent_sub_paths(parent_path, path, label)
+        for label, path in paths_dict.items()
+    }

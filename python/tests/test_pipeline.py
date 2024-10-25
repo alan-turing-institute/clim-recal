@@ -42,6 +42,7 @@ def test_main(
     test_runs_output_path: Path,
     multiprocess: bool,
     regions: str | tuple[str] | None,
+    is_data_mounted: bool,
     capsys,
 ) -> None:
     """Test running pipeline configurations."""
@@ -62,9 +63,10 @@ def test_main(
         convert_stop_index=1,
         cpus=2,
         multiprocess=multiprocess,
-        cpm_kwargs=dict(_allow_check_fail=True),
-        hads_kwargs=dict(_allow_check_fail=True),
+        cpm_kwargs=dict(_allow_check_fail=True) if not is_data_mounted else {},
+        hads_kwargs=dict(_allow_check_fail=True) if not is_data_mounted else {},
         local_dated_results_path_prefix="-".join(variables),
+        _skip_checks=True if not is_data_mounted else False,
     )
     captured = capsys.readouterr()
     assert f"variables_count={len(variables)}" in captured.out

@@ -134,6 +134,7 @@ New approach:
 
 from datetime import date
 from os import PathLike
+from pathlib import Path
 from typing import Final, Sequence
 
 from xarray.core.types import T_Dataset
@@ -151,26 +152,35 @@ from .config import (
     RunOptions,
     VariableOptions,
 )
-from .convert import RAW_CPM_PATH, RAW_HADS_PATH, CPMConvert, HADsConvert
+from .convert import CPMConvert, HADsConvert
 from .crop import CPMRegionCropper, HADsRegionCropper
 from .utils.core import console
 from .utils.data import (
+    CLIMATE_DATA_MOUNT_PATH,
     CPM_END_DATE,
     CPM_NAME,
+    CPM_RAW_FOLDER,
     CPM_START_DATE,
     HADS_END_DATE,
     HADS_NAME,
+    HADS_RAW_FOLDER,
     HADS_START_DATE,
+    RAW_DATA_MOUNT_PATH,
 )
 
 # REPROJECTION_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_one.sh")
 # REPROJECTION_WRAPPER_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_all.sh")
+CURRENT_MOUNT_RESULTS_PATH: Final[Path] = (
+    CLIMATE_DATA_MOUNT_PATH / "nearest_2024-10-14/"
+)
+CURRENT_CONVERTED_RESULTS_PATH: Final[Path] = CURRENT_MOUNT_RESULTS_PATH / "resample"
 EXECUTE_INFO_TEXT: Final[str] = "Add '--execute' to run."
 
 
 def get_config(
-    hads_input_path: PathLike = RAW_HADS_PATH,
-    cpm_input_path: PathLike = RAW_CPM_PATH,
+    input_path: PathLike = RAW_DATA_MOUNT_PATH,
+    hads_path: PathLike = HADS_RAW_FOLDER,
+    cpm_path: PathLike = CPM_RAW_FOLDER,
     output_path: PathLike = DEFAULT_OUTPUT_PATH,
     cpm: bool = True,
     hads: bool = True,
@@ -186,13 +196,13 @@ def get_config(
     cpus: int | None = None,
     multiprocess: bool = False,
     convert: bool = True,
+    crop: bool = True,
     hads_start_date: date = HADS_START_DATE,
     hads_end_date: date = HADS_END_DATE,
     cpm_start_date: date = CPM_START_DATE,
     cpm_end_date: date = CPM_END_DATE,
     convert_start_index: int = 0,
     convert_stop_index: int | None = None,
-    crop: bool = True,
     crop_start_index: int = 0,
     crop_stop_index: int | None = None,
     total: int | None = None,
@@ -246,10 +256,13 @@ def get_config(
         runs = tuple(runs)
 
     return ClimRecalConfig(
-        cpm_input_path=cpm_input_path,
-        hads_input_path=hads_input_path,
+        input_path=input_path,
+        hads_path=hads_path,
+        cpm_path=cpm_path,
         output_path=output_path,
         clim_types=clim_types,
+        convert=convert,
+        crop=crop,
         variables=variables,
         regions=regions,
         methods=methods,
@@ -312,13 +325,18 @@ def run_convert(
 
 def run_crop(
     config: ClimRecalConfig | None,
+    input_path: PathLike = CURRENT_CONVERTED_RESULTS_PATH,
+    hads_path: PathLike = HADS_NAME,
+    cpm_path: PathLike = CPM_NAME,
     print_range_length: int | None = 5,
     execute: bool = False,
     pipeline: bool = False,
     **kwargs,
 ) -> None:
     """Run `crop` parts of passed `config`."""
-    config = config or get_config(**kwargs)
+    config = config or get_config(
+        input_path=input_path, hads_path=hads_path, cpm_path=cpm_path, **kwargs
+    )
     if config.regions:
         if config.include_cpm:
             console.print(config.cpm_crop_manager)
@@ -359,8 +377,9 @@ def run_crop(
 
 def main(
     execute: bool = False,
-    hads_input_path: PathLike = RAW_HADS_PATH,
-    cpm_input_path: PathLike = RAW_CPM_PATH,
+    input_path: PathLike = RAW_DATA_MOUNT_PATH,
+    hads_path: PathLike = HADS_RAW_FOLDER,
+    cpm_path: PathLike = CPM_RAW_FOLDER,
     output_path: PathLike = DEFAULT_OUTPUT_PATH,
     hads: bool = True,
     cpm: bool = True,
@@ -440,7 +459,7 @@ def main(
     ...      output_path=test_runs_output_path,
     ... )
     'set_cpm_for_coord_alignment' for 'HADs' not speficied.
-    Defaulting to 'self.cpm_input_path': '...'
+    Defaulting to: '...'
     clim-recal pipeline configurations:
     <ClimRecalConfig(variables_count=2, runs_count=1,
                      regions_count=1, methods_count=1,
@@ -469,8 +488,9 @@ def main(
     Add '--execute' to run.
     """
     config: ClimRecalConfig = get_config(
-        hads_input_path=hads_input_path,
-        cpm_input_path=cpm_input_path,
+        input_path=input_path,
+        hads_path=hads_path,
+        cpm_path=cpm_path,
         output_path=output_path,
         hads=hads,
         cpm=cpm,

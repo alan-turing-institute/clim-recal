@@ -9,16 +9,19 @@ from typing import Any, Final, Sequence, TypedDict
 
 from osgeo import gdal
 from tqdm import TqdmExperimentalWarning, tqdm
+from typer import Exit, Typer
 
-from .convert import RAW_CPM_PATH, RAW_HADS_PATH, CPMConvertManager, HADsConvertManager
+from .convert import CPMConvertManager, HADsConvertManager
 from .crop import CPMRegionCropManager, HADsRegionCropManager
 from .debiasing.debias_wrapper import BaseRunConfig, RunConfig, RunConfigType
 from .utils.core import (
     console,
     dataclass_to_dict,
+    ensure_all_attr_dates,
     ensure_all_attr_paths,
     product_dict,
     read_json_config,
+    resolve_parent_sub_paths,
     results_path,
     save_config,
 )
@@ -26,17 +29,22 @@ from .utils.data import (
     CPM_END_DATE,
     CPM_NAME,
     CPM_OUTPUT_PATH,
+    CPM_RAW_FOLDER,
     CPM_START_DATE,
     HADS_AND_CPM,
     HADS_END_DATE,
     HADS_NAME,
     HADS_OUTPUT_PATH,
+    HADS_RAW_FOLDER,
     HADS_START_DATE,
+    RAW_DATA_MOUNT_PATH,
     ClimDataTypeTuple,
     MethodOptions,
     RegionOptions,
     RunOptions,
     VariableOptions,
+    check_config_dates,
+    check_paths_required,
 )
 
 logger = getLogger(__name__)
@@ -113,7 +121,7 @@ class ClimRecalConfig(BaseRunConfig):
     ...     output_path=test_runs_output_path,
     ...     cpus=1)
     'set_cpm_for_coord_alignment' for 'HADs' not speficied.
-    Defaulting to 'self.cpm_input_path': '.../ClimateData/Raw/UKCP2.2'
+    Defaulting to: '.../ClimateData/Raw/UKCP2.2'
     >>> run_config
     <ClimRecalConfig(variables_count=1, runs_count=1, regions_count=2,
                      methods_count=1, cpm_folders_count=1,
@@ -131,8 +139,9 @@ class ClimRecalConfig(BaseRunConfig):
     multiprocess: bool = False
     clim_types: ClimDataTypeTuple = HADS_AND_CPM
     cpus: int | None = DEFAULT_CPUS
-    hads_input_path: PathLike = RAW_HADS_PATH
-    cpm_input_path: PathLike = RAW_CPM_PATH
+    input_path: PathLike = RAW_DATA_MOUNT_PATH
+    hads_path: PathLike = HADS_RAW_FOLDER
+    cpm_path: PathLike = CPM_RAW_FOLDER
     output_path: PathLike = DEFAULT_OUTPUT_PATH
     convert_folder: PathLike = DEFAULT_CONVERT_FOLDER
     crops_folder: PathLike = DEFAULT_CROPS_FOLDER
@@ -159,10 +168,20 @@ class ClimRecalConfig(BaseRunConfig):
     cpm_for_coord_alignment: PathLike | None = None
     process_cmp_for_coord_alignment: bool = False
     cpm_for_coord_alignment_path_converted: bool = False
+    include_save_config: bool = True
     config_save_path: Path | None = None
     log_file: bool = True
     file_log_level: int = DEBUG
     debug_mode: bool = False
+    cli: Typer | None = None
+    _skip_checks: bool = False
+    _skip_json_serialise: tuple[str, ...] = ("cli",)
+
+    def resolve_input_path_dict(self) -> dict[str, Path]:
+        """Resolve input_paths from `input_path` and `cpm` and `hads` `path`."""
+        return resolve_parent_sub_paths(
+            self.input_path, {HADS_NAME: self.hads_path, CPM_NAME: self.cpm_path}
+        )
 
     def to_dict(self, force_serialise: bool = True) -> dict[str, Any]:
         """Convert core self configs to a dict.
@@ -174,6 +193,7 @@ class ClimRecalConfig(BaseRunConfig):
         ...     **clim_runner.to_dict(force_serialise=False))
         >>> clim_runner == config_from_dict
         True
+        >>> clim_runner._skip_checks = True
         >>> config_from_dict = ClimRecalConfig(
         ...     **clim_runner.to_dict(force_serialise=True))
         >>> clim_runner == config_from_dict
@@ -181,7 +201,7 @@ class ClimRecalConfig(BaseRunConfig):
         """
         return dataclass_to_dict(self, force_serialise=force_serialise)
 
-    def save_config(
+    def write_config(
         self, path: PathLike | None = None, indent: int = 2, **kwargs
     ) -> Path:
         """Save config to `path` and return saved path.
@@ -190,7 +210,7 @@ class ClimRecalConfig(BaseRunConfig):
         --------
         >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
         >>> save_path: Path = getfixture('tmp_path') / 'config_test.json'
-        >>> json_path: Path = clim_runner.save_config(path=save_path)
+        >>> json_path: Path = clim_runner.write_config(path=save_path)
         >>> clim_config: ClimRecalConfig = read_json_clim_recal_config(json_path)
         >>> clim_runner == clim_config
         True
@@ -324,7 +344,64 @@ class ClimRecalConfig(BaseRunConfig):
 
     def ensure_all_paths(self) -> None:
         """Ensure `PathLike` attributes are converted to `Path` type."""
-        ensure_all_attr_paths(self)
+        if not self._skip_checks:
+            ensure_all_attr_paths(self)
+            check_paths_required(
+                self.include_hads,
+                self.include_cpm,
+                self.input_path,
+                self.hads_path,
+                self.cpm_path,
+            )
+
+    def check_dates(self) -> None:
+        """Check valid date configurations."""
+        ensure_all_attr_dates(self)
+        try:
+            if self.include_hads:
+                if not self._skip_checks:
+                    check_config_dates(
+                        self.hads_start_date,
+                        self.hads_end_date,
+                        start_date_name="hads_start_date",
+                        end_date_name="hads_end_date",
+                        min_start_date=HADS_START_DATE,
+                        max_end_date=HADS_END_DATE,
+                    )
+            if self.include_cpm:
+                if not self._skip_checks:
+                    check_config_dates(
+                        self.cpm_start_date,
+                        self.cpm_end_date,
+                        start_date_name="cpm_start_date",
+                        end_date_name="cpm_end_date",
+                        min_start_date=CPM_START_DATE,
+                        max_end_date=CPM_END_DATE,
+                    )
+        except ValueError as error:
+            if self.cli:
+                console.print(error)
+                raise Exit()
+            else:
+                raise error
+
+    def apply_debug_settings(self) -> None:
+        """Set configuration for debug."""
+        if self.debug_mode:
+            gdal.UseExceptions()
+        else:
+            gdal.DontUseExceptions()
+            if self.cli:
+                self.cli.pretty_exceptions_show_locals = False
+
+    def set_config_save_path(self) -> None:
+        if self.include_save_config and not self.config_save_path:
+            self.config_save_path = results_path(
+                name="run",
+                path=self.exec_path,
+                extension="json",
+                mkdir=True,
+            )
 
     def __post_init__(self) -> None:
         """Initiate related `HADs` and `CPM` managers.
@@ -337,12 +414,17 @@ class ClimRecalConfig(BaseRunConfig):
         """
         if self.log_file:
             self._init_logger()
-        gdal.UseExceptions() if self.debug_mode else gdal.DontUseExceptions()
-        self.ensure_all_paths()
+        self.apply_debug_settings()
+        input_path_dict: dict[str, Path] = self.resolve_input_path_dict()
+        if not self._skip_checks:
+            self.ensure_all_paths()
+            self.check_dates()
+        self.set_config_save_path()
+        self.write_config(self.config_save_path)
         if self.convert:
             if self.include_cpm:
                 self.cpm_manager = CPMConvertManager(
-                    input_paths=self.cpm_input_path,
+                    input_paths=input_path_dict[CPM_NAME],
                     variables=self.variables,
                     runs=self.runs,
                     output_paths=self.convert_cpm_path,
@@ -355,9 +437,9 @@ class ClimRecalConfig(BaseRunConfig):
                     **self.cpm_kwargs,
                 )
             if self.include_hads:
-                self.set_cpm_for_coord_alignment()
+                self.set_cpm_for_coord_alignment(input_path_dict[CPM_NAME])
                 self.hads_manager = HADsConvertManager(
-                    input_paths=self.hads_input_path,
+                    input_paths=input_path_dict[HADS_NAME],
                     variables=self.variables,
                     output_paths=self.convert_hads_path,
                     start_date=self.hads_start_date,
@@ -373,7 +455,11 @@ class ClimRecalConfig(BaseRunConfig):
         if self.crop and self.regions:
             if self.include_cpm:
                 self.cpm_crop_manager = CPMRegionCropManager(
-                    input_paths=self.cpm_output_folder,
+                    input_paths=(
+                        self.cpm_output_folder
+                        if self.convert
+                        else input_path_dict[CPM_NAME]
+                    ),
                     crop_regions=tuple(self.regions),
                     variables=self.variables,
                     runs=self.runs,
@@ -389,7 +475,11 @@ class ClimRecalConfig(BaseRunConfig):
                 )
             if self.include_hads:
                 self.hads_crop_manager = HADsRegionCropManager(
-                    input_paths=self.hads_output_folder,
+                    input_paths=(
+                        self.hads_output_folder
+                        if self.convert
+                        else input_path_dict[HADS_NAME]
+                    ),
                     crop_regions=tuple(self.regions),
                     variables=self.variables,
                     output_paths=self.cropped_hads_path,
@@ -407,23 +497,23 @@ class ClimRecalConfig(BaseRunConfig):
         if self.cpus == None or (self.total_cpus and self.cpus >= self.total_cpus):
             self.cpus = 1 if not self.total_cpus else self.total_cpus - 1
 
-    def set_cpm_for_coord_alignment(self) -> None:
+    def set_cpm_for_coord_alignment(self, cpm_input_path: Path | None = None) -> None:
         """If `cpm_for_coord_alignment` is `None` use `self.cpm_input_path`.
 
         It would be more efficient to use `self.convert_cpm_path` as
-        long as that option is used, but support cases of only
+        if that option is available.
         """
         if not self.cpm_for_coord_alignment:
-            if self.cpm_input_path:
+            if cpm_input_path:
                 console.print(
                     "'set_cpm_for_coord_alignment' for 'HADs' not speficied.\n"
-                    f"Defaulting to 'self.cpm_input_path': '{self.cpm_input_path}'"
+                    f"Defaulting to: '{cpm_input_path}'"
                 )
-                self.cpm_for_coord_alignment = self.cpm_input_path
+                self.cpm_for_coord_alignment = cpm_input_path
             else:
                 raise ValueError(
                     f"Neither required 'self.cpm_for_coord_alignment' nor backup "
-                    f"'self.cpm_input_path' provided for {self}"
+                    f"'cpm_input_path' provided for {self}"
                 )
 
     def __repr__(self) -> str:
@@ -608,7 +698,7 @@ def read_json_clim_recal_config(
     --------
     >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
     >>> save_path: Path = getfixture('tmp_path') / 'config.json'
-    >>> json_path: Path = clim_runner.save_config(path=save_path)
+    >>> json_path: Path = clim_runner.write_config(path=save_path)
     >>> clim_config: ClimRecalConfig = read_json_clim_recal_config(json_path)
     >>> assert clim_runner == clim_config
     """

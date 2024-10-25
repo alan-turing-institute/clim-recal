@@ -12,7 +12,7 @@ from itertools import islice
 from logging import getLogger
 from os import PathLike, cpu_count
 from pathlib import Path
-from typing import Any, Callable, Final, Iterable, Iterator, Literal, Sequence
+from typing import Any, Callable, Final, Iterable, Iterator, Sequence
 
 import dill as pickle
 import rioxarray  # nopycln: import
@@ -23,11 +23,7 @@ from xarray.core.types import T_Dataset
 
 from clim_recal.debiasing.debias_wrapper import VariableOptions
 
-from .utils.core import (
-    _get_source_path,
-    climate_data_mount_path,
-    dates_path_to_date_tuple,
-)
+from .utils.core import _get_source_path, dates_path_to_date_tuple
 from .utils.data import (
     CONVERT_OUTPUT_PATH,
     CPM_END_DATE,
@@ -42,14 +38,18 @@ from .utils.data import (
     HADS_SUB_PATH,
     HADS_XDIM,
     HADS_YDIM,
+    NETCDF_OR_TIF,
+    RAW_CPM_PATH,
+    RAW_CPM_TASMAX_PATH,
+    RAW_HADS_PATH,
+    RAW_HADS_TASMAX_PATH,
     ClimDataType,
     RunOptions,
     VariableOptions,
 )
-from .utils.gdal_formats import TIF_EXTENSION_STR
+from .utils.gdal_formats import NETCDF_EXTENSION_STR
 from .utils.xarray import (
     BRITISH_NATIONAL_GRID_EPSG,
-    NETCDF_EXTENSION_STR,
     _write_and_or_return_results,
     cpm_reproject_with_standard_calendar,
     data_path_to_date_range,
@@ -65,17 +65,7 @@ logger = getLogger(__name__)
 DropDayType = set[tuple[int, int]]
 ChangeDayType = set[tuple[int, int]]
 
-CLIMATE_DATA_MOUNT_PATH: Path = climate_data_mount_path()
-
 CFCalendarSTANDARD: Final[str] = "standard"
-
-RAW_HADS_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/HadsUKgrid"
-RAW_CPM_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/UKCP2.2"
-RAW_HADS_TASMAX_PATH: Final[PathLike] = RAW_HADS_PATH / "tasmax/day"
-RAW_CPM_TASMAX_PATH: Final[PathLike] = RAW_CPM_PATH / "tasmax/01/latest"
-
-
-NETCDF_OR_TIF = Literal[TIF_EXTENSION_STR, NETCDF_EXTENSION_STR]
 
 
 def reproject_standard_calendar_file_name(path: Path) -> Path:

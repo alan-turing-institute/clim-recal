@@ -516,6 +516,7 @@ def uk_rotated_grid_bounds() -> BoundsTupleType:
 def clim_runner(
     tmp_path: Path,
     local_cache: bool,
+    local_cache_path: Path,
     local_cache_fixtures: LocalCachesManager,
     test_runs_output_path: PathLike,
     local_hads_cache_path: PathLike,
@@ -538,20 +539,22 @@ def clim_runner(
             regions=regions,
             output_path=test_runs_output_path,
             cpm_for_coord_alignment=tasmax_cpm_1980_raw_path,
+            include_save_config=False,
         )
-    except (FileExistsError, AssertionError):
+    except (ValueError, FileExistsError, AssertionError):
         return ClimRecalConfig(
             preprocess_out_folder=tmp_path,
             regions=regions,
+            input_path=local_cache_path,
             output_path=test_runs_output_path,
-            hads_input_path=local_hads_cache_path,
-            cpm_input_path=local_cpm_cache_path,
             # Todo: refactor to use caching to speed up runs
+            _skip_checks=True,
             cpm_kwargs=dict(_allow_check_fail=True),
             hads_kwargs=dict(_allow_check_fail=True),
             cpm_for_coord_alignment=local_cache_fixtures[
                 "tasmax_cpm_1980_converted"
             ].local_cache_path,
+            include_save_config=False,
         )
 
 

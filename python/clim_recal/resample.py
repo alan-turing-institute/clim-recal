@@ -488,15 +488,12 @@ class CPMResampler(ResamblerBase):
     ...     input_file_extension=TIF_EXTENSION_STR,
     ... )
     >>> cpm_resampler
-    <CPMResampler(...count=100,...
-        ...input_path='.../tasmax/05/latest',...
+    <CPMResampler(...count=2,...
+        ...input_path='.../tasmax/01/latest',...
         ...output_path='.../test-run-results_..._.../cpm')>
     >>> pprint(cpm_resampler.input_files)
-    (...Path('.../tasmax/05/latest/tasmax_...-cpm_uk_2.2km_05_day_19801201-19811130.tif'),
-     ...Path('.../tasmax/05/latest/tasmax_...-cpm_uk_2.2km_05_day_19811201-19821130.tif'),
-     ...
-     ...Path('.../tasmax/05/latest/tasmax_...-cpm_uk_2.2km_05_day_20791201-20801130.tif'))
-
+    (...Path('.../tasmax/01/latest/tasmax_..._19821201-19831130geotif.tif'),
+     ...Path('.../tasmax/01/latest/tasmax_..._19901201-19911130geotif.tif'))
     """
 
     input_path: PathLike | None = RAW_CPM_TASMAX_PATH

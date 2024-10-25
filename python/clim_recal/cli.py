@@ -1,4 +1,5 @@
 from datetime import datetime
+from logging import getLogger
 from os import cpu_count
 from pathlib import Path
 from typing import Annotated, Final, Optional
@@ -14,42 +15,62 @@ from .config import (
     RunOptions,
     VariableOptions,
 )
-from .convert import RAW_CPM_PATH, RAW_HADS_PATH
-from .pipeline import main, run_convert, run_crop
+from .pipeline import CURRENT_CONVERTED_RESULTS_PATH, main, run_convert, run_crop
 from .utils.core import CLI_DATE_FORMATS, date_str_infer_end
 from .utils.data import (
     CPM_END_DATETIME,
+    CPM_NAME,
+    CPM_RAW_FOLDER,
     CPM_START_DATETIME,
     HADS_END_DATETIME,
+    HADS_NAME,
+    HADS_RAW_FOLDER,
     HADS_START_DATETIME,
+    RAW_DATA_MOUNT_PATH,
 )
 
-clim_recal = typer.Typer()
+logger = getLogger(__name__)
+
+cli = typer.Typer()
 
 CPU_COUNT: Final[int | None] = cpu_count()
 MAX_CPUS: Final[int | None] = CPU_COUNT if CPU_COUNT else DEFAULT_CPUS
 
+cli.pretty_exceptions_show_locals = False
 
-@clim_recal.command()
+
+def set_cli_debug() -> None:
+    """Set into debug configuration mode."""
+    cli.pretty_exceptions_show_locals = True
+
+
+@cli.command()
 def pipeline(
-    hads_input_path: Annotated[
+    input_path: Annotated[
         Optional[Path],
         typer.Option(
-            "--hads-input-path",
-            "-d",
+            "--input-path",
+            file_okay=True,
+            dir_okay=True,
+            exists=True,
+        ),
+    ] = RAW_DATA_MOUNT_PATH,
+    hads_path: Annotated[
+        Optional[Path],
+        typer.Option(
+            "--hads-path",
             file_okay=True,
             dir_okay=True,
         ),
-    ] = Path(RAW_HADS_PATH),
-    cpm_input_path: Annotated[
+    ] = Path(HADS_RAW_FOLDER),
+    cpm_path: Annotated[
         Optional[Path],
         typer.Option(
-            "--cpm-input-path",
-            "-o",
+            "--cpm-path",
             file_okay=True,
             dir_okay=True,
         ),
-    ] = Path(RAW_CPM_PATH),
+    ] = Path(CPM_RAW_FOLDER),
     output_path: Annotated[
         Path,
         typer.Option(
@@ -137,11 +158,15 @@ def pipeline(
     cpm_for_coord_alignment: Annotated[
         Optional[Path], typer.Option("--converted-cpm-for-hads")
     ] = None,
+    debug_mode: Annotated[bool, typer.Option("--debug")] = False,
 ) -> ClimRecalRunResultsType | None:
     """Align and crop UK climate measures and projections and run debias methods."""
+    if debug_mode:
+        set_cli_debug()
     results: ClimRecalRunResultsType | None = main(
-        hads_input_path=hads_input_path,
-        cpm_input_path=cpm_input_path,
+        input_path=input_path,
+        hads_path=hads_path,
+        cpm_path=cpm_path,
         variables=variable,
         runs=run,
         regions=region if crop else None,
@@ -171,31 +196,40 @@ def pipeline(
         default_runs=default_runs,
         all_methods=all_methods,
         cpm_for_coord_alignment=cpm_for_coord_alignment,
+        cli=cli,
+        debug_mode=debug_mode,
     )
     # print(results)
     return results
 
 
-@clim_recal.command()
+@cli.command()
 def convert(
-    hads_input_path: Annotated[
+    input_path: Annotated[
         Optional[Path],
         typer.Option(
-            "--hads-input-path",
-            "-d",
+            "--input-path",
+            file_okay=True,
+            dir_okay=True,
+            exists=True,
+        ),
+    ] = RAW_DATA_MOUNT_PATH,
+    hads_path: Annotated[
+        Optional[Path],
+        typer.Option(
+            "--hads-path",
             file_okay=True,
             dir_okay=True,
         ),
-    ] = Path(RAW_HADS_PATH),
-    cpm_input_path: Annotated[
+    ] = Path(HADS_RAW_FOLDER),
+    cpm_path: Annotated[
         Optional[Path],
         typer.Option(
-            "--cpm-input-path",
-            "-o",
+            "--cpm-path",
             file_okay=True,
             dir_okay=True,
         ),
-    ] = Path(RAW_CPM_PATH),
+    ] = Path(CPM_RAW_FOLDER),
     output_path: Annotated[
         Path,
         typer.Option(
@@ -265,12 +299,17 @@ def convert(
     cpm_for_coord_alignment: Annotated[
         Optional[Path], typer.Option("--converted-cpm-for-hads")
     ] = None,
+    debug_mode: Annotated[bool, typer.Option("--debug")] = False,
 ) -> None:
     """Convert and align HadsUK climate measures and UKCPM projections."""
+    if debug_mode:
+        set_cli_debug()
+
     run_convert(
         config=None,
-        hads_input_path=hads_input_path,
-        cpm_input_path=cpm_input_path,
+        input_path=input_path,
+        hads_path=hads_path,
+        cpm_path=cpm_path,
         variables=variable,
         runs=run,
         regions=None,
@@ -287,7 +326,7 @@ def convert(
         cpm_end_date=end_date if end_date else cpm_end_date,
         convert_start_index=start_index,
         convert_stop_index=stop_index,
-        crop_start_index=start_index,  # keeping crop in case interactive
+        crop_start_index=start_index,  # keeping crop in case cli interactive
         crop_stop_index=stop_index,
         total=total,
         calc_start_index=calc_start_index,
@@ -299,29 +338,38 @@ def convert(
         default_runs=default_runs,
         all_methods=False,
         cpm_for_coord_alignment=cpm_for_coord_alignment,
+        cli=cli,
+        debug_mode=debug_mode,
     )
 
 
-@clim_recal.command()
+@cli.command()
 def crop(
-    hads_input_path: Annotated[
+    input_path: Annotated[
         Optional[Path],
         typer.Option(
-            "--hads-input-path",
-            "-d",
+            "--input-path",
+            file_okay=True,
+            dir_okay=True,
+            exists=True,
+        ),
+    ] = CURRENT_CONVERTED_RESULTS_PATH,
+    hads_path: Annotated[
+        Optional[Path],
+        typer.Option(
+            "--hads-path",
             file_okay=True,
             dir_okay=True,
         ),
-    ] = Path(RAW_HADS_PATH),
-    cpm_input_path: Annotated[
+    ] = Path(HADS_NAME),
+    cpm_path: Annotated[
         Optional[Path],
         typer.Option(
-            "--cpm-input-path",
-            "-o",
+            "--cpm-path",
             file_okay=True,
             dir_okay=True,
         ),
-    ] = Path(RAW_CPM_PATH),
+    ] = Path(CPM_NAME),
     output_path: Annotated[
         Path,
         typer.Option(
@@ -392,12 +440,16 @@ def crop(
     ] = None,
     cpus: Annotated[int, typer.Option("--cpus", min=1, max=MAX_CPUS)] = DEFAULT_CPUS,
     multiprocess: Annotated[bool, typer.Option("--use-multiprocessing")] = False,
+    debug_mode: Annotated[bool, typer.Option("--debug")] = False,
 ) -> None:
     """Crop converted HADs and CPM data by region."""
+    if debug_mode:
+        set_cli_debug()
     run_crop(
         config=None,
-        hads_input_path=hads_input_path,
-        cpm_input_path=cpm_input_path,
+        input_path=input_path,
+        hads_path=hads_path,
+        cpm_path=cpm_path,
         variables=variable,
         runs=run,
         regions=region,
@@ -413,7 +465,7 @@ def crop(
         hads_end_date=end_date if end_date else hads_end_date,
         cpm_start_date=start_date.date() if start_date else cpm_start_date.date(),
         cpm_end_date=end_date if end_date else cpm_end_date,
-        convert_start_index=start_index,  # Keeping convert if interactive
+        convert_start_index=start_index,  # Keeping convert if cli interactive
         convert_stop_index=stop_index,
         crop_start_index=start_index,
         crop_stop_index=stop_index,
@@ -425,4 +477,6 @@ def crop(
         all_regions=all_regions,
         all_runs=all_runs,
         default_runs=default_runs,
+        cli=cli,
+        debug_mode=debug_mode,
     )
