@@ -1,0 +1,21 @@
+---
+title: "**Workflow**"
+output:
+  github_document
+---
+
+Workflow diagram
+
+<!--
+Note a syntax error is raised if referencing the `mermaid` file in `docs/assets/`.
+Ideally this gets resolved to simply import that file here like so:
+```{mermaid}
+{% include assets/pipeline.mermaid %}
+````
+-->
+
+```{mermaid}
+%%| label: fig-outdated-workflow
+%%| fig-cap: "A diagram of the previous workflow."
+%%| file: assets/pipeline.mermaid
+```
