@@ -26,6 +26,10 @@ project:
 toc: True
 number-sections: True
 
+theme:
+  light: flatly
+  dark: darkly
+
 
 # tell quarto to read the generated sidebar
 metadata-files:
