@@ -18,7 +18,6 @@ import dill as pickle
 import rioxarray  # nopycln: import
 from rich import print
 from rich.progress import Progress
-from xarray import Dataset
 from xarray.core.types import T_Dataset
 
 from clim_recal.debiasing.debias_wrapper import VariableOptions
@@ -95,6 +94,8 @@ class IterCalcBase:
     start_date: date | None = None
     end_date: date | None = None
     _result_paths: dict[PathLike, PathLike | None] = field(default_factory=dict)
+    _calc_method_name: str = "to_reprojection"
+    _calc_method_description: str = "Converting..."
     _iter_calc_method_name: str = "range_to_reprojection"
 
     def __post_init__(self) -> None:
@@ -127,7 +128,6 @@ class IterCalcBase:
 
     def __iter__(self) -> Iterator[Path] | None:
         if self.file_dates and isinstance(self.file_dates, Iterable):
-            # for file_path in self.input_files[self.start_index : self.stop_index]:
             for file_path in tuple(self.file_dates)[self.start_index : self.stop_index]:
                 yield Path(file_path)
         else:
@@ -137,10 +137,8 @@ class IterCalcBase:
         if not self.file_dates:
             return None
         elif isinstance(key, int):
-            # return Path(self.input_files[key])
             return Path(tuple(self.file_dates)[key])
         elif isinstance(key, slice):
-            # return tuple(Path(path) for path in self.input_files[key])
             return tuple(Path(path) for path in tuple(self.file_dates)[key])
         else:
             raise IndexError(f"Can only index with 'int', not: '{key}'")
@@ -171,11 +169,6 @@ class IterCalcBase:
             if self.end_date
             else self.max_end_date
         )
-        # else:
-        #     self.end_date = tuple(self.max_file_dates.values())[-1][1]
-        # self.start_date = self.start_date or tuple(self.max_file_dates.values())[0][0]
-        # self.start_date = max(self.start_date, )
-        # self.end_date = self.end_date or tuple(self.max_file_dates.values())[-1][1]
         self.file_dates: dict[Path, tuple[date, date]] = OrderedDict(
             (path, (start_date, end_date))
             for path, (start_date, end_date) in self.max_file_dates.items()
@@ -240,11 +233,11 @@ class IterCalcBase:
     ) -> Iterator[Path | T_Dataset]:
         return progress_wrapper(
             self,
-            "to_reprojection",
+            self._calc_method_name,
             start=start,
             stop=stop,
             step=step,
-            description="Resampling...",
+            description=self._calc_method_description,
             override_export_path=override_export_path,
             source_to_index=source_to_index,
             return_path=return_path,
@@ -253,6 +246,7 @@ class IterCalcBase:
             description_func=description_func,
             description_kwargs={"return_type": "string"},
             progress_instance=progress_instance,
+            skip_progress_kwargs_method_name=self._calc_method_name,
             **kwargs,
         )
 
@@ -420,7 +414,6 @@ class CPMConvert(IterCalcBase):
 
     input_path: PathLike | None = RAW_CPM_TASMAX_PATH
     output_path: PathLike = CONVERT_OUTPUT_PATH / CPM_OUTPUT_PATH
-    prior_time_series: PathLike | Dataset | None = None
 
     @property
     def cpm_variable_name(self) -> str:
@@ -489,6 +482,7 @@ class IterCalcManagerBase:
     config_default_kwargs: dict[str, Any] = field(default_factory=dict)
     calc_class: type[HADsConvert | CPMConvert] | None = None
     cpus: int | None = None
+    _configs_method_name: str = "yield_configs"
     _input_path_dict: dict[Path, str] = field(default_factory=dict)
     _output_path_dict: dict[PathLike, VariableOptions | str] = field(
         default_factory=dict
@@ -674,10 +668,8 @@ class IterCalcManagerBase:
         self,
         multiprocess: bool = False,
         cpus: int | None = None,
-        return_converters: bool = False,
+        return_instances: bool = False,
         return_path: bool = True,
-        # description_func: Callable[..., str] | None = path_parent_types,
-        # description_func: Callable[[str], str] | None = lambda x: str(file_name_to_start_end_dates(x)),
         **kwargs,
     ) -> tuple[IterCalcBase, ...] | list[T_Dataset | Path]:
         """Run all converter configurations
@@ -688,7 +680,7 @@ class IterCalcManagerBase:
             If `True` run parameters in `convert_configs` with `multiprocess_execute`.
         cpus
             Number of `cpus` to pass to `multiprocess_execute`.
-        return_converters
+        return_instances
             Return instances of generated `HADsConvert` or
             `CPMConvert`, or return the `results` of each
             `execute` call.
@@ -698,14 +690,14 @@ class IterCalcManagerBase:
             Parameters to path to sampler `execute` calls.
         """
         data_type: ClimDataType = (
-            HADS_NAME if type(self).__name__ == "HADsConvertManager" else CPM_NAME
+            HADS_NAME if HADS_NAME in type(self).__name__ else CPM_NAME
         )
         return execute_configs(
             self,
-            configs_method="yield_configs",
+            configs_method=self._configs_method_name,
             multiprocess=multiprocess,
             cpus=cpus,
-            return_instances=return_converters,
+            return_instances=return_instances,
             return_path=return_path,
             data_type=data_type,
             description_iter_func=path_parent_types,

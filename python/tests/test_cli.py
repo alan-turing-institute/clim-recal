@@ -18,6 +18,11 @@ def test_cli_help(command: str) -> None:
             assert "Glasgow|Manc" in result.stdout
 
 
-def test_crop_cli() -> None:
+@pytest.mark.mount
+def test_crop_cli(is_data_mounted: bool) -> None:
     """Test `crop` function outside `cli`."""
-    crop()
+    if not is_data_mounted:
+        with pytest.raises(ValueError):
+            crop()
+    else:
+        crop()

@@ -519,10 +519,7 @@ def clim_runner(
     local_cache_path: Path,
     local_cache_fixtures: LocalCachesManager,
     test_runs_output_path: PathLike,
-    local_hads_cache_path: PathLike,
-    local_cpm_cache_path: PathLike,
     tasmax_cpm_1980_raw_path: PathLike,
-    tasmax_cpm_1980_converted_path: PathLike,
 ) -> ClimRecalConfig:
     """Return default `ClimRecalConfig`."""
     assert local_cache_fixtures.default_local_cache_path
@@ -538,6 +535,7 @@ def clim_runner(
             preprocess_out_folder=tmp_path,
             regions=regions,
             output_path=test_runs_output_path,
+            cpm_for_coord_alignment_path_converted=True,
             cpm_for_coord_alignment=tasmax_cpm_1980_raw_path,
             include_save_config=False,
         )
@@ -554,6 +552,7 @@ def clim_runner(
             cpm_for_coord_alignment=local_cache_fixtures[
                 "tasmax_cpm_1980_converted"
             ].local_cache_path,
+            cpm_for_coord_alignment_path_converted=True,
             include_save_config=False,
         )
 

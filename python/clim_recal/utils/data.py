@@ -132,19 +132,21 @@ def check_config_dates(start_date: date | datetime,
     max_end_date
         Latest vaid date.
 
+    ValueError: 'start_date' 1979-12-02 must be before
+    'end_date' 1980-01-01 and both between 1980-01-01 and 2081-11-30
+
     Examples
     --------
     >>> check_config_dates(date(1980, 12, 2), date(1981, 1, 1))
-    >>> check_config_dates(start_date=date(1979, 12, 2), end_date=date(1980, 1, 1))
+    >>> check_config_dates(start_date=date(1979, 12, 2), end_date=date(1981, 1, 1))
     Traceback (most recent call last):
-        ...
-    ValueError: 'start_date' 1979-12-02 must be before
-    'end_date' 1980-01-01 and both between 1980-01-01 and 2080-11-30
+    ...
+    ValueError: 'start_date' 1979-12-02 must be before 'end_date'
+    1981-01-01 and both between 1980-01-01 and 2080-11-30
     """
-    start_date = start_date.date() if isinstance(start_date, datetime) else start_date
-    end_date = end_date.date() if isinstance(end_date, datetime) else end_date
-    min_start_date = min_start_date.date() if isinstance(min_start_date, datetime) else min_start_date
-    max_end_date = max_end_date.date() if isinstance(max_end_date, datetime) else end_date
+    for name, value in locals().items():
+        if 'date' in name and isinstance(value, datetime):
+            locals()[name] = value.date()
     try:
         assert min_start_date <= start_date < end_date
         assert start_date < end_date <= max_end_date

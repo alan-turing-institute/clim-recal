@@ -1,7 +1,5 @@
 from pathlib import Path
-from typing import Final
 
-import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 from numpy.typing import NDArray
@@ -17,148 +15,99 @@ from clim_recal.convert import (
     IterCalcManagerBase,
 )
 from clim_recal.utils.core import CLI_DATE_FORMAT_STR
-from clim_recal.utils.data import CPM_NAME, HADS_NAME, RunOptions
+from clim_recal.utils.data import CPM_NAME, HADS_NAME, ClimDataType, RunOptions
 from clim_recal.utils.xarray import (
+    FINAL_CONVERTED_CPM_HEIGHT,
     FINAL_CONVERTED_CPM_WIDTH,
+    FINAL_CONVERTED_HADS_HEIGHT,
+    FINAL_CONVERTED_HADS_WIDTH,
+    FINAL_RESAMPLE_LAT_COL,
     FINAL_RESAMPLE_LON_COL,
     plot_xarray,
 )
 
 from .utils import (
-    CPM_TASMAX_DAY_SERVER_PATH,
-    CPM_TASMAX_LOCAL_TEST_PATH,
-    HADS_UK_TASMAX_DAY_SERVER_PATH,
-    HADS_UK_TASMAX_LOCAL_TEST_PATH,
+    CPM_CONVERTED_DEC_10_XY_300,
+    CPM_FIRST_DATES,
+    HADS_CONVERTED_DEC_10_XY_300,
+    HADS_FIRST_DATES,
+    IterCheckTestType,
+    match_convert_or_crop,
 )
 
-HADS_FIRST_DATES: Final[NDArray] = np.array(
-    ["19800101", "19800102", "19800103", "19800104", "19800105"]
-)
 
+def check_tasmax_1980(export: T_Dataset, data_type: ClimDataType) -> bool:
+    check_values: NDArray
+    first_dates: NDArray
+    final_width: int
+    final_height: int
+    time_dims: int
+    if data_type == CPM_NAME:
+        first_dates = CPM_FIRST_DATES
+        time_dims = 365
+        check_values = CPM_CONVERTED_DEC_10_XY_300
+        final_width = FINAL_CONVERTED_CPM_WIDTH
+        final_height = FINAL_CONVERTED_CPM_HEIGHT
+    else:
+        first_dates = HADS_FIRST_DATES
+        time_dims = 31
+        check_values = HADS_CONVERTED_DEC_10_XY_300
+        final_width = FINAL_CONVERTED_HADS_WIDTH
+        final_height = FINAL_CONVERTED_HADS_HEIGHT
 
-@pytest.fixture
-def cpm_tasmax_raw_mount_path(data_mount_path: Path) -> Path:
-    return data_mount_path / CPM_TASMAX_DAY_SERVER_PATH
-
-
-@pytest.fixture
-def hads_tasmax_raw_mount_path(data_mount_path: Path) -> Path:
-    return data_mount_path / HADS_UK_TASMAX_DAY_SERVER_PATH
-
-
-@pytest.fixture
-def hads_tasmax_local_test_path(data_fixtures_path: Path) -> Path:
-    return data_fixtures_path / HADS_UK_TASMAX_LOCAL_TEST_PATH
-
-
-@pytest.fixture
-def cpm_tasmax_local_test_path(data_fixtures_path: Path) -> Path:
-    return data_fixtures_path / CPM_TASMAX_LOCAL_TEST_PATH
-
-
-def check_tasmax_1980_cpm(export: T_Dataset) -> bool:
-    CPM_FIRST_DATES: NDArray = np.array(
-        ["19801201", "19801202", "19801203", "19801204", "19801205"]
-    )
-    CPM_CHECK_VALUES: NDArray = np.array(
-        [
-            12.325586,
-            12.325586,
-            12.312891,
-            12.296778,
-            12.296778,
-            12.2792,
-            12.2792,
-            12.260401,
-            12.260401,
-            12.244776,
-        ]
-    )
-    assert export.dims["time"] == 365
-    assert export.dims[FINAL_RESAMPLE_LON_COL] == FINAL_CONVERTED_CPM_WIDTH
-    # assert export.dims[FINAL_RESAMPLE_LON_COL] == CPM_CHECK_VALUES
-    # assert_allclose(export.tasmax[10][5][:10].values, FINAL_CPM_DEC_10_X_2_Y_200_210)
-    assert_allclose(export.tasmax[10][5][:10].values, CPM_CHECK_VALUES)
+    assert export.dims["time"] == time_dims
     assert (
-        CPM_FIRST_DATES == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
+        first_dates == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
     ).all()
-    return True
-
-
-def check_tasmax_1980_hads(export: T_Dataset) -> bool:
-    """Checks for 1980 hads."""
-    assert len(export.time) == 31
-    assert not np.isnan(export.tasmax[0][200:300].values).all()
-    assert (
-        HADS_FIRST_DATES.astype(object)
-        == export.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
-    ).all()
+    assert_allclose(export.tasmax[10][300][300:310].values, check_values)
+    assert export.dims[FINAL_RESAMPLE_LON_COL] == final_width
+    assert export.dims[FINAL_RESAMPLE_LAT_COL] == final_height
     return True
 
 
 @pytest.mark.localcache
 @pytest.mark.slow
 @pytest.mark.mount
+@pytest.mark.parametrize("convert_type", (CPM_NAME, HADS_NAME))
 @pytest.mark.parametrize(
-    "config", ("direct", "range", "direct_provided", "range_provided")
+    "check_type", ("direct", "range", "direct_provided", "range_provided")
 )
-def test_cpm_manager(
-    resample_test_cpm_output_path, config: str, tasmax_cpm_1980_raw_path: Path
+def test_convert(
+    convert_type: ClimDataType,
+    check_type: IterCheckTestType,
+    local_cache: bool,
+    tasmax_hads_1980_raw_path: Path,
+    resample_test_hads_output_path: Path,
+    tasmax_cpm_1980_raw_path: Path,
+    resample_test_cpm_output_path: Path,
+    tasmax_cpm_1980_converted_path: Path,
 ) -> None:
     """Test running default CPM calendar fix."""
-    # CPM_FIRST_DATES: np.array = np.array(
-    #     ["19801201", "19801202", "19801203", "19801204", "19801205"]
-    # )
-    output_path: Path = resample_test_cpm_output_path / config
-    test_config = CPMConvert(
-        input_path=tasmax_cpm_1980_raw_path.parent,
-        output_path=output_path,
-    )
-    paths: list[Path]
-    match config:
-        case "direct":
-            paths = [test_config.to_reprojection(return_path=True)]
-        case "range":
-            paths = test_config.range_to_reprojection(stop=1)
-        case "direct_provided":
-            paths = [
-                test_config.to_reprojection(index=0, source_to_index=tuple(test_config))
-            ]
-        case "range_provided":
-            paths = test_config.range_to_reprojection(
-                stop=1, source_to_index=tuple(test_config)
-            )
-    export: T_Dataset = open_dataset(paths[0])
-    assert check_tasmax_1980_cpm(export)
-    plot_xarray(
-        export.tasmax[0],
-        path=resample_test_cpm_output_path / f"config-{config}.png",
-        time_stamp=True,
-    )
-
-
-@pytest.mark.localcache
-@pytest.mark.slow
-@pytest.mark.mount
-@pytest.mark.parametrize("range", (False, True))
-def test_hads_manager(
-    resample_test_hads_output_path, range: bool, tasmax_hads_1980_raw_path: Path
-) -> None:
-    """Test running default HADs spatial projection."""
-    test_config = HADsConvert(
-        input_path=tasmax_hads_1980_raw_path.parent,
-        output_path=resample_test_hads_output_path / f"range-{range}",
-    )
-    paths: list[Path]
-    if range:
-        paths = test_config.range_to_reprojection(stop=1)
+    converter: CPMConvert | HADsConvert
+    plot_path: Path
+    if convert_type == CPM_NAME:
+        converter = CPMConvert(
+            input_path=tasmax_cpm_1980_raw_path.parent,
+            output_path=resample_test_cpm_output_path / f"range-{check_type}",
+        )
+        plot_path = resample_test_cpm_output_path / f"config-{convert_type}.png"
     else:
-        paths = [test_config.to_reprojection(return_path=True)]
-    export: T_Dataset = open_dataset(paths[0])
-    assert check_tasmax_1980_hads(export)
+        assert convert_type == HADS_NAME
+        converter = HADsConvert(
+            input_path=tasmax_hads_1980_raw_path.parent,
+            output_path=resample_test_hads_output_path / f"range-{check_type}",
+        )
+        if local_cache:
+            converter.cpm_for_coord_alignment = tasmax_cpm_1980_converted_path
+            converter.cpm_for_coord_alignment_path_converted = True
+        plot_path = resample_test_hads_output_path / f"config-{convert_type}.png"
+    export: T_Dataset = match_convert_or_crop(
+        converter, check_type=check_type, calc_type="convert"
+    )
+    assert check_tasmax_1980(export, data_type=convert_type)
     plot_xarray(
         export.tasmax[0],
-        path=resample_test_hads_output_path / f"range-{range}.png",
+        path=plot_path,
         time_stamp=True,
     )
 
@@ -192,7 +141,7 @@ def test_variable_in_base_import_path_error(
 @pytest.mark.mount
 @pytest.mark.parametrize("multiprocess", (False, True))
 @pytest.mark.parametrize("manager_type", (CPM_NAME, HADS_NAME))
-def test_execute_resample_configs(
+def test_convert_managers(
     manager_type: str,
     tmp_path,
     hads_data_path: Path,
@@ -208,6 +157,7 @@ def test_execute_resample_configs(
             output_paths=tmp_path,
             stop_index=1,
             cpm_for_coord_alignment=tasmax_cpm_1980_converted,
+            cpm_for_coord_alignment_path_converted=True,
         )
     else:
         test_config = CPMConvertManager(
@@ -217,10 +167,7 @@ def test_execute_resample_configs(
             stop_index=1,
         )
     resamplers: tuple[IterCalcBase, ...] | list = test_config.execute_configs(
-        multiprocess=multiprocess, return_resamplers=False, return_path=True, cpus=2
+        multiprocess=multiprocess, return_instances=True, return_path=True, cpus=2
     )
     export: T_Dataset = open_dataset(resamplers[0][0])
-    if manager_type == HADS_NAME:
-        check_tasmax_1980_hads(export)
-    else:
-        assert check_tasmax_1980_cpm(export)
+    assert check_tasmax_1980(export, data_type=manager_type)

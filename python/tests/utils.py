@@ -5,16 +5,32 @@ from datetime import date, datetime
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Final, Iterable, Sequence, TypedDict
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Final,
+    Iterable,
+    Literal,
+    Sequence,
+    TypedDict,
+)
 
 import sysrsync
-from numpy import array, nan, random
+from numpy import array
+from numpy import array as np_array
+from numpy import nan, random
 from numpy.typing import NDArray
 from pandas import to_datetime
-from xarray import DataArray
-from xarray.core.types import T_DataArray, T_DataArrayOrSet
+from xarray import DataArray, open_dataset
+from xarray.core.types import T_DataArray, T_DataArrayOrSet, T_Dataset
 
-from clim_recal.convert import RAW_CPM_PATH, RAW_CPM_TASMAX_PATH, RAW_HADS_TASMAX_PATH
+from clim_recal.convert import (
+    RAW_CPM_PATH,
+    RAW_CPM_TASMAX_PATH,
+    RAW_HADS_TASMAX_PATH,
+    IterCalcBase,
+)
 from clim_recal.debiasing.debias_wrapper import (
     CALIB_DATES_STR_DEFAULT,
     CMETHODS_FILE_NAME,
@@ -48,8 +64,8 @@ from clim_recal.utils.data import (
 
 logger = getLogger(__name__)
 
-FINAL_CONVERTED_HADS_WIDTH: Final[int] = 410
-FINAL_CONVERTED_HADS_HEIGHT: Final[int] = 660
+# FINAL_CONVERTED_HADS_WIDTH: Final[int] = 410
+# FINAL_CONVERTED_HADS_HEIGHT: Final[int] = 660
 
 FINAL_CPM_DEC_10_X_2_Y_200_210: Final[NDArray] = array(
     (
@@ -197,6 +213,104 @@ CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = " ".join(
 MOD_FOLDER_FILES_COUNT_CORRECT: Final[int] = 1478
 OBS_FOLDER_FILES_COUNT_CORRECT: Final[int] = MOD_FOLDER_FILES_COUNT_CORRECT
 PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT: Final[int] = 4
+
+CPM_FIRST_DATES: NDArray = np_array(
+    ["19801201", "19801202", "19801203", "19801204", "19801205"]
+)
+CPM_CONVERTED_DEC_10_XY_300: NDArray = np_array(
+    [
+        0.39833984,
+        0.50039065,
+        0.28383788,
+        0.43569335,
+        1.122461,
+        1.1024414,
+        1.042627,
+        0.7235352,
+        0.6480957,
+        0.88491213,
+    ]
+)
+CPM_GLASGOW_CONVERTED_FIRST_VALUES: NDArray = np_array(
+    [
+        6.471338,
+        6.238672,
+        5.943994,
+        5.6705565,
+        5.4742675,
+        5.126611,
+        4.7020507,
+        4.2784667,
+        4.1996093,
+    ]
+)
+HADS_FIRST_DATES: NDArray = np_array(
+    ["19800101", "19800102", "19800103", "19800104", "19800105"]
+)
+HADS_CONVERTED_DEC_10_XY_300: NDArray = np_array(
+    [
+        2.29335493,
+        2.26689276,
+        1.12071333,
+        1.30746908,
+        1.50594347,
+        1.84169973,
+        1.93766855,
+        1.72104809,
+        1.21958198,
+        1.47863651,
+    ]
+)
+HADS_GLASGOW_CONVERTED_FIRST_VALUES: NDArray = np_array(
+    [
+        6.06706882,
+        5.93332477,
+        5.69923384,
+        5.55714165,
+        4.85292518,
+        4.23700658,
+        4.53450007,
+        4.58407563,
+        4.55542638,
+    ]
+)
+
+IterCheckTestType = Literal["direct", "range", "direct_provided", "range_provided"]
+CalcType = Literal["convert", "crop"]
+
+
+def match_convert_or_crop(
+    instance: IterCalcBase,
+    calc_type: CalcType,
+    check_type: IterCheckTestType,
+) -> T_Dataset:
+    """Check configuration tests and return export."""
+    direct_method_name: str = (
+        "to_reprojection" if calc_type == "convert" else "crop_projection"
+    )
+    range_method_name: str = (
+        "range_to_reprojection" if calc_type == "convert" else "range_crop_projection"
+    )
+    paths: list[Path]
+    match check_type:
+        case "direct":
+            paths = [getattr(instance, direct_method_name)(return_path=True)]
+        case "range":
+            paths = list(getattr(instance, range_method_name)(stop=1))
+        case "direct_provided":
+            paths = [
+                getattr(instance, direct_method_name)(
+                    index=0, source_to_index=tuple(instance), return_path=True
+                )
+            ]
+        case "range_provided":
+            paths = list(
+                getattr(instance, range_method_name)(
+                    stop=1,
+                    source_to_index=tuple(instance),
+                )
+            )
+    return open_dataset(paths[0])
 
 
 class StandardWith360DayError(Exception): ...

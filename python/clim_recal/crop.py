@@ -3,10 +3,8 @@ from datetime import date
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
-from typing import Any, Callable, Iterable, Iterator, Sequence
+from typing import Any, Iterable, Iterator, Sequence
 
-from rich.progress import Progress
-from xarray import Dataset
 from xarray.core.types import T_Dataset
 
 from .convert import IterCalcBase, IterCalcManagerBase
@@ -29,9 +27,6 @@ from .utils.data import (
 from .utils.xarray import (
     _write_and_or_return_results,
     crop_xarray,
-    data_path_to_date_range,
-    execute_configs,
-    progress_wrapper,
     region_crop_file_name,
 )
 
@@ -62,62 +57,12 @@ class RegionCropperBase(IterCalcBase):
     input_path: PathLike | None = Path()
     output_path: PathLike = CROP_OUTPUT_PATH
     crop_region: RegionOptions | str | None = RegionOptions.GLASGOW
+    _calc_method_name: str = "crop_projection"
+    _calc_method_description: str = "Cropping..."
     _iter_calc_method_name: str = "range_crop_projection"
 
-    def range_crop_projection(
-        self,
-        start: int = 0,
-        stop: int | None = None,
-        step: int = 1,
-        override_export_path: Path | None = None,
-        source_to_index: Sequence | None = None,
-        return_path: bool = True,
-        write_results: bool = True,
-        progress_bar: bool = True,
-        description_func: Callable[..., str] | None = data_path_to_date_range,
-        progress_instance: Progress | None = None,
-        **kwargs,
-    ) -> Iterator[Path | T_Dataset]:
-        return progress_wrapper(
-            self,
-            "to_reprojection",
-            start=start,
-            stop=stop,
-            step=step,
-            description="Cropping...",
-            override_export_path=override_export_path,
-            source_to_index=source_to_index,
-            return_path=return_path,
-            write_results=write_results,
-            use_progress_bar=progress_bar,
-            description_func=description_func,
-            description_kwargs={"return_type": "string"},
-            progress_instance=progress_instance,
-            **kwargs,
-        )
-        # start = start or self.start_index
-        # stop = stop or self.stop_index
-        # if stop is None:
-        #     stop = len(self)
-        # logger.info(f"Cropping to '{self.output_path}'")
-        # if progress_bar:
-        #     for index in track(range(start, stop, step), description="Cropping..."):
-        #         yield self.crop_projection(
-        #             index=index,
-        #             override_export_path=override_export_path,
-        #             source_to_index=source_to_index,
-        #             return_path=return_path,
-        #             write_results=write_results,
-        #         )
-        # else:
-        #     for index in track(range(start, stop, step), description="Cropping..."):
-        #         yield self.crop_projection(
-        #             index=index,
-        #             override_export_path=override_export_path,
-        #             source_to_index=source_to_index,
-        #             return_path=return_path,
-        #             write_results=write_results,
-        #         )
+    def range_crop_projection(self, *args, **kwargs) -> Iterator[Path | T_Dataset]:
+        return self.range_to_reprojection(*args, **kwargs)
 
     def crop_projection(
         self,
@@ -139,7 +84,7 @@ class RegionCropperBase(IterCalcBase):
                 f"'{self.crop_region}' not in 'RegionOptions': {RegionOptions.all()}"
             )
         logger.info(f"{self} cropping {source_path}")
-        result: Dataset = crop_xarray(
+        result: T_Dataset = crop_xarray(
             xr_time_series=source_path,
             crop_box=RegionOptions.bounding_box(self.crop_region),
             **kwargs,
@@ -236,6 +181,7 @@ class RegionCropperManagerBase(IterCalcManagerBase):
     config_default_kwargs: dict[str, Any] = field(default_factory=dict)
     calc_class: type[HADsRegionCropper | CPMRegionCropper] | None = None
     check_input_paths_exist: bool = True
+    _configs_method_name: str = "yield_crop_configs"
     _raw_input_path_dict: dict[Path, VariableOptions | str] = field(
         default_factory=dict
     )
@@ -245,10 +191,6 @@ class RegionCropperManagerBase(IterCalcManagerBase):
         super().__post_init__()
         if not self.crop_regions:
             self.crop_regions = ()
-        # self.check_paths()
-        # self.total_cpus: int | None = cpu_count()
-        # if not self.cpus:
-        #     self.cpus = 1 if not self.total_cpus else self.total_cpus
 
     def __repr__(self) -> str:
         """Summary of `self` configuration as a `str`."""
@@ -373,33 +315,6 @@ class RegionCropperManagerBase(IterCalcManagerBase):
                     **self.config_default_kwargs,
                 )
 
-    def execute_configs(
-        self,
-        multiprocess: bool = False,
-        cpus: int | None = None,
-        return_region_croppers: bool = False,
-        return_path: bool = True,
-        **kwargs,
-    ) -> tuple[RegionCropperBase, ...] | list[T_Dataset | Path]:
-        """Run all converter configurations
-
-        Parameters
-        ----------
-        multiprocess
-            If `True` run parameters in `resample_configs` with `multiprocess_execute`.
-        cpus
-            Number of `cpus` to pass to `multiprocess_execute`.
-        """
-        return execute_configs(
-            self,
-            configs_method="yield_crop_configs",
-            multiprocess=multiprocess,
-            cpus=cpus,
-            return_instances=return_region_croppers,
-            return_path=return_path,
-            **kwargs,
-        )
-
 
 @dataclass(kw_only=True, repr=False)
 class HADsRegionCropManager(RegionCropperManagerBase):
@@ -436,10 +351,6 @@ class HADsRegionCropManager(RegionCropperManagerBase):
         `class` to construct all `self.configs` instances with.
     cpus
         Number of `cpu` cores to use during multiprocessing.
-    cpm_for_coord_alignment
-        `CPM` `Path` or `Dataset` to match alignment with.
-    cpm_for_coord_alignment_path_converted
-        Whether a `Path` passed to `cpm_for_coord_alignment` should be processed.
 
     Examples
     --------
@@ -460,8 +371,8 @@ class HADsRegionCropManager(RegionCropperManagerBase):
     output_paths: Sequence[PathLike] | PathLike = (
         CONVERT_OUTPUT_PATH / HADS_CROP_OUTPUT_PATH
     )
-    start_date: date = HADS_START_DATE
-    end_date: date = HADS_END_DATE
+    start_date: date | None = HADS_START_DATE
+    end_date: date | None = HADS_END_DATE
     configs: list[HADsRegionCropper] = field(default_factory=list)
     config_default_kwargs: dict[str, Any] = field(default_factory=dict)
     calc_class: type[HADsRegionCropper] = HADsRegionCropper
@@ -573,8 +484,8 @@ class CPMRegionCropManager(RegionCropperManagerBase):
     output_paths: PathLike | Sequence[PathLike] = (
         CONVERT_OUTPUT_PATH / CPM_CROP_OUTPUT_PATH
     )
-    start_date: date = CPM_START_DATE
-    end_date: date = CPM_END_DATE
+    start_date: date | None = CPM_START_DATE
+    end_date: date | None = CPM_END_DATE
     configs: list[CPMRegionCropper] = field(default_factory=list)
     calc_class: type[CPMRegionCropper] = CPMRegionCropper
     runs: Sequence[RunOptions | str] = RunOptions.preferred()

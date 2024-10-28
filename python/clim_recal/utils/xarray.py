@@ -96,8 +96,10 @@ GLASGOW_GEOM_ABSOLUTE_PATH: Final[Path] = (
 CPM_REGEX: Final[str] = "**/[!.]*cpm*.nc"
 HADS_MIN_NULL: float = -1000000
 
-FINAL_CONVERTED_CPM_WIDTH: Final[int] = 493
-FINAL_CONVERTED_CPM_HEIGHT: Final[int] = 607
+FINAL_CONVERTED_HADS_WIDTH: Final[int] = 493
+FINAL_CONVERTED_HADS_HEIGHT: Final[int] = 607
+FINAL_CONVERTED_CPM_WIDTH: Final[int] = 514
+FINAL_CONVERTED_CPM_HEIGHT: Final[int] = 625
 
 HADS_DROP_VARS_AFTER_PROJECTION: Final[tuple[str, ...]] = ("longitude", "latitude")
 
@@ -1681,7 +1683,7 @@ def progress_wrapper(
     description_func: Callable[..., str] | None = None,
     description_kwargs: dict[str, Any] | None = None,
     progress_instance: Progress | None = None,
-    methods_to_skip_progress: Sequence[str] = ["to_reprojection"],
+    skip_progress_kwargs_method_name: str = "to_reprojection",
     **kwargs,
 ) -> Iterator[Path | T_Dataset]:
     """Iterate over `instance` with or without a progress bar.
@@ -1716,14 +1718,15 @@ def progress_wrapper(
         Function to return description.
     description_kwargs
         Parameters to pass to description_func.
+    skip_progress_kwargs_method_name
+        Method name when progress instance should not be pased.
     **kwargs
         Additional parameters to pass to `method_name`.
     """
     # progress_bar = True
     start = start or 0
     stop = stop or len(instance)
-    # TODO: replace below with function call
-    total_tasks: int = (stop - start - 1) // step + 1
+    total_tasks: int = range_len(len(instance), start=start, stop=stop, step=step)
     if not progress_instance:
         progress_instance = Progress(
             SpinnerColumn(),
@@ -1749,7 +1752,7 @@ def progress_wrapper(
         if "index" in kwargs:
             popped_index = kwargs.pop("index")
             console.log(f"popping index {popped_index} vs actual index {index}")
-        if not method_name == "to_reprojection":
+        if not method_name == skip_progress_kwargs_method_name:
             kwargs["progress_instance"] = progress_instance
             if "end" in kwargs:
                 popped_end = kwargs.pop("end")
