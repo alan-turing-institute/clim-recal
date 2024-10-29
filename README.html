@@ -20,40 +20,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -372,12 +338,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#data-results-and-documentation-updates" id="toc-data-results-and-documentation-updates" class="nav-link" data-scroll-target="#data-results-and-documentation-updates"><span class="header-section-number">1.1</span> Data results and documentation updates</a></li>
   <li><a href="#table-of-contents" id="toc-table-of-contents" class="nav-link" data-scroll-target="#table-of-contents"><span class="header-section-number">1.2</span> Table of Contents</a></li>
   <li><a href="#overview-bias-correction-pipeline" id="toc-overview-bias-correction-pipeline" class="nav-link" data-scroll-target="#overview-bias-correction-pipeline"><span class="header-section-number">1.3</span> Overview: Bias Correction Pipeline</a></li>
-  <li><a href="#documentation" id="toc-documentation" class="nav-link" data-scroll-target="#documentation"><span class="header-section-number">1.4</span> Documentation</a>
-  <ul class="collapse">
-  <li><a href="#r" id="toc-r" class="nav-link" data-scroll-target="#r"><span class="header-section-number">1.4.1</span> <code>R</code></a></li>
-  <li><a href="#python" id="toc-python" class="nav-link" data-scroll-target="#python"><span class="header-section-number">1.4.2</span> <code>python</code></a></li>
-  <li><a href="#quarto" id="toc-quarto" class="nav-link" data-scroll-target="#quarto"><span class="header-section-number">1.4.3</span> Quarto</a></li>
-  </ul></li>
+  <li><a href="#documentation" id="toc-documentation" class="nav-link" data-scroll-target="#documentation"><span class="header-section-number">1.4</span> Documentation</a></li>
   <li><a href="#the-datasets" id="toc-the-datasets" class="nav-link" data-scroll-target="#the-datasets"><span class="header-section-number">1.5</span> The Datasets</a>
   <ul class="collapse">
   <li><a href="#ukcp18" id="toc-ukcp18" class="nav-link" data-scroll-target="#ukcp18"><span class="header-section-number">1.5.1</span> UKCP18</a></li>
@@ -437,21 +398,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="documentation" class="level2" data-number="1.4">
 <h2 data-number="1.4" class="anchored" data-anchor-id="documentation"><span class="header-section-number">1.4</span> Documentation</h2>
 <p>We are in the process of developing comprehensive documentation for our code base to supplement the guidance provided in this and other <code>README.md</code> files. In the interim, there is documentation available in the following forms:</p>
+<p>For user documentation</p>
 <ul>
-<li>Comments within <code>R</code> scripts</li>
-<li>Command line <code>--help</code> documentation for some of our <code>python</code> scripts</li>
-<li><code>python</code> <code>function</code> and <code>class</code> <a href="https://docs.python.org/3/library/doctest.html"><code>docstrings</code></a></li>
-<li>Local render of documentation via <a href="https://quarto.org/"><code>quarto</code></a></li>
+<li>See <a href="setup-instructions">setup instructions</a></li>
+<li>See <code>python</code> <a href="python/README"><code>README</code></a> for an overview of the pipeline</li>
+<li>Once installed, using the <code>clim-recal --help</code> option for details</li>
+<li>See the <a href="docs/reproducibility">reproducibility page</a> for information on how we used clim-recal</li>
 </ul>
-<section id="r" class="level3" data-number="1.4.1">
-<h3 data-number="1.4.1" class="anchored" data-anchor-id="r"><span class="header-section-number">1.4.1</span> <code>R</code></h3>
-<p>For <code>R</code> scripts, please refer to contextual information and usage guidelines, and feel free to reach out with any specific queries.</p>
-</section>
-<section id="python" class="level3" data-number="1.4.2">
-<h3 data-number="1.4.2" class="anchored" data-anchor-id="python"><span class="header-section-number">1.4.2</span> <code>python</code></h3>
-<p>See <a href="setup-instructions">setup instructions</a> for installation options and the <code>python</code> <a href="python/README"><code>README</code></a> for usage and examples. Further detail of that code based can be found in the <a href="docs/reference/"><code>References</code></a>.</p>
-<p>If the <code>python</code> <code>clim-recal</code> package is installed, some of the components can be used via the command line, including the process for converting raw MetOffice data into the format we provide as <a href="./docs/datasets">datasets</a>. For details run:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> clim-recal <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>To use <code>clim-recal</code> programatically:</p>
+<ul>
+<li>There are extensive <a href="docs/reference/"><code>API Reference</code></a> within the python code.</li>
+<li>Comments within <code>R</code> scripts</li>
+</ul>
+<p>To contribute to <code>clim-recal</code>:</p>
+<ul>
+<li>See the <a href="docs/contributing">Contributing</a> section below</li>
+</ul>
 <!---->
 <!---->
 <!-- - The `clim-recal` `python` package in the `python/folder` -->
@@ -472,25 +434,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- ``` -->
 <!---->
 <!-- This will display all available options for the script, including their purposes. -->
-</section>
-<section id="quarto" class="level3" data-number="1.4.3">
-<h3 data-number="1.4.3" class="anchored" data-anchor-id="quarto"><span class="header-section-number">1.4.3</span> Quarto</h3>
-<p>We also hope to provide comprehensive documentation via <a href="https://quarto.org/"><code>quarto</code></a>. This is a work in progress, but if you would like to render documentation locally you can do so via <code>quarto</code> and <a href="https://docs.conda.io"><code>conda</code></a>:</p>
-<ol type="1">
-<li>Ensure you have a <a href="https://conda.io/projects/conda/en/latest/user-guide/install/index.html">local installation</a> of <code>conda</code> or <a href="https://www.anaconda.com/download"><code>anaconda</code></a> .</li>
-<li>Checkout a copy of our <code>git</code> repository</li>
-<li>Create a local <code>conda</code> <code>environment</code> via our <code>environment.yml</code> file. This should install <code>quarto</code>.</li>
-<li>Activate that environment</li>
-<li>Run <code>quarto preview</code>.</li>
-</ol>
-<p>Below are example <code>bash</code> shell commands to render locally after installing <code>conda</code>:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> git clone https://github.com/alan-turing-institute/clim-recal</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cd clim-recal</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> conda create <span class="at">-n</span> clim-recal <span class="at">-f</span> environment.yml</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> conda activate clim-recal</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> quarto preview</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>We appreciate your patience and encourage you to check back for updates on our ongoing documentation efforts.</p>
-</section>
 </section>
 <section id="the-datasets" class="level2" data-number="1.5">
 <h2 data-number="1.5" class="anchored" data-anchor-id="the-datasets"><span class="header-section-number">1.5</span> The Datasets</h2>
@@ -520,7 +463,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="contributing" class="level2" data-number="1.7">
 <h2 data-number="1.7" class="anchored" data-anchor-id="contributing"><span class="header-section-number">1.7</span> Contributing</h2>
-<p>We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an <a href="https://github.com/alan-turing-institute/clim-recal/issues">issue</a>, <a href="mailto:clim-recal@turing.ac.uk">get in touch</a>, or see our <a href="docs/contributing">contributing</a> section. All are welcome and appreciated.</p>
+<p>If you have suggestions on the repository, or would like to include a new method (see below) or library, please - raise an <a href="https://github.com/alan-turing-institute/clim-recal/issues">issue</a> - <a href="mailto:clim-recal@turing.ac.uk">get in touch</a> - see our <a href="docs/contributing">contributing</a> section, which includes details on contriubting to the documentation.</p>
+<p>All are welcome and appreciated.</p>
 <!-- ### Adding to the conda environment file -->
 <!---->
 <!-- To use `R` in `anaconda` you may need to specify the `conda-forge` channel: -->
