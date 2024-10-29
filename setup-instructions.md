@@ -6,6 +6,11 @@ title: "`clim-recal` installation"
 
 # Quickstart
 
+> [!WARNING]
+There are several different ways to install `clim-recal` .
+We have used docker the most and hence this is the most tested.
+Other methods are available but may not be as well tested.
+
 For users who already have `conda` (or `mamba`) installed:
 
 ```bash
