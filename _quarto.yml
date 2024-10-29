@@ -16,10 +16,13 @@ project:
     - "docs/reference"
     # - "docs/pipeline.qmd"
     - "docs/contributing.md"
+    - "docs/download.qmd"
     - "docs/datasets.qmd"
     - "docs/pipeline_guidance.qmd"
     - "docs/docker-configurations.qmd"
     - "python/README.md"
+    - "notebooks/cpm_projection_diff_plots.ipynb"
+    - "notebooks/cpm_projection_diff_plots_linear_nearest.ipynb"
       # - "notebooks/Assessing_bc_data/MethodsAssessment_DecWorkshop.Rmd"
       # Requires dataset mounted to run notebook
 
@@ -29,7 +32,6 @@ number-sections: True
 theme:
   light: flatly
   dark: darkly
-
 
 # tell quarto to read the generated sidebar
 metadata-files:
@@ -52,10 +54,15 @@ website:
             href: "docs/pipeline_guidance.qmd"
           - text: "Diagram"
             href: "docs/pipeline.qmd"
-          - text: "CPM Projection"
+          - section: "CPM Projection"
             href: "docs/cpm_projection.qmd"
-      - text: "Generated Datasets"
-        href: "docs/datasets.qmd"
+            contents:
+              - text: "Core Issue"
+                href: "notebooks/cpm_projection_diff_plots.ipynb"
+              - text: "Nearest versus Linear"
+                href: "notebooks/cpm_projection_diff_plots_linear_nearest.ipynb"
+      - text: "Download Datasets"
+        href: "docs/download.qmd"
       - section: "R"
         href: "R/README.md"
         contents:
