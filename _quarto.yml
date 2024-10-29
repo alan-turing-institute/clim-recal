@@ -57,9 +57,9 @@ website:
           - section: "CPM Projection"
             href: "docs/cpm_projection.qmd"
             contents:
-              - text: "Core Issue"
+              - text: "Temporal Interpolation Artefacts"
                 href: "notebooks/cpm_projection_diff_plots.ipynb"
-              - text: "Nearest versus Linear"
+              - text: "Nearest vs Linear Temporal Interpolation"
                 href: "notebooks/cpm_projection_diff_plots_linear_nearest.ipynb"
       - text: "Download Datasets"
         href: "docs/download.qmd"

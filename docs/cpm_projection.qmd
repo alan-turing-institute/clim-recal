@@ -163,8 +163,8 @@ plt.show()
 
 For more detailed analysis comparing `nearest` and `linear` interpolation see:
 
-- [`cpm_projection_diff_plots.ipynb`](https://github.com/alan-turing-institute/clim-recal/tree/main/notebooks/cpm_projection_diff_plots.ipynb)
-- [`cpm_projection_diff_plots_linear_nearest.ipynb`](https://github.com/alan-turing-institute/clim-recal/tree/main/notebooks/cpm_projection_diff_plots_linear_nearest.ipynb)
+- [`cpm_projection_diff_plots.ipynb`](../notebooks/cpm_projection_diff_plots.html)
+- [`cpm_projection_diff_plots_linear_nearest.ipynb`](../notebooks/cpm_projection_diff_plots_linear_nearest.html)
 
 <!-- Leap year projection. -->
 <!-- ```{python} -->
