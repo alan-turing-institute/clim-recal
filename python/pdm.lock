@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:5e74bfd72855365562498fdb5718b6ee8c8f92399b6ac65bdb933d83c2ebeb83"
+content_hash = "sha256:99b01a7abe9608ff3da210e1079f9795413c5b14127acf1bf9a843aa59b56fcc"
 
 [[metadata.targets]]
 requires_python = "~=3.12.5"
@@ -999,7 +999,7 @@ files = [
 
 [[package]]
 name = "hishel"
-version = "0.0.30"
+version = "0.0.33"
 requires_python = ">=3.8"
 summary = "Persistent cache implementation for httpx and httpcore"
 groups = ["default"]
@@ -1009,8 +1009,8 @@ dependencies = [
     "typing-extensions>=4.8.0",
 ]
 files = [
-    {file = "hishel-0.0.30-py3-none-any.whl", hash = "sha256:0c73a779a6b554b52dff75e5962057df25764fd798c31b9435ce6398b1b171c8"},
-    {file = "hishel-0.0.30.tar.gz", hash = "sha256:656393ee77e9c39a0d6c527c74810e15d96e598dcb9b191f20a788608ceaca99"},
+    {file = "hishel-0.0.33-py3-none-any.whl", hash = "sha256:6e6c6cdaf432ff4c4981e7792ef7d1fa4c8ede58b9dbbcefb9ab3fc9770f2a07"},
+    {file = "hishel-0.0.33.tar.gz", hash = "sha256:ab5b2661d5e2252f305fd0fb20e8c76bfab3ea73458f20f2591c53c37b270089"},
 ]
 
 [[package]]
@@ -2076,7 +2076,7 @@ files = [
 
 [[package]]
 name = "pdm"
-version = "2.19.1"
+version = "2.19.3"
 requires_python = ">=3.8"
 summary = "A modern Python package and dependency manager supporting the latest PEP standards"
 groups = ["default"]
@@ -2086,7 +2086,7 @@ dependencies = [
     "dep-logic>=0.4.4",
     "filelock>=3.13",
     "findpython<1.0.0a0,>=0.6.0",
-    "hishel<0.1.0,>=0.0.24",
+    "hishel<0.1.0,>=0.0.32",
     "httpx[socks]<1,>0.20",
     "importlib-metadata>=3.6; python_version < \"3.10\"",
     "importlib-resources>=5; python_version < \"3.9\"",
@@ -2107,8 +2107,8 @@ dependencies = [
     "virtualenv>=20",
 ]
 files = [
-    {file = "pdm-2.19.1-py3-none-any.whl", hash = "sha256:3b63ef645aaa4f4010ed9390550bda5cdfa7a9e70bc7780a555c8496cedfccc2"},
-    {file = "pdm-2.19.1.tar.gz", hash = "sha256:7fe235a9cb27b7ec17b762dc85bc9ae71e0776e4b7a8b6f64203f24bb915aa2c"},
+    {file = "pdm-2.19.3-py3-none-any.whl", hash = "sha256:80594e5d6167fb17ea724df09b68cdfe9c601ad7f218f1beea2c032b61bf30e9"},
+    {file = "pdm-2.19.3.tar.gz", hash = "sha256:a9cc7f2078cd3b25ac645ffb5eca9d6b3d5dfcd788eaddfb6083432da71c97c2"},
 ]
 
 [[package]]

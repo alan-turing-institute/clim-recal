@@ -3,8 +3,14 @@ import argparse
 import ftplib
 import os
 import random
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Final, Sequence
+
+from clim_recal.utils.data import CPM_FTP_PATH, HADS_FTP_PATH
+
+DEFAULT_SAVE_PATH: Final[Path] = Path("raw")
 
 
 def download_ftp(
@@ -77,7 +83,7 @@ def download_ftp(
 
             if size_ftp == size_local:
                 download = False
-                print("File exist, will not dowload")
+                print("File exists, will not download")
 
         if download:
             f.retrbinary("RETR %s" % file, open(file, "wb").write)
@@ -85,9 +91,77 @@ def download_ftp(
         counter += 1
         print(counter, "file downloaded out of", len(filelist))
 
-    print("Finished: ", counter, " files dowloaded from ", input)
+    print("Finished: ", counter, " files downloaded from ", input)
     # Close FTP connection
     f.close()
+
+
+@dataclass(kw_only=True)
+class HADsDownloadManager:
+
+    user_name: str
+    password: str
+    variables: Sequence[str] | None = None
+    save_path: os.PathLike = DEFAULT_SAVE_PATH
+    reverse: bool = False
+    shuffle: bool = False
+    change_hierarchy: bool = False
+    ftp_path: str = HADS_FTP_PATH
+    order: int = 0
+
+    def __post_init__(self) -> None:
+        if self.reverse:
+            self.order = 1
+        # reverse precedes shuffle
+        elif self.shuffle:
+            self.order = 2
+
+    def download(self) -> None:
+        if self.change_hierarchy:
+            for v in self.variables:
+                download_ftp(
+                    os.path.join(self.ftp_path, n, v, "day", "latest"),
+                    os.path.join(self.save_path, v, n, "latest"),
+                    username=self.user_name,
+                    password=self.password,
+                    order=self.order,
+                )
+        else:
+            download_ftp(
+                self.ftp_path,
+                str(self.save_path),
+                username=self.user_name,
+                password=self.password,
+                order=self.order,
+            )
+
+
+@dataclass(kw_only=True, repr=False)
+class CPMDownloadManager(HADsDownloadManager):
+    """Manage downloading raw CPM data."""
+
+    runs: Sequence[str] | None = None
+    ftp_path: str = CPM_FTP_PATH
+
+    def download(self) -> None:
+        if self.change_hierarchy:
+            for n in self.runs:
+                for v in self.variables:
+                    download_ftp(
+                        os.path.join(self.ftp_path, n, v, "day", "latest"),
+                        os.path.join(self.save_path, v, n, "latest"),
+                        username=self.user_name,
+                        password=self.password,
+                        order=self.order,
+                    )
+        else:
+            download_ftp(
+                self.ftp_path,
+                str(self.save_path),
+                username=self.user_name,
+                password=self.password,
+                order=self.order,
+            )
 
 
 if __name__ == "__main__":

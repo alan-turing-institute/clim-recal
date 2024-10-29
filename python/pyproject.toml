@@ -41,6 +41,7 @@ dependencies = [
     "rasterio>=1.4.1",
     "nc-time-axis>=1.4.1",
     "jupyter-cache>=1.0.0",
+    "python-dotenv>=1.0.1",
 ]
 
 [project.scripts]
@@ -105,4 +106,6 @@ markers = [
     "multiprocess: uses multiprocessing.",
     "darwin: requires darwin (macOS) operating system.",
     "localcache: uses local copies of mount files.",
+    "largefile: uses large amounts of hard drive space.",
+    "download: requires internet connection to download."
 ]
