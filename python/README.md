@@ -2,6 +2,13 @@
 
 See [setup instructions](../setup-instructions) for detailed installation options, including via the `python` package `pdm`, `conda` and `docker`.
 
+If the `python` `clim-recal` package is installed, some of the components can be used via the command line. For details run:
+
+```sh
+$ clim-recal --help
+```
+
+
 # Pipeline
 
 There are three core steps we hope to implement in our `python` `clim-recal` package:

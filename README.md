@@ -44,24 +44,21 @@ For a quick start on bias correction, refer to our [comprehensive analysis pipel
 
 We are in the process of developing comprehensive documentation for our code base to supplement the guidance provided in this and other `README.md` files. In the interim, there is documentation available in the following forms:
 
+For user documentation
+
+- See [setup instructions](setup-instructions)
+- See `python` [`README`](python/README) for an overview of the pipeline
+- Once installed, using the `clim-recal --help` option for details
+- See the [reproducibility page](docs/reproducibility) for information on how we used clim-recal
+
+To use `clim-recal` programatically:
+
+- There are extensive [`API Reference`](docs/reference/) within the python code.
 - Comments within `R` scripts
-- Command line `--help` documentation for some of our `python` scripts
-- `python` `function` and `class` [`docstrings`](https://docs.python.org/3/library/doctest.html)
-- Local render of documentation via [`quarto`](https://quarto.org/)
 
-### `R`
+To contribute to `clim-recal`:
 
-For `R` scripts, please refer to contextual information and usage guidelines, and feel free to reach out with any specific queries.
-
-### `python`
-
-See [setup instructions](setup-instructions) for installation options and the `python` [`README`](python/README) for usage and examples. Further detail of that code based can be found in the [`References`](docs/reference/).
-
-If the `python` `clim-recal` package is installed, some of the components can be used via the command line, including the process for converting raw MetOffice data into the format we provide as [datasets](/docs/datasets). For details run:
-
-```sh
-$ clim-recal --help
-```
+- See the [Contributing](docs/contributing) section below
 
 <!---->
 <!---->
@@ -84,27 +81,6 @@ $ clim-recal --help
 <!---->
 <!-- This will display all available options for the script, including their purposes. -->
 
-### Quarto
-
-We also hope to provide comprehensive documentation via [`quarto`](https://quarto.org/). This is a work in progress, but if you would like to render documentation locally you can do so via `quarto` and [`conda`](https://docs.conda.io):
-
-1. Ensure you have a [local installation](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) of `conda` or [`anaconda`](https://www.anaconda.com/download) .
-1. Checkout a copy of our `git` repository
-1. Create a local `conda` `environment` via our `environment.yml` file. This should install `quarto`.
-1. Activate that environment
-1. Run `quarto preview`.
-
-Below are example `bash` shell commands to render locally after installing `conda`:
-
-```sh
-$ git clone https://github.com/alan-turing-institute/clim-recal
-$ cd clim-recal
-$ conda create -n clim-recal -f environment.yml
-$ conda activate clim-recal
-$ quarto preview
-```
-
-We appreciate your patience and encourage you to check back for updates on our ongoing documentation efforts.
 
 ## The Datasets
 
@@ -135,7 +111,14 @@ Our work is however, just like climate data, intended to be dynamic, and we are 
 
 ## Contributing
 
-We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an [issue](https://github.com/alan-turing-institute/clim-recal/issues), [get in touch](mailto:clim-recal@turing.ac.uk), or see our [contributing](docs/contributing) section. All are welcome and appreciated.
+If you have suggestions on the repository, or would like to include a new method (see below) or library, please
+- raise an [issue](https://github.com/alan-turing-institute/clim-recal/issues)
+- [get in touch](mailto:clim-recal@turing.ac.uk)
+- see our [contributing](docs/contributing) section, which includes details on contriubting to the documentation.
+
+All are welcome and appreciated.
+
+
 
 <!-- ### Adding to the conda environment file -->
 <!---->
