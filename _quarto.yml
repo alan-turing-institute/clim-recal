@@ -48,19 +48,8 @@ website:
         href: "README.md"
       - text: "Install"
         href: "setup-instructions.md"
-      - section: "Pipeline"
-        contents:
-
-          # Remove from Navigation until the diagram is fixed or deleted
-          # - text: "Diagram"
-          #   href: "docs/pipeline.qmd"
-          - section: "CPM Projection"
-            href: "docs/cpm_projection.qmd"
-            contents:
-              - text: "Temporal Interpolation Artefacts"
-                href: "notebooks/cpm_projection_diff_plots.ipynb"
-              - text: "Nearest vs Linear Temporal Interpolation"
-                href: "notebooks/cpm_projection_diff_plots_linear_nearest.ipynb"
+      - text: "Pipeline Description"
+        href: "python/README.md"
       - text: "Download Datasets"
         href: "docs/download.qmd"
       # TODO: change name to deprecated?
@@ -74,45 +63,49 @@ website:
               - href: "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
                 text: "WIP Comparing HADs grids"
 
-
-      - section: "python"
-        # TODO: move to top-level pipeline section
-        href: "python/README.md"
+      - section: "API Reference"
+        href: "docs/reference/index.qmd"
         contents:
-          - section: "API Reference"
-            href: "docs/reference/index.qmd"
+          - href: "docs/reference/clim_recal.pipeline.qmd"
+            text: "Pipeline"
+          - href: "docs/reference/clim_recal.config.qmd"
+            text: "Configure"
+          - href: "docs/reference/clim_recal.ceda_ftp_download.qmd"
+            text: "CEDA Data Access"
+          - href: "docs/reference/clim_recal.data_loader.qmd"
+            text: "Data Loading"
+          - href: "docs/reference/clim_recal.resample.qmd"
+            text: "Data Resampling"
+          - section: "Debiasing"
             contents:
-              - href: "docs/reference/clim_recal.pipeline.qmd"
-                text: "Pipeline"
-              - href: "docs/reference/clim_recal.config.qmd"
-                text: "Configure"
-              - href: "docs/reference/clim_recal.ceda_ftp_download.qmd"
-                text: "CEDA Data Access"
-              - href: "docs/reference/clim_recal.data_loader.qmd"
-                text: "Data Loading"
-              - href: "docs/reference/clim_recal.resample.qmd"
-                text: "Data Resampling"
-              - section: "Debiasing"
-                contents:
-                  - href: "docs/reference/clim_recal.debiasing.debias_wrapper.qmd"
-                    text: "Wrapper"
-              - section: "Utilities"
-                contents:
-                  - href: "docs/reference/clim_recal.utils.core.qmd"
-                    text: "core"
-                  - href: "docs/reference/clim_recal.utils.server.qmd"
-                    text: "server"
-                  - href: "docs/reference/clim_recal.utils.xarray.qmd"
-                    text: "xarray"
-                  - href: "docs/reference/clim_recal.utils.data.qmd"
-                    text: "data"
-      - text: "Docker"
-        href: "docs/docker-configurations.qmd"
+              - href: "docs/reference/clim_recal.debiasing.debias_wrapper.qmd"
+                text: "Wrapper"
+          - section: "Utilities"
+            contents:
+              - href: "docs/reference/clim_recal.utils.core.qmd"
+                text: "core"
+              - href: "docs/reference/clim_recal.utils.server.qmd"
+                text: "server"
+              - href: "docs/reference/clim_recal.utils.xarray.qmd"
+                text: "xarray"
+              - href: "docs/reference/clim_recal.utils.data.qmd"
+                text: "data"
       - text: "Contributing"
         href: "docs/contributing.md"
 
-      - text: "Deprecated"
-        href: "docs/deprecated_pipeline.qmd"
+      - section: "Appendix"
+        contents:
+          - section: "CPM Projection Analysis"
+            href: "docs/cpm_projection.qmd"
+            contents:
+              - text: "Temporal Interpolation Artefacts"
+                href: "notebooks/cpm_projection_diff_plots.ipynb"
+              - text: "Nearest vs Linear Temporal Interpolation"
+                href: "notebooks/cpm_projection_diff_plots_linear_nearest.ipynb"
+          - text: "Docker"
+            href: "docs/docker-configurations.qmd"
+          - text: "Deprecated"
+            href: "docs/deprecated_pipeline.qmd"
 
 
 
