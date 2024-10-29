@@ -69,10 +69,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -129,6 +131,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">clim-recal</a> 
+        <div class="sidebar-tools-main">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -171,29 +176,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Diagram</span></a>
   </div>
 </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./docs/cpm_projection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">CPM Projection</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./docs/cpm_projection.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">CPM Projection</span></a>
+  <a href="./notebooks/cpm_projection_diff_plots.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Core Issue</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./notebooks/cpm_projection_diff_plots_linear_nearest.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nearest versus Linear</span></a>
   </div>
 </li>
       </ul>
   </li>
+      </ul>
+  </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./docs/datasets.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Generated Datasets</span></a>
+  <a href="./docs/download.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Download Datasets</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="./R/README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">R</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./R/misc/Identifying_Runs.html" class="sidebar-item-text sidebar-link">
@@ -202,13 +224,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
  <span class="menu-text">Comparing R and Python</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.html" class="sidebar-item-text sidebar-link">
@@ -223,20 +245,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="sidebar-item-container"> 
             <a href="./python/README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">python</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="./docs/reference/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Reference</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./docs/reference/clim_recal.pipeline.html" class="sidebar-item-text sidebar-link">
@@ -263,19 +285,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./docs/reference/clim_recal.convert.html" class="sidebar-item-text sidebar-link">
+  <a href="./docs/reference/clim_recal.resample.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data Resampling</span></a>
   </div>
 </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
  <span class="menu-text">Debiasing</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth3 ">  
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./docs/reference/clim_recal.debiasing.debias_wrapper.html" class="sidebar-item-text sidebar-link">
@@ -286,13 +308,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false">
  <span class="menu-text">Utilities</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth3 ">  
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./docs/reference/clim_recal.utils.core.html" class="sidebar-item-text sidebar-link">
@@ -360,13 +382,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#ukcp18" id="toc-ukcp18" class="nav-link" data-scroll-target="#ukcp18"><span class="header-section-number">1.5.1</span> UKCP18</a></li>
   <li><a href="#hads" id="toc-hads" class="nav-link" data-scroll-target="#hads"><span class="header-section-number">1.5.2</span> HADS</a></li>
-  <li><a href="#geographical-dataset" id="toc-geographical-dataset" class="nav-link" data-scroll-target="#geographical-dataset"><span class="header-section-number">1.5.3</span> Geographical Dataset</a></li>
   </ul></li>
   <li><a href="#why-bias-correction" id="toc-why-bias-correction" class="nav-link" data-scroll-target="#why-bias-correction"><span class="header-section-number">1.6</span> Why Bias Correction?</a></li>
-  <li><a href="#contributing" id="toc-contributing" class="nav-link" data-scroll-target="#contributing"><span class="header-section-number">1.7</span> Contributing</a>
-  <ul class="collapse">
-  <li><a href="#adding-to-the-conda-environment-file" id="toc-adding-to-the-conda-environment-file" class="nav-link" data-scroll-target="#adding-to-the-conda-environment-file"><span class="header-section-number">1.7.1</span> Adding to the conda environment file</a></li>
-  </ul></li>
+  <li><a href="#contributing" id="toc-contributing" class="nav-link" data-scroll-target="#contributing"><span class="header-section-number">1.7</span> Contributing</a></li>
   <li><a href="#future-plans" id="toc-future-plans" class="nav-link" data-scroll-target="#future-plans"><span class="header-section-number">1.8</span> Future plans</a></li>
   </ul></li>
   </ul>
@@ -391,7 +409,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <section id="data-results-and-documentation-updates" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="data-results-and-documentation-updates"><span class="header-section-number">1.1</span> Data results and documentation updates</h2>
-<p><em>WARNING</em>: The documentation below is out of date in some cases, and we are in the process of updating this. In the meantime, see our <a href="./docs/datasets.html">Exported Datasets</a> page for updates on datasets released for three UK cities.</p>
+<p><em>WARNING</em>: The documentation below is out of date in some cases, and we are in the process of updating this. In the meantime, see our <a href="./docs/datasets.qmd">Exported Datasets</a> page for updates on datasets released for three UK cities.</p>
 </section>
 <section id="table-of-contents" class="level2" data-number="1.2">
 <h2 data-number="1.2" class="anchored" data-anchor-id="table-of-contents"><span class="header-section-number">1.2</span> Table of Contents</h2>
@@ -431,17 +449,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="python" class="level3" data-number="1.4.2">
 <h3 data-number="1.4.2" class="anchored" data-anchor-id="python"><span class="header-section-number">1.4.2</span> <code>python</code></h3>
-<p>For many of our <code>python</code> command line scripts, you can use the <code>--help</code> flag to access a summary of the available options and usage information:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> python resampling_hads.py <span class="at">--help</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> resampling_hads.py <span class="pp">[-</span><span class="ss">h</span><span class="pp">]</span> <span class="at">--input</span> INPUT [--output OUTPUT] [--grid_data GRID_DATA]</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">options:</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">-h,</span> <span class="at">--help</span>            show this help message and exit</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">--input</span> INPUT         Path where the .nc files to resample is located</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">--output</span> OUTPUT       Path to save the resampled data data</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">--grid_data</span> GRID_DATA Path where the .nc file with the grid to resample is located</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>This will display all available options for the script, including their purposes.</p>
+<p>See <a href="setup-instructions">setup instructions</a> for installation options and the <code>python</code> <a href="python/README"><code>README</code></a> for usage and examples. Further detail of that code based can be found in the <a href="docs/reference/"><code>References</code></a>.</p>
+<p>If the <code>python</code> <code>clim-recal</code> package is installed, some of the components can be used via the command line, including the process for converting raw MetOffice data into the format we provide as <a href="./docs/datasets">datasets</a>. For details run:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> clim-recal <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<!---->
+<!---->
+<!-- - The `clim-recal` `python` package in the `python/folder` -->
+<!-- - Prior scripts  -->
+<!---->
+<!-- For many of our `python` command line scripts, you can use the `--help` flag to access a summary of the available options and usage information: -->
+<!---->
+<!-- ```sh -->
+<!-- $ python resampling_hads.py --help -->
+<!---->
+<!-- usage: resampling_hads.py [-h] --input INPUT [--output OUTPUT] [--grid_data GRID_DATA] -->
+<!---->
+<!-- options: -->
+<!-- -h, --help            show this help message and exit -->
+<!-- --input INPUT         Path where the .nc files to resample is located -->
+<!-- --output OUTPUT       Path to save the resampled data data -->
+<!-- --grid_data GRID_DATA Path where the .nc file with the grid to resample is located -->
+<!-- ``` -->
+<!---->
+<!-- This will display all available options for the script, including their purposes. -->
 </section>
 <section id="quarto" class="level3" data-number="1.4.3">
 <h3 data-number="1.4.3" class="anchored" data-anchor-id="quarto"><span class="header-section-number">1.4.3</span> Quarto</h3>
@@ -471,10 +501,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="hads" class="level3" data-number="1.5.2">
 <h3 data-number="1.5.2" class="anchored" data-anchor-id="hads"><span class="header-section-number">1.5.2</span> HADS</h3>
 <p><a href="https://www.metoffice.gov.uk/research/climate/maps-and-data/data/haduk-grid/haduk-grid">HadUK-Grid</a> is a comprehensive collection of climate data for the UK, compiled from various land surface observations across the country. This data is organized into a uniform grid to ensure consistent coverage throughout the UK at up to 1km x 1km resolution. The dataset, spanning from 1836 to the present, includes a variety of climate variables such as air temperature, precipitation, sunshine, and wind speed, available on daily, monthly, seasonal, and annual timescales.</p>
-</section>
-<section id="geographical-dataset" class="level3" data-number="1.5.3">
-<h3 data-number="1.5.3" class="anchored" data-anchor-id="geographical-dataset"><span class="header-section-number">1.5.3</span> Geographical Dataset</h3>
-<p>The geographical dataset can be used for visualising climate data. It mainly includes administrative boundaries published by the Office for National Statistics (ONS). The dataset is sharable under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v.3.0</a> and is available for download via this <a href="https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom_2022/FeatureServer/replicafilescache/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom_2022_7279368953270783580.zip">link</a>. We include a copy in the <code>data/Geofiles</code> folder for convenience. In addition, the clips for three cities’ boundaries from the same dataset are copied to <code>three.cities</code> subfolder.</p>
+<!---->
+<!-- ### Geographical Dataset -->
+<!-- The geographical dataset can be used for visualising climate data. It mainly includes administrative boundaries published by the Office for National Statistics (ONS). The dataset is sharable under the [Open Government Licence v.3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) and is available for download via this [link](https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom_2022/FeatureServer/replicafilescache/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom_2022_7279368953270783580.zip). We include a copy in the `data/Geofiles` folder for convenience. In addition, the clips for three cities' boundaries from the same dataset are copied to `three.cities` subfolder. -->
 </section>
 </section>
 <section id="why-bias-correction" class="level2" data-number="1.6">
@@ -483,6 +512,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Researchers, policy-makers and other stakeholders wishing to use publicly available RCMs need to consider a range of “bias correction” methods (sometimes referred to as “bias adjustment” or “recalibration”). Bias correction methods offer a means of adjusting the outputs of RCM in a manner that might better reflect future climate change signals whilst preserving the natural and internal variability of climate [2].</p>
 <p>Part of the <code>clim-recal</code> project is to review several bias correction methods. This work is ongoing and you can find our initial <a href="https://docs.google.com/spreadsheets/d/18LIc8omSMTzOWM60aFNv1EZUl1qQN_DG8HFy1_0NdWk/edit?usp=sharing">taxonomy here</a>. When we’ve completed our literature review, it will be submitted for publication in an open peer-reviewed journal.</p>
 <p>Our work is however, just like climate data, intended to be dynamic, and we are in the process of setting up a pipeline for researchers creating new methods of bias correction to be able to submit their methods for inclusion on in the <code>clim-recal</code> repository.</p>
+<!--Ideally find a solution for less confusing repeated footnote references-->
 <ol type="1">
 <li>Senatore et al., 2022, https://doi.org/10.1016/j.ejrh.2022.101120</li>
 <li>Ayar et al., 2021, https://doi.org/10.1038/s41598-021-82715-1</li>
@@ -490,16 +520,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="contributing" class="level2" data-number="1.7">
 <h2 data-number="1.7" class="anchored" data-anchor-id="contributing"><span class="header-section-number">1.7</span> Contributing</h2>
-<p>We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an issue or <a href="mailto:clim-recal@turing.ac.uk">get in touch</a>!</p>
-<section id="adding-to-the-conda-environment-file" class="level3" data-number="1.7.1">
-<h3 data-number="1.7.1" class="anchored" data-anchor-id="adding-to-the-conda-environment-file"><span class="header-section-number">1.7.1</span> Adding to the conda environment file</h3>
-<p>To use <code>R</code> in <code>anaconda</code> you may need to specify the <code>conda-forge</code> channel:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> conda config <span class="at">--env</span> <span class="at">--add</span> channels conda-forge</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Some libraries may be only available through <code>pip</code>, for example, these may require the generation / update of a <code>requirements.txt</code>:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pip freeze <span class="op">&gt;</span> requirements.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>and installing with:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pip install <span class="at">-r</span> requirements.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
+<p>We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an <a href="https://github.com/alan-turing-institute/clim-recal/issues">issue</a>, <a href="mailto:clim-recal@turing.ac.uk">get in touch</a>, or see our <a href="docs/contributing">contributing</a> section. All are welcome and appreciated.</p>
+<!-- ### Adding to the conda environment file -->
+<!---->
+<!-- To use `R` in `anaconda` you may need to specify the `conda-forge` channel: -->
+<!---->
+<!-- ```sh -->
+<!-- $ conda config --env --add channels conda-forge -->
+<!-- ``` -->
+<!---->
+<!-- Some libraries may be only available through `pip`, for example, these may -->
+<!-- require the generation / update of a `requirements.txt`: -->
+<!---->
+<!-- ```sh -->
+<!-- $ pip freeze > requirements.txt -->
+<!-- ``` -->
+<!---->
+<!-- and installing with: -->
+<!---->
+<!-- ```sh -->
+<!-- $ pip install -r requirements.txt -->
+<!-- ``` -->
 </section>
 <section id="future-plans" class="level2" data-number="1.8">
 <h2 data-number="1.8" class="anchored" data-anchor-id="future-plans"><span class="header-section-number">1.8</span> Future plans</h2>
@@ -533,6 +574,150 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
   const icon = "";
   const anchorJS = new window.AnchorJS();
   anchorJS.options = {

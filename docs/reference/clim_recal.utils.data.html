@@ -69,10 +69,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -129,6 +131,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="../../">clim-recal</a> 
+        <div class="sidebar-tools-main">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -171,29 +176,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Diagram</span></a>
   </div>
 </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../docs/cpm_projection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">CPM Projection</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/cpm_projection.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">CPM Projection</span></a>
+  <a href="../../notebooks/cpm_projection_diff_plots.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Core Issue</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../notebooks/cpm_projection_diff_plots_linear_nearest.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nearest versus Linear</span></a>
   </div>
 </li>
       </ul>
   </li>
+      </ul>
+  </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/datasets.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Generated Datasets</span></a>
+  <a href="../../docs/download.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Download Datasets</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../../R/README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">R</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../R/misc/Identifying_Runs.html" class="sidebar-item-text sidebar-link">
@@ -202,13 +224,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
  <span class="menu-text">Comparing R and Python</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.html" class="sidebar-item-text sidebar-link">
@@ -223,20 +245,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="sidebar-item-container"> 
             <a href="../../python/README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">python</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../../docs/reference/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Reference</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 show">  
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../docs/reference/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth2 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/clim_recal.pipeline.html" class="sidebar-item-text sidebar-link">
@@ -263,19 +285,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/clim_recal.convert.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/clim_recal.resample.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data Resampling</span></a>
   </div>
 </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
  <span class="menu-text">Debiasing</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth3 ">  
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/clim_recal.debiasing.debias_wrapper.html" class="sidebar-item-text sidebar-link">
@@ -286,13 +308,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
  <span class="menu-text">Utilities</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth3 show">  
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth3 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/clim_recal.utils.core.html" class="sidebar-item-text sidebar-link">
@@ -357,12 +379,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#python.clim_recal.utils.data.RegionOptions" id="toc-python.clim_recal.utils.data.RegionOptions" class="nav-link" data-scroll-target="#python.clim_recal.utils.data.RegionOptions"><span class="header-section-number">1.2.5</span> RegionOptions</a></li>
   <li><a href="#python.clim_recal.utils.data.RunOptions" id="toc-python.clim_recal.utils.data.RunOptions" class="nav-link" data-scroll-target="#python.clim_recal.utils.data.RunOptions"><span class="header-section-number">1.2.6</span> RunOptions</a></li>
   <li><a href="#python.clim_recal.utils.data.VariableOptions" id="toc-python.clim_recal.utils.data.VariableOptions" class="nav-link" data-scroll-target="#python.clim_recal.utils.data.VariableOptions"><span class="header-section-number">1.2.7</span> VariableOptions</a></li>
-  </ul></li>
-  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions"><span class="header-section-number">1.3</span> Functions</a>
-  <ul class="collapse">
-  <li><a href="#python.clim_recal.utils.data.check_config_dates" id="toc-python.clim_recal.utils.data.check_config_dates" class="nav-link" data-scroll-target="#python.clim_recal.utils.data.check_config_dates"><span class="header-section-number">1.3.1</span> check_config_dates</a></li>
-  <li><a href="#python.clim_recal.utils.data.check_paths_required" id="toc-python.clim_recal.utils.data.check_paths_required" class="nav-link" data-scroll-target="#python.clim_recal.utils.data.check_paths_required"><span class="header-section-number">1.3.2</span> check_paths_required</a></li>
-  <li><a href="#python.clim_recal.utils.data.get_clim_types" id="toc-python.clim_recal.utils.data.get_clim_types" class="nav-link" data-scroll-target="#python.clim_recal.utils.data.get_clim_types"><span class="header-section-number">1.3.3</span> get_clim_types</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -472,7 +488,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <section id="python.clim_recal.utils.data.BoundingBoxCoords" class="level3" data-number="1.2.1">
 <h3 data-number="1.2.1" class="anchored" data-anchor-id="python.clim_recal.utils.data.BoundingBoxCoords"><span class="header-section-number">1.2.1</span> BoundingBoxCoords</h3>
-<p><code>clim_recal.utils.data.BoundingBoxCoords(self, name, xmin, xmax, ymin, ymax, crop_width=None, crop_height=None, epsg=BRITISH_NATION_GRID_COORDS_NUMBER)</code></p>
+<p><code>clim_recal.utils.data.BoundingBoxCoords(self, name, xmin, xmax, ymin, ymax, epsg=BRITISH_NATION_GRID_COORDS_NUMBER)</code></p>
 <p>A region name and its bounding box coordinates.</p>
 <section id="attributes-1" class="level4" data-number="1.2.1.1">
 <h4 data-number="1.2.1.1" class="anchored" data-anchor-id="attributes-1"><span class="header-section-number">1.2.1.1</span> Attributes</h4>
@@ -864,161 +880,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>Resampling.<span class="bu">min</span>: <span class="dv">9</span><span class="op">&gt;</span></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> VariableOptions.resampling_method(<span class="va">None</span>)</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>Resampling.average: <span class="dv">5</span><span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-</section>
-</section>
-</section>
-</section>
-<section id="functions" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="functions"><span class="header-section-number">1.3</span> Functions</h2>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><a href="#python.clim_recal.utils.data.check_config_dates">check_config_dates</a></td>
-<td>Raise <code>exception</code> if <code>date_obj</code> isn’t within <code>earliest_start_date</code> and <code>latest_end_date</code>.</td>
-</tr>
-<tr class="even">
-<td><a href="#python.clim_recal.utils.data.check_paths_required">check_paths_required</a></td>
-<td>Check paths necessary given cli parameters and <code>Abort</code> if invalid.</td>
-</tr>
-<tr class="odd">
-<td><a href="#python.clim_recal.utils.data.get_clim_types">get_clim_types</a></td>
-<td>Check which data types to include and return as a <code>tuple</code>.</td>
-</tr>
-</tbody>
-</table>
-<section id="python.clim_recal.utils.data.check_config_dates" class="level3" data-number="1.3.1">
-<h3 data-number="1.3.1" class="anchored" data-anchor-id="python.clim_recal.utils.data.check_config_dates"><span class="header-section-number">1.3.1</span> check_config_dates</h3>
-<p><code>clim_recal.utils.data.check_config_dates(start_date, end_date, start_date_name='start_date', end_date_name='end_date', min_start_date=HADS_START_DATE, max_end_date=CPM_END_DATE)</code></p>
-<p>Raise <code>exception</code> if <code>date_obj</code> isn’t within <code>earliest_start_date</code> and <code>latest_end_date</code>.</p>
-<section id="parameters-3" class="level4" data-number="1.3.1.1">
-<h4 data-number="1.3.1.1" class="anchored" data-anchor-id="parameters-3"><span class="header-section-number">1.3.1.1</span> Parameters</h4>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 20%">
-<col style="width: 18%">
-<col style="width: 41%">
-<col style="width: 20%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>start_date</code></td>
-<td>date | datetime</td>
-<td>Start of date range to check.</td>
-<td><em>required</em></td>
-</tr>
-<tr class="even">
-<td><code>end_date</code></td>
-<td>date | datetime</td>
-<td>End of date range to check.</td>
-<td><em>required</em></td>
-</tr>
-<tr class="odd">
-<td><code>start_date_name</code></td>
-<td>str</td>
-<td>Name of start date variable to check.</td>
-<td><code>'start_date'</code></td>
-</tr>
-<tr class="even">
-<td><code>end_date_name</code></td>
-<td>str</td>
-<td>Name of end date variable to check.</td>
-<td><code>'end_date'</code></td>
-</tr>
-<tr class="odd">
-<td><code>min_start_date</code></td>
-<td>date | datetime</td>
-<td>Earlist vaid date.</td>
-<td><code>HADS_START_DATE</code></td>
-</tr>
-<tr class="even">
-<td><code>max_end_date</code></td>
-<td>date | datetime</td>
-<td>Latest vaid date.</td>
-<td><code>CPM_END_DATE</code></td>
-</tr>
-<tr class="odd">
-<td><code>ValueError</code></td>
-<td></td>
-<td></td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="examples-3" class="level4" data-number="1.3.1.2">
-<h4 data-number="1.3.1.2" class="anchored" data-anchor-id="examples-3"><span class="header-section-number">1.3.1.2</span> Examples</h4>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> check_config_dates(date(<span class="dv">1980</span>, <span class="dv">12</span>, <span class="dv">2</span>), date(<span class="dv">1981</span>, <span class="dv">1</span>, <span class="dv">1</span>))</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> check_config_dates(start_date<span class="op">=</span>date(<span class="dv">1979</span>, <span class="dv">12</span>, <span class="dv">2</span>), end_date<span class="op">=</span>date(<span class="dv">1981</span>, <span class="dv">1</span>, <span class="dv">1</span>))</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>Traceback (most recent call last):</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>...</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="pp">ValueError</span>: <span class="st">'start_date'</span> <span class="dv">1979</span><span class="op">-</span><span class="dv">12</span><span class="op">-</span><span class="dv">0</span><span class="er">2</span> must be before <span class="st">'end_date'</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dv">1981</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span> <span class="kw">and</span> both between <span class="dv">1980</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span> <span class="kw">and</span> <span class="dv">2080</span><span class="op">-</span><span class="dv">11</span><span class="op">-</span><span class="dv">30</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-</section>
-<section id="python.clim_recal.utils.data.check_paths_required" class="level3" data-number="1.3.2">
-<h3 data-number="1.3.2" class="anchored" data-anchor-id="python.clim_recal.utils.data.check_paths_required"><span class="header-section-number">1.3.2</span> check_paths_required</h3>
-<p><code>clim_recal.utils.data.check_paths_required(hads, cpm, input_path, hads_path=HADS_RAW_FOLDER, cpm_path=CPM_RAW_FOLDER)</code></p>
-<p>Check paths necessary given cli parameters and <code>Abort</code> if invalid.</p>
-<section id="paramaters" class="level4" data-number="1.3.2.1">
-<h4 data-number="1.3.2.1" class="anchored" data-anchor-id="paramaters"><span class="header-section-number">1.3.2.1</span> Paramaters</h4>
-<p>hads Whether <code>hads</code> should be included. cpm Whether ‘cpm’ should be included. input_path Root <code>Path</code> for relative ‘hads_path’ and ‘cpm_path’. hads_path <code>Path</code> within <code>input_path</code> to HADs data. cpm_path <code>Path</code> within <code>input_path</code> to CPM data.</p>
-</section>
-<section id="examples-4" class="level4" data-number="1.3.2.2">
-<h4 data-number="1.3.2.2" class="anchored" data-anchor-id="examples-4"><span class="header-section-number">1.3.2.2</span> Examples</h4>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> check_paths_required(hads<span class="op">=</span><span class="va">True</span>, cpm<span class="op">=</span><span class="va">True</span>, input_path<span class="op">=</span><span class="st">'missing/'</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>Traceback (most recent call last):</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    ...</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="pp">ValueError</span>: Path <span class="cf">for</span> <span class="st">'hads'</span> doesn<span class="st">'t exist: '</span>missing<span class="op">/</span>HadsUKgrid<span class="st">'</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="er">Path for 'cpm' doesn't exist: 'missing/UKCP2.2'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-</section>
-<section id="python.clim_recal.utils.data.get_clim_types" class="level3" data-number="1.3.3">
-<h3 data-number="1.3.3" class="anchored" data-anchor-id="python.clim_recal.utils.data.get_clim_types"><span class="header-section-number">1.3.3</span> get_clim_types</h3>
-<p><code>clim_recal.utils.data.get_clim_types(hads=True, cpm=True)</code></p>
-<p>Check which data types to include and return as a <code>tuple</code>.</p>
-<section id="parameters-4" class="level4" data-number="1.3.3.1">
-<h4 data-number="1.3.3.1" class="anchored" data-anchor-id="parameters-4"><span class="header-section-number">1.3.3.1</span> Parameters</h4>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>hads</code></td>
-<td>bool</td>
-<td>Whether to include <code>hads</code> data.</td>
-<td><code>True</code></td>
-</tr>
-<tr class="even">
-<td><code>cpm</code></td>
-<td>bool</td>
-<td>Whether to include <code>cpm</code> data.</td>
-<td><code>True</code></td>
-</tr>
-</tbody>
-</table>
 
 
+</section>
+</section>
 </section>
 </section>
 </section>
@@ -1045,6 +910,150 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
   const icon = "";
   const anchorJS = new window.AnchorJS();
   anchorJS.options = {

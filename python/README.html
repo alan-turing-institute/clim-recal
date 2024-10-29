@@ -69,10 +69,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -129,6 +131,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="../">clim-recal</a> 
+        <div class="sidebar-tools-main">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -171,29 +176,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Diagram</span></a>
   </div>
 </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../docs/cpm_projection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">CPM Projection</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/cpm_projection.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">CPM Projection</span></a>
+  <a href="../notebooks/cpm_projection_diff_plots.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Core Issue</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../notebooks/cpm_projection_diff_plots_linear_nearest.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nearest versus Linear</span></a>
   </div>
 </li>
       </ul>
   </li>
+      </ul>
+  </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/datasets.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Generated Datasets</span></a>
+  <a href="../docs/download.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Download Datasets</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../R/README.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">R</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../R/misc/Identifying_Runs.html" class="sidebar-item-text sidebar-link">
@@ -202,13 +224,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
  <span class="menu-text">Comparing R and Python</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.html" class="sidebar-item-text sidebar-link">
@@ -223,20 +245,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="sidebar-item-container"> 
             <a href="../python/README.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">python</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../docs/reference/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Reference</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../docs/reference/clim_recal.pipeline.html" class="sidebar-item-text sidebar-link">
@@ -263,19 +285,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.convert.html" class="sidebar-item-text sidebar-link">
+  <a href="../docs/reference/clim_recal.resample.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data Resampling</span></a>
   </div>
 </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
  <span class="menu-text">Debiasing</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth3 ">  
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../docs/reference/clim_recal.debiasing.debias_wrapper.html" class="sidebar-item-text sidebar-link">
@@ -286,13 +308,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false">
  <span class="menu-text">Utilities</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth3 ">  
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth3 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../docs/reference/clim_recal.utils.core.html" class="sidebar-item-text sidebar-link">
@@ -345,14 +367,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#methods-implemented-in-python" id="toc-methods-implemented-in-python" class="nav-link active" data-scroll-target="#methods-implemented-in-python"><span class="header-section-number">1</span> Methods implemented in Python</a>
+  <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation"><span class="header-section-number">1</span> Installation</a></li>
+  <li><a href="#pipeline" id="toc-pipeline" class="nav-link" data-scroll-target="#pipeline"><span class="header-section-number">2</span> Pipeline</a>
   <ul class="collapse">
-  <li><a href="#resampling-hads-grid-from-1-km-to-2.2-km" id="toc-resampling-hads-grid-from-1-km-to-2.2-km" class="nav-link" data-scroll-target="#resampling-hads-grid-from-1-km-to-2.2-km"><span class="header-section-number">1.1</span> Resampling HADs grid from 1 km to 2.2 km</a></li>
-  <li><a href="#running-debiasing-methods" id="toc-running-debiasing-methods" class="nav-link" data-scroll-target="#running-debiasing-methods"><span class="header-section-number">1.2</span> Running debiasing methods</a>
-  <ul class="collapse">
-  <li><a href="#the-cmethods-library" id="toc-the-cmethods-library" class="nav-link" data-scroll-target="#the-cmethods-library"><span class="header-section-number">1.2.1</span> The cmethods library</a></li>
-  </ul></li>
-  <li><a href="#testing" id="toc-testing" class="nav-link" data-scroll-target="#testing"><span class="header-section-number">1.3</span> Testing</a></li>
+  <li><a href="#download-uk-met-office-data" id="toc-download-uk-met-office-data" class="nav-link" data-scroll-target="#download-uk-met-office-data"><span class="header-section-number">2.1</span> Download UK Met Office data</a></li>
+  <li><a href="#aligning-hads-and-cpm-uk-data" id="toc-aligning-hads-and-cpm-uk-data" class="nav-link" data-scroll-target="#aligning-hads-and-cpm-uk-data"><span class="header-section-number">2.2</span> Aligning HADs and CPM UK data</a></li>
+  <li><a href="#running-debiasing-methods" id="toc-running-debiasing-methods" class="nav-link" data-scroll-target="#running-debiasing-methods"><span class="header-section-number">2.3</span> Running debiasing methods</a></li>
+  <li><a href="#testing" id="toc-testing" class="nav-link" data-scroll-target="#testing"><span class="header-section-number">2.4</span> Testing</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -363,116 +384,241 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="methods-implemented-in-python" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> Methods implemented in Python</h1>
-<p><em>WARNING</em>: the documentation below predates a significant refactor.</p>
-<section id="resampling-hads-grid-from-1-km-to-2.2-km" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="resampling-hads-grid-from-1-km-to-2.2-km"><span class="header-section-number">1.1</span> Resampling HADs grid from 1 km to 2.2 km</h2>
-<p>The raw <a href="https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km">UKHAD observational data</a> needs to be resampled to the same grid of the <a href="https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/">RCP8.5 data</a>. <!--
-This can be done with the `python/resampling/resampling_hads.py` script, which takes an input
-grid and uses to resample the data using [linear interpolation](https://docs.xarray.dev/en/stable/generated/xarray.DataArray.interp.html) (for simplicity have added a
-default grid in `data/rcp85_land-cpm_uk_2.2km_grid.nc`).
-
-
-The script runs under the conda environment created on the main [README.md](../README.md) and has several options that can be understood by
-running the following from the `resampling` directory:
-
-```sh
-$ python resampling_hads.py --help
-
-usage: resampling_hads.py [-h] --input INPUT [--output OUTPUT] [--grid_data GRID_DATA]
-
-options:
-  -h, --help            show this help message and exit
-  --input INPUT         Path where the .nc files to resample is located
-  --output OUTPUT       Path to save the resampled data data
-  --grid_data GRID_DATA
-                        Path where the .nc file with the grid to resample is located
-
-```
-
-The script expects the data to be files of `.nc` extension, have dimensions named `projection_x_coordinate` and `projection_y_coordinate` and to follow the format of the [CEDA Archive](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km).
-
-Furthermore, the layer/variable to be resampled must be on the beginning of the name of the file before any `_` (e.g for `tasmax` is `tasmax_hadukgrid_uk_1km_day_19930501-19930531.nc`).
-
-### Quickstart
-
-For example, to run the resampling on `tasmax` daily data found in the fileshare (https://dymestorage1.file.core.windows.net/vmfileshare).
-
-```sh
-$ cd python/resampling
-$ python resampling_hads.py --input /Volumes/vmfileshare/ClimateData/Raw/HadsUKgrid/tasmax/day --output <local-directory-path>
-```
-
-as there is not a `--grid_data` flag, the default file described above is used.
-
-
-## Loading UKCP and HADs data
-
-In [python/clim_recal/data_loader.py] we have written a few functions for loading and concatenating data into a single xarray which can be used for running debiasing methods. Instructions in how to use these functions can be found in [python/notebooks/load_data_python.ipynb](../notebooks/load_data_python.ipynb).
---></p>
+<section id="installation" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Installation</h1>
+<p>See <a href="../setup-instructions">setup instructions</a> for detailed installation options, including via the <code>python</code> package <code>pdm</code>, <code>conda</code> and <code>docker</code>.</p>
 </section>
-<section id="running-debiasing-methods" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="running-debiasing-methods"><span class="header-section-number">1.2</span> Running debiasing methods</h2>
-<p>The code in the <a href="debiasing">debiasing</a> directory contains scripts that interface with implementations of the debiasing methods implemented by different libraries.</p>
-<p>Note: By March 2023 we have only implemented the <a href="https://github.com/alan-turing-institute/python-cmethods">python-cmethods</a> library.</p>
-<section id="the-cmethods-library" class="level3" data-number="1.2.1">
-<h3 data-number="1.2.1" class="anchored" data-anchor-id="the-cmethods-library"><span class="header-section-number">1.2.1</span> The cmethods library</h3>
-<p>This repository contains two python scripts one for preprocessing/grouping data and one to run debiasing in climate data using a fork of the <a href="https://github.com/btschwertfeger/python-cmethods">original python-cmethods</a> module written by Benjamin Thomas Schwertfeger’s , which has been modified to function with the dataset used in the clim-recal project. This library has been included as a submodule to this project, so you must run the following command to pull the submodules required.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cd debiasing</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> git submodule update <span class="at">--init</span> <span class="at">--recursive</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="pipeline" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Pipeline</h1>
+<p>There are three core steps we hope to implement in our <code>python</code> <code>clim-recal</code> package:</p>
+<ol type="1">
+<li>Download UK Met Office <code>observation</code> and <code>projection</code> data</li>
+<li>Convert that data to aligned spatial time series grids for debiasing</li>
+<li>Facilitate running and comparing debiasing methods</li>
+</ol>
+<p>We currently provide the the following coverted and aligned files in our <a href="docs/download">Download Datasets</a> page:</p>
 <ul>
-<li>The <a href="clim_recal/debiasing/preprocess_data.py">preprocess_data.py</a> script allows the user to specify directories from which the modelled (CPM/UKCP) data and observation (HADs) data should be loaded, as well as time periods to use for calibration and validation. The script parses the necessary files and combines them into two files for calibration (modelled and observed), and two files for validation (modelled and observed) - with the option to specify multiple validation periods. These can then be used as inputs to <code>run_cmethods.py</code>.</li>
-<li>The <a href="clim_recal/debiasing/run_cmethods.py">run_cmethods.py</a> script allow us to adjust climate biases in climate data using the python-cmethods library. It takes as input observation data (HADs data) and modelled data (historical CPM/UKCP data) for calibration, as well as observation and modelled data for validation (generated by <code>preprocess_data.py</code>). It calibrates the debiasing method using the calibration period data and debiases the modelled data for the validation period. The resulting output is saved as a <code>.nc</code> to a specified directory. The script will also produce a time-series and a map plot of the debiased data.</li>
+<li>Maximum temparture: <code>tasmax</code></li>
+<li>Maximum temparture: <code>tasmin</code></li>
+<li>Rainfall: <code>rainfall</code>/<code>pr</code></li>
 </ul>
-<p><strong>Usage</strong>:</p>
-<p>The scripts can be run from the command line using the following arguments:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> python3 preprocess_data.py <span class="at">--mod</span> <span class="op">&lt;</span>path to modelled datasets<span class="op">&gt;</span> --obs <span class="op">&lt;</span>path to observation datasets<span class="op">&gt;</span> --shp <span class="op">&lt;</span>shapefile<span class="op">&gt;</span> --out <span class="op">&lt;</span>output file path<span class="op">&gt;</span> -v <span class="op">&lt;</span>variable<span class="op">&gt;</span> -u <span class="op">&lt;</span>unit<span class="op">&gt;</span> -r <span class="op">&lt;</span>CPM model run number<span class="op">&gt;</span> --calib_dates <span class="op">&lt;</span>date range for calibration<span class="op">&gt;</span> --valid_dates <span class="op">&lt;</span>date range for validation<span class="op">&gt;</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> python3 run_cmethods.py <span class="at">--input_data_folder</span> <span class="op">&lt;</span>input files directory<span class="op">&gt;</span> --out <span class="op">&lt;</span>output directory<span class="op">&gt;</span> -m <span class="op">&lt;</span>method<span class="op">&gt;</span> -v <span class="op">&lt;</span>variable<span class="op">&gt;</span> -g <span class="op">&lt;</span>group<span class="op">&gt;</span> -k <span class="op">&lt;</span>kind<span class="op">&gt;</span> -n <span class="op">&lt;</span>number of quantiles<span class="op">&gt;</span> -p <span class="op">&lt;</span>number of processes<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>For more details on the scripts and options you can run:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> python3 preprocess_data.py <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>and</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> run_cmethods.py <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><strong>Main Functionality</strong>:</p>
-<p>The <code>preprocess_data.py</code> script performs the following steps:</p>
+<p>We provide 5 projection runs:</p>
 <ul>
-<li>Parses the input arguments.</li>
-<li>Loads, merges and clips (if shapefile is provided) all calibration datasets and merges them into two distinct datasets: the m modelled and observed datasets.</li>
-<li>Aligns the calendars of the two datasets, ensuring that they have the same time dimension.</li>
-<li>Saves the calibration datasets to the output directory.</li>
-<li>Loops over the validation time periods specified in the <code>calib_dates</code> variable and performs the following steps:
-<ul>
-<li>Loads the modelled data for the current time period.</li>
-<li>Loads the observed data for the current time period.</li>
-<li>Aligns and saves the datasets to the output directory.</li>
-</ul></li>
+<li><code>01</code></li>
+<li><code>05</code></li>
+<li><code>06</code></li>
+<li><code>07</code></li>
+<li><code>08</code></li>
 </ul>
-<p>The <code>run_cmethods.py</code> script performs the following steps: - Reads the input calibration and validation datasets from the input directory. - Applies the specified debiasing method, combining the calibration and valiation data. - Saves the resulting output to the specified directory. - Creates diagnotic figues of the output dataset (time series and time dependent maps) and saves it into the specified directory.</p>
-<p><strong>Working example</strong>.</p>
-<p>Example of how to run the two scripts using data stored in the Azure fileshare, running the scripts locally (uses input data that have been cropped to contain only the city of Glasgow. The two scripts will debias only the <code>tasmax</code> variable, run 05 of the CPM, for calibration years 1980-2009 and validation years 2010-2019. It uses the <code>quantile_delta_mapping</code> debiasing method:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> python3 preprocess_data.py <span class="at">--mod</span> /Volumes/vmfileshare/ClimateData/Cropped/three.cities/CPM/Glasgow/ <span class="at">--obs</span> /Volumes/vmfileshare/ClimateData/Cropped/three.cities/Hads.original360/Glasgow/ <span class="at">-v</span> tasmax <span class="at">--out</span> ./preprocessed_data/ <span class="at">--calib_dates</span> 19800101-20091230 <span class="at">--valid_dates</span> 20100101-20191230 <span class="at">--run_number</span> 05</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> python3 run_cmethods.py <span class="at">--input_data_folder</span> ./preprocessed_data/  <span class="at">--out</span> ./debiased_data/  <span class="at">--method</span> quantile_delta_mapping <span class="at">--v</span> tasmax <span class="at">-p</span> 4</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We demonstrate the advantage of focusing on <code>05</code> through <code>08</code> in <a href="R/misc/Identifying_Runs">Identifying Runs</a>.</p>
+<p>Below is how these files are produced.</p>
+<section id="download-uk-met-office-data" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="download-uk-met-office-data"><span class="header-section-number">2.1</span> Download UK Met Office data</h2>
+<p>We use two datasets maintained by the <a href="https://www.metoffice.gov.uk">Met Office</a></p>
+<ul>
+<li><a href="https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km">UKHAD observational data</a></li>
+<li><a href="https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/">RCP8.5 projection data</a></li>
+</ul>
+<p>This data can be quite large and take significant amounts of time to download.</p>
+<p>To download this an account is needed. The registration process can be found here: <a href="https://services.ceda.ac.uk/cedasite/register/info/" class="uri">https://services.ceda.ac.uk/cedasite/register/info/</a>.</p>
+<p>We hope to incorporate this module in the <code>clim-recal</code> command line interface in future, but at present the <code>ceda_ftp_download.py</code> module is used to download this data and can be run from the command line via <code>python3</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cd clim-recal/python/clim_recal</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ./ceda_ftp_download.py  <span class="at">--help</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> ceda_ftp_download.py <span class="pp">[-</span><span class="ss">h</span><span class="pp">]</span> <span class="at">--input</span> INPUT [--output OUTPUT] <span class="at">--username</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>                            <span class="ex">USERNAME</span> <span class="at">--psw</span> PSW <span class="pp">[--</span><span class="ss">reverse</span><span class="pp">]</span> <span class="pp">[--</span><span class="ss">shuffle</span><span class="pp">]</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                            <span class="ex">[--change_hierarchy]</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">options:</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="ex">-h,</span> <span class="at">--help</span>           show this help message and exit</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--input</span> INPUT        Path where the CEDA data to download is located. This can be</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                       <span class="ex">a</span> path with or without subdirectories. Set to</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                       <span class="kw">`</span><span class="ex">/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/</span><span class="kw">`</span> to download all</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                       <span class="ex">the</span> raw UKCP2.2 climate projection data used in clim-recal.</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--output</span> OUTPUT      Path to save the downloaded data</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--username</span> USERNAME  Username to connect to the CEDA servers</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--psw</span> PSW            FTP password to authenticate to the CEDA servers</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--reverse</span>            Run download in reverse <span class="er">(</span><span class="ex">useful</span> to run downloads in</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>                       <span class="ex">parallel</span><span class="kw">)</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--shuffle</span>            Run download in shuffle mode <span class="er">(</span><span class="ex">useful</span> to run downloads in</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>                       <span class="ex">parallel</span><span class="kw">)</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--change_hierarchy</span>   Change the output sub-directories<span class="st">' hierarchy to fit the</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="st">                       Turing Azure fileshare hierarchy (only applicable to UKCP</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="st">                       climate projection data, i.e. when --input is set to</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
+<section id="aligning-hads-and-cpm-uk-data" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="aligning-hads-and-cpm-uk-data"><span class="header-section-number">2.2</span> Aligning HADs and CPM UK data</h2>
+<p>These dataset are provided in the following forms</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Dataset</th>
+<th style="text-align: center;">Resolution</th>
+<th style="text-align: center;">Coordinates</th>
+<th style="text-align: center;">Calendar</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">UKHAD</td>
+<td style="text-align: center;">1 km</td>
+<td style="text-align: center;">British National Grid<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></td>
+<td style="text-align: center;">Standard</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">RCP8.5</td>
+<td style="text-align: center;">2.2 km</td>
+<td style="text-align: center;">Rotated Pole<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></td>
+<td style="text-align: center;">360 day</td>
+</tr>
+</tbody>
+</table>
+<p>To align them we:</p>
+<ol type="1">
+<li>Interpolate RCP8.5 to standard gregorian calendar via the <code>nearest</code> method<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.</li>
+<li>Reproject RCP8.5 to British National Grid Coordinate structure.</li>
+<li>Resample UKHAD to to 2.2 km</li>
+<li>Reproject UKHAD bounds to align with RCP8.5</li>
+</ol>
+<p>Links to these files are in the <a href="docs/downloads">Download Datasets</a> section.</p>
 </section>
-<section id="testing" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="testing"><span class="header-section-number">1.3</span> Testing</h2>
+<section id="running-debiasing-methods" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="running-debiasing-methods"><span class="header-section-number">2.3</span> Running debiasing methods</h2>
+<p>Preliminary work in this process is in the <code>clim_recal/debiasing</code> section. We are at present assessing future options for this, likely via either</p>
+<ul>
+<li><a href="https://ibicus.readthedocs.io/en/latest/"><code>ibicus</code></a></li>
+<li><a href="https://pypi.org/project/python-cmethods/"><code>python-cmethods</code></a></li>
+</ul>
+<!-- ## Resampling HADs grid from 1 km to 2.2 km -->
+<!---->
+<!-- The raw [UKHAD observational data](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km) -->
+<!-- needs to be resampled to the same grid of the [RCP8.5 data](https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/). -->
+<!---->
+<!-- This can be done with the `python/resampling/resampling_hads.py` script, which takes an input -->
+<!-- grid and uses to resample the data using [linear interpolation](https://docs.xarray.dev/en/stable/generated/xarray.DataArray.interp.html) (for simplicity have added a -->
+<!-- default grid in `data/rcp85_land-cpm_uk_2.2km_grid.nc`). -->
+<!---->
+<!---->
+<!-- The script runs under the conda environment created on the main [README.md](../README.md) and has several options that can be understood by -->
+<!-- running the following from the `resampling` directory: -->
+<!---->
+<!-- ```sh -->
+<!-- $ python resampling_hads.py --help -->
+<!---->
+<!-- usage: resampling_hads.py [-h] --input INPUT [--output OUTPUT] [--grid_data GRID_DATA] -->
+<!---->
+<!-- options: -->
+<!--   -h, --help            show this help message and exit -->
+<!--   --input INPUT         Path where the .nc files to resample is located -->
+<!--   --output OUTPUT       Path to save the resampled data data -->
+<!--   --grid_data GRID_DATA -->
+<!--                         Path where the .nc file with the grid to resample is located -->
+<!---->
+<!-- ``` -->
+<!---->
+<!-- The script expects the data to be files of `.nc` extension, have dimensions named `projection_x_coordinate` and `projection_y_coordinate` and to follow the format of the [CEDA Archive](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km). -->
+<!---->
+<!-- Furthermore, the layer/variable to be resampled must be on the beginning of the name of the file before any `_` (e.g for `tasmax` is `tasmax_hadukgrid_uk_1km_day_19930501-19930531.nc`). -->
+<!-- ### Quickstart -->
+<!---->
+<!-- For example, to run the resampling on `tasmax` daily data found in the fileshare (https://dymestorage1.file.core.windows.net/vmfileshare). -->
+<!---->
+<!-- ```sh -->
+<!-- $ cd python/resampling -->
+<!-- $ python resampling_hads.py --input /Volumes/vmfileshare/ClimateData/Raw/HadsUKgrid/tasmax/day --output <local-directory-path> -->
+<!-- ``` -->
+<!---->
+<!-- as there is not a `--grid_data` flag, the default file described above is used. -->
+<!---->
+<!---->
+<!-- ## Loading UKCP and HADs data -->
+<!---->
+<!-- In [python/clim_recal/data_loader.py] we have written a few functions for loading and concatenating data into a single xarray which can be used for running debiasing methods. Instructions in how to use these functions can be found in [python/notebooks/load_data_python.ipynb](../notebooks/load_data_python.ipynb). -->
+<!---->
+<!-- ## Running debiasing methods -->
+<!---->
+<!-- The code in the [debiasing](debiasing) directory contains scripts that interface with implementations of the debiasing methods -->
+<!-- implemented by different libraries. -->
+<!---->
+<!-- Note: By March 2023 we have only implemented the [python-cmethods](https://github.com/alan-turing-institute/python-cmethods) library. -->
+<!---->
+<!---->
+<!-- ### The cmethods library -->
+<!---->
+<!-- This repository contains two python scripts one for preprocessing/grouping data and one to run debiasing in climate data using a fork of the [original python-cmethods](https://github.com/btschwertfeger/python-cmethods) module written by Benjamin Thomas Schwertfeger's , which has been modified to function with the dataset used in the clim-recal project. This library has been included as a submodule to this project, so you must run the following command to pull the submodules required. -->
+<!---->
+<!-- ```sh -->
+<!-- $ cd debiasing -->
+<!-- $ git submodule update --init --recursive -->
+<!-- ``` -->
+<!---->
+<!-- - The [preprocess_data.py](clim_recal/debiasing/preprocess_data.py) script allows the user to specify directories from which the modelled (CPM/UKCP) data and observation (HADs) data should be loaded, as well as time periods to use for calibration and validation. The script parses the necessary files and combines them into two files for calibration (modelled and observed), and two files for validation (modelled and observed) - with the option to specify multiple validation periods. These can then be used as inputs to `run_cmethods.py`. -->
+<!-- - The [run_cmethods.py](clim_recal/debiasing/run_cmethods.py) script allow us to adjust climate biases in climate data using the python-cmethods library. -->
+<!-- It takes as input observation data (HADs data) and modelled data (historical CPM/UKCP data) for calibration, as well as observation and modelled data for validation (generated by `preprocess_data.py`). It calibrates the debiasing method using the calibration period data and debiases the modelled data for the validation period. The resulting output is saved as a `.nc` to a specified directory. The script will also produce a time-series and a map plot of the debiased data. -->
+<!---->
+<!-- **Usage**: -->
+<!---->
+<!-- The scripts can be run from the command line using the following arguments: -->
+<!---->
+<!-- ```sh -->
+<!-- $ python3 preprocess_data.py --mod <path to modelled datasets> --obs <path to observation datasets> --shp <shapefile> --out <output file path> -v <variable> -u <unit> -r <CPM model run number> --calib_dates <date range for calibration> --valid_dates <date range for validation> -->
+<!---->
+<!-- $ python3 run_cmethods.py --input_data_folder <input files directory> --out <output directory> -m <method> -v <variable> -g <group> -k <kind> -n <number of quantiles> -p <number of processes> -->
+<!-- ``` -->
+<!---->
+<!-- For more details on the scripts and options you can run: -->
+<!-- ```sh -->
+<!-- $ python3 preprocess_data.py --help -->
+<!-- ``` -->
+<!-- and -->
+<!-- ```sh -->
+<!-- python3 run_cmethods.py --help -->
+<!-- ``` -->
+<!-- **Main Functionality**: -->
+<!---->
+<!-- The `preprocess_data.py` script performs the following steps: -->
+<!---->
+<!-- - Parses the input arguments. -->
+<!-- - Loads, merges and clips (if shapefile is provided) all calibration datasets and merges them into two distinct datasets: the m modelled and observed datasets. -->
+<!-- - Aligns the calendars of the two datasets, ensuring that they have the same time dimension. -->
+<!-- - Saves the calibration datasets to the output directory. -->
+<!-- - Loops over the validation time periods specified in the `calib_dates` variable and performs the following steps: -->
+<!--   - Loads the modelled data for the current time period. -->
+<!--   - Loads the observed data for the current time period. -->
+<!--   - Aligns and saves the datasets to the output directory. -->
+<!---->
+<!-- The `run_cmethods.py` script performs the following steps: -->
+<!--   - Reads the input calibration and validation datasets from the input directory. -->
+<!--   - Applies the specified debiasing method, combining the calibration and valiation data. -->
+<!--   - Saves the resulting output to the specified directory. -->
+<!--   - Creates diagnotic figues of the output dataset (time series and time dependent maps) and saves it into the specified directory. -->
+<!---->
+<!-- **Working example**. -->
+<!---->
+<!-- Example of how to run the two scripts using data stored in the Azure fileshare, running the scripts locally (uses input data that have been cropped to contain only the city of Glasgow. The two scripts will debias only the `tasmax` variable, run 05 of the CPM, for calibration years 1980-2009 and validation years 2010-2019. It uses the `quantile_delta_mapping` debiasing method: -->
+<!-- ```sh -->
+<!-- $ python3 preprocess_data.py --mod /Volumes/vmfileshare/ClimateData/Cropped/three.cities/CPM/Glasgow/ --obs /Volumes/vmfileshare/ClimateData/Cropped/three.cities/Hads.original360/Glasgow/ -v tasmax --out ./preprocessed_data/ --calib_dates 19800101-20091230 --valid_dates 20100101-20191230 --run_number 05 -->
+<!---->
+<!-- $ python3 run_cmethods.py --input_data_folder ./preprocessed_data/  --out ./debiased_data/  --method quantile_delta_mapping --v tasmax -p 4 -->
+<!-- ``` -->
+<!---->
+</section>
+<section id="testing" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="testing"><span class="header-section-number">2.4</span> Testing</h2>
 <p>Testing for <code>python</code> components uses <code>pytest</code>, with configuration specified in <code>pyproject.toml</code>. To run tests, ensure the <code>conda-lock.yml</code> environment is installed and activated, then run <code>pytest</code> from within the <code>clim-recal/python</code> checkout directory. Note: some tests are skipped unless run on a specific linux server wth data mounted to a specific path.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cd clim-recal</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> conda-lock install <span class="at">--name</span> clim-recal conda-lock.yml</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> conda activate clim-recal</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">clim-recal</span><span class="kw">)</span><span class="ex">$</span> cd python</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">clim-recal</span><span class="kw">)</span><span class="ex">$</span> pytest</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">...sss........sss.....</span>                                                         <span class="pp">[</span><span class="ss">100%</span><span class="pp">]</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">==============================</span> short test summary info ===============================</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.mod_path<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.obs_path<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.preprocess_out_path<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.yield_mod_folder<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.yield_obs_folder<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.yield_preprocess_out_folder<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="ex">16</span> passed, 6 skipped, 4 deselected in 0.26s</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cd clim-recal</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> conda-lock install <span class="at">--name</span> clim-recal conda-lock.yml</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> conda activate clim-recal</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">clim-recal</span><span class="kw">)</span><span class="ex">$</span> cd python</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">clim-recal</span><span class="kw">)</span><span class="ex">$</span> pytest</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">...sss........sss.....</span>                                                         <span class="pp">[</span><span class="ss">100%</span><span class="pp">]</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">==============================</span> short test summary info ===============================</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.mod_path<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.obs_path<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.preprocess_out_path<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.yield_mod_folder<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.yield_obs_folder<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.yield_preprocess_out_folder<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="ex">16</span> passed, 6 skipped, 4 deselected in 0.26s</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <!--
 ### Python
 
@@ -490,7 +636,15 @@ More details in how to use this code can be found in [the python README file](py
 </section>
 </section>
 
-<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>British National Grid spec: <a href="https://epsg.io/27700" class="uri">https://epsg.io/27700</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Rotated pole of latitude <code>37.5</code> and longitude <code>177.5</code>. See <a href="https://www.metoffice.gov.uk/binaries/content/assets/metofficegovuk/pdf/research/ukcp/ukcp18_guidance_data_availability.pdf"><em>UKCP Guidance: Data availability, access and formats</em></a> appendix B.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>See the <a href="docs/cpm_projection">CPM Projection</a> section for more details, including a comparison with a linear interpolation.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -511,6 +665,150 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
   const icon = "";
   const anchorJS = new window.AnchorJS();
   anchorJS.options = {
