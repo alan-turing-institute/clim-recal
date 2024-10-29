@@ -52,8 +52,9 @@ website:
         contents:
           - text: "Guidance"
             href: "docs/pipeline_guidance.qmd"
-          - text: "Diagram"
-            href: "docs/pipeline.qmd"
+          # Remove from Navigation until the diagram is fixed or deleted
+          # - text: "Diagram"
+          #   href: "docs/pipeline.qmd"
           - section: "CPM Projection"
             href: "docs/cpm_projection.qmd"
             contents:
@@ -76,7 +77,7 @@ website:
       - section: "python"
         href: "python/README.md"
         contents:
-          - section: "Reference"
+          - section: "API Reference"
             href: "docs/reference/index.qmd"
             contents:
               - href: "docs/reference/clim_recal.pipeline.qmd"
