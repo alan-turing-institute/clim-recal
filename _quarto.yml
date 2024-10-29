@@ -50,8 +50,7 @@ website:
         href: "setup-instructions.md"
       - section: "Pipeline"
         contents:
-          - text: "Guidance"
-            href: "docs/pipeline_guidance.qmd"
+
           # Remove from Navigation until the diagram is fixed or deleted
           # - text: "Diagram"
           #   href: "docs/pipeline.qmd"
@@ -64,7 +63,8 @@ website:
                 href: "notebooks/cpm_projection_diff_plots_linear_nearest.ipynb"
       - text: "Download Datasets"
         href: "docs/download.qmd"
-      - section: "R"
+      # TODO: change name to deprecated?
+      - section: "Analysis in R"
         href: "R/README.md"
         contents:
           - href: "R/misc/Identifying_Runs.md"
@@ -74,7 +74,9 @@ website:
               - href: "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
                 text: "WIP Comparing HADs grids"
 
+
       - section: "python"
+        # TODO: move to top-level pipeline section
         href: "python/README.md"
         contents:
           - section: "API Reference"
@@ -108,6 +110,10 @@ website:
         href: "docs/docker-configurations.qmd"
       - text: "Contributing"
         href: "docs/contributing.md"
+
+      - text: "Deprecated"
+        href: "docs/deprecated_pipeline.qmd"
+
 
 
 quartodoc:
