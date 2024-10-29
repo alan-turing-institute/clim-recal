@@ -55,21 +55,34 @@ For `R` scripts, please refer to contextual information and usage guidelines, an
 
 ### `python`
 
-For many of our `python` command line scripts, you can use the `--help` flag to access a summary of the available options and usage information:
+See [setup instructions](setup-instructions) for installation options and the `python` [`README`](python/README) for usage and examples. Further detail of that code based can be found in the [`References`](docs/reference/).
+
+If the `python` `clim-recal` package is installed, some of the components can be used via the command line, including the process for converting raw MetOffice data into the format we provide as [datasets](/docs/datasets). For details run:
 
 ```sh
-$ python resampling_hads.py --help
-
-usage: resampling_hads.py [-h] --input INPUT [--output OUTPUT] [--grid_data GRID_DATA]
-
-options:
--h, --help            show this help message and exit
---input INPUT         Path where the .nc files to resample is located
---output OUTPUT       Path to save the resampled data data
---grid_data GRID_DATA Path where the .nc file with the grid to resample is located
+$ clim-recal --help
 ```
 
-This will display all available options for the script, including their purposes.
+<!---->
+<!---->
+<!-- - The `clim-recal` `python` package in the `python/folder` -->
+<!-- - Prior scripts  -->
+<!---->
+<!-- For many of our `python` command line scripts, you can use the `--help` flag to access a summary of the available options and usage information: -->
+<!---->
+<!-- ```sh -->
+<!-- $ python resampling_hads.py --help -->
+<!---->
+<!-- usage: resampling_hads.py [-h] --input INPUT [--output OUTPUT] [--grid_data GRID_DATA] -->
+<!---->
+<!-- options: -->
+<!-- -h, --help            show this help message and exit -->
+<!-- --input INPUT         Path where the .nc files to resample is located -->
+<!-- --output OUTPUT       Path to save the resampled data data -->
+<!-- --grid_data GRID_DATA Path where the .nc file with the grid to resample is located -->
+<!-- ``` -->
+<!---->
+<!-- This will display all available options for the script, including their purposes. -->
 
 ### Quarto
 
@@ -101,8 +114,9 @@ The UK Climate Projections 2018 (UKCP18) dataset offers insights into the potent
 ### HADS
 [HadUK-Grid](https://www.metoffice.gov.uk/research/climate/maps-and-data/data/haduk-grid/haduk-grid) is a comprehensive collection of climate data for the UK, compiled from various land surface observations across the country. This data is organized into a uniform grid to ensure consistent coverage throughout the UK at up to 1km x 1km resolution. The dataset, spanning from 1836 to the present, includes a variety of climate variables such as air temperature, precipitation, sunshine, and wind speed, available on daily, monthly, seasonal, and annual timescales.
 
-### Geographical Dataset
-The geographical dataset can be used for visualising climate data. It mainly includes administrative boundaries published by the Office for National Statistics (ONS). The dataset is sharable under the [Open Government Licence v.3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) and is available for download via this [link](https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom_2022/FeatureServer/replicafilescache/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom_2022_7279368953270783580.zip). We include a copy in the `data/Geofiles` folder for convenience. In addition, the clips for three cities' boundaries from the same dataset are copied to `three.cities` subfolder.
+<!---->
+<!-- ### Geographical Dataset -->
+<!-- The geographical dataset can be used for visualising climate data. It mainly includes administrative boundaries published by the Office for National Statistics (ONS). The dataset is sharable under the [Open Government Licence v.3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) and is available for download via this [link](https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom_2022/FeatureServer/replicafilescache/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom_2022_7279368953270783580.zip). We include a copy in the `data/Geofiles` folder for convenience. In addition, the clips for three cities' boundaries from the same dataset are copied to `three.cities` subfolder. -->
 
 ## Why Bias Correction?
 
@@ -114,34 +128,35 @@ Part of the `clim-recal` project is to review several bias correction methods. T
 
 Our work is however, just like climate data, intended to be dynamic, and we are in the process of setting up a pipeline for researchers creating new methods of bias correction to be able to submit their methods for inclusion on in the `clim-recal` repository.
 
+<!--Ideally find a solution for less confusing repeated footnote references-->
  1. Senatore et al., 2022, https://doi.org/10.1016/j.ejrh.2022.101120
  2. Ayar et al., 2021, https://doi.org/10.1038/s41598-021-82715-1
 
 
 ## Contributing
 
-We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an issue or [get in touch](mailto:clim-recal@turing.ac.uk)!
+We hope to bring together the extensive work already undertaken by the climate science community and showcase a range of libraries and techniques. If you have suggestions on the repository, or would like to include a new method (see below) or library, please raise an [issue](https://github.com/alan-turing-institute/clim-recal/issues), [get in touch](mailto:clim-recal@turing.ac.uk), or see our [contributing](docs/contributing) section. All are welcome and appreciated.
 
-### Adding to the conda environment file
-
-To use `R` in `anaconda` you may need to specify the `conda-forge` channel:
-
-```sh
-$ conda config --env --add channels conda-forge
-```
-
-Some libraries may be only available through `pip`, for example, these may
-require the generation / update of a `requirements.txt`:
-
-```sh
-$ pip freeze > requirements.txt
-```
-
-and installing with:
-
-```sh
-$ pip install -r requirements.txt
-```
+<!-- ### Adding to the conda environment file -->
+<!---->
+<!-- To use `R` in `anaconda` you may need to specify the `conda-forge` channel: -->
+<!---->
+<!-- ```sh -->
+<!-- $ conda config --env --add channels conda-forge -->
+<!-- ``` -->
+<!---->
+<!-- Some libraries may be only available through `pip`, for example, these may -->
+<!-- require the generation / update of a `requirements.txt`: -->
+<!---->
+<!-- ```sh -->
+<!-- $ pip freeze > requirements.txt -->
+<!-- ``` -->
+<!---->
+<!-- and installing with: -->
+<!---->
+<!-- ```sh -->
+<!-- $ pip install -r requirements.txt -->
+<!-- ``` -->
 
 ## Future plans
 - **More BC Methods**: Further bias correction of UKCP18 products. *This is planned for a future release and is not available yet.*
