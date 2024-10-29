@@ -46,19 +46,19 @@ For a quick start on bias correction, refer to our [comprehensive analysis pipel
 
 We are in the process of developing comprehensive documentation for our code base to supplement the guidance provided in this and other `README.md` files. In the interim, there is documentation available in the following forms:
 
-For user documentation
+## User documentation
 
 - See [setup instructions](setup-instructions)
 - See `python` [`README`](python/README) for an overview of the pipeline
 - Once installed, using the `clim-recal --help` option for details
 - See the [reproducibility page](docs/reproducibility) for information on how we used clim-recal
 
-To use `clim-recal` programatically:
+## To use `clim-recal` programmatically
 
 - There are extensive [`API Reference`](docs/reference/) within the python code.
 - Comments within `R` scripts
 
-To contribute to `clim-recal`:
+## To contribute to `clim-recal`
 
 - See the [Contributing](docs/contributing) section below
 
