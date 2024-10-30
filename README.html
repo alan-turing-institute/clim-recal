@@ -306,7 +306,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./docs/deprecated_pipeline.qmd" class="sidebar-item-text sidebar-link">
+  <a href="./docs/deprecated_pipeline.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Deprecated</span></a>
   </div>
 </li>
@@ -327,7 +327,8 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#documentation" id="toc-documentation" class="nav-link" data-scroll-target="#documentation"><span class="header-section-number">3</span> Documentation</a>
   <ul class="collapse">
   <li><a href="#user-documentation" id="toc-user-documentation" class="nav-link" data-scroll-target="#user-documentation"><span class="header-section-number">3.1</span> User documentation</a></li>
-  <li><a href="#to-contribute-to-clim-recal" id="toc-to-contribute-to-clim-recal" class="nav-link" data-scroll-target="#to-contribute-to-clim-recal"><span class="header-section-number">3.2</span> To contribute to <code>clim-recal</code></a></li>
+  <li><a href="#to-use-clim-recal-programmatically" id="toc-to-use-clim-recal-programmatically" class="nav-link" data-scroll-target="#to-use-clim-recal-programmatically"><span class="header-section-number">3.2</span> To use <code>clim-recal</code> programmatically</a></li>
+  <li><a href="#to-contribute-to-clim-recal" id="toc-to-contribute-to-clim-recal" class="nav-link" data-scroll-target="#to-contribute-to-clim-recal"><span class="header-section-number">3.3</span> To contribute to <code>clim-recal</code></a></li>
   </ul></li>
   <li><a href="#the-datasets" id="toc-the-datasets" class="nav-link" data-scroll-target="#the-datasets"><span class="header-section-number">4</span> The Datasets</a>
   <ul class="collapse">
@@ -348,6 +349,7 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="welcome-to-the-clim-recal-repository" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Welcome to the <code>clim-recal</code> repository!</h1>
+<p><img src="https://img.shields.io/github/license/alan-turing-institute/clim-recal.png" class="img-fluid" alt="mit-license"> <img src="https://alan-turing-institute.github.io/clim-recal/assets/coverage.svg" class="img-fluid" alt="coverage"> <img src="https://img.shields.io/badge/code%20style-black-000000.svg" class="img-fluid" alt="Code style: black"> <img src="https://github.com/alan-turing-institute/clim-recal/actions/workflows/ci.yaml/badge.svg" class="img-fluid" alt="CI"></p>
 <p>Welcome to <code>clim-recal</code>, a specialized resource designed to tackle systematic errors or biases in <strong>Regional Climate Models (RCMs)</strong>. As researchers, policy-makers, and various stakeholders explore publicly available RCMs, they need to consider the challenge of biases that can affect the accurate representation of climate change signals.</p>
 <p><code>clim-recal</code> provides both a <strong>broad review</strong> of available bias correction methods as well as <strong>software</strong>, <strong>practical tutorials</strong> and <strong>guidance</strong> that helps users apply these methods methods to various datasets.</p>
 <p><code>clim-recal</code> is an <strong>extensive software library and guide to application of Bias Correction (BC) methods</strong>:</p>
@@ -357,17 +359,6 @@ ul.task-list li input[type="checkbox"] {
 <li>Was developed in partnership with the MetOffice to ensure the propriety, quality, and usability of our work</li>
 <li>Provides a framework for open additions of new software libraries/bias correction methods (in planning)</li>
 </ul>
-<p><em>WARNING</em>: The documentation below is a work in progress and we are updating it to reflect recent significant changes. <!-- In the meantime, see [Exported Datasets](/docs/datasets.qmd) page for updates on datasets released for three UK cities.--></p>
-<!-- # Data results and documentation updates -->
-<!-- ## Table of Contents -->
-<!---->
-<!-- 1. [Overview: Bias Correction Pipeline](#overview-bias-correction-pipeline) -->
-<!-- 1. [Documentation](#documentation) -->
-<!-- 1. [The Datasets](#the-datasets) -->
-<!-- 1. [Why Bias Correction?](#why-bias-correction) -->
-<!-- 1. [Contributing](#contributing) -->
-<!-- 1. [Future Plans](#future-plans) -->
-<!-- 1. [License](/LICENSE) -->
 </section>
 <section id="overview-bias-correction-pipeline" class="level1" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> Overview: Bias Correction Pipeline</h1>
@@ -378,7 +369,7 @@ ul.task-list li input[type="checkbox"] {
 <li><strong>Apply bias correction</strong> <em>Our pipeline embeds two distinct methods of bias correction</em></li>
 <li><strong>Assess the debiased data</strong> <em>We have developed a way to assess the quality of the debiasing step across multiple alternative methods</em></li>
 </ol>
-<p>For a quick start on bias correction, refer to our <a href="https://github.com/alan-turing-institute/clim-recal/blob/documentation/docs/pipeline_guidance.md">comprehensive analysis pipeline guide</a>.</p>
+<p>For a quick start on bias correction, refer to our <a href="./python/README.html">pipeline guide</a>.</p>
 </section>
 <section id="documentation" class="level1" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> Documentation</h1>
@@ -386,42 +377,24 @@ ul.task-list li input[type="checkbox"] {
 <section id="user-documentation" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="user-documentation"><span class="header-section-number">3.1</span> User documentation</h2>
 <ul>
-<li>See <a href="setup-instructions">setup instructions</a></li>
-<li>See <code>python</code> <a href="python/README"><code>README</code></a> for an overview of the pipeline</li>
+<li>See <a href="./setup-instructions.html">setup instructions</a></li>
+<li>See <code>python</code> <a href="./python/README.html"><code>README</code></a> for an overview of the pipeline</li>
 <li>Once installed, using the <code>clim-recal --help</code> option for details</li>
-<li>See the <a href="docs/reproducibility">reproducibility page</a> for information on how we used clim-recal</li>
+<li>See the <a href="docs/reproducibility.qmd">reproducibility page</a> for information on how we used <code>clim-recal</code></li>
 </ul>
-<p>##&nbsp;To use <code>clim-recal</code> programmatically</p>
+</section>
+<section id="to-use-clim-recal-programmatically" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="to-use-clim-recal-programmatically"><span class="header-section-number">3.2</span> To use <code>clim-recal</code> programmatically</h2>
 <ul>
-<li>There are extensive <a href="docs/reference/"><code>API Reference</code></a> within the python code.</li>
+<li>There are extensive <a href="docs/reference"><code>API Reference</code></a> within the python code.</li>
 <li>Comments within <code>R</code> scripts</li>
 </ul>
 </section>
-<section id="to-contribute-to-clim-recal" class="level2" data-number="3.2">
-<h2 data-number="3.2" class="anchored" data-anchor-id="to-contribute-to-clim-recal"><span class="header-section-number">3.2</span> To contribute to <code>clim-recal</code></h2>
+<section id="to-contribute-to-clim-recal" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="to-contribute-to-clim-recal"><span class="header-section-number">3.3</span> To contribute to <code>clim-recal</code></h2>
 <ul>
-<li>See the <a href="docs/contributing">Contributing</a> section below</li>
+<li>See the <a href="./docs/contributing.html">Contributing</a> section below</li>
 </ul>
-<!---->
-<!---->
-<!-- - The `clim-recal` `python` package in the `python/folder` -->
-<!-- - Prior scripts  -->
-<!---->
-<!-- For many of our `python` command line scripts, you can use the `--help` flag to access a summary of the available options and usage information: -->
-<!---->
-<!-- ```sh -->
-<!-- $ python resampling_hads.py --help -->
-<!---->
-<!-- usage: resampling_hads.py [-h] --input INPUT [--output OUTPUT] [--grid_data GRID_DATA] -->
-<!---->
-<!-- options: -->
-<!-- -h, --help            show this help message and exit -->
-<!-- --input INPUT         Path where the .nc files to resample is located -->
-<!-- --output OUTPUT       Path to save the resampled data data -->
-<!-- --grid_data GRID_DATA Path where the .nc file with the grid to resample is located -->
-<!-- ``` -->
-<!---->
-<!-- This will display all available options for the script, including their purposes. -->
 </section>
 </section>
 <section id="the-datasets" class="level1" data-number="4">
@@ -433,9 +406,6 @@ ul.task-list li input[type="checkbox"] {
 <section id="hads" class="level2" data-number="4.2">
 <h2 data-number="4.2" class="anchored" data-anchor-id="hads"><span class="header-section-number">4.2</span> HADS</h2>
 <p><a href="https://www.metoffice.gov.uk/research/climate/maps-and-data/data/haduk-grid/haduk-grid">HadUK-Grid</a> is a comprehensive collection of climate data for the UK, compiled from various land surface observations across the country. This data is organized into a uniform grid to ensure consistent coverage throughout the UK at up to 1km x 1km resolution. The dataset, spanning from 1836 to the present, includes a variety of climate variables such as air temperature, precipitation, sunshine, and wind speed, available on daily, monthly, seasonal, and annual timescales.</p>
-<!---->
-<!-- ### Geographical Dataset -->
-<!-- The geographical dataset can be used for visualising climate data. It mainly includes administrative boundaries published by the Office for National Statistics (ONS). The dataset is sharable under the [Open Government Licence v.3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) and is available for download via this [link](https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom_2022/FeatureServer/replicafilescache/NUTS_Level_1_January_2018_FCB_in_the_United_Kingdom_2022_7279368953270783580.zip). We include a copy in the `data/Geofiles` folder for convenience. In addition, the clips for three cities' boundaries from the same dataset are copied to `three.cities` subfolder. -->
 </section>
 </section>
 <section id="why-bias-correction" class="level1" data-number="5">
@@ -447,28 +417,8 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="contributing" class="level1" data-number="6">
 <h1 data-number="6"><span class="header-section-number">6</span> Contributing</h1>
-<p>If you have suggestions on the repository, or would like to include a new method (see below) or library, please - raise an <a href="https://github.com/alan-turing-institute/clim-recal/issues">issue</a> - <a href="mailto:clim-recal@turing.ac.uk">get in touch</a> - see our <a href="docs/contributing">contributing</a> section, which includes details on contriubting to the documentation.</p>
+<p>If you have suggestions on the repository, or would like to include a new method (see below) or library, please - raise an <a href="https://github.com/alan-turing-institute/clim-recal/issues">issue</a> - <a href="mailto:clim-recal@turing.ac.uk">get in touch</a> - see our <a href="./docs/contributing.html">contributing</a> section, which includes details on contriubting to the documentation.</p>
 <p>All are welcome and appreciated.</p>
-<!-- ### Adding to the conda environment file -->
-<!---->
-<!-- To use `R` in `anaconda` you may need to specify the `conda-forge` channel: -->
-<!---->
-<!-- ```sh -->
-<!-- $ conda config --env --add channels conda-forge -->
-<!-- ``` -->
-<!---->
-<!-- Some libraries may be only available through `pip`, for example, these may -->
-<!-- require the generation / update of a `requirements.txt`: -->
-<!---->
-<!-- ```sh -->
-<!-- $ pip freeze > requirements.txt -->
-<!-- ``` -->
-<!---->
-<!-- and installing with: -->
-<!---->
-<!-- ```sh -->
-<!-- $ pip install -r requirements.txt -->
-<!-- ``` -->
 </section>
 <section id="future-plans" class="level1" data-number="7">
 <h1 data-number="7"><span class="header-section-number">7</span> Future plans</h1>
