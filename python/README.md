@@ -16,7 +16,7 @@ There are three core steps we hope to implement in our `python` `clim-recal` pac
 2. Convert that data to aligned spatial time series grids for debiasing
 3. Facilitate running and comparing debiasing methods
 
-We currently provide the the following coverted and aligned files in our [Download Datasets](docs/download) page:
+We currently provide the the following coverted and aligned files in our [Download Datasets](../docs/download.qmd) page:
 
 - Maximum temparture: `tasmax`
 - Maximum temparture: `tasmin`
@@ -30,7 +30,7 @@ We provide 5 projection runs:
 - `07`
 - `08`
 
-We demonstrate the advantage of focusing on `05` through `08` in [Identifying Runs](R/misc/Identifying_Runs).
+We demonstrate the advantage of focusing on `05` through `08` in [Identifying Runs](../R/misc/Identifying_Runs.md).
 
 Below is how these files are produced.
 
@@ -91,13 +91,13 @@ To align them we:
 1. Resample UKHAD to to 2.2 km
 1. Reproject UKHAD bounds to align with RCP8.5
 
-Links to these files are in the [Download Datasets](docs/downloads) section.
+Links to these files are in the [Download Datasets](../docs/download.qmd) section.
 
-[^nearest]: See the [CPM Projection](docs/cpm_projection) section for more details, including a comparison with a linear interpolation.
+[^nearest]: See the [CPM Projection](../docs/cpm_projection.qmd) section for more details, including a comparison with a linear interpolation.
 
 ## Running debiasing methods
 
-Preliminary work in this process is in the `clim_recal/debiasing` section. We are at present assessing future options for this, likely via either
+Preliminary work in this process is in the [`clim_recal/debiasing`](../docs/reference/clim_recal.debiasing.debias_wrapper.html) section. We are at present assessing future options for this, likely via either
 
 - [`ibicus`](https://ibicus.readthedocs.io/en/latest/)
 - [`python-cmethods`](https://pypi.org/project/python-cmethods/)
