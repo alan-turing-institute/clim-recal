@@ -132,9 +132,6 @@ def check_config_dates(start_date: date | datetime,
     max_end_date
         Latest vaid date.
 
-    ValueError: 'start_date' 1979-12-02 must be before
-    'end_date' 1980-01-01 and both between 1980-01-01 and 2081-11-30
-
     Examples
     --------
     >>> check_config_dates(date(1980, 12, 2), date(1981, 1, 1))

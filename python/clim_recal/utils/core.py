@@ -1297,10 +1297,12 @@ def check_parent_sub_paths(
 
     Parameters
     ----------
-    input_path
+    parent_path
         Expected to be a parent path for `sub_path`.
     sub_path
         Expected to a path within `input_path`.
+    data_name
+        Name of data provided via `parent_path` and `sub_path`. Only used in logs.
 
     Examples
     --------

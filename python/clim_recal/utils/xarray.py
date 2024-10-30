@@ -837,8 +837,6 @@ def convert_xr_calendar(
     keep_attrs: bool = True,
     limit: int = 1,
     engine: XArrayEngineType = NETCDF4_XARRAY_ENGINE,
-    # This may need removing, including in docs
-    # extrapolate_fill_value: bool = True,
     check_cftime_cols: tuple[str] | None = None,
     cftime_range_gen_kwargs: dict[str, Any] | None = None,
     # This may need to be removed
@@ -875,10 +873,6 @@ def convert_xr_calendar(
         Limit of number of continuous missing day values allowed in `interpolate_na`.
     engine
         Which `XArrayEngineType` to use in parsing files and operations.
-    extrapolate_fill_value
-        If `True`, then pass `fill_value=extrapolate`. See:
-         * https://docs.xarray.dev/en/stable/generated/xarray.Dataset.interpolate_na.html
-         * https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html#scipy.interpolate.interp1d
     check_cftime_cols
         Columns to check `cftime` format on
     cftime_range_gen_kwargs
@@ -1710,8 +1704,8 @@ def progress_wrapper(
         Whether to return `Path` of export. If not, result objects are returned.
     write_results
         Whether to write results to disk. Required if `return_path` is `True`.
-    progress_bar
-        Whether to print progress bar or skip
+    use_progress_bar
+        Whether to use progress bar.
     progress_bar_refresh_per_sec
         How many `progress_bar` refreshes per second if `progress_bar` is used.
     description_func
@@ -1799,9 +1793,9 @@ def execute_configs(
         Method name to yield model parameters.
     cpus
         Number of `cpus` to pass to `multiprocess_execute`.
-    return_converters
-        Return instances of generated classe (e.g. `HADsConvert` or
-        `CPMConvert`), or return the `results` of each
+    return_instances
+        Return instances of generated `class` (e.g. `HADsConvert`
+        or `CPMConvert`), or return the `results` of each
         `execute` call.
     return_path
         Return `Path` to results object if True, else resampled `Dataset`.
