@@ -14,18 +14,23 @@ project:
     - "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
     - "docs/cpm_projection.qmd"
     - "docs/reference"
-    # - "docs/pipeline.qmd"
     - "docs/contributing.md"
+    - "docs/download.qmd"
     - "docs/datasets.qmd"
-    - "docs/pipeline_guidance.qmd"
     - "docs/docker-configurations.qmd"
+    - "docs/deprecated_pipeline.qmd"
     - "python/README.md"
+    - "notebooks/cpm_projection_diff_plots.ipynb"
+    - "notebooks/cpm_projection_diff_plots_linear_nearest.ipynb"
       # - "notebooks/Assessing_bc_data/MethodsAssessment_DecWorkshop.Rmd"
       # Requires dataset mounted to run notebook
 
 toc: True
 number-sections: True
 
+theme:
+  light: flatly
+  dark: darkly
 
 # tell quarto to read the generated sidebar
 metadata-files:
@@ -42,17 +47,12 @@ website:
         href: "README.md"
       - text: "Install"
         href: "setup-instructions.md"
-      - section: "Pipeline"
-        contents:
-          - text: "Guidance"
-            href: "docs/pipeline_guidance.qmd"
-          - text: "Diagram"
-            href: "docs/pipeline.qmd"
-          - text: "CPM Projection"
-            href: "docs/cpm_projection.qmd"
-      - text: "Generated Datasets"
-        href: "docs/datasets.qmd"
-      - section: "R"
+      - text: "Pipeline Description"
+        href: "python/README.md"
+      - text: "Download Datasets"
+        href: "docs/download.qmd"
+      # TODO: change name to deprecated?
+      - section: "Analysis in R"
         href: "R/README.md"
         contents:
           - href: "R/misc/Identifying_Runs.md"
@@ -62,11 +62,20 @@ website:
               - href: "R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md"
                 text: "WIP Comparing HADs grids"
 
-      - section: "python"
-        href: "python/README.md"
+      - section: "API Reference"
+        href: "docs/reference/index.qmd"
         contents:
-          - section: "Reference"
-            href: "docs/reference/index.qmd"
+          - href: "docs/reference/clim_recal.pipeline.qmd"
+            text: "Pipeline"
+          - href: "docs/reference/clim_recal.config.qmd"
+            text: "Configure"
+          - href: "docs/reference/clim_recal.ceda_ftp_download.qmd"
+            text: "CEDA Data Access"
+          - href: "docs/reference/clim_recal.data_loader.qmd"
+            text: "Data Loading"
+          - href: "docs/reference/clim_recal.convert.qmd"
+            text: "Data Resampling"
+          - section: "Debiasing"
             contents:
               - href: "docs/reference/clim_recal.pipeline.qmd"
                 text: "Pipeline"
@@ -96,6 +105,21 @@ website:
         href: "docs/docker-configurations.qmd"
       - text: "Contributing"
         href: "docs/contributing.md"
+
+      - section: "Appendix"
+        contents:
+          - section: "CPM Projection Analysis"
+            href: "docs/cpm_projection.qmd"
+            contents:
+              - text: "Temporal Interpolation Artefacts"
+                href: "notebooks/cpm_projection_diff_plots.ipynb"
+              - text: "Nearest vs Linear Temporal Interpolation"
+                href: "notebooks/cpm_projection_diff_plots_linear_nearest.ipynb"
+          - text: "Docker"
+            href: "docs/docker-configurations.qmd"
+          - text: "Deprecated"
+            href: "docs/deprecated_pipeline.qmd"
+
 
 
 quartodoc:

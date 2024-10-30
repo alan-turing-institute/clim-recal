@@ -73,7 +73,9 @@ MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE: Final[str] = (
     "requires external data mounted or cached"
 )
 
-BADGE_PATH: Final[Path] = Path("docs") / "assets" / "coverage.svg"
+BADGE_PATH: Final[Path] = Path("../docs") / "assets" / "coverage.svg"
+CLIMATE_DATA_MOUNT_PATH_LINUX: Final[Path] = Path("/mnt/vmfileshare/ClimateData")
+CLIMATE_DATA_MOUNT_PATH_MACOS: Final[Path] = Path("/Volumes/vmfileshare/ClimateData")
 
 TEST_RUN_PATH: Final[Path] = Path().absolute()
 TEST_FILE_PATH: Final[Path] = TEST_RUN_PATH / "tests"

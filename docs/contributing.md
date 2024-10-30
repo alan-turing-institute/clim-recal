@@ -34,7 +34,7 @@ $ quarto preview
 
 ### Locally via `docker`
 
-If you have [`docker`](docker.com) installed, you can run a version of the `jupyter` conifiguration and `quarto`. The simplest and quickest solution, assuming you have `docker` running, is:
+If you have `docker` installed, you can run a version of the `jupyter` conifiguration and `quarto`. The simplest and quickest solution, assuming you have `docker` running, is:
 
 ```sh
 $ git clone https://github.com/alan-turing-institute/clim-recal

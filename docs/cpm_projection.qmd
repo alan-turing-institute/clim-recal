@@ -117,7 +117,7 @@ for run_id, cpm_convert_linear_median in cpm_medians['linear'].items():
     trimmed_raw_to_standard.plot(
         label="raw",
         marker=".",
-        ax=axs[vars.index(var), runs.index(run)]
+        ax=axs[vars.index(var), runs.index(run)],
       )
 
 plt.legend()
@@ -130,39 +130,41 @@ Average annual projections.
 #| label: fig-tasmax-annual-means
 #| fig-cap: "Annual average of means of raw tasmax CPM 360 day years"
 
-annual_raw_means: T_Dataset = annual_group_xr_time_series(
+
+
+annual_raw_medians: T_Dataset = annual_group_xr_time_series(
   cpm_medians['raw']['tasmax', '01'].tasmax,
   variable_name=VariableOptions.TASMAX,
   plot_path=None,
   time_stamp=None)
 
-annual_convert_linear_means: T_Dataset = annual_group_xr_time_series(
+annual_convert_linear_medians: T_Dataset = annual_group_xr_time_series(
   cpm_medians['linear']['tasmax', '01'].tasmax,
   variable_name=VariableOptions.TASMAX,
   plot_path=None,
   time_stamp=None)
 
-annual_convert_nearest_means: T_Dataset = annual_group_xr_time_series(
+annual_convert_nearest_medians: T_Dataset = annual_group_xr_time_series(
   cpm_medians['nearest']['tasmax', '01'].tasmax,
   variable_name=VariableOptions.TASMAX,
   plot_path=None,
   time_stamp=None)
 
-annual_raw_means.plot(label='raw', linewidth=5)
-annual_convert_linear_means.plot(label='convert', linewidth=3)
-annual_convert_nearest_means.plot(label='nearest', linewidth=.5)
+annual_raw_medians.plot(label='raw', linewidth=5)
+annual_convert_linear_medians.plot(label='convert', linewidth=3)
+annual_convert_nearest_medians.plot(label='nearest', linewidth=1)
 
 plot_axvlines(plt, gap_360_days(is_leap_year=False))
 
-plt.title("Means of taxmax for each day of the year 1980-01-01 to 2080-11-30")
+plt.title("Medians of taxmax for each day of the year 1980-01-01 to 2080-11-30")
 plt.legend()
 plt.show()
 ```
 
 For more detailed analysis comparing `nearest` and `linear` interpolation see:
 
-- [`cpm_projection_diff_plots.ipynb`](https://github.com/alan-turing-institute/clim-recal/tree/main/notebooks/cpm_projection_diff_plots.ipynb)
-- [`cpm_projection_diff_plots_linear_nearest.ipynb`](https://github.com/alan-turing-institute/clim-recal/tree/main/notebooks/cpm_projection_diff_plots_linear_nearest.ipynb)
+- [`cpm_projection_diff_plots.ipynb`](../notebooks/cpm_projection_diff_plots.html)
+- [`cpm_projection_diff_plots_linear_nearest.ipynb`](../notebooks/cpm_projection_diff_plots_linear_nearest.html)
 
 <!-- Leap year projection. -->
 <!-- ```{python} -->

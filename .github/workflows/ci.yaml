@@ -78,9 +78,9 @@ jobs:
           mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest -m "not darwin and not mount"
         shell: bash -el {0}
 
-      - name: Copy test coverage results
-        run: |
-          cp ${{ env.PYTHON_MODULE_FOLDER }}${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
+      # - name: Copy test coverage results
+      #   run: |
+      #     cp ${{ env.PYTHON_MODULE_FOLDER }}${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
 
       - name: Archive coverage svg
         uses: actions/upload-artifact@v3
