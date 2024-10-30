@@ -4,8 +4,7 @@ format:
   html:
     toc: true
 ---
-This is a detailed guide to our analysis pipeline.
-*see also this [flowchart viz](https://github.com/alan-turing-institute/clim-recal/blob/documentation/docs/pipeline.md) of the pipeline*
+This is a deprecated guide to our analysis pipeline.
 
 ## Prerequisites
 
@@ -78,7 +77,7 @@ git submodule update --init --recursive
 
 #### Climate data
 
-This streamlined pipeline is designed for raw data provided by the Met Office, accessible through the [CEDA archive]((https://catalogue.ceda.ac.uk/uuid/ad2ac0ddd3f34210b0d6e19bfc335539)). It utilizes [UKCP](https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km) control, scenario data at 2.2km resolution, and [HADs](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km) observational data. For those unfamiliar with this data, refer to our [the dataset](#the-dataset) section.
+This streamlined pipeline is designed for raw data provided by the Met Office, accessible through the [CEDA archive](https://catalogue.ceda.ac.uk/uuid/ad2ac0ddd3f34210b0d6e19bfc335539). It utilizes [UKCP](https://data.ceda.ac.uk/badc/ukcp18/data/land-cpm/uk/2.2km) control, scenario data at 2.2km resolution, and [HADs](https://data.ceda.ac.uk/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.1.0.0/1km) observational data.
 
 To access the data, [register here](https://archive.ceda.ac.uk/) at the CEDA archive and configure your FTP credentials in "My Account". Utilize our [ceda_ftp_download.py](../python/clim_recal/ceda_ftp_download.py) script to download the data.
 
@@ -93,10 +92,6 @@ You need to replace `uuu` and `ppp` with your CEDA username and FTP password res
 
 The `--change_hierarchy` flag modifies the folder hierarchy to fit with the hierarchy in the Turing Azure file store. This flag only applies to the UKCP data and should not be used with HADs data. You can use the same script without the `--change_hierarchy` flag in order to download files without any changes to the hierarchy.
 
-::: {.callout-tip}
-📢 If you are an internal collaborator you can access the raw data as well as intermediate steps through our Azure server. [See here for a How-to]().
-:::
-
 #### Geospatial data
 
 In addition to the climate data we use geospatial data to divide the data into smaller chunks. Specifically we use the following datasets for city boundaries:
@@ -105,10 +100,6 @@ In addition to the climate data we use geospatial data to divide the data into s
 
 - Major Towns and Cities boundaries for cropping out Manchester. Downloaded from [https://geoportal.statistics.gov.uk/](https://geoportal.statistics.gov.uk/datasets/980da620a0264647bd679642f96b42c1/explore)
 
-
-::: {.callout-warning}
-Sections below may need updating.
-:::
 
 ## Reprojecting the data
 The HADs data and the UKCP projections have different resolution and coordinate system. For example: the HADs dataset uses the British National Grid coordinate system.

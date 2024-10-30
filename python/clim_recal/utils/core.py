@@ -137,6 +137,37 @@ class MonthDay:
 DEFAULT_CPM_START_MONTH_DAY: Final[MonthDay] = MonthDay(month=12, day=1)
 
 
+def range_len(
+    maximum: int, start: int = 0, stop: int | None = None, step: int = 1
+) -> int:
+    """Cacluate the total length of range with indexing.
+
+    Parameters
+    ----------
+    maximum
+        Maximum range length.
+    start
+        Index to start from.
+    stop
+        Index to stop at.
+    step
+        Steps between `start` and `stop` indexes
+
+    Examples
+    --------
+    >>> range_len(100)
+    100
+    >>> range_len(100, 90)
+    10
+    >>> range_len(100, 20, 30)
+    10
+    >>> range_len(100, 20, 30, 2)
+    5
+    """
+    stop = stop or maximum
+    return (stop - start - 1) // step + 1
+
+
 def run_callable_attr(
     instance: object, method_name: str = "execute", *args, **kwargs
 ) -> Any:

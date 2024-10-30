@@ -53,9 +53,6 @@ from .utils.xarray import (
 
 logger = getLogger(__name__)
 
-DropDayType = set[tuple[int, int]]
-ChangeDayType = set[tuple[int, int]]
-
 CLIMATE_DATA_MOUNT_PATH: Path = climate_data_mount_path()
 
 CFCalendarSTANDARD: Final[str] = "standard"
