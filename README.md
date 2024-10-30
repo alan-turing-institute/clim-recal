@@ -1,4 +1,7 @@
 # Welcome to the `clim-recal` repository!
+![mit-license](https://img.shields.io/github/license/alan-turing-institute/clim-recal)
+![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
+![CI](https://github.com/alan-turing-institute/clim-recal/actions/workflows/ci.yml/badge.svg)
 
 Welcome to `clim-recal`, a specialized resource designed to tackle systematic errors or biases in **Regional Climate Models (RCMs)**. As researchers, policy-makers, and various stakeholders explore publicly available RCMs, they need to consider the challenge of biases that can affect the accurate representation of climate change signals.
 
