@@ -5,7 +5,9 @@ from pathlib import Path
 from typing import Annotated, Final, Optional
 
 import typer
+from dotenv import load_dotenv
 
+from .ceda_ftp_download import CEDA_ENV_PASSWORD_KEY, CEDA_ENV_USER_NAME_KEY
 from .config import (
     DEFAULT_CPUS,
     DEFAULT_OUTPUT_PATH,
@@ -15,7 +17,13 @@ from .config import (
     RunOptions,
     VariableOptions,
 )
-from .pipeline import CURRENT_CONVERTED_RESULTS_PATH, main, run_convert, run_crop
+from .pipeline import (
+    CURRENT_CONVERTED_RESULTS_PATH,
+    main,
+    run_ceda_download,
+    run_convert,
+    run_crop,
+)
 from .utils.core import CLI_DATE_FORMATS, date_str_infer_end
 from .utils.data import (
     CPM_END_DATETIME,
@@ -30,6 +38,7 @@ from .utils.data import (
 )
 
 logger = getLogger(__name__)
+load_dotenv()
 
 cli = typer.Typer()
 
@@ -201,6 +210,136 @@ def pipeline(
     )
     # print(results)
     return results
+
+
+@cli.command()
+def ceda(
+    user_name: Annotated[str, typer.Argument(envvar=CEDA_ENV_USER_NAME_KEY)],
+    password: Annotated[Optional[str], typer.Argument(envvar=CEDA_ENV_PASSWORD_KEY)],
+    output_path: Annotated[
+        Path,
+        typer.Option(
+            "--output-path", "-o", file_okay=False, dir_okay=True, writable=True
+        ),
+    ] = DEFAULT_OUTPUT_PATH,
+    hads_path: Annotated[
+        Optional[Path],
+        typer.Option(
+            "--hads-path",
+            file_okay=True,
+            dir_okay=True,
+        ),
+    ] = Path(HADS_RAW_FOLDER),
+    cpm_path: Annotated[
+        Optional[Path],
+        typer.Option(
+            "--cpm-path",
+            file_okay=True,
+            dir_okay=True,
+        ),
+    ] = Path(CPM_RAW_FOLDER),
+    variable: Annotated[list[VariableOptions], typer.Option("--variable", "-v")] = [
+        VariableOptions.default()
+    ],
+    run: Annotated[list[RunOptions], typer.Option("--run", "-r")] = [
+        RunOptions.default()
+    ],
+    all_variables: Annotated[bool, typer.Option("--all-variables")] = False,
+    all_runs: Annotated[bool, typer.Option("--all-runs")] = False,
+    default_runs: Annotated[bool, typer.Option("--default-runs")] = False,
+    cpm: Annotated[bool, typer.Option("--cpm/--not-cpm")] = True,
+    hads: Annotated[bool, typer.Option("--hads/--not-hads")] = True,
+    execute: Annotated[bool, typer.Option("--execute")] = False,
+    # start_date: Annotated[
+    #     Optional[datetime],
+    #     typer.Option(
+    #         formats=CLI_DATE_FORMATS,
+    #     ),
+    # ] = None,
+    # end_date: Annotated[
+    #     Optional[datetime],
+    #     typer.Option(
+    #         formats=CLI_DATE_FORMATS,
+    #         parser=date_str_infer_end,
+    #     ),
+    # ] = None,
+    # hads_start_date: Annotated[
+    #     datetime,
+    #     typer.Option(
+    #         formats=CLI_DATE_FORMATS,
+    #     ),
+    # ] = HADS_START_DATETIME,
+    # hads_end_date: Annotated[
+    #     datetime,
+    #     typer.Option(
+    #         formats=CLI_DATE_FORMATS,
+    #         parser=date_str_infer_end,
+    #     ),
+    # ] = HADS_END_DATETIME,
+    # cpm_start_date: Annotated[
+    #     datetime,
+    #     typer.Option(
+    #         formats=CLI_DATE_FORMATS,
+    #     ),
+    # ] = CPM_START_DATETIME,
+    # cpm_end_date: Annotated[
+    #     datetime,
+    #     typer.Option(
+    #         formats=CLI_DATE_FORMATS,
+    #         parser=date_str_infer_end,
+    #     ),
+    # ] = CPM_END_DATETIME,
+    # start_index: Annotated[int, typer.Option("--start-index", min=0)] = 0,
+    # stop_index: Annotated[Optional[int], typer.Option("--stop-index", min=1)] = None,
+    # total: Annotated[int, typer.Option("--total-from-index", "-t", min=0)] = 0,
+    # cpus: Annotated[int, typer.Option("--cpus", min=1, max=MAX_CPUS)] = DEFAULT_CPUS,
+    # multiprocess: Annotated[bool, typer.Option("--use-multiprocessing")] = False,
+    debug_mode: Annotated[bool, typer.Option("--debug")] = False,
+) -> None:
+    """Download HadsUK and UKCPM projection data from CEDA."""
+    if debug_mode:
+        set_cli_debug()
+
+    run_ceda_download(
+        config=None,
+        input_path=None,
+        user_name=user_name,
+        password=password,
+        output_path=output_path,
+        ceda_download=True,
+        convert=False,
+        crop=False,
+        hads_path=hads_path,
+        cpm_path=cpm_path,
+        variables=variable,
+        runs=run,
+        regions=None,
+        methods=None,
+        # cpus=cpus,
+        execute=execute,
+        cpm=cpm,
+        hads=hads,
+        # hads_start_date=start_date.date() if start_date else hads_start_date.date(),
+        # hads_end_date=end_date if end_date else hads_end_date,
+        # cpm_start_date=start_date.date() if start_date else cpm_start_date.date(),
+        # cpm_end_date=end_date if end_date else cpm_end_date,
+        # convert_start_index=start_index,
+        # convert_stop_index=stop_index,
+        # crop_start_index=start_index,  # keeping crop in case cli interactive
+        # crop_stop_index=stop_index,
+        # total=total,
+        calc_start_index=None,
+        calc_stop_index=None,
+        # multiprocess=multiprocess,
+        all_variables=all_variables,
+        all_regions=False,
+        all_runs=all_runs,
+        default_runs=default_runs,
+        all_methods=False,
+        cpm_for_coord_alignment=None,
+        cli=cli,
+        debug_mode=debug_mode,
+    )
 
 
 @cli.command()

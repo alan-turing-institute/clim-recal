@@ -63,8 +63,8 @@ def test_main(
         convert_stop_index=1,
         cpus=2,
         multiprocess=multiprocess,
-        cpm_kwargs=dict(_allow_check_fail=True) if not is_data_mounted else {},
-        hads_kwargs=dict(_allow_check_fail=True) if not is_data_mounted else {},
+        cpm_convert_kwargs=dict(_allow_check_fail=True) if not is_data_mounted else {},
+        hads_convert_kwargs=dict(_allow_check_fail=True) if not is_data_mounted else {},
         local_dated_results_path_prefix="-".join(variables),
         _skip_checks=True if not is_data_mounted else False,
     )

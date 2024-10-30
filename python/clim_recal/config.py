@@ -11,6 +11,7 @@ from osgeo import gdal
 from tqdm import TqdmExperimentalWarning, tqdm
 from typer import Exit, Typer
 
+from .ceda_ftp_download import CPMCEDADownloadManager, HADsCEDADownloadManager
 from .convert import CPMConvertManager, HADsConvertManager
 from .crop import CPMRegionCropManager, HADsRegionCropManager
 from .debiasing.debias_wrapper import BaseRunConfig, RunConfig, RunConfigType
@@ -103,9 +104,9 @@ class ClimRecalConfig(BaseRunConfig):
         `Path` to append to `output_path` / `convert_folder` for resampling `HADs` files and to `output_path` / `crop_folder` for crops.
     cpm_output_folder
         `Path` to append to `output_path` / `convert_folder` for resampling `CPM` files and to `output_path` / `crop_folder` for crops.
-    cpm_kwargs
+    cpm_convert_kwargs
         A `dict` of parameters to pass to a `CPMConvertManager`.
-    hads_kwargs
+    hads_convert_kwargs
         A `dict` of parameters to pass to `HADsConvertManager`.
     cpm_for_coord_alignment
         A `Path` to a `CPM` file to align `HADs` coordinates to.
@@ -134,6 +135,7 @@ class ClimRecalConfig(BaseRunConfig):
     runs: Sequence[RunOptions | str] = (RunOptions.default(),)
     regions: Sequence[RegionOptions | str] | None = (RegionOptions.default(),)
     methods: Sequence[MethodOptions | str] | None = (MethodOptions.default(),)
+    ceda_download: bool = False
     convert: bool = True
     crop: bool = True
     multiprocess: bool = False
@@ -147,8 +149,9 @@ class ClimRecalConfig(BaseRunConfig):
     crops_folder: PathLike = DEFAULT_CROPS_FOLDER
     hads_output_folder: PathLike = HADS_OUTPUT_PATH
     cpm_output_folder: PathLike = CPM_OUTPUT_PATH
-    cpm_kwargs: dict = field(default_factory=dict)
-    hads_kwargs: dict = field(default_factory=dict)
+    ceda_download_kwargs: dict = field(default_factory=dict)
+    cpm_convert_kwargs: dict = field(default_factory=dict)
+    hads_convert_kwargs: dict = field(default_factory=dict)
     cpm_crop_kwargs: dict = field(default_factory=dict)
     hads_crop_kwargs: dict = field(default_factory=dict)
     convert_start_index: int = 0
@@ -164,7 +167,7 @@ class ClimRecalConfig(BaseRunConfig):
     add_local_dated_results_path: bool = True
     add_local_dated_crops_path: bool = True
     local_dated_results_path_prefix: str = "run"
-    local_dated_crops_path_prefix: str = "crop"
+    # local_dated_crops_path_prefix: str = "crop"
     cpm_for_coord_alignment: PathLike | None = None
     process_cmp_for_coord_alignment: bool = False
     cpm_for_coord_alignment_path_converted: bool = False
@@ -296,9 +299,7 @@ class ClimRecalConfig(BaseRunConfig):
         None
         """
         if self.add_local_dated_crops_path:
-            return self.output_path / results_path(
-                self.local_dated_crops_path_prefix, mkdir=True
-            )
+            return self.output_path / results_path(str(self.crops_folder), mkdir=True)
         else:
             return None
 
@@ -346,13 +347,14 @@ class ClimRecalConfig(BaseRunConfig):
         """Ensure `PathLike` attributes are converted to `Path` type."""
         if not self._skip_checks:
             ensure_all_attr_paths(self)
-            check_paths_required(
-                self.include_hads,
-                self.include_cpm,
-                self.input_path,
-                self.hads_path,
-                self.cpm_path,
-            )
+            if not self.ceda_download:
+                check_paths_required(
+                    self.include_hads,
+                    self.include_cpm,
+                    self.input_path,
+                    self.hads_path,
+                    self.cpm_path,
+                )
 
     def check_dates(self) -> None:
         """Check valid date configurations."""
@@ -421,6 +423,20 @@ class ClimRecalConfig(BaseRunConfig):
             self.check_dates()
         self.set_config_save_path()
         self.write_config(self.config_save_path)
+        if self.ceda_download:
+            if self.include_cpm:
+                self.cpm_ceda_download_manager = CPMCEDADownloadManager(
+                    save_path=self.input_path,
+                    variables=self.variables,
+                    runs=self.runs,
+                    **self.ceda_download_kwargs,
+                )
+            if self.include_hads:
+                self.hads_ceda_download_manager = HADsCEDADownloadManager(
+                    save_path=self.input_path,
+                    variables=self.variables,
+                    **self.ceda_download_kwargs,
+                )
         if self.convert:
             if self.include_cpm:
                 self.cpm_manager = CPMConvertManager(
@@ -434,7 +450,7 @@ class ClimRecalConfig(BaseRunConfig):
                     stop_index=self.convert_stop_index,
                     start_calc_index=self.calc_start_index,
                     stop_calc_index=self.calc_stop_index,
-                    **self.cpm_kwargs,
+                    **self.cpm_convert_kwargs,
                 )
             if self.include_hads:
                 self.set_cpm_for_coord_alignment(input_path_dict[CPM_NAME])
@@ -450,7 +466,7 @@ class ClimRecalConfig(BaseRunConfig):
                     stop_calc_index=self.calc_stop_index,
                     cpm_for_coord_alignment=self.cpm_for_coord_alignment,
                     cpm_for_coord_alignment_path_converted=self.cpm_for_coord_alignment_path_converted,
-                    **self.hads_kwargs,
+                    **self.hads_convert_kwargs,
                 )
         if self.crop and self.regions:
             if self.include_cpm:

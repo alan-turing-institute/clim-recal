@@ -62,7 +62,7 @@ clim-recal should be a command line function
 $ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written
 clim-recal pipeline configurations:
 <ClimRecalConfig(variables_count=3, runs_count=4, regions_count=1, methods_count=1,
-                 cpm_folders_count=12, hads_folders_count=3, convert_start_index=0,
+                 folders_count=12, hads_folders_count=3, convert_start_index=0,
                  convert_stop_index=None, cpus=2)>
 <CPMConvertManager(variables_count=3, runs_count=4, input_paths_count=12)>
 <HADsConvertManager(variables_count=3, input_paths_count=3)>
@@ -93,7 +93,7 @@ assuming a local install:
 $ clim-recal --all-variables --default-runs --output-path /where/results/should/be/written --execute
 clim-recal pipeline configurations:
 <ClimRecalConfig(variables_count=3, runs_count=4, regions_count=1, methods_count=1,
-                 cpm_folders_count=12, hads_folders_count=3, convert_start_index=0,
+                 folders_count=12, hads_folders_count=3, convert_start_index=0,
                  convert_stop_index=None, cpus=2)>
 <CPMConvertManager(variables_count=3, runs_count=4, input_paths_count=12)>
 <HADsConvertManager(variables_count=3, input_paths_count=3)>
@@ -133,10 +133,11 @@ New approach:
 """
 
 from datetime import date
-from os import PathLike
+from os import PathLike, getenv
 from pathlib import Path
 from typing import Final, Sequence
 
+from dotenv import load_dotenv
 from xarray.core.types import T_Dataset
 
 from clim_recal.utils.data import HADS_AND_CPM, HADS_NAME, get_clim_types
@@ -157,19 +158,16 @@ from .crop import CPMRegionCropper, HADsRegionCropper
 from .utils.core import console
 from .utils.data import (
     CLIMATE_DATA_MOUNT_PATH,
-    CPM_END_DATE,
-    CPM_NAME,
-    CPM_RAW_FOLDER,
-    CPM_START_DATE,
     HADS_END_DATE,
     HADS_NAME,
     HADS_RAW_FOLDER,
     HADS_START_DATE,
+    NAME,
     RAW_DATA_MOUNT_PATH,
 )
 
-# REPROJECTION_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_one.sh")
-# REPROJECTION_WRAPPER_SHELL_SCRIPT: Final[Path] = Path("../bash/reproject_all.sh")
+load_dotenv()
+
 CURRENT_MOUNT_RESULTS_PATH: Final[Path] = (
     CLIMATE_DATA_MOUNT_PATH / "nearest_2024-10-14/"
 )
@@ -180,7 +178,7 @@ EXECUTE_INFO_TEXT: Final[str] = "Add '--execute' to run."
 def get_config(
     input_path: PathLike = RAW_DATA_MOUNT_PATH,
     hads_path: PathLike = HADS_RAW_FOLDER,
-    cpm_path: PathLike = CPM_RAW_FOLDER,
+    path: PathLike = CPM_RAW_FOLDER,
     output_path: PathLike = DEFAULT_OUTPUT_PATH,
     cpm: bool = True,
     hads: bool = True,
@@ -195,25 +193,34 @@ def get_config(
     all_methods: bool = False,
     cpus: int | None = None,
     multiprocess: bool = False,
+    ceda_download: bool = False,
     convert: bool = True,
     crop: bool = True,
     hads_start_date: date = HADS_START_DATE,
     hads_end_date: date = HADS_END_DATE,
-    cpm_start_date: date = CPM_START_DATE,
-    cpm_end_date: date = CPM_END_DATE,
+    start_date: date = CPM_START_DATE,
+    end_date: date = CPM_END_DATE,
     convert_start_index: int = 0,
     convert_stop_index: int | None = None,
     crop_start_index: int = 0,
     crop_stop_index: int | None = None,
     total: int | None = None,
-    cpm_for_coord_alignment: PathLike | T_Dataset | None = None,
+    for_coord_alignment: PathLike | T_Dataset | None = None,
     **kwargs,
 ) -> ClimRecalConfig:
     clim_types: ClimDataTypeTuple = get_clim_types(hads=hads, cpm=cpm)
     if not clim_types:
         raise ClimRecanConfigError(
-            f"At least one of '{HADS_NAME}' or '{CPM_NAME}' required"
+            f"At least one of '{HADS_NAME}' or '{NAME}' required"
         )
+    if not "ceda_download_kwargs" in kwargs:
+        kwargs["ceda_download_kwargs"] = {}
+    for ceda_download_var in ("user_name", "password"):
+
+        if ceda_download_var in kwargs:
+            kwargs["ceda_download_kwargs"][ceda_download_var] = kwargs.pop(
+                ceda_download_var
+            ) or getenv(f"CEDA_ENV_{ceda_download_var}_KEY")
     if convert:
         if convert_stop_index and total:
             console.print(
@@ -258,9 +265,10 @@ def get_config(
     return ClimRecalConfig(
         input_path=input_path,
         hads_path=hads_path,
-        cpm_path=cpm_path,
+        path=cpm_path,
         output_path=output_path,
         clim_types=clim_types,
+        ceda_download=ceda_download,
         convert=convert,
         crop=crop,
         variables=variables,
@@ -271,15 +279,56 @@ def get_config(
         multiprocess=multiprocess,
         hads_start_date=hads_start_date,
         hads_end_date=hads_end_date,
-        cpm_start_date=cpm_start_date,
-        cpm_end_date=cpm_end_date,
+        start_date=cpm_start_date,
+        end_date=cpm_end_date,
         convert_start_index=convert_start_index,
         convert_stop_index=convert_stop_index,
         crop_start_index=crop_start_index,
         crop_stop_index=crop_stop_index,
-        cpm_for_coord_alignment=cpm_for_coord_alignment,
+        for_coord_alignment=cpm_for_coord_alignment,
         **kwargs,
     )
+
+
+def run_ceda_download(
+    config: ClimRecalConfig | None,
+    user_name: str | None = None,
+    password: str | None = None,
+    print_range_length: int | None = 5,
+    execute: bool = False,
+    pipeline: bool = False,
+    **kwargs,
+) -> None:
+    """Download `convert` parts of passed `config`."""
+    kwargs["user_name"] = user_name
+    kwargs["password"] = password
+    config = config or get_config(**kwargs)
+    if execute and config.ceda_download:
+        if config.include_cpm:
+            console.print(f"Downloading {NAME} data...")
+            downloads: tuple[CPMConvert, ...] = (
+                config.cpm_ceda_download_manager.download(
+                    # multiprocess=config.multiprocess, cpus=config.cpus
+                )
+            )
+            console.print(downloads[:print_range_length])
+        else:
+            console.print(f"Skipping downloading {NAME} data.")
+        if config.include_hads:
+            console.print(f"Downloading {HADS_NAME} data...")
+            hads_downloads: tuple[HADsConvert, ...] = (
+                config.hads_ceda_download_manager.download(
+                    # multiprocess=config.multiprocess, cpus=config.cpus
+                )
+            )
+            console.print(hads_downloads[:print_range_length])
+        else:
+            console.print(f"Skipping downloading {HADS_NAME} data.")
+    else:
+        if pipeline:
+            console.print(f"Skipping downloads.")
+        else:
+            console.print(EXECUTE_INFO_TEXT)
 
 
 def run_convert(
@@ -292,20 +341,20 @@ def run_convert(
     """Run `convert` parts of passed `config`."""
     config = config or get_config(**kwargs)
     if config.include_cpm:
-        console.print(config.cpm_manager)
+        console.print(config.manager)
     if config.include_hads:
         console.print(config.hads_manager)
     if execute and config.convert:
         if config.include_cpm:
-            console.print(f"Running {CPM_NAME} conversion...")
-            cpm_converters: tuple[CPMConvert, ...] = config.cpm_manager.execute_configs(
+            console.print(f"Running {NAME} conversion...")
+            converters: tuple[CPMConvert, ...] = config.cpm_manager.execute_configs(
                 multiprocess=config.multiprocess, cpus=config.cpus
             )
-            console.print(cpm_converters[:print_range_length])
+            console.print(converters[:print_range_length])
             # Leaving assert to remind ease for debugging in future
             # assert False
         else:
-            console.print(f"Skipping {CPM_NAME} Strandard Calendar projection.")
+            console.print(f"Skipping {NAME} Strandard Calendar projection.")
         if config.include_hads:
             console.print(f"Running {HADS_NAME} conversion...")
             hads_converters: tuple[HADsConvert, ...] = (
@@ -326,8 +375,8 @@ def run_convert(
 def run_crop(
     config: ClimRecalConfig | None,
     input_path: PathLike = CURRENT_CONVERTED_RESULTS_PATH,
-    hads_path: PathLike = HADS_NAME,
-    cpm_path: PathLike = CPM_NAME,
+    hads_path: PathLike = Path(HADS_NAME),
+    path: PathLike = Path(CPM_NAME),
     print_range_length: int | None = 5,
     execute: bool = False,
     pipeline: bool = False,
@@ -335,26 +384,26 @@ def run_crop(
 ) -> None:
     """Run `crop` parts of passed `config`."""
     config = config or get_config(
-        input_path=input_path, hads_path=hads_path, cpm_path=cpm_path, **kwargs
+        input_path=input_path, hads_path=hads_path, path=cpm_path, **kwargs
     )
     if config.regions:
         if config.include_cpm:
-            console.print(config.cpm_crop_manager)
+            console.print(config.crop_manager)
         if config.include_hads:
             console.print(config.hads_crop_manager)
     if execute and config.crop:
         if config.include_cpm:
             console.print(
-                f"Cropping {CPM_NAME} conversions to regions {config.regions}: ..."
+                f"Cropping {NAME} conversions to regions {config.regions}: ..."
             )
-            region_cropped_cpm_converts: tuple[CPMRegionCropper, ...] = (
-                config.cpm_crop_manager.execute_configs(
+            region_cropped_converts: tuple[CPMRegionCropper, ...] = (
+                config.crop_manager.execute_configs(
                     multiprocess=config.multiprocess, cpus=config.cpus
                 )
             )
-            console.print(region_cropped_cpm_converts[:print_range_length])
+            console.print(region_cropped_converts[:print_range_length])
         else:
-            console.print(f"Skipping cropping {CPM_NAME} conversions.")
+            console.print(f"Skipping cropping {NAME} conversions.")
         if config.include_hads:
             console.print(
                 f"Cropping {HADS_AND_CPM} conversions to regions {config.regions}: ..."
@@ -379,7 +428,7 @@ def main(
     execute: bool = False,
     input_path: PathLike = RAW_DATA_MOUNT_PATH,
     hads_path: PathLike = HADS_RAW_FOLDER,
-    cpm_path: PathLike = CPM_RAW_FOLDER,
+    path: PathLike = CPM_RAW_FOLDER,
     output_path: PathLike = DEFAULT_OUTPUT_PATH,
     hads: bool = True,
     cpm: bool = True,
@@ -392,6 +441,7 @@ def main(
     default_runs: bool = False,
     all_runs: bool = False,
     all_methods: bool = False,
+    ceda_download: bool = False,
     convert: bool = True,
     crop: bool = True,
     cpus: int | None = None,
@@ -402,7 +452,7 @@ def main(
     crop_stop_index: int | None = None,
     total: int | None = None,
     print_range_length: int | None = 5,
-    cpm_for_coord_alignment: PathLike | T_Dataset | None = None,
+    for_coord_alignment: PathLike | T_Dataset | None = None,
     **kwargs,
 ) -> ClimRecalRunResultsType | None:
     """Run all elements of the pipeline.
@@ -420,6 +470,10 @@ def main(
     regions
         Which regions to crop data to. Future plans facilitate
         skipping to run for entire UK.
+    ceda_download
+        Whether to download raw data from the Centre for
+        Enviornmental Data Analysis (CEDA). If `False`, assumes
+        that data is available in the `input_path`.
     methods
         Which debiasing methods to apply.
     output_path
@@ -458,12 +512,12 @@ def main(
     >>> main(variables=("rainfall", "tasmin"),
     ...      output_path=test_runs_output_path,
     ... )
-    'set_cpm_for_coord_alignment' for 'HADs' not speficied.
+    'set_for_coord_alignment' for 'HADs' not speficied.
     Defaulting to: '...'
     clim-recal pipeline configurations:
     <ClimRecalConfig(variables_count=2, runs_count=1,
                      regions_count=1, methods_count=1,
-                     cpm_folders_count=2, hads_folders_count=2,
+                     folders_count=2, hads_folders_count=2,
                      convert_start_index=0, convert_stop_index=None,
                      crop_start_index=0, crop_stop_index=None, cpus=...)>
     <CPMConvertManager(start_date=date(1980, 12, 1),
@@ -490,7 +544,7 @@ def main(
     config: ClimRecalConfig = get_config(
         input_path=input_path,
         hads_path=hads_path,
-        cpm_path=cpm_path,
+        path=cpm_path,
         output_path=output_path,
         hads=hads,
         cpm=cpm,
@@ -498,6 +552,7 @@ def main(
         regions=regions,
         runs=runs,
         methods=methods,
+        ceda_download=ceda_download,
         convert=convert,
         crop=crop,
         all_variables=all_variables,
@@ -512,11 +567,14 @@ def main(
         crop_start_index=crop_start_index,
         crop_stop_index=crop_stop_index,
         total=total,
-        cpm_for_coord_alignment=cpm_for_coord_alignment,
+        for_coord_alignment=cpm_for_coord_alignment,
         **kwargs,
     )
     console.print("clim-recal pipeline configurations:")
     console.print(config)
+    run_ceda_download(
+        config, execute=execute, pipeline=True, print_range_length=print_range_length
+    )
     run_convert(
         config, execute=execute, pipeline=True, print_range_length=print_range_length
     )

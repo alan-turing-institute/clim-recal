@@ -17,9 +17,6 @@ logger = getLogger(__name__)
 
 CLIMATE_DATA_MOUNT_PATH: Path = climate_data_mount_path()
 
-HADS_FTP_PATH: Final[str] = '/badc/ukmo-hadobs/data/insitu/MOHC/HadOBS/HadUK-Grid/v1.2.0.ceda/1km/'
-CPM_FTP_PATH: Final[str] = '/badc/ukcp18/data/land-cpm/uk/2.2km/rcp85/'
-
 RAW_DATA_MOUNT_PATH: Final[Path] = CLIMATE_DATA_MOUNT_PATH / "Raw"
 
 HADS_RAW_FOLDER: Final[Path] = Path("HadsUKgrid")

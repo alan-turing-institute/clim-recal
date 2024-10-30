@@ -1,6 +1,6 @@
 import asyncio
 from argparse import BooleanOptionalAction
-from os import PathLike
+from os import PathLike, getenv
 from pathlib import Path
 from pprint import pprint
 from shutil import copytree, rmtree
@@ -8,9 +8,11 @@ from typing import Final, Iterator
 
 import pytest
 from coverage_badge.__main__ import main as gen_cov_badge
+from dotenv import load_dotenv
 from xarray import DataArray, Dataset, open_dataset
 from xarray.core.types import T_Dataset
 
+from clim_recal.ceda_ftp_download import CEDA_ENV_PASSWORD_KEY, CEDA_ENV_USER_NAME_KEY
 from clim_recal.config import ClimRecalConfig
 from clim_recal.debiasing.debias_wrapper import RegionOptions
 from clim_recal.utils.core import (
@@ -63,6 +65,8 @@ from tests.utils import (
     LocalCachesManager,
     xarray_example,
 )
+
+load_dotenv()
 
 MOUNT_DOCTEST_SKIP_MESSAGE: Final[str] = "requires external data mounted"
 MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE: Final[str] = (
@@ -124,6 +128,18 @@ def is_data_mounted(data_mount_path) -> bool:
         condition by returning `None`.
     """
     return is_climate_data_mounted(mount_path=data_mount_path)
+
+
+@pytest.fixture(scope="session")
+def ceda_user_name() -> str | None:
+    """Return CEDA user name from `.env`"""
+    return getenv(CEDA_ENV_USER_NAME_KEY)
+
+
+@pytest.fixture(scope="session")
+def ceda_password() -> str | None:
+    """Return CEDA password from `.env`"""
+    return getenv(CEDA_ENV_PASSWORD_KEY)
 
 
 @pytest.fixture(scope="session")
@@ -547,8 +563,8 @@ def clim_runner(
             output_path=test_runs_output_path,
             # Todo: refactor to use caching to speed up runs
             _skip_checks=True,
-            cpm_kwargs=dict(_allow_check_fail=True),
-            hads_kwargs=dict(_allow_check_fail=True),
+            cpm_convert_kwargs=dict(_allow_check_fail=True),
+            hads_convert_kwargs=dict(_allow_check_fail=True),
             cpm_for_coord_alignment=local_cache_fixtures[
                 "tasmax_cpm_1980_converted"
             ].local_cache_path,

@@ -1,7 +1,11 @@
 import pytest
+from dotenv import load_dotenv
 from typer.testing import CliRunner
 
-from clim_recal.cli import cli, crop
+from clim_recal.ceda_ftp_download import check_env_auth
+from clim_recal.cli import ceda, cli, crop
+
+load_dotenv()
 
 runner: CliRunner = CliRunner()
 
@@ -26,3 +30,12 @@ def test_crop_cli(is_data_mounted: bool) -> None:
             crop()
     else:
         crop()
+
+
+@pytest.mark.download
+@pytest.mark.skipif(
+    not check_env_auth(), reason="CEDA user_name and password env required"
+)
+def test_ceda_cli(ceda_user_name: str, ceda_password: str) -> None:
+    """Test `crop` function outside `cli`."""
+    ceda(user_name=ceda_user_name, password=ceda_password)
