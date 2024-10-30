@@ -1,5 +1,4 @@
 import logging
-from datetime import date
 from pathlib import Path
 from typing import Final
 
@@ -7,26 +6,17 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 from numpy.typing import NDArray
-from osgeo.gdal import Dataset as GDALDataset
 from xarray import Dataset, open_dataset
 from xarray.core.types import T_DataArray, T_Dataset
 
-from clim_recal.resample import (
-    CPM_CROP_OUTPUT_LOCAL_PATH,
-    HADS_CROP_OUTPUT_LOCAL_PATH,
-    CPMResampler,
-    HADsResampler,
-)
-from clim_recal.utils.core import (
-    CLI_DATE_FORMAT_STR,
-    DateType,
-    date_range_generator,
-    results_path,
-)
+from clim_recal.crop import CPM_CROP_OUTPUT_PATH, HADS_CROP_OUTPUT_PATH
+from clim_recal.utils.core import DateType, results_path
 from clim_recal.utils.data import (
     BRITISH_NATIONAL_GRID_EPSG,
-    HadUKGrid,
-    UKCPLocalProjections,
+    CPM_NAME,
+    DEFAULT_CROP_COORDS_EPSG2770,
+    HADS_NAME,
+    BoundingBoxCoords,
 )
 from clim_recal.utils.gdal_formats import NETCDF_EXTENSION_STR
 from clim_recal.utils.xarray import (
@@ -42,7 +32,7 @@ from clim_recal.utils.xarray import (
     cpm_check_converted,
     cpm_reproject_with_standard_calendar,
     cpm_xarray_to_standard_calendar,
-    file_name_to_start_end_dates,
+    crop_xarray,
     get_cpm_for_coord_alignment,
     hads_resample_and_reproject,
     plot_xarray,
@@ -253,7 +243,9 @@ def test_hads_resample_and_reproject(
 @pytest.mark.slow
 @pytest.mark.mount
 @pytest.mark.parametrize("interpolate_na", (True, False))
-def test_convert_cpm_calendar(interpolate_na: bool) -> None:
+def test_convert_cpm_calendar(
+    interpolate_na: bool, tasmax_cpm_1980_raw_path: Path, local_cache: Path
+) -> None:
     """Test `convert_calendar` on mounted `cpm` data.
 
     Notes
@@ -262,8 +254,11 @@ def test_convert_cpm_calendar(interpolate_na: bool) -> None:
     creating the `na_values` `bool` as the inverse of `interpolate_na`.
     """
     any_na_values_in_tasmax: bool = not interpolate_na
+    path: Path = (
+        tasmax_cpm_1980_raw_path if local_cache else CPM_RAW_TASMAX_EXAMPLE_PATH
+    )
     raw_nc: T_Dataset = open_dataset(
-        CPM_RAW_TASMAX_EXAMPLE_PATH, decode_coords="all", engine=NETCDF4_XARRAY_ENGINE
+        path, decode_coords="all", engine=NETCDF4_XARRAY_ENGINE
     )
     assert len(raw_nc.time) == 360
     assert len(raw_nc.time_bnds) == 360
@@ -366,96 +361,36 @@ def test_cpm_reproject_with_standard_calendar(
     plot_xarray(results.tasmax[0], plot_path, time_stamp=True)
 
 
-@pytest.mark.xfail(reason="test not complete")
-def test_cpm_tif_to_standard_calendar(
-    glasgow_example_cropped_cpm_rainfall_path: Path,
-) -> None:
-    test_converted: tuple[date, ...] = tuple(
-        date_range_generator(
-            *file_name_to_start_end_dates(glasgow_example_cropped_cpm_rainfall_path)
-        )
-    )
-    assert len(test_converted) == 366
-    assert False
-
-
-# @pytest.mark.xfail(reason="not finished writing, will need refactor")
 @pytest.mark.localcache
-@pytest.mark.slow
 @pytest.mark.mount
 @pytest.mark.parametrize("region", ("Glasgow", "Manchester", "London", "Scotland"))
-@pytest.mark.parametrize("data_type", (UKCPLocalProjections, HadUKGrid))
-@pytest.mark.parametrize(
-    # "config", ("direct", "range", "direct_provided", "range_provided")
-    "config",
-    ("direct", "range"),
-)
+@pytest.mark.parametrize("data_type", (CPM_NAME, HADS_NAME))
 def test_crop_xarray(
-    tasmax_cpm_1980_raw_path,
-    tasmax_hads_1980_raw_path,
     resample_test_cpm_output_path,
     resample_test_hads_output_path,
-    config: str,
+    tasmax_cpm_1980_converted: T_Dataset,
+    tasmax_hads_1980_converted: T_Dataset,
     data_type: str,
     region: str,
 ):
     """Test `cropping` `DataArray` to `standard` calendar."""
-    CPM_FIRST_DATES: np.array = np.array(
-        ["19801201", "19801202", "19801203", "19801204", "19801205"]
+    converted_ds: T_Dataset = (
+        tasmax_hads_1980_converted
+        if data_type == HADS_NAME
+        else tasmax_cpm_1980_converted
     )
-    test_config: CPMResampler | HADsResampler
-    if data_type == HadUKGrid:
-        output_path: Path = resample_test_hads_output_path / config
-        crop_path: Path = (
-            resample_test_hads_output_path / config / HADS_CROP_OUTPUT_LOCAL_PATH
-        )
-
-        test_config = HADsResampler(
-            input_path=tasmax_hads_1980_raw_path.parent,
-            output_path=output_path,
-            crop_path=crop_path,
-        )
-    else:
-        assert data_type == UKCPLocalProjections
-        output_path: Path = resample_test_cpm_output_path / config
-        crop_path: Path = (
-            resample_test_cpm_output_path / config / CPM_CROP_OUTPUT_LOCAL_PATH
-        )
-        test_config = CPMResampler(
-            input_path=tasmax_cpm_1980_raw_path.parent,
-            output_path=output_path,
-            crop_path=crop_path,
-        )
-    paths: list[Path]
-    try:
-        reproject_result: GDALDataset = test_config.to_reprojection()
-    except FileExistsError:
-        test_config._sync_reprojected_paths(overwrite_output_path=output_path)
-
-    match config:
-        case "direct":
-            paths = [test_config.crop_projection(region=region)]
-        case "range":
-            paths = test_config.range_crop_projection(stop=1)
-        # case "direct_provided":
-        #     paths = [
-        #         test_config.to_reprojection(index=0, source_to_index=tuple(test_config))
-        #     ]
-        # case "range_provided":
-        #     paths = test_config.range_to_reprojection(
-        #         stop=1, source_to_index=tuple(test_config)
-        #     )
-    crop: T_Dataset = open_dataset(paths[0])
-    # assert crop.dims[FINAL_RESAMPLE_LON_COL] == FINAL_CONVERTED_CPM_WIDTH
-    # assert_allclose(export.tasmax[10][5][:10].values, FINAL_CPM_DEC_10_5_X_0_10_Y)
-    if data_type == UKCPLocalProjections:
-        assert crop.dims["time"] == 365
-        assert (
-            CPM_FIRST_DATES == crop.time.dt.strftime(CLI_DATE_FORMAT_STR).head().values
-        ).all()
+    crop_config: BoundingBoxCoords = DEFAULT_CROP_COORDS_EPSG2770[region]
+    crop_path: Path = (
+        resample_test_hads_output_path / data_type / HADS_CROP_OUTPUT_PATH
+        if data_type == HADS_NAME
+        else resample_test_cpm_output_path / data_type / CPM_CROP_OUTPUT_PATH
+    )
+    crop = crop_xarray(converted_ds, crop_box=crop_config)
+    if crop_config.name != "Scotland":
+        assert_allclose(crop.rio.bounds(), crop_config.as_rioxarray_tuple(), rtol=0.01)
     plot_xarray(
         crop.tasmax[0],
-        path=crop_path / region / f"config-{config}.png",
+        path=crop_path / region / f"config-{data_type}.png",
         time_stamp=True,
     )
 

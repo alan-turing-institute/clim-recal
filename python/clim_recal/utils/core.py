@@ -1,13 +1,15 @@
 """Utility functions."""
 
+import json
 import sys
 import warnings
+from calendar import monthrange
 from collections.abc import KeysView
 from csv import DictReader
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, fields, is_dataclass
 from datetime import date, datetime, timedelta
 from enum import StrEnum
-from itertools import product
+from itertools import product, repeat
 from logging import getLogger
 from multiprocessing import Pool
 from os import PathLike, chdir, cpu_count
@@ -26,7 +28,8 @@ from typing import (
 )
 
 from rich.console import Console
-from tqdm import TqdmExperimentalWarning, tqdm
+from rich.progress import track
+from tqdm import TqdmExperimentalWarning
 
 logger = getLogger(__name__)
 
@@ -38,6 +41,14 @@ DateType = Union[date, str]
 DateRange = tuple[DateType, DateType]
 CLI_DATE_FORMAT_STR: Final[str] = "%Y%m%d"
 ISO_DATE_FORMAT_STR: Final[str] = "%Y-%m-%d"
+YEAR_DATE_FORMAT_STR: Final[str] = "%Y"
+YEAR_MONTH_DATE_FORMAT_STR: Final[str] = "%Y-%m"
+CLI_DATE_FORMATS: Final[tuple[str, ...]] = (
+    YEAR_DATE_FORMAT_STR,
+    YEAR_MONTH_DATE_FORMAT_STR,
+    ISO_DATE_FORMAT_STR,
+    CLI_DATE_FORMAT_STR,
+)
 DATE_FORMAT_SPLIT_STR: Final[str] = "-"
 
 NORMAL_YEAR_DAYS: Final[int] = 365
@@ -56,6 +67,8 @@ RUN_TIME_STAMP_FORMAT: Final[str] = "%y-%m-%d_%H-%M"
 DEBIAN_MOUNT_PATH: Final[Path] = Path("/mnt/vmfileshare")
 DARWIN_MOUNT_PATH: Final[Path] = Path("/Volumes/vmfileshare")
 CLIMATE_DATA_PATH: Final[Path] = Path("ClimateData")
+
+DEFAULT_CALLABLE_ATTR_NAME: Final[str] = "execute"
 
 
 @dataclass
@@ -169,7 +182,7 @@ def range_len(
 
 
 def run_callable_attr(
-    instance: object, method_name: str = "execute", *args, **kwargs
+    instance: object, *args, method_name: str = DEFAULT_CALLABLE_ATTR_NAME, **kwargs
 ) -> Any:
     """Extract `method_name` from `instance` to call.
 
@@ -177,10 +190,10 @@ def run_callable_attr(
     ----------
     instance
         `object` to call `method_name` from.
-    method_name
-        Name of method on `object` to call.
     *args
         Parameters passed to `method_name` from `instance`.
+    method_name
+        Name of method on `object` to call.
     **kwargs
         Parameters passed to `method_name` from `instance`.
 
@@ -192,15 +205,31 @@ def run_callable_attr(
     Examples
     --------
     >>> jan_1: MonthDay = MonthDay()
-    >>> run_callable_attr(jan_1, 'from_year', 1984)
+    >>> run_callable_attr(jan_1, 1984, method_name='from_year')
     datetime.date(1984, 1, 1)
     """
+    if isinstance(args[-1], dict) and "method_name" in args[-1]:
+        logger.debug(
+            f"Replacing 'method_name' param '{method_name}' "
+            f"with '{args[-1]["method_name"]}'."
+        )
+        kwargs |= args[-1]
+        args = args[:-1]
+        method_name = kwargs.pop("method_name")
     method: Callable = getattr(instance, method_name)
     return method(*args, **kwargs)
 
 
 def multiprocess_execute(
-    iter: Sequence, method_name: str | None = None, cpus: int | None = None
+    iter: Sequence,
+    *args: Any,
+    method_name: str = DEFAULT_CALLABLE_ATTR_NAME,
+    progress_bar: bool = False,
+    bar_name: str = "",
+    cpus: int | None = None,
+    include_sub_process_config: bool = False,
+    sub_process_progress_bar: bool = False,
+    **kwargs: Any,
 ) -> list:
     """Run `method_name` as from `iter` via `multiprocessing`.
 
@@ -208,45 +237,69 @@ def multiprocess_execute(
     ----------
     iter
         `Sequence` of instances to iterate over calling `method_name` from.
+    *args
+        Args to pass to `method_name`
     method_name
         What to call from objects in `inter`.
+    progress_bar
+        Whether to render a progress bar.
+    bar_name
+        Passed to `description` parameter for progress bar.
     cpus
         Number of cpus to pass to `Pool` for multiprocessing.
+    include_sub_process_config
+        Include configurations specific to multiprocessess
+        (eg. `progress_bar` config)
+    sub_process_progress_bar
+        Whether to include `progress_bar` within each `multiprocess` run.
+    **kwargs
+        Args to pass to `method_name`
 
     Examples
     --------
-    >>> if not is_data_mounted:
-    ...     pytest.skip(mount_doctest_skip_message)
-    >>> from clim_recal.resample import CPMResampler
-    >>> resample_test_hads_output_path: Path = getfixture(
-    ...         'resample_test_cpm_output_path')
-    >>> cpm_resampler: CPMResampler = CPMResampler(
-    ...     stop_index=3,
-    ...     output_path=resample_test_hads_output_path,
-    ... )
-    >>> multiprocess_execute(cpm_resampler, method_name="exists")
-    [True, True, True]
+    >>> test_strs: tuple[tuple[str], ...] = (('the third'), ('man'))
+    >>> multiprocess_execute(test_strs, method_name="split")
+    [['the', 'third'], ['man']]
+    >>> test_strs = (('lumbar'), ('puncture'))
+    >>> multiprocess_execute(test_strs, 'u', method_name="split")
+    [['l', 'mbar'], ['p', 'nct', 're']]
+    >>> multiprocess_execute(test_strs, 'u', method_name="split",
+    ...                      progress_bar=True)
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100%...
+    [['l', 'mbar'], ['p', 'nct', 're']]
 
     Notes
     -----
-    Failed asserting cpus <= total - 1
+    Failed asserting cpus <= total - 1.
     """
+    results: list
     total_cpus: int | None = cpu_count()
     cpus = cpus or 1
-    # if isinstance(total_cpus, int) and cpus is not None:
     if isinstance(total_cpus, int):
         cpus = min(cpus, total_cpus - 1)
     else:
         logger.warning(f"'total_cpus' not checkable, running with 'cpus': {cpus}")
-    params_tuples: list[tuple[Any, str]] = [(item, method_name) for item in iter]
+    kwargs["method_name"] = method_name
+    if include_sub_process_config:
+        kwargs["progress_bar"] = sub_process_progress_bar
+    param_tuples: tuple[tuple[Any, ...], ...] = (
+        tuple(zip(iter, repeat(*args), repeat(kwargs)))
+        if args
+        else tuple(zip(iter, repeat(kwargs)))
+    )
+
     # Had build errors when generating a wheel,
     # Followed solution here:
     # https://stackoverflow.com/questions/45720153/python-multiprocessing-error-attributeerror-module-main-has-no-attribute
     __spec__ = None
     with Pool(processes=cpus) as pool:
-        results = list(
-            tqdm(pool.starmap(run_callable_attr, params_tuples), total=len(iter))
-        )
+        if progress_bar:
+            results = pool.starmap(
+                run_callable_attr,
+                track(param_tuples, description=bar_name),
+            )
+        else:
+            results = pool.starmap(run_callable_attr, param_tuples)
     return results
 
 
@@ -347,6 +400,39 @@ def ensure_date(date_to_check: DateType, format_str: str = CLI_DATE_FORMAT_STR) 
         return date_to_check
     else:
         return datetime.strptime(date_to_check, format_str).date()
+
+
+def date_strs_from_met_office_file_name(path: PathLike) -> tuple[str, ...]:
+    """Extract date range from MetOffice file name.
+
+    Examples
+    --------
+    >>> date_strs_from_met_office_file_name(
+    ...     'test/path/'
+    ...     'tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc')
+    ('19801201', '19811130')
+    """
+    return tuple(Path(path).stem.split("_")[-1].split("-"))
+
+
+def dates_path_to_date_tuple(
+    path: PathLike,
+    date_str_extractor: Callable[[PathLike], str] = date_strs_from_met_office_file_name,
+    date_str_format: str = CLI_DATE_FORMAT_STR,
+) -> tuple[date, ...]:
+    """Extract date range from MetOffice file name.
+
+    Examples
+    --------
+    >>> dates_path_to_date_tuple(
+    ...     'test/path/tasmax_rcp85_land-cpm_uk_2.2km_01_day_19801201-19811130.nc')
+    (datetime.date(1980, 12, 1), datetime.date(1981, 11, 30))
+
+    """
+    return tuple(
+        ensure_date(date_str, format_str=date_str_format)
+        for date_str in date_str_extractor(path)
+    )
 
 
 def date_range_generator(
@@ -711,8 +797,23 @@ def results_path(
 
     Examples
     --------
-    >>> str(results_path('hads', 'test_example/folder', extension='cat'))
-    'test_example/folder/hads_..._...-....cat'
+    >>> temp_path = getfixture('tmpdir')
+    >>> path: Path = results_path('hads', path='temp_path/folder',
+    ...                           extension='cat')
+    >>> str(path)
+    'temp_path/folder/hads_..._...-....cat'
+    >>> path.exists()
+    False
+    >>> path = results_path('run', path='temp_path/other-folder', extension='log', mkdir=True)
+    >>> str(path)
+    'temp_path/other-folder/run_..._...-....log'
+    >>> path.parent.is_dir()
+    True
+    >>> path.is_file()
+    False
+    >>> path.touch()
+    >>> path.is_file()
+    True
     """
     path = Path() if path is None else Path(path)
     if mkdir:
@@ -794,6 +895,18 @@ def climate_data_mount_path(
         return path
 
 
+def _get_source_path(
+    instance, index: int, source_to_index: Sequence | None = None
+) -> Path:
+    """Return a path indexed from `source_to_index` or `self`."""
+    if source_to_index is None:
+        return instance[index]
+    elif isinstance(source_to_index, str):
+        return getattr(instance, source_to_index)[index]
+    else:
+        return source_to_index[index]
+
+
 def is_climate_data_mounted(mount_path: PathLike | None = None) -> bool:
     """Check if `CLIMATE_DATA_MOUNT_PATH` is mounted.
 
@@ -812,3 +925,453 @@ class StrEnumReprName(StrEnum):
     def __repr__(self) -> str:
         """Return value as `str`."""
         return f"'{self.value}'"
+
+
+def ensure_all_attr_types(
+    instance, types: Sequence[type], converter: Callable[[Any], Any], **kwargs
+) -> Any:
+    """Check all `instance` attributes of `types` are converted.
+
+    Parameters
+    ----------
+    instance
+        `object` to check `date` attributes of.
+    types
+        Attribute types to check and apply `converter` to.
+
+    Examples
+    --------
+    >>> from ..config import ClimRecalConfig
+    >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+    >>> clim_runner.hads_start_date = str(clim_runner.hads_start_date)
+    >>> clim_runner.hads_start_date
+    '1980-01-01'
+    >>> clim_runner = ensure_all_attr_types(
+    ...     clim_runner, types=(date | None,),
+    ...     converter=ensure_date, format_str=ISO_DATE_FORMAT_STR)
+    >>> clim_runner.hads_start_date
+    datetime.date(1980, 1, 1)
+    """
+    for instance_field in fields(instance):
+        if instance_field.type in types:
+            value: Any = getattr(instance, instance_field.name)
+            if value:
+                setattr(instance, instance_field.name, converter(value, **kwargs))
+    return instance
+
+
+def ensure_all_attr_dates(
+    instance,
+    date_types: tuple[type, ...] = (date, date | None, date | str),
+    format_str: str = ISO_DATE_FORMAT_STR,
+) -> Any:
+    """Check all `date` attributes are converted to `date`.
+
+    Parameters
+    ----------
+    instance
+        `object` to check `date` attributes of.
+    date_types
+        Attribute types to check are `date` instances.
+    format_str
+        `str` format to convert dates.
+
+    Examples
+    --------
+    >>> from ..config import ClimRecalConfig
+    >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+    >>> clim_runner.hads_start_date = str(clim_runner.hads_start_date)
+    >>> clim_runner.hads_start_date
+    '1980-01-01'
+    >>> clim_runner = ensure_all_attr_dates(clim_runner)
+    >>> clim_runner.hads_start_date
+    datetime.date(1980, 1, 1)
+    """
+    return ensure_all_attr_types(
+        instance=instance,
+        types=date_types,
+        converter=ensure_date,
+        format_str=format_str,
+    )
+
+
+def ensure_all_attr_paths(
+    instance, path_types: tuple[type, ...] = (PathLike, Path, PathLike | None)
+) -> Any:
+    """Check all `PathLike` attributes are converted to `Path`.
+
+    Parameters
+    ----------
+    instance
+        `object` to check `Path` attributes of.
+    path_types
+        What attributes on `object` to ensure are `Path` instances if not
+        `None`.
+
+    Examples
+    --------
+    >>> from ..config import ClimRecalConfig
+    >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+    >>> clim_runner.output_path = str(clim_runner.output_path)
+    >>> clim_runner.output_path
+    <BLANKLINE>
+    '.../test-run-results...'
+    >>> clim_runner = ensure_all_attr_paths(clim_runner)
+    >>> clim_runner.output_path
+    <BLANKLINE>
+    ...Path('.../test-run-results...')
+    """
+    return ensure_all_attr_types(instance=instance, types=path_types, converter=Path)
+
+
+def ensure_attr_tuples(
+    instance,
+    sequence_type_strs: tuple[str, ...] = ("Sequence", "tuple"),
+) -> Any:
+    """Ensure attributes of `instance` set to `tuples`.
+
+    Parameters
+    ----------
+    instance
+        `object` to check `tuple` attributes of.
+    sequence_type_strs
+        `str` of types to check `attrs` of `instance` of. Using `str` of
+        `type` rather than `type` instances to be more flexible.
+
+    Examples
+    --------
+    >>> from ..config import ClimRecalConfig
+    >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+    >>> clim_runner.regions = list(clim_runner.regions)
+    >>> clim_runner.regions
+    ['Glasgow', 'Manchester']
+    >>> clim_runner = ensure_attr_tuples(clim_runner)
+    >>> clim_runner.regions
+    ('Glasgow', 'Manchester')
+    """
+    for var_field in fields(instance):
+        if any(class_str in str(var_field.type) for class_str in sequence_type_strs):
+            setattr(instance, var_field.name, tuple(getattr(instance, var_field.name)))
+    return instance
+
+
+def read_json_config(
+    path: PathLike,
+    constructor: Any,
+    seq_to_tuples: bool = True,
+    ensure_all_dates: bool = True,
+    date_format_str: str = ISO_DATE_FORMAT_STR,
+    ensure_all_paths: bool = True,
+) -> Any:
+    """Create an instance of `constructor` from `path`.
+
+    Parameters
+    ----------
+    path
+        `Path` to read `json` format from.
+    constructor
+        `Class` to pass parameters from `path` `json` as `**kwargs`.
+    seq_to_tuples
+        Whether to pass new instance to `ensure_attr_tuples` to convert
+        `Sequence` typed attributes to `tuples`.
+    ensure_all_dates
+        Whether to check and convert `date` typed attributes from `str` to
+        `date` objects using `date_format_str`.
+    date_format_str
+        `date` `strftime` format for `ensure_all_dates`.
+    ensure_all_paths
+        Whether to check and convert all `Path` typed attributes to `Path`.
+
+    Examples
+    --------
+    >>> from ..config import ClimRecalConfig
+    >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+    >>> save_path: Path = getfixture('tmp_path') / 'config.json'
+    >>> json_path: Path = clim_runner.write_config(path=save_path)
+    >>> clim_config: ClimRecalConfig = read_json_config(
+    ...     json_path, constructor=ClimRecalConfig)
+    >>> assert clim_config == clim_runner
+    """
+    with open(path) as json_config_path:
+        config: Any = constructor(**json.load(json_config_path))
+    if seq_to_tuples:
+        ensure_attr_tuples(config)
+    if ensure_all_paths:
+        ensure_all_attr_paths(config)
+    if ensure_all_dates:
+        ensure_all_attr_dates(config, format_str=date_format_str)
+    return config
+
+
+def save_config(
+    instance: Any,
+    path: PathLike | None = None,
+    indent: int = 2,
+    save_path_attr_name: str = "exec_path",
+    **kwargs,
+) -> Path:
+    """Save `dataclass` instance config to `path` and return saved path.
+
+    Parameters
+    ----------
+    instance
+        Instance to save in `json` format.
+    path
+        `Path` to save instance `json` to. If `None` a `path` is
+        generated from calling the `save_path_attr_name` on `instance`.
+    indent
+        How many spaces to indent generated `json`.
+    **kwargs
+        Any additional parameters to pass to `json.dump`.
+
+    Examples
+    --------
+    >>> clim_runner = getfixture('clim_runner')
+    >>> save_path: Path = getfixture('tmp_path') / 'save_config_test.json'
+    >>> json_path: Path = save_config(clim_runner, path=save_path)
+    >>> save_path == json_path
+    True
+    >>> with open(save_path) as source:
+    ...     loaded_config = json.load(source)
+    >>> loaded_config['regions']
+    ['Glasgow', 'Manchester']
+    """
+    try:
+        assert is_dataclass(instance)
+    except AssertionError:
+        raise ValueError(f"'{instance.__class__.__name__}' is not a dataclass.")
+    path = path or results_path(
+        name="config",
+        path=getattr(instance, save_path_attr_name),
+        extension="json",
+        mkdir=True,
+    )
+    with open(path, "w") as write_path:
+        json.dump(instance.to_dict(), write_path, indent=indent, **kwargs)
+    return path
+
+
+def dataclass_to_dict(instance, force_serialise: bool = True) -> dict[str, Any]:
+    """Convert `dataclass` instance to a `dict`.
+
+    Examples
+    --------
+    >>> from clim_recal.config import ClimRecalConfig, VariableOptions
+    >>> from clim_recal.cli import cli
+    >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
+    >>> config_from_dict: ClimRecalConfig  = ClimRecalConfig(
+    ...     **dataclass_to_dict(clim_runner, force_serialise=False))
+    >>> clim_runner == config_from_dict
+    True
+    >>> config_from_dict.variables = VariableOptions.all()
+    >>> clim_runner == config_from_dict
+    False
+    >>> from tests.utils import compare_dataclass_instances
+    >>> compare_dataclass_instances(clim_runner, config_from_dict)
+    {'variables': (('tasmax',), ('tasmax', 'rainfall', 'tasmin'))}
+    """
+    try:
+        assert is_dataclass(instance)
+    except AssertionError:
+        raise ValueError(f"'{instance.__class__.__name__}' is not a dataclass.")
+    fields_to_set_to_none: Sequence[str] = []
+    if hasattr(instance, "_skip_json_serialise"):
+        fields_to_set_to_none = instance._skip_json_serialise
+    if force_serialise:
+        serialiser: dict[str, Any] = asdict(instance)
+        for name, value in serialiser.items():
+            if isinstance(value, Path | date):
+                serialiser[name] = str(value)
+            if name in fields_to_set_to_none:
+                serialiser[name] = None
+        return serialiser
+    else:
+        return asdict(instance)
+
+
+def infer_end_date(
+    date_obj: date, check_month: bool = False, check_day: bool = False
+) -> date:
+    """Infer the last of a date range.
+
+    Parameters
+    ----------
+    date_obj
+        Date object to infer latest date from.
+    check_month
+        Whether to check latest month within year.
+    check_day
+        Whether to check latest day within month.
+
+    Examples
+    --------
+    >>> infer_end_date(date(2024, 11, 5), check_month=True, check_day=True)
+    datetime.date(2024, 11, 5)
+    >>> infer_end_date(date(2024, 11, 1), check_month=True)
+    datetime.date(2024, 11, 1)
+    >>> infer_end_date(date(2024, 11, 1), check_day=True)
+    datetime.date(2024, 11, 30)
+    >>> infer_end_date(date(2024, 1, 1), check_month=True)
+    datetime.date(2024, 12, 1)
+    >>> infer_end_date(date(2024, 1, 1), check_month=True, check_day=True)
+    datetime.date(2024, 12, 31)
+    """
+    if check_month and date_obj.month == 1 and date_obj.day == 1:
+        date_obj = date(year=date_obj.year, month=12, day=date_obj.day)
+    if check_day and date_obj.day == 1:
+        day: int = monthrange(date_obj.year, date_obj.month)[1]
+        date_obj = date(year=date_obj.year, month=date_obj.month, day=day)
+    return date_obj
+
+
+def date_str_infer_end(
+    date_or_str: str | datetime | date, formats: Sequence[str] = CLI_DATE_FORMATS
+) -> date | None:
+    """Infer latest date from `date_str`.
+
+    Parameters
+    ----------
+    date_or_str
+        Instance to infer potential latest implied date from.
+    formats
+        `strptime` formats to check for date parsing.
+
+    Examples
+    --------
+    >>> date_str_infer_end(None)
+    >>> date_str_infer_end("")
+    >>> date_str_infer_end(datetime(2021, 12, 31, 12, 0))
+    datetime.date(2021, 12, 31)
+    >>> date_str_infer_end("2024-11-5")
+    datetime.date(2024, 11, 5)
+    >>> date_str_infer_end("2024-11-1")
+    datetime.date(2024, 11, 1)
+    >>> date_str_infer_end("2024-1-1")
+    datetime.date(2024, 1, 1)
+    >>> date_str_infer_end("2024")
+    datetime.date(2024, 12, 31)
+    >>> date_str_infer_end("2024-1")
+    datetime.date(2024, 1, 31)
+    >>> date_str_infer_end("2024-11")
+    datetime.date(2024, 11, 30)
+    >>> date_str_infer_end("2024-11-")
+    Traceback (most recent call last):
+        ...
+    ValueError: 'date_or_str': '2024-11-' doesn't match
+    'formats': ('%Y', '%Y-%m', '%Y-%m-%d', '%Y%m%d')
+    """
+    if not date_or_str:
+        return None
+    elif isinstance(date_or_str, datetime):
+        return date_or_str.date()
+    elif isinstance(date_or_str, date):
+        return date_or_str
+    elif YEAR_DATE_FORMAT_STR in formats and len(date_or_str) == 4:
+        return infer_end_date(
+            datetime.strptime(date_or_str, YEAR_DATE_FORMAT_STR).date(),
+            check_month=True,
+            check_day=True,
+        )
+    elif YEAR_MONTH_DATE_FORMAT_STR in formats and 6 <= len(date_or_str) <= 7:
+        return infer_end_date(
+            datetime.strptime(date_or_str, YEAR_MONTH_DATE_FORMAT_STR).date(),
+            check_day=True,
+        )
+    else:
+        for format in set(formats) - {YEAR_DATE_FORMAT_STR, YEAR_MONTH_DATE_FORMAT_STR}:
+            try:
+                return datetime.strptime(date_or_str, format).date()
+            except ValueError:
+                pass
+        raise ValueError(
+            f"'date_or_str': '{date_or_str}' doesn't match 'formats': {formats}"
+        )
+
+
+def check_parent_sub_paths(
+    parent_path: PathLike | None = None,
+    sub_path: PathLike | None = None,
+    data_name: str | None = None,
+) -> Path:
+    """Check combination of `input_path` and `sub_path`.
+
+    Parameters
+    ----------
+    parent_path
+        Expected to be a parent path for `sub_path`.
+    sub_path
+        Expected to a path within `input_path`.
+    data_name
+        Name of data provided via `parent_path` and `sub_path`. Only used in logs.
+
+    Examples
+    --------
+    >>> caplob = getfixture('caplog')
+    >>> str(check_parent_sub_paths('mount/path', 'HadsUKgrid'))
+    'mount/path/HadsUKgrid'
+    >>> str(check_parent_sub_paths('mount/path', '/HadsUKgrid'))
+    '/HadsUKgrid'
+    >>> str(check_parent_sub_paths('mount/path'))
+    'mount/path'
+    >>> str(check_parent_sub_paths(None, 'HadsUKgrid'))
+    'HadsUKgrid'
+    >>> str(check_parent_sub_paths())
+    '.'
+    """
+    final_path: Path
+    parent_path = Path(parent_path) if parent_path else parent_path
+    sub_path = Path(sub_path) if sub_path else sub_path
+    data_name_info_text: str = " for " + data_name if data_name else ""
+    if parent_path:
+        if sub_path:
+            if sub_path.is_absolute():
+                logger.info(
+                    f"Overriding 'parent_path': '{parent_path}' with absolute: '{sub_path}'"
+                )
+                final_path = sub_path
+            else:
+                final_path = parent_path / sub_path
+        else:
+            logger.debug(
+                f"No 'sub_path'{data_name_info_text}. Using 'parent_path': {parent_path}"
+            )
+            final_path = parent_path
+    else:
+        if sub_path:
+            logger.info(f"No 'parent_path', using '{sub_path}'{data_name_info_text}.")
+            final_path = sub_path
+        else:
+            logger.info(f"Neither 'parent_path' nor 'sub_path'{data_name_info_text}.")
+            final_path = Path()
+    return final_path
+
+
+def resolve_parent_sub_paths(
+    parent_path: PathLike, paths_dict: dict[str, PathLike]
+) -> dict[str, Path]:
+    """
+    Return `check_parent_sub_paths` applied to `paths_dict` with `parent_path`.
+
+    Parameters
+    ----------
+    parent_path
+        `Path` meant to serve as default parent to `paths_dict` values.
+    paths_dict
+        Label to `Path` intended to by default be subpaths of `parent_path`.
+
+    Examples
+    --------
+    >>> caplob = getfixture('caplog')
+    >>> pprint(resolve_parent_sub_paths(
+    ...     'mount/path', {'hads': 'HadsUKgrid', 'cpm': 'UKCP2.2'}))
+    {'cpm': ...Path('mount/path/UKCP2.2'),
+     'hads': ...Path('mount/path/HadsUKgrid')}
+    >>> pprint(resolve_parent_sub_paths(
+    ...     'mount/path', {'hads': '/HadsUKgrid', 'cpm': ''}))
+    {'cpm': ...Path('mount/path'),
+     'hads': ...Path('/HadsUKgrid')}
+    """
+    return {
+        label: check_parent_sub_paths(parent_path, path, label)
+        for label, path in paths_dict.items()
+    }

@@ -38,13 +38,14 @@ dependencies = [
     "dill>=0.3.8",
     "numpy>2",
     "rioxarray>=0.17.0",
-    "rasterio==1.4b1",
+    "rasterio>=1.4.1",
     "nc-time-axis>=1.4.1",
     "jupyter-cache>=1.0.0",
+    "python-dotenv>=1.0.1",
 ]
 
 [project.scripts]
-clim-recal = "clim_recal.cli:clim_recal"
+clim-recal = "clim_recal.cli:cli"
 
 [tool.isort]
 profile = "black"
@@ -105,4 +106,6 @@ markers = [
     "multiprocess: uses multiprocessing.",
     "darwin: requires darwin (macOS) operating system.",
     "localcache: uses local copies of mount files.",
+    "largefile: uses large amounts of hard drive space.",
+    "download: requires internet connection to download."
 ]

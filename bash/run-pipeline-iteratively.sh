@@ -68,8 +68,10 @@ for year in $(seq $cpm_start_year $cpm_end_year); do
 
   {
     clim-recal \
-    --hads-input-path $hads_working_dir \
-    --cpm-input-path $cpm_working_dir \
+    --resample-start-index $i \
+    --total-from-index 1 \
+    --hads-input-path $hads_input_path \
+    --cpm-input-path $cpm_input_path \
     --output-path $output_path \
     --all-variables \
     --all-regions \

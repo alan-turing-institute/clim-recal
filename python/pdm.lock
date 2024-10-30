@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:5359e3ced25b91c6c2e9bbfb2dd0267548185501bbc14e96d8bac16488f218ce"
+content_hash = "sha256:99b01a7abe9608ff3da210e1079f9795413c5b14127acf1bf9a843aa59b56fcc"
 
 [[metadata.targets]]
 requires_python = "~=3.12.5"
@@ -886,13 +886,13 @@ files = [
 
 [[package]]
 name = "gdal"
-version = "3.8.5"
+version = "3.8.4"
 requires_python = ">=3.6.0"
 summary = "GDAL: Geospatial Data Abstraction Library"
 groups = ["default"]
 marker = "python_full_version ~= \"3.12.5\""
 files = [
-    {file = "GDAL-3.8.5.tar.gz", hash = "sha256:ad8addd58ba9c62aefc7f65d345c168736798f137e5c8f247af76fcf4862d371"},
+    {file = "GDAL-3.8.4.tar.gz", hash = "sha256:7c51e0ae7a7ccf43ad9e4bf435176baa9276653dfa16fd167c3632f6e7275207"},
 ]
 
 [[package]]
@@ -999,7 +999,7 @@ files = [
 
 [[package]]
 name = "hishel"
-version = "0.0.30"
+version = "0.0.33"
 requires_python = ">=3.8"
 summary = "Persistent cache implementation for httpx and httpcore"
 groups = ["default"]
@@ -1009,8 +1009,8 @@ dependencies = [
     "typing-extensions>=4.8.0",
 ]
 files = [
-    {file = "hishel-0.0.30-py3-none-any.whl", hash = "sha256:0c73a779a6b554b52dff75e5962057df25764fd798c31b9435ce6398b1b171c8"},
-    {file = "hishel-0.0.30.tar.gz", hash = "sha256:656393ee77e9c39a0d6c527c74810e15d96e598dcb9b191f20a788608ceaca99"},
+    {file = "hishel-0.0.33-py3-none-any.whl", hash = "sha256:6e6c6cdaf432ff4c4981e7792ef7d1fa4c8ede58b9dbbcefb9ab3fc9770f2a07"},
+    {file = "hishel-0.0.33.tar.gz", hash = "sha256:ab5b2661d5e2252f305fd0fb20e8c76bfab3ea73458f20f2591c53c37b270089"},
 ]
 
 [[package]]
@@ -2076,7 +2076,7 @@ files = [
 
 [[package]]
 name = "pdm"
-version = "2.19.1"
+version = "2.19.3"
 requires_python = ">=3.8"
 summary = "A modern Python package and dependency manager supporting the latest PEP standards"
 groups = ["default"]
@@ -2086,7 +2086,7 @@ dependencies = [
     "dep-logic>=0.4.4",
     "filelock>=3.13",
     "findpython<1.0.0a0,>=0.6.0",
-    "hishel<0.1.0,>=0.0.24",
+    "hishel<0.1.0,>=0.0.32",
     "httpx[socks]<1,>0.20",
     "importlib-metadata>=3.6; python_version < \"3.10\"",
     "importlib-resources>=5; python_version < \"3.9\"",
@@ -2107,8 +2107,8 @@ dependencies = [
     "virtualenv>=20",
 ]
 files = [
-    {file = "pdm-2.19.1-py3-none-any.whl", hash = "sha256:3b63ef645aaa4f4010ed9390550bda5cdfa7a9e70bc7780a555c8496cedfccc2"},
-    {file = "pdm-2.19.1.tar.gz", hash = "sha256:7fe235a9cb27b7ec17b762dc85bc9ae71e0776e4b7a8b6f64203f24bb915aa2c"},
+    {file = "pdm-2.19.3-py3-none-any.whl", hash = "sha256:80594e5d6167fb17ea724df09b68cdfe9c601ad7f218f1beea2c032b61bf30e9"},
+    {file = "pdm-2.19.3.tar.gz", hash = "sha256:a9cc7f2078cd3b25ac645ffb5eca9d6b3d5dfcd788eaddfb6083432da71c97c2"},
 ]
 
 [[package]]
@@ -2659,7 +2659,7 @@ files = [
 
 [[package]]
 name = "rasterio"
-version = "1.4b1"
+version = "1.4.1"
 requires_python = ">=3.9"
 summary = "Fast and direct raster I/O for use with Numpy and SciPy"
 groups = ["default"]
@@ -2672,15 +2672,15 @@ dependencies = [
     "click>=4.0",
     "cligj>=0.5",
     "importlib-metadata; python_version < \"3.10\"",
-    "numpy",
+    "numpy>=1.24",
     "pyparsing",
 ]
 files = [
-    {file = "rasterio-1.4b1-cp312-cp312-macosx_10_15_x86_64.whl", hash = "sha256:3f21b1606a0150af778d1344d592c02c205361f5a4530cc9f73a00573aeb6188"},
-    {file = "rasterio-1.4b1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:360f335bf29eb1a9f2b6a8d3cdc3f6b881e699d7a5d308bb165fae605079e422"},
-    {file = "rasterio-1.4b1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:21e4491ff7dc00f952ed8aaec589ae288d0e8bc301453b544e50405fa62bd552"},
-    {file = "rasterio-1.4b1-cp312-cp312-win_amd64.whl", hash = "sha256:c585652c426c8d608b737c1ad2bbb9f38424d3d7497f7d45b9e504c051578e51"},
-    {file = "rasterio-1.4b1.tar.gz", hash = "sha256:a7c2f490aa8fc6245eb2ffb2c8b16c817be6857855378ce7856515c305e10b2d"},
+    {file = "rasterio-1.4.1-cp312-cp312-macosx_10_15_x86_64.whl", hash = "sha256:a0cd7b8eda7d3b0097a42a047d2604c3f1f27b4093e2a4e1e7ad379c9f639f65"},
+    {file = "rasterio-1.4.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:af5e0559eb8da3cf0adbc1d26ce86e505ea82814012b7b6711855674ae3f6425"},
+    {file = "rasterio-1.4.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5b85f7d912b868ce8dd25e01d5042c8426cc9208a715f093081503ee864e870b"},
+    {file = "rasterio-1.4.1-cp312-cp312-win_amd64.whl", hash = "sha256:e7b18c4ccf0d813b6056704af86e14d6841e29ec558a9bce2f1ce2e3ee2ef70d"},
+    {file = "rasterio-1.4.1.tar.gz", hash = "sha256:d750362bb792d2311f94803ff309baec48486ecba75c9b905ea9b1f5eb06ef9f"},
 ]
 
 [[package]]

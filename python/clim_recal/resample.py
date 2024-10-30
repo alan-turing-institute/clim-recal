@@ -486,18 +486,16 @@ class CPMResampler(ResamblerBase):
     >>> cpm_resampler: CPMResampler = CPMResampler(
     ...     input_path=RAW_CPM_TASMAX_PATH,
     ...     output_path=resample_test_cpm_output_path,
+    ...     crop_path=resample_test_cpm_output_path,
     ...     input_file_extension=TIF_EXTENSION_STR,
     ... )
     >>> cpm_resampler
-    <CPMResampler(...count=100,...
-        ...input_path='.../tasmax/05/latest',...
+    <CPMResampler(...count=2,...
+        ...input_path='.../tasmax/01/latest',...
         ...output_path='.../test-run-results_..._.../cpm')>
     >>> pprint(cpm_resampler.input_files)
-    (...Path('.../tasmax/05/latest/tasmax_...-cpm_uk_2.2km_05_day_19801201-19811130.tif'),
-     ...Path('.../tasmax/05/latest/tasmax_...-cpm_uk_2.2km_05_day_19811201-19821130.tif'),
-     ...
-     ...Path('.../tasmax/05/latest/tasmax_...-cpm_uk_2.2km_05_day_20791201-20801130.tif'))
-
+    (...Path('.../tasmax/01/latest/tasmax_..._19821201-19831130geotif.tif'),
+     ...Path('.../tasmax/01/latest/tasmax_..._19901201-19911130geotif.tif'))
     """
 
     input_path: PathLike | None = RAW_CPM_TASMAX_PATH
@@ -738,6 +736,9 @@ class ResamblerManagerBase:
             yield self.resampler_class(
                 input_path=var_path[0],
                 output_path=self.resample_paths[index],
+                # Setting to avoid test failure,
+                # but crop_path should not be used
+                crop_path=self.crop_folder or "",
                 variable_name=var_path[1],
                 start_index=self.start_index,
                 stop_index=self.stop_index,

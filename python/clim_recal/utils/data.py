@@ -1,26 +1,49 @@
 from dataclasses import dataclass, field
 from typing import Collection, Union, Callable, Any, Literal, Final, Iterable
 from os import PathLike
-from datetime import date
+from datetime import date, datetime
 from enum import auto
 from pathlib import Path
+from logging import getLogger
 
 from rasterio.enums import Resampling
 from xarray.backends.api import ENGINES
 
-from .core import StrEnumReprName
+from .core import StrEnumReprName, climate_data_mount_path
+from .gdal_formats import TIF_EXTENSION_STR, NETCDF_EXTENSION_STR
 
+logger = getLogger(__name__)
+
+
+CLIMATE_DATA_MOUNT_PATH: Path = climate_data_mount_path()
+
+RAW_DATA_MOUNT_PATH: Final[Path] = CLIMATE_DATA_MOUNT_PATH / "Raw"
+
+HADS_RAW_FOLDER: Final[Path] = Path("HadsUKgrid")
+CPM_RAW_FOLDER: Final[Path] = Path("UKCP2.2")
+
+RAW_HADS_PATH: Final[Path] = RAW_DATA_MOUNT_PATH / HADS_RAW_FOLDER
+RAW_CPM_PATH: Final[Path] = RAW_DATA_MOUNT_PATH/ CPM_RAW_FOLDER
+
+HADS_SUB_PATH: Final[Path] = Path("day")
+CPM_SUB_PATH: Final[Path] = Path("latest")
 
 DEFAULT_RESAMPLING_METHOD: Final[Resampling] = Resampling.average
 
 BRITISH_NATION_GRID_COORDS_NUMBER: Final[int] = 27700
 BRITISH_NATIONAL_GRID_EPSG: Final[str] = f"EPSG:{BRITISH_NATION_GRID_COORDS_NUMBER}"
 
-HADS_START_DATE: Final[date] = date(1980, 1, 1)
-HADS_END_DATE: Final[date] = date(2021, 12, 31)
+HADS_START_DATETIME: Final[datetime] = datetime.fromisoformat('1980-01-01T12:00:00.000000000')
+HADS_END_DATETIME: Final[datetime] = datetime.fromisoformat('2021-12-31T12:00:00.000000000')
+HADS_START_DATE: Final[date] = HADS_START_DATETIME.date()
+HADS_END_DATE: Final[date] = HADS_END_DATETIME.date()
 
-CPM_START_DATE: Final[date] = date(1980, 12, 1)
-CPM_END_DATE: Final[date] = date(2060, 11, 30)
+# Note: CPM raw files are in 360 day years, using datetime to ease
+# compatibility after conversions to standard datetime formats
+CPM_START_DATETIME: Final[datetime] = datetime.fromisoformat('1980-12-01T12:00:00.000000000')
+CPM_END_DATETIME: Final[datetime] = datetime.fromisoformat('2080-11-30T12:00:00.000000000')
+CPM_START_DATE: Final[date] = CPM_START_DATETIME.date()
+CPM_END_DATE: Final[date] = CPM_END_DATETIME.date()
 
 HADS_RAW_X_COLUMN_NAME: Final[str] = "projection_x_coordinate"
 HADS_RAW_Y_COLUMN_NAME: Final[str] = "projection_y_coordinate"
@@ -28,7 +51,6 @@ HADS_RAW_Y_COLUMN_NAME: Final[str] = "projection_y_coordinate"
 HADS_XDIM: Final[str] = HADS_RAW_X_COLUMN_NAME
 HADS_YDIM: Final[str] = HADS_RAW_Y_COLUMN_NAME
 
-HADS_SUB_PATH: Final[Path] = Path("day")
 
 CPM_RAW_X_COLUMN_NAME: Final[str] = "grid_longitude"
 CPM_RAW_Y_COLUMN_NAME: Final[str] = "grid_latitude"
@@ -36,9 +58,24 @@ CPM_RAW_Y_COLUMN_NAME: Final[str] = "grid_latitude"
 CPRUK_XDIM: Final[str] = CPM_RAW_X_COLUMN_NAME
 CPRUK_YDIM: Final[str] = CPM_RAW_Y_COLUMN_NAME
 
-CPM_SUB_PATH: Final[Path] = Path("latest")
-
 CPM_RESOLUTION_METERS: Final[int] = 2200
+
+CONVERT_OUTPUT_PATH: Final[Path] = Path("convert")
+CROP_OUTPUT_PATH: Final[Path] = Path("crop")
+
+HADS_NAME: Final[str] = "hads"
+CPM_NAME: Final[str] = "cpm"
+
+ClimDataType = Literal[HADS_NAME, CPM_NAME]
+ClimDataTypeTuple = tuple[ClimDataType, ...]
+HADS_AND_CPM: Final[ClimDataTypeTuple] = (HADS_NAME, CPM_NAME)
+
+
+HADS_OUTPUT_PATH: Final[Path] = Path(HADS_NAME)
+CPM_OUTPUT_PATH: Final[Path] = Path(CPM_NAME)
+
+CPM_CROP_OUTPUT_PATH: Final[Path] = Path(f"{CPM_NAME}-crop")
+HADS_CROP_OUTPUT_PATH: Final[Path] = Path(f"{HADS_NAME}-crop")
 
 AuthorshipType = Union[
     str | tuple[str, ...], dict[str, str] |
@@ -46,8 +83,120 @@ AuthorshipType = Union[
 ]
 DropDayType = set[tuple[int, int]]
 
+NETCDF_OR_TIF = Literal[TIF_EXTENSION_STR, NETCDF_EXTENSION_STR]
+
 BoundsTupleType = tuple[float, float, float, float]
 """`GeoPandas` bounds: (`minx`, `miny`, `maxx`, `maxy`)."""
+
+
+def get_clim_types(hads: bool = True, cpm: bool = True) -> ClimDataTypeTuple:
+    """Check which data types to include and return as a `tuple`.
+
+    Parameters
+    ----------
+    hads
+        Whether to include `hads` data.
+    cpm
+        Whether to include `cpm` data.
+    """
+    if hads and cpm:
+        return HADS_AND_CPM
+    elif hads:
+        return (HADS_NAME,)
+    elif cpm:
+        return (CPM_NAME,)
+    else:
+        return tuple()
+
+
+def check_config_dates(start_date: date | datetime,
+                       end_date: date | datetime,
+                       start_date_name: str = 'start_date',
+                       end_date_name: str = 'end_date',
+                       min_start_date: date | datetime= HADS_START_DATE,
+                       max_end_date: date | datetime= CPM_END_DATE) -> None:
+    """Raise `exception` if `date_obj` isn't within `earliest_start_date` and `latest_end_date`.
+
+    Parameters
+    ----------
+    start_date
+        Start of date range to check.
+    end_date
+        End of date range to check.
+    start_date_name
+        Name of start date variable to check.
+    end_date_name
+        Name of end date variable to check.
+    min_start_date
+        Earlist vaid date.
+    max_end_date
+        Latest vaid date.
+
+    Examples
+    --------
+    >>> check_config_dates(date(1980, 12, 2), date(1981, 1, 1))
+    >>> check_config_dates(start_date=date(1979, 12, 2), end_date=date(1981, 1, 1))
+    Traceback (most recent call last):
+    ...
+    ValueError: 'start_date' 1979-12-02 must be before 'end_date'
+    1981-01-01 and both between 1980-01-01 and 2080-11-30
+    """
+    for name, value in locals().items():
+        if 'date' in name and isinstance(value, datetime):
+            locals()[name] = value.date()
+    try:
+        assert min_start_date <= start_date < end_date
+        assert start_date < end_date <= max_end_date
+    except AssertionError:
+        raise ValueError(f"'{start_date_name}' {start_date} must be before "
+                         f"'{end_date_name}' {end_date} and both between "
+                         f"{min_start_date} and {max_end_date}")
+
+
+
+def check_paths_required(hads: bool, cpm: bool, input_path: PathLike, hads_path: PathLike = HADS_RAW_FOLDER, cpm_path: PathLike = CPM_RAW_FOLDER) -> None:
+    """Check paths necessary given cli parameters and `Abort` if invalid.
+
+    Paramaters
+    ----------
+    hads
+        Whether `hads` should be included.
+    cpm
+        Whether 'cpm' should be included.
+    input_path
+        Root `Path` for relative 'hads_path' and 'cpm_path'.
+    hads_path
+        `Path` within `input_path` to HADs data.
+    cpm_path
+        `Path` within `input_path` to CPM data.
+
+    Examples
+    --------
+    >>> check_paths_required(hads=True, cpm=True, input_path='missing/')
+    Traceback (most recent call last):
+        ...
+    ValueError: Path for 'hads' doesn't exist: 'missing/HadsUKgrid'
+    Path for 'cpm' doesn't exist: 'missing/UKCP2.2'
+    """
+    error_message: str = ''
+    for name, included, path in (HADS_NAME, hads, hads_path), (CPM_NAME, cpm, cpm_path):
+        if included:
+            if not path:
+                if input_path:
+                    input_msg: str = f"'{name}_path' not included, using 'input_path': {input_path}"
+                    logger.info(input_msg)
+                    if not Path(input_path).exists():
+                        input_path_error_msg: str = "'input_path' doen't exist.\n"
+                        error_message += input_msg + '\n'
+                        if input_path_error_msg not in error_message:
+                            error_message += input_path_error_msg
+                else:
+                    error_message += f"'input_path' and '{name}_path' needed for {name}\n"
+            else:
+                if not (Path(input_path) / path).exists():
+                    error_message += f"Path for '{name}' doesn't exist: '{Path(input_path)/ path}'\n"
+    if error_message:
+        raise ValueError(error_message)
 
 
 @dataclass
@@ -60,6 +209,8 @@ class BoundingBoxCoords:
     xmax: float
     ymin: float
     ymax: float
+    crop_width: int | None = None
+    crop_height: int | None = None
     epsg: int = BRITISH_NATION_GRID_COORDS_NUMBER
 
     def as_rioxarray_tuple(self) -> tuple[float, float, float, float]:
@@ -77,7 +228,7 @@ class BoundingBoxCoords:
 
 
 GlasgowCoordsEPSG27700: Final[BoundingBoxCoords] = BoundingBoxCoords(
-    name="Glasgow", xmin=249799.999600002, xmax=269234.9996, ymin=657761.472000003, ymax=672330.696800007
+    name="Glasgow", xmin=249799.999600002, xmax=269234.9996, ymin=657761.472000003, ymax=672330.696800007, crop_width=9, crop_height=7
 )
 """Glasgow box coordinates in 27700 grid."""
 
@@ -294,6 +445,9 @@ class RunOptions(StrEnumReprName):
     def all(cls) -> tuple[str, ...]:
         """Return a `tuple` of all options"""
         return tuple(map(lambda c: c.value, cls))
+
+RAW_HADS_TASMAX_PATH: Final[PathLike] = RAW_HADS_PATH / VariableOptions.TASMAX / HADS_SUB_PATH
+RAW_CPM_TASMAX_PATH: Final[PathLike] = RAW_CPM_PATH / VariableOptions.TASMAX / RunOptions.ONE / CPM_SUB_PATH 
 
 
 class MethodOptions(StrEnumReprName):
