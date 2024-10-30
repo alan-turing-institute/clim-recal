@@ -486,6 +486,7 @@ class CPMResampler(ResamblerBase):
     >>> cpm_resampler: CPMResampler = CPMResampler(
     ...     input_path=RAW_CPM_TASMAX_PATH,
     ...     output_path=resample_test_cpm_output_path,
+    ...     crop_path=resample_test_cpm_output_path,
     ...     input_file_extension=TIF_EXTENSION_STR,
     ... )
     >>> cpm_resampler
@@ -735,6 +736,9 @@ class ResamblerManagerBase:
             yield self.resampler_class(
                 input_path=var_path[0],
                 output_path=self.resample_paths[index],
+                # Setting to avoid test failure,
+                # but crop_path should not be used
+                crop_path=self.crop_folder or "",
                 variable_name=var_path[1],
                 start_index=self.start_index,
                 stop_index=self.stop_index,

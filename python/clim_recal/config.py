@@ -439,7 +439,7 @@ class ClimRecalConfig(BaseRunConfig):
                 )
         if self.convert:
             if self.include_cpm:
-                self.cpm_manager = CPMConvertManager(
+                self.cpm_convert_manager = CPMConvertManager(
                     input_paths=input_path_dict[CPM_NAME],
                     variables=self.variables,
                     runs=self.runs,
@@ -454,7 +454,7 @@ class ClimRecalConfig(BaseRunConfig):
                 )
             if self.include_hads:
                 self.set_cpm_for_coord_alignment(input_path_dict[CPM_NAME])
-                self.hads_manager = HADsConvertManager(
+                self.hads_convert_manager = HADsConvertManager(
                     input_paths=input_path_dict[HADS_NAME],
                     variables=self.variables,
                     output_paths=self.convert_hads_path,
@@ -540,8 +540,8 @@ class ClimRecalConfig(BaseRunConfig):
             f"runs_count={len(self.runs)}, "
             f"regions_count={len(self.regions) if self.regions else None}, "
             f"methods_count={len(self.methods)}, "
-            f"cpm_folders_count={len(self.cpm_manager) if hasattr(self, 'cpm_manager') else None}, "
-            f"hads_folders_count={len(self.hads_manager) if hasattr(self, 'hads_manager') else None}, "
+            f"cpm_folders_count={len(self.cpm_convert_manager) if hasattr(self, 'cpm_convert_manager') else None}, "
+            f"hads_folders_count={len(self.hads_convert_manager) if hasattr(self, 'hads_convert_manager') else None}, "
             f"convert_start_index={self.convert_start_index}, "
             f"convert_stop_index={self.convert_stop_index if self.convert_stop_index else 'None'}, "
             f"crop_start_index={self.crop_start_index}, "
