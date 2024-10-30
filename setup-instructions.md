@@ -2,14 +2,14 @@
 title: "`clim-recal` installation"
 ---
 
-`clim-recal` is a set of tools to manage UK climate data and projections, and running a range of correction methods in `python` and `R`. For ease of installation and use, we focus primarily on the `python` portion, but in principal the [`R` notebooks](R/) should be useable via `RStudio`, which suggests packages necessary to install. We also provide [`docker`](https://www.docker.com/) installation options which include both `R` and `python` dependencies.
+`clim-recal` is a set of tools to manage UK climate data and projections, and running a range of correction methods in `python` and `R`. For ease of installation and use, we focus primarily on the `python` portion, but in principal the [`R` notebooks](R/README.md) should be useable via `RStudio`, which suggests packages necessary to install. We also provide `docker` [configurations](docs/docker-configurations.qmd) which include both `R` and `python` environments.
 
 # Quickstart
 
-> [!WARNING]
+::: {.callout-note}
 There are several different ways to install `clim-recal` .
-We have used docker the most and hence this is the most tested.
-Other methods are available but may not be as well tested.
+We have used `docker` the most across different platforms
+:::
 
 For users who already have `conda` (or `mamba`) installed:
 
@@ -202,24 +202,24 @@ cd clim-recal
 docker compose build
 ```
 
-## `Jupyter` (`python` specific)
+## `Jupyter`
 
 ```bash
-cd clim-recal
+cd clim-recal  # for python
 docker compose build jupyter
 ```
 
-## `RStudio` (`R` specific)
+## `RStudio`
 
 ```bash
-cd clim-recal
+cd clim-recal  # for R
 docker compose build rstudio
 ```
 
-## `quarto` (documentation)
+## `quarto`
 
 ```bash
-cd clim-recal
+cd clim-recal  # for documentation in quarto via R
 docker compose build quarto
 ```
 
