@@ -24,7 +24,7 @@ USER root
 
 # Install the local python environment set via
 # `pre-commit` in .conda-linux-64
-RUN micromamba create -n clim-recal gdal=3.8.5 pdm rsync quartodoc jupyter -c conda-forge
+RUN micromamba create -n clim-recal gdal=3.8.5 pdm rsync quartodoc jupyter jupyter-cache -c conda-forge
 
 
 CMD micromamba run -n clim-recal quartodoc build && \

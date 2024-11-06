@@ -1,0 +1,182 @@
+---
+title: "UKCP 2.2 Temporal Interpolation"
+format:
+  html:
+    code-fold: true
+execute:
+  cache: true
+jupyter: python3
+---
+
+To align climate projections with measured records, we interpolate five or six extra time points---standard or leap years respectively---per year.
+
+```{python}
+#| label: cpm-time-series
+
+from typing import Final
+from pathlib import Path
+from pprint import pprint
+
+from xarray.core.types import T_Dataset
+from matplotlib import pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.axes import Axes
+
+from clim_recal.utils.data import VariableOptions, RunOptions
+from clim_recal.utils.xarray import (
+    annual_group_xr_time_series,
+    plot_xarray,
+)
+from clim_recal.utils.docs import CPMSummaryTimeSeries, gap_360_days, plot_axvlines
+
+vars: tuple[str] = ('tasmax', 'tasmin', 'pr')
+runs: tuple[str] = ('01', '05', '06', '07', '08')
+
+cpm_summary_ts = CPMSummaryTimeSeries(runs=runs, variables=vars)
+
+cpm_medians: dict[str, dict[tuple[str, str], T_Dataset]] = cpm_summary_ts.get_local_xarrays_dict()
+
+cal_360_day_4_years: Final[int] = 360*4
+cal_standard_4_years: Final[int] = 365*3 + 366
+
+check_days: Final[int] = 6
+```
+
+With the CPM annual timeseries loaded, we can now plot projections from 1 December 1980 to 30 November 2080:
+
+```{python}
+#| label: fig-tasmax-raw-time-series
+#| fig-cap: "Raw CPM projection 360 day years"
+
+fig, axs = plt.subplots(3, sharex=True)
+for run_id, cpm_raw_median in cpm_medians['raw'].items():
+    var, run = run_id
+    cpm_raw_median[var][:cal_360_day_4_years*2].plot(
+        label=f"run-{run}",
+        ax=axs[vars.index(var)],
+    )
+
+plt.legend()
+plt.show()
+```
+
+```{python}
+#| label: fig-convert-time-series
+#| fig-cap: "Converted CPM to standard years"
+
+fig, axs = plt.subplots(3, sharex=True)
+for run_id, cpm_convert_linear_median in cpm_medians['linear'].items():
+    var, run = run_id
+    cpm_convert_linear_median[var][:cal_standard_4_years*2].plot(
+        label=f"run-{run}",
+        ax=axs[vars.index(var)],
+    )
+
+plt.legend()
+plt.show()
+```
+
+```{python}
+#| label: fig-tasmax-run-01-december-overlayed
+#| fig-cap: "Compare CPM tasmax run 01 360 vs projected standard leap year December"
+
+var = 'tasmax'
+run = '01'
+run_id = (var, run)
+cpm_convert_linear_median = cpm_medians['linear'][run_id]
+trimmed_raw_to_standard = (
+    cpm_medians['raw'][run_id][var][:check_days].convert_calendar('standard', align_on="year")
+)
+
+trimmed_raw_to_standard.plot(label="raw", marker=".")
+cpm_convert_linear_median[var][:check_days + 1].plot(label="convert", marker=".")
+
+plt.legend()
+plt.show()
+```
+
+```{python}
+#| label: fig-december-overlayed
+#| fig-cap: "Compare CPM 360 vs projected standard leap year December"
+
+check_days: Final[int] = 6
+
+fig, axs = plt.subplots(3, 5, sharex=True, sharey=True)
+for run_id, cpm_convert_linear_median in cpm_medians['linear'].items():
+    var, run = run_id
+    trimmed_raw_to_standard = (
+        cpm_medians['raw'][run_id][var][:check_days].convert_calendar(
+            'standard', align_on="year"
+        )
+    )
+    cpm_convert_linear_median[var][:check_days + 1].plot(
+        label="convert",
+        marker=".",
+        ax=axs[vars.index(var), runs.index(run)]
+      )
+    trimmed_raw_to_standard.plot(
+        label="raw",
+        marker=".",
+        ax=axs[vars.index(var), runs.index(run)],
+      )
+
+plt.legend()
+plt.show()
+```
+
+Average annual projections.
+
+```{python}
+#| label: fig-tasmax-annual-means
+#| fig-cap: "Annual average of means of raw tasmax CPM 360 day years"
+
+
+
+annual_raw_medians: T_Dataset = annual_group_xr_time_series(
+  cpm_medians['raw']['tasmax', '01'].tasmax,
+  variable_name=VariableOptions.TASMAX,
+  plot_path=None,
+  time_stamp=None)
+
+annual_convert_linear_medians: T_Dataset = annual_group_xr_time_series(
+  cpm_medians['linear']['tasmax', '01'].tasmax,
+  variable_name=VariableOptions.TASMAX,
+  plot_path=None,
+  time_stamp=None)
+
+annual_convert_nearest_medians: T_Dataset = annual_group_xr_time_series(
+  cpm_medians['nearest']['tasmax', '01'].tasmax,
+  variable_name=VariableOptions.TASMAX,
+  plot_path=None,
+  time_stamp=None)
+
+annual_raw_medians.plot(label='raw', linewidth=5)
+annual_convert_linear_medians.plot(label='convert', linewidth=3)
+annual_convert_nearest_medians.plot(label='nearest', linewidth=1)
+
+plot_axvlines(plt, gap_360_days(is_leap_year=False))
+
+plt.title("Medians of taxmax for each day of the year 1980-01-01 to 2080-11-30")
+plt.legend()
+plt.show()
+```
+
+For more detailed analysis comparing `nearest` and `linear` interpolation see:
+
+- [`cpm_projection_diff_plots.ipynb`](../notebooks/cpm_projection_diff_plots.html)
+- [`cpm_projection_diff_plots_linear_nearest.ipynb`](../notebooks/cpm_projection_diff_plots_linear_nearest.html)
+
+<!-- Leap year projection. -->
+<!-- ```{python} -->
+<!-- #| label: fig-tasmax-leap-means -->
+<!-- #| fig-cap: "Leap year average of means of raw tasmax CPM 360 day years" -->
+<!---->
+<!-- leap_annual_means_raw: T_Dataset = cpm_medians['raw']['tasmax', '01'].where( -->
+<!--   cpm_medians['raw']['tasmax', '01'].time.dt.year % 4 == 0 -->
+<!-- ) -->
+<!---->
+<!-- leap_annual_means_raw.tasmax.plot(label="raw") -->
+<!---->
+<!-- plt.legend() -->
+<!-- plt.show() -->
+<!-- ``` -->

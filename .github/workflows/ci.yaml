@@ -78,9 +78,9 @@ jobs:
           mamba run -n ${{ env.CONDA_ENV_NAME }} --cwd python pytest -m "not darwin and not mount"
         shell: bash -el {0}
 
-      - name: Copy test coverage results
-        run: |
-          cp ${{ env.PYTHON_MODULE_FOLDER }}${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
+      # - name: Copy test coverage results
+      #   run: |
+      #     cp ${{ env.PYTHON_MODULE_FOLDER }}${{ env.COVERAGE_SVG_PATH }} ${{ env.COVERAGE_SVG_FOLDER }}
 
       - name: Archive coverage svg
         uses: actions/upload-artifact@v3
@@ -101,6 +101,9 @@ jobs:
           name: coverage-badge
           path: ${{ env.GH_PAGE_PATH }}${{ env.COVERAGE_SVG_PATH }}
 
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
       - name: Build Conda Environment
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -114,15 +117,18 @@ jobs:
         run: |
           mamba run -n ${{ env.CONDA_ENV_NAME }} quartodoc build
 
-      - name: Set up Quarto
-        uses: quarto-dev/quarto-actions/setup@v2
-
       - name: Install Python and Dependencies
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
           cache: 'pip'
-      - run: pip install jupyter
+
+      - name: Install gdal and local libraries
+        run: |
+          sudo apt-add-repository ppa:ubuntugis/ubuntugis-unstable
+          sudo apt-get update
+          sudo apt-get install gdal-bin libgdal-dev
+          pip install ./python
 
       - name: Render and Publish
         uses: quarto-dev/quarto-actions/publish@v2
