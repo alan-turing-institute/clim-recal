@@ -86,3 +86,22 @@ All are welcome and appreciated.
 - **Release BC results**: Provide results from example BC runs.
 - **More BC Methods**: Further bias correction of UKCP18 products. *This is planned for a future release and is not available yet.*
 - **Pipeline for adding new methods**: *This is planned for a future release and is not available yet.*
+
+
+## Acknowledgements
+
+Prior to 12th September 2024 we included a reference to the [python-cmethods](https://github.com/btschwertfeger/python-cmethods) library, written by Benjamin Thomas Schwertfeger.
+
+This was via a git submodule which targeted https://github.com/alan-turing-institute/python-cmethods, itself a fork of the original library.
+
+Inadvertently, we did not identify that the license for the `python-cmethods` library (GPL3) is not compatible with the license for this package (MIT). We apologise for this mistake and have taken the following actions to resolve it:
+
+* We have now removed the relevant submodule from this repository.
+* Added this note to the README.
+* Added a note to the `python/README.md` file.
+* Added the citation below.
+
+
+## Citation
+
+**python-cmethods**: Benjamin T. Schwertfeger. (2024). btschwertfeger/python-cmethods: v2.3.0 (v2.3.0). Zenodo. https://doi.org/10.5281/zenodo.12168002
