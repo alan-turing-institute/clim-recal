@@ -17,11 +17,11 @@ env:
 
 on:
   pull_request:
-    branches: ['main', 'rm-cmethods', ]
+    branches: ['main', ]
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['main', 'rm-cmethods', ]
+    branches: ['main', ]
     paths-ignore: ['docs/**']
 
 concurrency:
