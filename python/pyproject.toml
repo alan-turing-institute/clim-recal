@@ -81,8 +81,6 @@ minversion = "6.0"
 addopts = """
     -ra -q
     --doctest-modules
-    --ignore=clim_recal/debiasing/preprocess_data.py
-    --ignore=clim_recal/debiasing/run_cmethods.py
     -m "not server and not mount and not localcache"
     --pdbcls=IPython.terminal.debugger:TerminalPdb
     --cov=clim_recal
