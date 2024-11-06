@@ -8,15 +8,14 @@ If the `python` `clim-recal` package is installed, some of the components can be
 $ clim-recal --help
 ```
 
-# Pipeline
+# Data Preparation Pipeline
 
-There are three core steps we hope to implement in our `python` `clim-recal` package:
+The `python` `clim-recal` package supports two main functions:
 
-1. Download UK Met Office `observation` and `projection` data
-2. Convert that data to aligned spatial time series grids for debiasing
-3. Facilitate running and comparing debiasing methods
+1. Downloads the UK Met Office `observation` and `projection` data
+2. Converts that data to aligned spatial time series grids for debiasing
 
-We currently provide the the following coverted and aligned files in our [Download Datasets](../docs/download.qmd) page:
+We currently provide the the following converted and aligned files in our [Download Datasets](../docs/download.qmd) page:
 
 - Maximum temparture: `tasmax`
 - Maximum temparture: `tasmin`
@@ -86,9 +85,9 @@ These dataset are provided in the following forms
 
 To align them we:
 
-1. Interpolate RCP8.5 to standard gregorian calendar via the `nearest` method[^nearest].
+1. Interpolate RCP8.5 to standard Gregorian calendar via the `nearest` method[^nearest].
 1. Reproject RCP8.5 to British National Grid Coordinate structure.
-1. Resample UKHAD to to 2.2 km
+1. Resample UKHAD to a 2.2 km grid.
 1. Reproject UKHAD bounds to align with RCP8.5
 
 Links to these files are in the [Download Datasets](../docs/download.qmd) section.
@@ -97,7 +96,4 @@ Links to these files are in the [Download Datasets](../docs/download.qmd) sectio
 
 ## Running debiasing methods
 
-Preliminary work in this process is in the [`clim_recal/debiasing`](../docs/reference/clim_recal.debiasing.debias_wrapper.html) section. We are at present assessing future options for this, likely via either
-
-- [`ibicus`](https://ibicus.readthedocs.io/en/latest/)
-- [`python-cmethods`](https://pypi.org/project/python-cmethods/)
+Once the data is aligned, it is ready for you to run your choice of debiasing methods on it.
