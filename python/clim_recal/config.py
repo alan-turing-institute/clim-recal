@@ -37,8 +37,6 @@ class ClimRecalRunsConfigType(TypedDict):
     methods: Sequence[MethodOptions]
 
 
-
-
 @dataclass
 class BaseRunConfig:
     """Manage creating command line scripts to run `debiasing` `cli`."""
@@ -65,6 +63,7 @@ class BaseRunConfig:
     # date_format_str: str = CLI_DATE_FORMAT_STR
     # date_split_str: str = DATE_FORMAT_SPLIT_STR
 
+
 @dataclass
 class RunConfig(BaseRunConfig):
     """Manage creating command line scripts to run `debiasing` `cli`."""
@@ -74,6 +73,7 @@ class RunConfig(BaseRunConfig):
     # region: RegionOptions | str | None = RegionOptions.default()
     # method: MethodOptions | str = MethodOptions.default()
 
+
 class RunConfigType(TypedDict):
     """Parameters needed for a model run."""
 
@@ -81,6 +81,7 @@ class RunConfigType(TypedDict):
     # variable: VariableOptions
     # run: RunOptions
     # method: MethodOptions
+
 
 ClimRecalRunResultsType = dict[RunConfig, dict[str, subprocess.CompletedProcess]]
 

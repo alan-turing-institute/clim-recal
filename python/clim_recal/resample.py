@@ -58,7 +58,7 @@ CFCalendarSTANDARD: Final[str] = "standard"
 # TODO: This is path is problematic. See https://github.com/alan-turing-institute/clim-recal/issues/171
 # RESAMPLING_OUTPUT_PATH: Final[PathLike] = "/datadrive/clim-recal-results/cropped"
 RESAMPLING_OUTPUT_PATH: Final[PathLike] = (
-   CLIMATE_DATA_MOUNT_PATH / "CPM-365/andys-two-gdal-step-approach/resample"
+    CLIMATE_DATA_MOUNT_PATH / "CPM-365/andys-two-gdal-step-approach/resample"
 )
 
 RAW_HADS_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/HadsUKgrid"

@@ -427,14 +427,11 @@ def clim_runner(
         # Todo: refactor to more easily specify `local_cache`
         assert not local_cache
         return ClimRecalConfig(
-            preprocess_out_folder=tmp_path,
             regions=regions,
             output_path=test_runs_output_path,
-            # cpm_for_coord_alignment=tasmax_cpm_1980_converted_path,
         )
     except (FileExistsError, AssertionError):
         return ClimRecalConfig(
-            preprocess_out_folder=tmp_path,
             regions=regions,
             output_path=test_runs_output_path,
             hads_input_path=local_hads_cache_path,
