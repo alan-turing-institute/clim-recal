@@ -8,7 +8,6 @@ from typing import Any, Final, Sequence, TypedDict
 from osgeo import gdal
 from tqdm import TqdmExperimentalWarning, tqdm
 
-from .debiasing.debias_wrapper import BaseRunConfig, RunConfig, RunConfigType
 from .resample import (
     CPM_OUTPUT_LOCAL_PATH,
     HADS_OUTPUT_LOCAL_PATH,
@@ -37,6 +36,51 @@ class ClimRecalRunsConfigType(TypedDict):
     runs: Sequence[RunOptions]
     methods: Sequence[MethodOptions]
 
+
+
+
+@dataclass
+class BaseRunConfig:
+    """Manage creating command line scripts to run `debiasing` `cli`."""
+
+    # command_dir: Path = COMMAND_DIR_DEFAULT
+    # run_prefix: str = RUN_PREFIX_DEFAULT
+    # preprocess_data_file: PathLike = PREPROCESS_FILE_NAME
+    # run_cmethods_file: PathLike = CMETHODS_FILE_NAME
+
+    # data_path: Path = DATA_PATH_DEFAULT
+    # mod_folder: PathLike = MOD_FOLDER_DEFAULT
+    # obs_folder: PathLike = OBS_FOLDER_DEFAULT
+    # preprocess_out_folder: PathLike = PREPROCESS_OUT_FOLDER_DEFAULT
+    # cmethods_out_folder: PathLike = CMETHODS_OUT_FOLDER_DEFAULT
+
+    # calib_date_start: DateType = CALIB_DATE_START_DEFAULT
+    # calib_date_end: DateType = CALIB_DATE_END_DEFAULT
+
+    # valid_date_start: DateType = VALID_DATE_START_DEFAULT
+    # valid_date_end: DateType = VALID_DATE_END_DEFAULT
+
+    # processors: int = PROCESSORS_DEFAULT
+
+    # date_format_str: str = CLI_DATE_FORMAT_STR
+    # date_split_str: str = DATE_FORMAT_SPLIT_STR
+
+@dataclass
+class RunConfig(BaseRunConfig):
+    """Manage creating command line scripts to run `debiasing` `cli`."""
+
+    # variable: VariableOptions | str = VariableOptions.default()
+    # run: RunOptions | str = RunOptions.default()
+    # region: RegionOptions | str | None = RegionOptions.default()
+    # method: MethodOptions | str = MethodOptions.default()
+
+class RunConfigType(TypedDict):
+    """Parameters needed for a model run."""
+
+    # region: RegionOptions | None
+    # variable: VariableOptions
+    # run: RunOptions
+    # method: MethodOptions
 
 ClimRecalRunResultsType = dict[RunConfig, dict[str, subprocess.CompletedProcess]]
 

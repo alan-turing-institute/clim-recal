@@ -14,7 +14,6 @@ from pandas import to_datetime
 from xarray import DataArray
 from xarray.core.types import T_DataArray, T_DataArrayOrSet
 
-
 from clim_recal.resample import RAW_CPM_PATH, RAW_CPM_TASMAX_PATH, RAW_HADS_TASMAX_PATH
 from clim_recal.utils.core import (
     CPM_YEAR_DAYS,
@@ -23,16 +22,11 @@ from clim_recal.utils.core import (
     NORMAL_YEAR_DAYS,
     DateType,
     date_range_generator,
-    iter_to_tuple_strs,
 )
 from clim_recal.utils.data import (
     THREE_CITY_CENTRE_COORDS,
     HadUKGrid,
-    MethodOptions,
-    RegionOptions,
-    RunOptions,
     UKCPLocalProjections,
-    VariableOptions,
 )
 
 logger = getLogger(__name__)
