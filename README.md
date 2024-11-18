@@ -8,7 +8,7 @@ Welcome to `clim-recal`, a specialised resource designed to prepare data to tack
 
 `clim-recal` provides a data-processing pipeline for extracting parts of the **UK Climate Projections 2018 Convection Permitting model (UKCP18-CPM)** in order to apply and assess **bias correction methods**. 
 
-In future, `clim-recal` aims to provide both a **broad review** of available **bias-correction methods** as well as assessment of these **methods** and **software** that helps users apply these methods methods to various datasets.
+In future, our [sister project] aims to provide both a **broad review** of available **bias-correction methods** as well as assessment of these **methods** and **software** that helps users apply these methods methods to various datasets.The results of this work may then be integrated back to `clim-recal`. 
 
 `clim-recal:`
 
@@ -49,12 +49,14 @@ We are in the process of developing comprehensive documentation for our code bas
 ## To contribute to `clim-recal`
 
 - See the [Contributing](docs/contributing.md) section below
+- To contribute to our sister project on assessing bias correction methods for these data, please contact Ruth Bowyer. 
+
 
 # The Datasets
 
 ## UKCP18-CPM
 The [UK Climate Projections 2018 (UKCP18)](https://www.metoffice.gov.uk/research/approach/collaboration/ukcp) dataset offers insights into the potential climate changes in the UK. UKCP18 is an advancement of the UKCP09 projections and delivers the latest evaluations of the UK's possible climate alterations in land and marine regions throughout the 21st century. This crucial information aids in future Climate Change Risk Assessments and supports the UK’s adaptation to climate change challenges and opportunities as per the National Adaptation Programme.
-We make use of the [Convection Permitting Model (CPM)](). ADD MORE HERE
+We make use of the [Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf). This dataset represents a much finer resolution of climate model (2.2km grid) than typical climate-models, representing a step forward in the ability to simulate small scale behavior (in particular 'atmospheric convection'), and the influence of mountains, coastlines and urban areas. As a result, the CPM provides access to credible climate information important for small-scale weather features and also on local (kilometre) scale; which is particularly important for improving our understanding of climate change in cities. 
 
 ## HADS
 [HadUK-Grid](https://www.metoffice.gov.uk/research/climate/maps-and-data/data/haduk-grid/haduk-grid) is a comprehensive collection of climate data for the UK, compiled from various land surface observations across the country. This data is organized into a uniform grid to ensure consistent coverage throughout the UK at up to 1km x 1km resolution. The dataset, spanning from 1836 to the present, includes a variety of climate variables such as air temperature, precipitation, sunshine, and wind speed, available on daily, monthly, seasonal, and annual timescales.
@@ -63,9 +65,7 @@ We make use of the [Convection Permitting Model (CPM)](). ADD MORE HERE
 
 Regional climate models contain systematic errors, or biases in their output [^1]. Biases arise in RCMs for a number of reasons, such as the assumptions in the general circulation models (GCMs), and in the downscaling process from GCM to RCM.
 
-Researchers, policy-makers and other stakeholders wishing to use publicly available RCMs need to consider a range of "bias correction” methods (sometimes referred to as "bias adjustment" or "recalibration"). Bias correction methods offer a means of adjusting the outputs of RCM in a manner that might better reflect future climate change signals whilst preserving the natural and internal variability of climate [^2].
-
-Part of the `clim-recal` project is to review several bias correction methods. This work is ongoing and you can find our initial [taxonomy here](https://docs.google.com/spreadsheets/d/18LIc8omSMTzOWM60aFNv1EZUl1qQN_DG8HFy1_0NdWk/edit?usp=sharing). When we've completed our literature review, it will be submitted for publication in an open peer-reviewed journal.
+Researchers, policy-makers and other stakeholders wishing to use publicly available RCMs need to consider a range of "bias correction” methods (sometimes referred to as "bias adjustment" or "recalibration"). Bias correction methods offer a means of adjusting the outputs of RCM in a manner that might better reflect future climate change signals whilst preserving the natural and internal variability of climate [^2]. The `clim-recal` pipeline provides preprocessed data, including the innovative [UKCP18-CPM datasets](# The Datasets), to faciliate the assessment of these methods without requiring the whole (very large) dataset. 
 
 Our work is however, just like climate data, intended to be dynamic, and we are in the process of setting up a pipeline for researchers creating new methods of bias correction to be able to submit their methods for inclusion on in the `clim-recal` repository.
 
