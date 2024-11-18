@@ -8,11 +8,10 @@ Welcome to `clim-recal`, a specialised resource designed to prepare data to tack
 
 `clim-recal` provides a data-processing pipeline for extracting parts of the **UK Climate Projections 2018 Convection Permitting model (UKCP18-CPM)** in order to apply and assess **bias correction methods**. 
 
-In future, our [sister project] aims to provide both a **broad review** of available **bias-correction methods** as well as assessment of these **methods** and **software** that helps users apply these methods methods to various datasets.The results of this work may then be integrated back to `clim-recal`. 
+In future, our [sister project](https://github.com/Urban-Analytics-Technology-Platform/bias-correction-for-cpm) aims to provide both a **broad review** of available **bias-correction methods** as well as assessment of these **methods** and **software** that helps users apply these methods methods to various datasets.The results of this work may then be integrated back to `clim-recal`. 
 
 `clim-recal:`
 
-- Contains accessible information about the [why and how of bias correction for climate data](#why-bias-correction)
 - Is a software library for pre-processing climate data to ready it for bias-correction (see our full pipeline for bias-correction of the ground-breaking local-scale (2.2km) [Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf). `clim-recal` brings together different software packages in `python` and `R` that implement a variety of bias correction methods, making it easy to apply them to data and compare their outputs.
 - Was developed in partnership with the MetOffice to ensure the propriety, quality, and usability of our work
 - Provides a framework for open additions of new software libraries/bias correction methods (in planning)
@@ -83,7 +82,7 @@ If you have suggestions on the repository, or would like to include a new method
 All are welcome and appreciated.
 
 # Future plans
-- **Adding in bias correction method to pipeline** - following our sister project reviewing bias correction methods applied to this dataset, we may incorporate the selected method(s) to the pipeline. 
+- **Adding in bias correction method to pipeline** - following our [sister project](https://github.com/Urban-Analytics-Technology-Platform/bias-correction-for-cpm) reviewing bias correction methods applied to this dataset, we may incorporate the selected method(s) to the pipeline. 
 
 ## Acknowledgements
 
