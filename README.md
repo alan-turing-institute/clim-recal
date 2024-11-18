@@ -4,29 +4,30 @@
 ![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
 ![CI](https://github.com/alan-turing-institute/clim-recal/actions/workflows/ci.yaml/badge.svg)
 
-Welcome to `clim-recal`, a specialized resource designed to tackle systematic errors or biases in **Regional Climate Models (RCMs)**. As researchers, policy-makers, and various stakeholders explore publicly available RCMs, they need to consider the challenge of biases that can affect the accurate representation of climate change signals.
+Welcome to `clim-recal`, a specialised resource designed to prepare data to tackle systematic errors or biases in **Regional Climate Models (RCMs)**. As researchers, policy-makers, and various stakeholders explore publicly available RCMs, they may wish to consider the challenge of biases that can affect the accurate representation of climate change signals.
 
-`clim-recal` provides both a **broad review** of available bias correction methods as well as **software**, **practical tutorials** and **guidance** that helps users apply these methods methods to various datasets.
+`clim-recal` provides a data-processing pipeline for extracting parts of the **UK Climate Projections 2018 Convection Permitting model (UKCP18-CPM)** in order to apply and assess **bias correction methods**. 
 
-`clim-recal` is an **extensive software library and guide to application of Bias Correction (BC) methods**:
+In future, `clim-recal` aims to provide both a **broad review** of available **bias-correction methods** as well as assessment of these **methods** and **software** that helps users apply these methods methods to various datasets.
+
+`clim-recal:`
 
 - Contains accessible information about the [why and how of bias correction for climate data](#why-bias-correction)
-- Is a software library for for the application of BC methods (see our full pipeline for bias-correction of the ground-breaking local-scale (2.2km) [Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf). `clim-recal` brings together different software packages in `python` and `R` that implement a variety of bias correction methods, making it easy to apply them to data and compare their outputs.
+- Is a software library for pre-processing climate data to ready it for bias-correction (see our full pipeline for bias-correction of the ground-breaking local-scale (2.2km) [Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf). `clim-recal` brings together different software packages in `python` and `R` that implement a variety of bias correction methods, making it easy to apply them to data and compare their outputs.
 - Was developed in partnership with the MetOffice to ensure the propriety, quality, and usability of our work
 - Provides a framework for open additions of new software libraries/bias correction methods (in planning)
 
-# Overview: Bias Correction Pipeline
+# Overview: Data-processing Pipeline
 
-`clim-recal` is a debiasing pipeline,  with the following steps:
+`clim-recal` is a data-processing pipeline,  with the following steps:
 
 1. **Set-up & data download**
     *We provide custom scripts to facilitate download of data*
 2. **Preprocessing**
     *This includes reprojecting, resampling & splitting the data prior to bias correction*
-3. **Apply bias correction**
-    *Our pipeline embeds two distinct methods of bias correction*
-4. **Assess the debiased data**
-    *We have developed a way to assess the quality of the debiasing step across multiple alternative methods*
+    
+Our team are currently working on applying and assessing different methods of bias correction. There's lots of collaboration opportunities as a result - [please get in touch!](docs/contributing.md) 
+In future, we may then embed the best method(s) for this dataset to the `clim-recal` pipeline, following expert review of the data assessments. 
 
 For a quick start on bias correction, refer to our [pipeline guide](python/README.md).
 
@@ -44,7 +45,6 @@ We are in the process of developing comprehensive documentation for our code bas
 ## To use `clim-recal` programmatically
 
 - There are extensive [`API Reference`](docs/reference) within the python code.
-- Comments within `R` scripts
 
 ## To contribute to `clim-recal`
 
@@ -52,8 +52,9 @@ We are in the process of developing comprehensive documentation for our code bas
 
 # The Datasets
 
-## UKCP18
+## UKCP18-CPM
 The [UK Climate Projections 2018 (UKCP18)](https://www.metoffice.gov.uk/research/approach/collaboration/ukcp) dataset offers insights into the potential climate changes in the UK. UKCP18 is an advancement of the UKCP09 projections and delivers the latest evaluations of the UK's possible climate alterations in land and marine regions throughout the 21st century. This crucial information aids in future Climate Change Risk Assessments and supports the UK’s adaptation to climate change challenges and opportunities as per the National Adaptation Programme.
+We make use of the [Convection Permitting Model (CPM)](). ADD MORE HERE
 
 ## HADS
 [HadUK-Grid](https://www.metoffice.gov.uk/research/climate/maps-and-data/data/haduk-grid/haduk-grid) is a comprehensive collection of climate data for the UK, compiled from various land surface observations across the country. This data is organized into a uniform grid to ensure consistent coverage throughout the UK at up to 1km x 1km resolution. The dataset, spanning from 1836 to the present, includes a variety of climate variables such as air temperature, precipitation, sunshine, and wind speed, available on daily, monthly, seasonal, and annual timescales.
@@ -82,11 +83,7 @@ If you have suggestions on the repository, or would like to include a new method
 All are welcome and appreciated.
 
 # Future plans
-- **Finish refactor for BC**: The infrastructure for testing bias correction methods needs some reworking and documentation.
-- **Release BC results**: Provide results from example BC runs.
-- **More BC Methods**: Further bias correction of UKCP18 products. *This is planned for a future release and is not available yet.*
-- **Pipeline for adding new methods**: *This is planned for a future release and is not available yet.*
-
+- **Adding in bias correction method to pipeline** - following our sister project reviewing bias correction methods applied to this dataset, we may incorporate the selected method(s) to the pipeline. 
 
 ## Acknowledgements
 
