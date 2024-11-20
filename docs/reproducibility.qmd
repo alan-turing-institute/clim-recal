@@ -24,7 +24,7 @@ There are two main scripts that we used, described below, to run the pre-process
 
 ## bash/run-pipeline-iteratively.sh
 
-This script is used as a wrapper for clime-recal. For performance reasons and to aid debugging, it was helpful run the pipeline iteratively on individual years of data. It is also useful to record the specific options applied to clim-recal. 
+This script is used as a wrapper for clime-recal. For performance reasons and to aid debugging, it was helpful run the pipeline iteratively on individual years of data. It is also useful to record the specific options applied to clim-recal.
 
 * `--all-variables` => "tasmax, tasmin, pr/rainfall"
 * `--all-regions` => "Glasgow, London, Manchester, Scotland"
@@ -52,11 +52,7 @@ Therefore we just select the last 10k bytes of data from each file. We generate 
 `bash/generate_trailing_checksums.sh`
 
 This script requires two arguments:
-- The directory of files to create checksums for. All "*.nc" file within this directory 
+- The directory of files to create checksums for. All "*.nc" file within this directory
 - The number of trailing bytes to use in teh checksum calculation (this is passed as an argument to `tail`)
 
 The script produces a sorted list of relative file paths and their checksums, in a text file named `manifest_last_bytes_$2.txt`. The manifest files for two executions of the pipeline should be comparable with using the standard *NIX `diff` command.
-
-
-
-

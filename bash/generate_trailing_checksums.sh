@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This script requires two arguments:
-# - The directory of files to create checksums for. All "*.nc" file within this directory 
+# - The directory of files to create checksums for. All "*.nc" file within this directory
 # - The number of trailing bytes to use in teh checksum calculation (this is passed as an argument to `tail`)
 
 set -e
