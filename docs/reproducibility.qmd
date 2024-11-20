@@ -9,11 +9,14 @@ We downloaded the original data from Centre for Environmental Data Analysis (CED
 Once we downloaded it, we produced checksums for the data we held. We used this commands to create the manifest files:
 
 ```bash
-find ./HadsUKgrid -type f -name "*.nc" -exec md5sum {} ";" | tee HadsUKgrid_raw_data_manifest.txt
-find ./UKCP2.2 -type f -name "*.nc" -exec md5sum {} ";" | tee UKCP2.2_raw_data_manifest.txt
+find ./HadsUKgrid -type f -name "*.nc" -exec md5sum {} ";" | tee HadsUKgrid-raw-data-manifest.txt
+find ./UKCP2.2 -type f -name "*.nc" -exec md5sum {} ";" | tee UKCP2.2-raw-data-manifest.txt
 ```
 
-The checksums for the data we used are available here TODO-INSERT-LINK-HERE.
+The checksums for the data we used are available here.
+
+* [HadsUKgrid-raw-data-manifest.txt](docs/urls/HadsUKgrid-raw-data-manifest.txt)
+* [UKCP2.2-raw-data-manifest.txt](urls/UKCP2.2-raw-data-manifest.txt)
 
 If there are any problems reproducing our work, we suggest that you use these checksums check that the data first.
 
