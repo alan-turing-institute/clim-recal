@@ -75,10 +75,6 @@ website:
             text: "Data Loading"
           - href: "docs/reference/clim_recal.resample.qmd"
             text: "Data Resampling"
-          - section: "Debiasing"
-            contents:
-              - href: "docs/reference/clim_recal.debiasing.debias_wrapper.qmd"
-                text: "Wrapper"
           - section: "Utilities"
             contents:
               - href: "docs/reference/clim_recal.utils.core.qmd"
@@ -131,7 +127,6 @@ quartodoc:
         - clim_recal.data_loader
         - clim_recal.config
         - clim_recal.resample
-        - clim_recal.debiasing.debias_wrapper
         - clim_recal.utils.core
         - clim_recal.utils.server
         - clim_recal.utils.xarray
