@@ -51,6 +51,8 @@ website:
         href: "python/README.md"
       - text: "Download Datasets"
         href: "docs/download.qmd"
+      - text: "Reproducibility"
+        href: "docs/reproducibility.qmd"
       # TODO: change name to deprecated?
       - section: "Analysis in R"
         href: "R/README.md"
