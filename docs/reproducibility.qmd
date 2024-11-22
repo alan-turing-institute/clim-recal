@@ -27,13 +27,13 @@ There are two main scripts that we used, described below, to run the pre-process
 
 ## bash/run-pipeline-iteratively.sh
 
-This script is used as a wrapper for clime-recal. For performance reasons and to aid debugging, it was helpful run the pipeline iteratively on individual years of data. It is also useful to record the specific options applied to clim-recal.
+This script is used as a wrapper for clim-recal. For performance reasons and to aid debugging, it was helpful run the pipeline iteratively on individual years of data. It is also useful to record the specific options applied to clim-recal.
 
 * `--all-variables` => "tasmax, tasmin, pr/rainfall"
 * `--all-regions` => "Glasgow, London, Manchester, Scotland"
 * `--run 01`, `--run 05`, `--run 06`, --run 07`, `--run 08` => The data from CPM runs 01, 05, 06 and 07.
 
-An summary of the operation of this script:
+A summary of the operation of this script:
 
 * Creates temporary directories to hold one year of CPM and HADs data on a local, fast disk.
 * Loops through each year of data (1980 through to 2080). For each year it:
