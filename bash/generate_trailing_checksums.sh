@@ -8,7 +8,6 @@ set -e
 
 manifest=manifest_last_bytes_$2.txt
 offset=$2
-echo 'file,checksum' > $manifest
 
 for file in `find $1 -name "*.nc" -type f`; do
         echo $file
@@ -16,4 +15,4 @@ for file in `find $1 -name "*.nc" -type f`; do
         echo "$file,$checksum" >> $manifest
 done
 
-tail -n +2 $manifest | sort | sudo tee $manifest
+tail -n +2 $manifest | sort | tee $manifest

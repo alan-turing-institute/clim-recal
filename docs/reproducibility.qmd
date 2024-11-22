@@ -38,7 +38,7 @@ An summary of the operation of this script:
 * Creates temporary directories to hold one year of CPM and HADs data on a local, fast disk.
 * Loops through each year of data (1980 through to 2080). For each year it:
     * Copies the relevant CPM and HAD files into the working directory, whilst maintaining the directory structure.
-    * Runs Clim-recal using the options above.
+    * Runs clim-recal using the options above.
     * Deletes certain extraneous crop files. (Due to a bug, certain output files are created multiple times. As a workaround we simply deleted the extra files by calling `bash/remove-extra-cropfiles.py` from run-pipeline-iteratively shell script).
 
 
