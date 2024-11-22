@@ -167,6 +167,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Download Datasets</span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reproducibility.qmd" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reproducibility</span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../../R/README.html" class="sidebar-item-text sidebar-link">
@@ -243,29 +249,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
- <span class="menu-text">Debiasing</span></a>
+ <span class="menu-text">Utilities</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/clim_recal.debiasing.debias_wrapper.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Wrapper</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
- <span class="menu-text">Utilities</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/clim_recal.utils.core.html" class="sidebar-item-text sidebar-link">
@@ -302,22 +291,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
  <span class="menu-text">Appendix</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../../docs/cpm_projection.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">CPM Projection Analysis</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../notebooks/cpm_projection_diff_plots.html" class="sidebar-item-text sidebar-link">
@@ -360,8 +349,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes"><span class="header-section-number">1.1</span> Classes</a>
   <ul class="collapse">
-  <li><a href="#python.clim_recal.config.ClimRecalConfig" id="toc-python.clim_recal.config.ClimRecalConfig" class="nav-link" data-scroll-target="#python.clim_recal.config.ClimRecalConfig"><span class="header-section-number">1.1.1</span> ClimRecalConfig</a></li>
-  <li><a href="#python.clim_recal.config.ClimRecalRunsConfigType" id="toc-python.clim_recal.config.ClimRecalRunsConfigType" class="nav-link" data-scroll-target="#python.clim_recal.config.ClimRecalRunsConfigType"><span class="header-section-number">1.1.2</span> ClimRecalRunsConfigType</a></li>
+  <li><a href="#python.clim_recal.config.BaseRunConfig" id="toc-python.clim_recal.config.BaseRunConfig" class="nav-link" data-scroll-target="#python.clim_recal.config.BaseRunConfig"><span class="header-section-number">1.1.1</span> BaseRunConfig</a></li>
+  <li><a href="#python.clim_recal.config.ClimRecalConfig" id="toc-python.clim_recal.config.ClimRecalConfig" class="nav-link" data-scroll-target="#python.clim_recal.config.ClimRecalConfig"><span class="header-section-number">1.1.2</span> ClimRecalConfig</a></li>
+  <li><a href="#python.clim_recal.config.ClimRecalRunsConfigType" id="toc-python.clim_recal.config.ClimRecalRunsConfigType" class="nav-link" data-scroll-target="#python.clim_recal.config.ClimRecalRunsConfigType"><span class="header-section-number">1.1.3</span> ClimRecalRunsConfigType</a></li>
+  <li><a href="#python.clim_recal.config.RunConfig" id="toc-python.clim_recal.config.RunConfig" class="nav-link" data-scroll-target="#python.clim_recal.config.RunConfig"><span class="header-section-number">1.1.4</span> RunConfig</a></li>
+  <li><a href="#python.clim_recal.config.RunConfigType" id="toc-python.clim_recal.config.RunConfigType" class="nav-link" data-scroll-target="#python.clim_recal.config.RunConfigType"><span class="header-section-number">1.1.5</span> RunConfigType</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -387,21 +379,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#python.clim_recal.config.ClimRecalConfig">ClimRecalConfig</a></td>
+<td><a href="#python.clim_recal.config.BaseRunConfig">BaseRunConfig</a></td>
 <td>Manage creating command line scripts to run <code>debiasing</code> <code>cli</code>.</td>
 </tr>
 <tr class="even">
+<td><a href="#python.clim_recal.config.ClimRecalConfig">ClimRecalConfig</a></td>
+<td>Manage creating command line scripts to run <code>debiasing</code> <code>cli</code>.</td>
+</tr>
+<tr class="odd">
 <td><a href="#python.clim_recal.config.ClimRecalRunsConfigType">ClimRecalRunsConfigType</a></td>
 <td>Lists of parameters to generate <code>RunConfigType</code> instances.</td>
 </tr>
+<tr class="even">
+<td><a href="#python.clim_recal.config.RunConfig">RunConfig</a></td>
+<td>Manage creating command line scripts to run <code>debiasing</code> <code>cli</code>.</td>
+</tr>
+<tr class="odd">
+<td><a href="#python.clim_recal.config.RunConfigType">RunConfigType</a></td>
+<td>Parameters needed for a model run.</td>
+</tr>
 </tbody>
 </table>
-<section id="python.clim_recal.config.ClimRecalConfig" class="level3" data-number="1.1.1">
-<h3 data-number="1.1.1" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalConfig"><span class="header-section-number">1.1.1</span> ClimRecalConfig</h3>
-<p><code>clim_recal.config.ClimRecalConfig(self, command_dir=COMMAND_DIR_DEFAULT, run_prefix=RUN_PREFIX_DEFAULT, preprocess_data_file=PREPROCESS_FILE_NAME, run_cmethods_file=CMETHODS_FILE_NAME, data_path=DATA_PATH_DEFAULT, mod_folder=MOD_FOLDER_DEFAULT, obs_folder=OBS_FOLDER_DEFAULT, preprocess_out_folder=PREPROCESS_OUT_FOLDER_DEFAULT, cmethods_out_folder=CMETHODS_OUT_FOLDER_DEFAULT, calib_date_start=CALIB_DATE_START_DEFAULT, calib_date_end=CALIB_DATE_END_DEFAULT, valid_date_start=VALID_DATE_START_DEFAULT, valid_date_end=VALID_DATE_END_DEFAULT, processors=PROCESSORS_DEFAULT, date_format_str=CLI_DATE_FORMAT_STR, date_split_str=DATE_FORMAT_SPLIT_STR, variables=(VariableOptions.default()), runs=(RunOptions.default()), regions=(RegionOptions.default()), methods=(MethodOptions.default()), multiprocess=False, cpus=DEFAULT_CPUS, hads_input_path=RAW_HADS_PATH, cpm_input_path=RAW_CPM_PATH, output_path=DEFAULT_OUTPUT_PATH, resample_folder=DEFAULT_RESAMPLE_FOLDER, crops_folder=DEFAULT_CROPS_FOLDER, hads_output_folder=HADS_OUTPUT_LOCAL_PATH, cpm_output_folder=CPM_OUTPUT_LOCAL_PATH, cpm_kwargs=dict(), hads_kwargs=dict(), start_index=0, stop_index=None, add_local_dated_results_path=True, add_local_dated_crops_path=True, local_dated_results_path_prefix='run', local_dated_crops_path_prefix='crop', cpm_for_coord_alignment=None, process_cmp_for_coord_alignment=False, cpm_for_coord_alignment_path_converted=False, debug_mode=False)</code></p>
+<section id="python.clim_recal.config.BaseRunConfig" class="level3" data-number="1.1.1">
+<h3 data-number="1.1.1" class="anchored" data-anchor-id="python.clim_recal.config.BaseRunConfig"><span class="header-section-number">1.1.1</span> BaseRunConfig</h3>
+<p><code>clim_recal.config.BaseRunConfig(self)</code></p>
 <p>Manage creating command line scripts to run <code>debiasing</code> <code>cli</code>.</p>
-<section id="attributes" class="level4" data-number="1.1.1.1">
-<h4 data-number="1.1.1.1" class="anchored" data-anchor-id="attributes"><span class="header-section-number">1.1.1.1</span> Attributes</h4>
+</section>
+<section id="python.clim_recal.config.ClimRecalConfig" class="level3" data-number="1.1.2">
+<h3 data-number="1.1.2" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalConfig"><span class="header-section-number">1.1.2</span> ClimRecalConfig</h3>
+<p><code>clim_recal.config.ClimRecalConfig(self, variables=(VariableOptions.default()), runs=(RunOptions.default()), regions=(RegionOptions.default()), methods=(MethodOptions.default()), multiprocess=False, cpus=DEFAULT_CPUS, hads_input_path=RAW_HADS_PATH, cpm_input_path=RAW_CPM_PATH, output_path=DEFAULT_OUTPUT_PATH, resample_folder=DEFAULT_RESAMPLE_FOLDER, crops_folder=DEFAULT_CROPS_FOLDER, hads_output_folder=HADS_OUTPUT_LOCAL_PATH, cpm_output_folder=CPM_OUTPUT_LOCAL_PATH, cpm_kwargs=dict(), hads_kwargs=dict(), start_index=0, stop_index=None, add_local_dated_results_path=True, add_local_dated_crops_path=True, local_dated_results_path_prefix='run', local_dated_crops_path_prefix='crop', cpm_for_coord_alignment=None, process_cmp_for_coord_alignment=False, cpm_for_coord_alignment_path_converted=False, debug_mode=False)</code></p>
+<p>Manage creating command line scripts to run <code>debiasing</code> <code>cli</code>.</p>
+<section id="attributes" class="level4" data-number="1.1.2.1">
+<h4 data-number="1.1.2.1" class="anchored" data-anchor-id="attributes"><span class="header-section-number">1.1.2.1</span> Attributes</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 13%">
@@ -494,8 +503,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="examples" class="level4" data-number="1.1.1.2">
-<h4 data-number="1.1.1.2" class="anchored" data-anchor-id="examples"><span class="header-section-number">1.1.1.2</span> Examples</h4>
+<section id="examples" class="level4" data-number="1.1.2.2">
+<h4 data-number="1.1.2.2" class="anchored" data-anchor-id="examples"><span class="header-section-number">1.1.2.2</span> Examples</h4>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="cf">if</span> <span class="kw">not</span> is_data_mounted:</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>...     pytest.skip(mount_doctest_skip_message)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> run_config: ClimRecalConfig <span class="op">=</span> ClimRecalConfig(</span>
@@ -508,8 +517,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                 hads_folders_count<span class="op">=</span><span class="dv">1</span>, start_index<span class="op">=</span><span class="dv">0</span>,</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                 stop_index<span class="op">=</span><span class="va">None</span>, cpus<span class="op">=</span><span class="dv">1</span>)<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="methods" class="level4" data-number="1.1.1.3">
-<h4 data-number="1.1.1.3" class="anchored" data-anchor-id="methods"><span class="header-section-number">1.1.1.3</span> Methods</h4>
+<section id="methods" class="level4" data-number="1.1.2.3">
+<h4 data-number="1.1.2.3" class="anchored" data-anchor-id="methods"><span class="header-section-number">1.1.2.3</span> Methods</h4>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -519,40 +528,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="#python.clim_recal.config.ClimRecalConfig.run_models">run_models</a></td>
-<td>Run all specified models.</td>
-</tr>
-<tr class="even">
 <td><a href="#python.clim_recal.config.ClimRecalConfig.set_cpm_for_coord_alignment">set_cpm_for_coord_alignment</a></td>
 <td>If <code>cpm_for_coord_alignment</code> is <code>None</code> use <code>self.cpm_input_path</code>.</td>
 </tr>
 </tbody>
 </table>
-<section id="python.clim_recal.config.ClimRecalConfig.run_models" class="level5" data-number="1.1.1.3.1">
-<h5 data-number="1.1.1.3.1" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalConfig.run_models"><span class="header-section-number">1.1.1.3.1</span> run_models</h5>
-<p><code>clim_recal.config.ClimRecalConfig.run_models()</code></p>
-<p>Run all specified models.</p>
-<section id="examples-1" class="level6" data-number="1.1.1.3.1.1">
-<h6 data-number="1.1.1.3.1.1" class="anchored" data-anchor-id="examples-1"><span class="header-section-number">1.1.1.3.1.1</span> Examples</h6>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> clim_runner: ClimRecalConfig <span class="op">=</span> getfixture(<span class="st">'clim_runner'</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> runs: <span class="bu">dict</span>[<span class="bu">tuple</span>, <span class="bu">dict</span>] <span class="op">=</span> clim_runner.run_models()</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pprint(<span class="bu">tuple</span>(runs.keys()))</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>((<span class="st">'Glasgow'</span>, <span class="st">'tasmax'</span>, <span class="st">'05'</span>, <span class="st">'quantile_delta_mapping'</span>),</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a> (<span class="st">'Manchester'</span>, <span class="st">'tasmax'</span>, <span class="st">'05'</span>, <span class="st">'quantile_delta_mapping'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-</section>
-<section id="python.clim_recal.config.ClimRecalConfig.set_cpm_for_coord_alignment" class="level5" data-number="1.1.1.3.2">
-<h5 data-number="1.1.1.3.2" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalConfig.set_cpm_for_coord_alignment"><span class="header-section-number">1.1.1.3.2</span> set_cpm_for_coord_alignment</h5>
+<section id="python.clim_recal.config.ClimRecalConfig.set_cpm_for_coord_alignment" class="level5" data-number="1.1.2.3.1">
+<h5 data-number="1.1.2.3.1" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalConfig.set_cpm_for_coord_alignment"><span class="header-section-number">1.1.2.3.1</span> set_cpm_for_coord_alignment</h5>
 <p><code>clim_recal.config.ClimRecalConfig.set_cpm_for_coord_alignment()</code></p>
 <p>If <code>cpm_for_coord_alignment</code> is <code>None</code> use <code>self.cpm_input_path</code>.</p>
 <p>It would be more efficient to use <code>self.resample_cpm_path</code> as long as that option is used, but support cases of only</p>
 </section>
 </section>
 </section>
-<section id="python.clim_recal.config.ClimRecalRunsConfigType" class="level3" data-number="1.1.2">
-<h3 data-number="1.1.2" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalRunsConfigType"><span class="header-section-number">1.1.2</span> ClimRecalRunsConfigType</h3>
+<section id="python.clim_recal.config.ClimRecalRunsConfigType" class="level3" data-number="1.1.3">
+<h3 data-number="1.1.3" class="anchored" data-anchor-id="python.clim_recal.config.ClimRecalRunsConfigType"><span class="header-section-number">1.1.3</span> ClimRecalRunsConfigType</h3>
 <p><code>clim_recal.config.ClimRecalRunsConfigType()</code></p>
 <p>Lists of parameters to generate <code>RunConfigType</code> instances.</p>
+</section>
+<section id="python.clim_recal.config.RunConfig" class="level3" data-number="1.1.4">
+<h3 data-number="1.1.4" class="anchored" data-anchor-id="python.clim_recal.config.RunConfig"><span class="header-section-number">1.1.4</span> RunConfig</h3>
+<p><code>clim_recal.config.RunConfig(self)</code></p>
+<p>Manage creating command line scripts to run <code>debiasing</code> <code>cli</code>.</p>
+</section>
+<section id="python.clim_recal.config.RunConfigType" class="level3" data-number="1.1.5">
+<h3 data-number="1.1.5" class="anchored" data-anchor-id="python.clim_recal.config.RunConfigType"><span class="header-section-number">1.1.5</span> RunConfigType</h3>
+<p><code>clim_recal.config.RunConfigType()</code></p>
+<p>Parameters needed for a model run.</p>
 
 
 </section>
