@@ -13,12 +13,12 @@ find ./HadsUKgrid -type f -name "*.nc" -exec md5sum {} ";" | tee HadsUKgrid-raw-
 find ./UKCP2.2 -type f -name "*.nc" -exec md5sum {} ";" | tee UKCP2.2-raw-data-manifest.txt
 ```
 
-The checksums for the data we used are available here.
+The checksums for the data we used are available here:
 
 * [HadsUKgrid-raw-data-manifest.txt](docs/urls/HadsUKgrid-raw-data-manifest.txt)
 * [UKCP2.2-raw-data-manifest.txt](urls/UKCP2.2-raw-data-manifest.txt)
 
-If there are any problems reproducing our work, we suggest that you use these checksums check that the data first.
+If there are any problems reproducing our work, we suggest that you use these checksums to check the data first.
 
 
 # Running the pipeline
@@ -27,7 +27,7 @@ There are two main scripts that we used, described below, to run the pre-process
 
 ## bash/run-pipeline-iteratively.sh
 
-This script is used as a wrapper for clim-recal. For performance reasons and to aid debugging, it was helpful run the pipeline iteratively on individual years of data. It is also useful to record the specific options applied to clim-recal.
+This script is used as a wrapper for clim-recal. For performance reasons and to aid debugging, it was helpful to run the pipeline iteratively on individual years of data. It is also useful to record the specific options applied to clim-recal.
 
 * `--all-variables` => "tasmax, tasmin, pr/rainfall"
 * `--all-regions` => "Glasgow, London, Manchester, Scotland"
