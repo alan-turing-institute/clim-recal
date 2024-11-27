@@ -1,1 +1,61 @@
-TODO - add details
+# Reproducibility
+
+This page describes how we used the clim-recal package to produce the [pre-processed data](download).
+
+# Downloading the original data
+
+We downloaded the original data from Centre for Environmental Data Analysis (CEDA). This was automated using the script `python/clim_recal/ceda_ftp_download.py`. The CEDA ftp site does not provide checksum for the data.
+
+Once we downloaded it, we produced checksums for the data we held. We used this commands to create the manifest files:
+
+```bash
+find ./HadsUKgrid -type f -name "*.nc" -exec md5sum {} ";" | tee HadsUKgrid-raw-data-manifest.txt
+find ./UKCP2.2 -type f -name "*.nc" -exec md5sum {} ";" | tee UKCP2.2-raw-data-manifest.txt
+```
+
+The checksums for the data we used are available here:
+
+* [HadsUKgrid-raw-data-manifest.txt](docs/urls/HadsUKgrid-raw-data-manifest.txt)
+* [UKCP2.2-raw-data-manifest.txt](urls/UKCP2.2-raw-data-manifest.txt)
+
+If there are any problems reproducing our work, we suggest that you use these checksums to check the data first.
+
+
+# Running the pipeline
+
+There are two main scripts that we used, described below, to run the pre-processing pipeline.
+
+## bash/run-pipeline-iteratively.sh
+
+This script is used as a wrapper for clim-recal. For performance reasons and to aid debugging, it was helpful to run the pipeline iteratively on individual years of data. It is also useful to record the specific options applied to clim-recal.
+
+* `--all-variables` => "tasmax, tasmin, pr/rainfall"
+* `--all-regions` => "Glasgow, London, Manchester, Scotland"
+* `--run 01`, `--run 05`, `--run 06`, --run 07`, `--run 08` => The data from CPM runs 01, 05, 06 and 07.
+
+A summary of the operation of this script:
+
+* Creates temporary directories to hold one year of CPM and HADs data on a local, fast disk.
+* Loops through each year of data (1980 through to 2080). For each year it:
+    * Copies the relevant CPM and HAD files into the working directory, whilst maintaining the directory structure.
+    * Runs clim-recal using the options above.
+    * Deletes certain extraneous crop files. (Due to a bug, certain output files are created multiple times. As a workaround we simply deleted the extra files by calling `bash/remove-extra-cropfiles.py` from run-pipeline-iteratively shell script).
+
+
+## bash/combine-iterative-runs.sh
+
+A side effect of running the pipeline iteratively, is that the outputs for each year are placed in their own timestamped directory. This script uses rsync to combine these into a single coherent output directory.
+
+# Verifying results
+
+In order to assert that the results produced by the pipeline it is necessary to have a method to compare the outputs of different executions of the pipeline. Because netCDF files can store their creation date within their header, it is not possible to rely on a checksum of the entire file to assure reproducibility.
+
+Therefore we just select the last 10k bytes of data from each file. We generate the checksums of the file subsets using this script:
+
+`bash/generate_trailing_checksums.sh`
+
+This script requires two arguments:
+- The directory of files to create checksums for. All "*.nc" file within this directory
+- The number of trailing bytes to use in teh checksum calculation (this is passed as an argument to `tail`)
+
+The script produces a sorted list of relative file paths and their checksums, in a text file named `manifest_last_bytes_$2.txt`. The manifest files for two executions of the pipeline should be comparable with using the standard *NIX `diff` command.
