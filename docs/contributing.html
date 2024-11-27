@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Contributing to clim-recal – clim-recal</title>
+<title>Contributing to our project – clim-recal</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -167,12 +167,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Download Datasets</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/reproducibility.qmd" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Reproducibility</span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../R/README.html" class="sidebar-item-text sidebar-link">
@@ -249,12 +243,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
- <span class="menu-text">Utilities</span></a>
+ <span class="menu-text">Debiasing</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/reference/clim_recal.debiasing.debias_wrapper.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Wrapper</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">Utilities</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../docs/reference/clim_recal.utils.core.html" class="sidebar-item-text sidebar-link">
@@ -291,22 +302,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
  <span class="menu-text">Appendix</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../docs/cpm_projection.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">CPM Projection Analysis</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../notebooks/cpm_projection_diff_plots.html" class="sidebar-item-text sidebar-link">
@@ -349,8 +360,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#running-quarto-locally" id="toc-running-quarto-locally" class="nav-link" data-scroll-target="#running-quarto-locally"><span class="header-section-number">1.1</span> Running Quarto Locally</a>
   <ul class="collapse">
-  <li><a href="#running-quarto-locally-via-conda" id="toc-running-quarto-locally-via-conda" class="nav-link" data-scroll-target="#running-quarto-locally-via-conda"><span class="header-section-number">1.1.1</span> Running Quarto locally via <code>conda</code></a></li>
-  <li><a href="#running-quarto-locally-via-docker" id="toc-running-quarto-locally-via-docker" class="nav-link" data-scroll-target="#running-quarto-locally-via-docker"><span class="header-section-number">1.1.2</span> Running Quarto locally via <code>docker</code></a></li>
+  <li><a href="#locally-via-conda" id="toc-locally-via-conda" class="nav-link" data-scroll-target="#locally-via-conda"><span class="header-section-number">1.1.1</span> Locally via <code>conda</code></a></li>
+  <li><a href="#locally-via-docker" id="toc-locally-via-docker" class="nav-link" data-scroll-target="#locally-via-docker"><span class="header-section-number">1.1.2</span> Locally via <code>docker</code></a></li>
   </ul></li>
   </ul></li>
   <li><a href="#github-actions-continuous-integration" id="toc-github-actions-continuous-integration" class="nav-link" data-scroll-target="#github-actions-continuous-integration"><span class="header-section-number">2</span> GitHub Actions Continuous Integration</a></li>
@@ -368,7 +379,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Contributing to clim-recal</h1>
+<h1 class="title">Contributing to our project</h1>
 </div>
 
 
@@ -385,15 +396,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>We welcome contributions to our repository and follow the <a href="https://github.com/the-turing-way/the-turing-way/blob/main/CONTRIBUTING.md">Turing Way Contributing Guidelines</a>.</p>
+<p>We welcome contributions to our repository and follow the <a href="https://github.com/the-turing-way/the-turing-way/blob/main/CONTRIBUTING.md">Turing Way Contributing Guidelines</a>. As the project develops we will expand this section with details more specific to our code base and potential use/application.</p>
 <section id="documentation" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Documentation</h1>
 <p>Our documentation (including this file) is written in <code>md</code> and <code>qmd</code> file formats stored in the <code>docs</code> folder of our <code>GitHub</code> repository. To render those files we use <a href="https://quarto.org"><code>quarto</code></a>.</p>
 <section id="running-quarto-locally" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="running-quarto-locally"><span class="header-section-number">1.1</span> Running Quarto Locally</h2>
 <p>If you would like to render documentation locally you can do so via a <a href="https://docs.conda.io"><code>conda</code></a> or <a href="https://docker.com"><code>docker</code></a></p>
-<section id="running-quarto-locally-via-conda" class="level3" data-number="1.1.1">
-<h3 data-number="1.1.1" class="anchored" data-anchor-id="running-quarto-locally-via-conda"><span class="header-section-number">1.1.1</span> Running Quarto locally via <code>conda</code></h3>
+<p>We appreciate your patience and encourage you to check back for updates on our ongoing documentation efforts.</p>
+<section id="locally-via-conda" class="level3" data-number="1.1.1">
+<h3 data-number="1.1.1" class="anchored" data-anchor-id="locally-via-conda"><span class="header-section-number">1.1.1</span> Locally via <code>conda</code></h3>
 <ol type="1">
 <li>Ensure you have a <a href="https://conda.io/projects/conda/en/latest/user-guide/install/index.html">local installation</a> of <code>conda</code> or <a href="https://www.anaconda.com/download"><code>anaconda</code></a> .</li>
 <li>Checkout a copy of our <code>git</code> repository</li>
@@ -408,9 +420,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> conda activate clim-recal</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> quarto preview</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="running-quarto-locally-via-docker" class="level3" data-number="1.1.2">
-<h3 data-number="1.1.2" class="anchored" data-anchor-id="running-quarto-locally-via-docker"><span class="header-section-number">1.1.2</span> Running Quarto locally via <code>docker</code></h3>
-<p>If you have <code>docker</code> installed, you can run a version of the <code>jupyter</code> configuration and <code>quarto</code>. The simplest and quickest solution, assuming you have <code>docker</code> running, is:</p>
+<section id="locally-via-docker" class="level3" data-number="1.1.2">
+<h3 data-number="1.1.2" class="anchored" data-anchor-id="locally-via-docker"><span class="header-section-number">1.1.2</span> Locally via <code>docker</code></h3>
+<p>If you have <code>docker</code> installed, you can run a version of the <code>jupyter</code> conifiguration and <code>quarto</code>. The simplest and quickest solution, assuming you have <code>docker</code> running, is:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> git clone https://github.com/alan-turing-institute/clim-recal</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cd clim-recal</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> docker compose build</span>
@@ -461,8 +473,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="running-tests" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> Running tests</h1>
-<p>Only some portions of the python <code>clim-recal</code> code has unit tests. Additionally there are integration tests which require direct access to <a href="../README#the-datasets">the data</a> mounted on the hardcoded path <code>/mnt/vmfileshare/ClimateData</code> (which matches our configuration on <code>linux</code>). There are ways of running those integration tests locally if you are able to mount the <code>ClimateData</code> drive to that path, either via <code>conda</code> or <code>docker</code> (<code>conda</code> if running <code>linux</code>, in theory any operating system if running <code>docker</code>).</p>
-<p>The instructions below cover running the tests that do not require additional data:</p>
+<p>Currently, only the <code>python</code> portions of <code>clim-recal</code> have unit tests, and some of those require direct access to <code>ClimateData</code> mounted on <code>/mnt/vmfileshare/ClimateData</code> (which matches our configuration on <code>linux</code>). There are ways of running those tests locally if you are able to mount the <code>ClimateData</code> drive to that path, either via <code>conda</code> or <code>docker</code> (<code>conda</code> if running <code>linux</code>, in theory any operating system if running <code>docker</code>). We will expand the details of this process in future, but for tests that do not require <code>ClimateData</code>, the instructions for running those are below:</p>
 <section id="running-tests-in-conda" class="level2" data-number="4.1">
 <h2 data-number="4.1" class="anchored" data-anchor-id="running-tests-in-conda"><span class="header-section-number">4.1</span> Running tests in <code>conda</code></h2>
 <p>Once the <code>conda</code> environment is installed, it should be straightforward to run the basic tests. The following example starts from a fresh clone of the repository:</p>
@@ -471,7 +482,45 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> conda create <span class="at">-n</span> clim-recal <span class="at">-f</span> environment.yml</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> conda activate clim-recal</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cd python         <span class="co"># Currently the tests must be run within the `python` folder</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pytest</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pytest</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">Test</span> session starts <span class="er">(</span><span class="ex">platform:</span> linux, Python 3.9.18, pytest 7.4.3, pytest-sugar 0.9.7<span class="kw">)</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ex">rootdir:</span> code/clim-recal/python          <span class="co"># Path printed is tweaked here for convenience</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ex">configfile:</span> .pytest.ini</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ex">testpaths:</span> tests, utils.py</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ex">plugins:</span> cov-4.1.0, sugar-0.9.7</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a> <span class="ex">tests/test_debiasing.py</span> ✓✓✓sss✓✓✓✓✓✓✓✓sss✓                                  82% ████████▎</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a> <span class="ex">utils.py</span> ✓✓✓✓                                                              100% ██████████</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="ex">Saved</span> badge to clim-recal/python/docs/assets/coverage.svg</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="ex">----------</span> coverage: platform linux, python 3.9.18-final-0 <span class="at">-----------</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="ex">Name</span>                                 Stmts   Miss  Cover</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="ex">--------------------------------------------------------</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="ex">conftest.py</span>                             32      4    88%</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="ex">data_download/ceda_ftp_download.py</span>      59     59     0%</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="ex">debiasing/preprocess_data.py</span>           134    134     0%</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="ex">debiasing/run_cmethods.py</span>              108    108     0%</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="ex">load_data/data_loader.py</span>                83     83     0%</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="ex">resampling/check_calendar.py</span>            46     46     0%</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="ex">resampling/resampling_hads.py</span>           59     59     0%</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="ex">tests/test_debiasing.py</span>                188     27    86%</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="ex">--------------------------------------------------------</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="ex">TOTAL</span>                                  732    520    29%</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="ex">5</span> files skipped due to complete coverage.</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="ex">===========================</span> short test summary info ============================</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.mod_path<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.obs_path<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.preprocess_out_path<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.yield_obs_folder<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a><span class="ex">SKIPPED</span> <span class="pp">[</span><span class="ss">1</span><span class="pp">]</span> <span class="op">&lt;</span>doctest test_debiasing.RunConfig.yield_preprocess_out_folder<span class="pp">[</span><span class="ss">0</span><span class="pp">]</span><span class="op">&gt;</span>:2: requires linux server mount paths</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a><span class="ex">Results</span> <span class="er">(</span><span class="ex">0.14s</span><span class="kw">)</span><span class="bu">:</span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>      <span class="ex">16</span> passed</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>       <span class="ex">6</span> skipped</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>       <span class="ex">4</span> deselected</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The <code>SKIPPED</code> messages of 6 <a href="https://docs.python.org/3/library/doctest.html"><code>doctests</code></a> show they are automatically skipped if the <code>linux server mount</code> is not found, specifically data to test in <code>/mnt/vmfileshare/ClimateData</code>.</p>
 </section>
 <section id="running-tests-in-docker" class="level2" data-number="4.2">
 <h2 data-number="4.2" class="anchored" data-anchor-id="running-tests-in-docker"><span class="header-section-number">4.2</span> Running tests in Docker</h2>
@@ -482,6 +531,48 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> docker compose up</span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> docker compose exec jupyter bash <span class="at">-c</span> <span class="st">"conda run -n clim-recal --cwd python pytest"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>This mirrors the way tests are run via <code>GitHub</code> <code>Actions</code> for continuous integration on <a href="https://github.com/alan-turing-institute/clim-recal" class="uri">https://github.com/alan-turing-institute/clim-recal</a>.</p>
+<p>To run tests that require mounting <code>ClimateData</code> (which are not enabled by default), you will need to have a local mount of the relevant drive. This is easiest to achieve by building the <code>compose/Dockerfile</code> separately (not using <code>compose</code>) with that drive mounted.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> git clone https://github.com/alan-turing-institute/clim-recal</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cd clim-recal</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> docker build <span class="at">-f</span> compose/Dockerfile <span class="at">--tag</span> <span class="st">'clim-recal-test'</span> .</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> docker run <span class="at">-it</span> <span class="at">-p</span> 8888:8888 <span class="at">-v</span> /Volumes/vmfileshare:/mnt/vmfileshare clim-recal-test .</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This will print information to the terminal including the link to the new <code>jupyter</code> session in this form:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">[I</span> 2023-11-16 13:46:31.350 ServerApp]     http://127.0.0.1:8888/lab<span class="pp">?</span>token=a-long-list-of-characters-to-include-in-a-url</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>By copying your equivalent of <code>http://127.0.0.1:8888/lab?token=a-long-list-of-characters-to-include-in-a-url</code> you should be able to get a <code>jupyer</code> instance with all necessary packages installed running in your browser.</p>
+<p>From there, you can select a <code>Terminal</code> options under <code>Other</code> to get access to the terminal within your local <code>docker</code> build. You can then change to the <code>python</code> folder and run the tests with the <code>server</code> option to include <code>ClimateData</code> tests as well (note the <code>a-hash-sequence</code> will depend on your build):</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">clim-recal</span><span class="kw">)</span> <span class="ex">jovyan@a-hash-sequence:~$</span> cd python</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">clim-recal</span><span class="kw">)</span> <span class="ex">jovyan@a-hash-sequence:~/python$</span> pytest <span class="at">-m</span> server</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Test</span> session starts <span class="er">(</span><span class="ex">platform:</span> linux, Python 3.9.18, pytest 7.4.3, pytest-sugar 0.9.7<span class="kw">)</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="ex">rootdir:</span> /home/jovyan/python</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ex">configfile:</span> .pytest.ini</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="ex">testpaths:</span> tests, utils.py</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="ex">plugins:</span> cov-4.1.0, sugar-0.9.7</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a> <span class="ex">tests/test_debiasing.py</span> ✓✓✓✓                         100% ██████████</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="ex">Saved</span> badge to /home/jovyan/python/docs/assets/coverage.svg</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="ex">----------</span> coverage: platform linux, python 3.9.18-final-0 <span class="at">---------</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="ex">Name</span>                                             Stmts   Miss  Cover</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="ex">--------------------------------------------------------------------</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="ex">conftest.py</span>                                         32      4    88%</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="ex">data_download/ceda_ftp_download.py</span>                  59     59     0%</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="ex">debiasing/preprocess_data.py</span>                       134     21    84%</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="ex">debiasing/python-cmethods/cmethods/CMethods.py</span>     213    144    32%</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="ex">debiasing/run_cmethods.py</span>                          108      8    93%</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="ex">load_data/data_loader.py</span>                            83     83     0%</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="ex">resampling/check_calendar.py</span>                        46     46     0%</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="ex">resampling/resampling_hads.py</span>                       59     59     0%</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="ex">tests/test_debiasing.py</span>                            188      5    97%</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="ex">utils.py</span>                                            23      5    78%</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="ex">--------------------------------------------------------------------</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="ex">TOTAL</span>                                              945    434    54%</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="ex">5</span> files skipped due to complete coverage.</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="ex">Results</span> <span class="er">(</span><span class="ex">955.60s</span> <span class="er">(</span><span class="ex">0:15:55</span><span class="kw">))</span><span class="bu">:</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>       <span class="ex">4</span> passed</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>      <span class="ex">22</span> deselected</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>
