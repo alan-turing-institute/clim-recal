@@ -97,7 +97,7 @@ testpaths = [
 markers = [
     "slow: slow tests (deselect with '-m \"not slow\".')",
     "server: designed to only run on a server.",
-    "mount: requires specifc data mounted.",
+    "mount: requires specific data mounted.",
     "docker: requires running via docker jupyterlab.",
     "multiprocess: uses multiprocessing.",
     "darwin: requires darwin (macOS) operating system.",

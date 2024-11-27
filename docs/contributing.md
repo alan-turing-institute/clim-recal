@@ -95,9 +95,11 @@ isort (python)...........................................................Passed
 
 # Running tests
 
-Only some portions of the python `clim-recal` code has unit tests. Additionally there are integration tests which require direct access to [the data](/README#the-datasets) mounted on the hardcoded path `/mnt/vmfileshare/ClimateData` (which matches our configuration on `linux`). There are ways of running those integration tests locally if you are able to mount the `ClimateData` drive to that path, either via `conda` or `docker` (`conda` if running `linux`, in theory any operating system if running `docker`).
+The python `clim-recal` codebase includes a mixture of unit and integration tests.
 
-The instructions below cover running the tests that do not require additional data:
+The integration tests are identified using the pytest markers specified in the `markers` section of `pyproject.toml`. These marker description indicate the environment required to run each set of integration test. For example where a particular operating system is required, or for case which require direct access to [the data](/README#the-datasets) mounted on the hardcoded path `/mnt/vmfileshare/ClimateData`.
+
+The instructions below cover running the tests on a development machine which do not require access to the external data:
 
 ## Running tests in `conda`
 
