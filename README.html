@@ -135,7 +135,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="./R/README.html" class="sidebar-item-text sidebar-link">
+            <a href="./R/README.md" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Analysis in R</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -144,7 +144,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./R/misc/Identifying_Runs.html" class="sidebar-item-text sidebar-link">
+  <a href="./R/misc/Identifying_Runs.md" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Identifying Runs</span></a>
   </div>
 </li>
@@ -159,7 +159,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.html" class="sidebar-item-text sidebar-link">
+  <a href="./R/comparing-r-and-python/HADs-reprojection/WIP-Comparing-HADs-grids.md" class="sidebar-item-text sidebar-link">
  <span class="menu-text">WIP Comparing HADs grids</span></a>
   </div>
 </li>
@@ -323,7 +323,7 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#welcome-to-the-clim-recal-repository" id="toc-welcome-to-the-clim-recal-repository" class="nav-link active" data-scroll-target="#welcome-to-the-clim-recal-repository"><span class="header-section-number">1</span> Welcome to the <code>clim-recal</code> repository!</a></li>
-  <li><a href="#overview-bias-correction-pipeline" id="toc-overview-bias-correction-pipeline" class="nav-link" data-scroll-target="#overview-bias-correction-pipeline"><span class="header-section-number">2</span> Overview: Bias Correction Pipeline</a></li>
+  <li><a href="#overview-data-processing-pipeline" id="toc-overview-data-processing-pipeline" class="nav-link" data-scroll-target="#overview-data-processing-pipeline"><span class="header-section-number">2</span> Overview: Data-processing Pipeline</a></li>
   <li><a href="#documentation" id="toc-documentation" class="nav-link" data-scroll-target="#documentation"><span class="header-section-number">3</span> Documentation</a>
   <ul class="collapse">
   <li><a href="#user-documentation" id="toc-user-documentation" class="nav-link" data-scroll-target="#user-documentation"><span class="header-section-number">3.1</span> User documentation</a></li>
@@ -332,15 +332,13 @@ ul.task-list li input[type="checkbox"] {
   </ul></li>
   <li><a href="#the-datasets" id="toc-the-datasets" class="nav-link" data-scroll-target="#the-datasets"><span class="header-section-number">4</span> The Datasets</a>
   <ul class="collapse">
-  <li><a href="#ukcp18" id="toc-ukcp18" class="nav-link" data-scroll-target="#ukcp18"><span class="header-section-number">4.1</span> UKCP18</a></li>
+  <li><a href="#ukcp18-cpm" id="toc-ukcp18-cpm" class="nav-link" data-scroll-target="#ukcp18-cpm"><span class="header-section-number">4.1</span> UKCP18-CPM</a></li>
   <li><a href="#hads" id="toc-hads" class="nav-link" data-scroll-target="#hads"><span class="header-section-number">4.2</span> HADS</a></li>
   </ul></li>
-  <li><a href="#why-bias-correction" id="toc-why-bias-correction" class="nav-link" data-scroll-target="#why-bias-correction"><span class="header-section-number">5</span> Why Bias Correction?</a></li>
-  <li><a href="#contributing" id="toc-contributing" class="nav-link" data-scroll-target="#contributing"><span class="header-section-number">6</span> Contributing</a></li>
-  <li><a href="#future-plans" id="toc-future-plans" class="nav-link" data-scroll-target="#future-plans"><span class="header-section-number">7</span> Future plans</a>
+  <li><a href="#contributing" id="toc-contributing" class="nav-link" data-scroll-target="#contributing"><span class="header-section-number">5</span> Contributing</a>
   <ul class="collapse">
-  <li><a href="#acknowledgements" id="toc-acknowledgements" class="nav-link" data-scroll-target="#acknowledgements"><span class="header-section-number">7.1</span> Acknowledgements</a></li>
-  <li><a href="#citation" id="toc-citation" class="nav-link" data-scroll-target="#citation"><span class="header-section-number">7.2</span> Citation</a></li>
+  <li><a href="#acknowledgements" id="toc-acknowledgements" class="nav-link" data-scroll-target="#acknowledgements"><span class="header-section-number">5.1</span> Acknowledgements</a></li>
+  <li><a href="#citations" id="toc-citations" class="nav-link" data-scroll-target="#citations"><span class="header-section-number">5.2</span> Citations</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -354,26 +352,27 @@ ul.task-list li input[type="checkbox"] {
 <section id="welcome-to-the-clim-recal-repository" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Welcome to the <code>clim-recal</code> repository!</h1>
 <p><img src="https://img.shields.io/github/license/alan-turing-institute/clim-recal.png" class="img-fluid" alt="mit-license"> <img src="https://alan-turing-institute.github.io/clim-recal/assets/coverage.svg" class="img-fluid" alt="coverage"> <img src="https://img.shields.io/badge/code%20style-black-000000.svg" class="img-fluid" alt="Code style: black"> <img src="https://github.com/alan-turing-institute/clim-recal/actions/workflows/ci.yaml/badge.svg" class="img-fluid" alt="CI"></p>
-<p>Welcome to <code>clim-recal</code>, a specialized resource designed to tackle systematic errors or biases in <strong>Regional Climate Models (RCMs)</strong>. As researchers, policy-makers, and various stakeholders explore publicly available RCMs, they need to consider the challenge of biases that can affect the accurate representation of climate change signals.</p>
-<p><code>clim-recal</code> provides both a <strong>broad review</strong> of available bias correction methods as well as <strong>software</strong>, <strong>practical tutorials</strong> and <strong>guidance</strong> that helps users apply these methods methods to various datasets.</p>
-<p><code>clim-recal</code> is an <strong>extensive software library and guide to application of Bias Correction (BC) methods</strong>:</p>
+<p>Welcome to <code>clim-recal</code>, a specialised resource which provides a data-processing pipeline for extracting parts of the <strong>UK Climate Projections 2018 Convection Permitting model (UKCP18-CPM)</strong> in order to apply and assess <strong>bias correction methods</strong> via adjustment to and comaprison with the <strong>Had-UK grid</strong>.</p>
+<p><code>clim-recal:</code></p>
 <ul>
-<li>Contains accessible information about the <a href="#why-bias-correction">why and how of bias correction for climate data</a></li>
-<li>Is a software library for for the application of BC methods (see our full pipeline for bias-correction of the ground-breaking local-scale (2.2km) <a href="https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf">Convection Permitting Model (CPM)</a>. <code>clim-recal</code> brings together different software packages in <code>python</code> and <code>R</code> that implement a variety of bias correction methods, making it easy to apply them to data and compare their outputs.</li>
+<li>Is a software library for pre-processing climate data to ready it for bias-correction</li>
 <li>Was developed in partnership with the MetOffice to ensure the propriety, quality, and usability of our work</li>
 <li>Provides a framework for open additions of new software libraries/bias correction methods (in planning)</li>
 </ul>
 </section>
-<section id="overview-bias-correction-pipeline" class="level1" data-number="2">
-<h1 data-number="2"><span class="header-section-number">2</span> Overview: Bias Correction Pipeline</h1>
-<p><code>clim-recal</code> is a debiasing pipeline, with the following steps:</p>
+<section id="overview-data-processing-pipeline" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Overview: Data-processing Pipeline</h1>
+<p>Regional climate models (RCMs) contain systematic errors, or biases in their output <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Biases arise in RCMs for a number of reasons, such as the assumptions in the general circulation models (GCMs), and in the downscaling process from GCM to RCM.</p>
+<p>Researchers, policy-makers and other stakeholders wishing to use publicly available RCMs need to consider a range of “bias correction” methods (sometimes referred to as “bias adjustment” or “recalibration”). Bias correction methods offer a means of adjusting the outputs of RCM in a manner that might better reflect future climate change signals whilst preserving the natural and internal variability of climate <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+<p>However, in order to apply and assess these methods, the climate model of interest needs to be overlaid to corresponding observation data. This can be a time-consuming and laborious process where data is spatially and temporally very granular.</p>
+<p>The <code>clim-recal</code> pipeline addresses this by providing preprocessed data, including the innovative <a href="#%20The%20Datasets">UKCP18-CPM datasets</a>, to facilitate the assessment of these methods on aligned, reprojected data, without requiring the whole (very large) dataset.</p>
+<p><code>clim-recal</code> is a data-processing pipeline, with the following steps:</p>
 <ol type="1">
 <li><strong>Set-up &amp; data download</strong> <em>We provide custom scripts to facilitate download of data</em></li>
 <li><strong>Preprocessing</strong> <em>This includes reprojecting, resampling &amp; splitting the data prior to bias correction</em></li>
-<li><strong>Apply bias correction</strong> <em>Our pipeline embeds two distinct methods of bias correction</em></li>
-<li><strong>Assess the debiased data</strong> <em>We have developed a way to assess the quality of the debiasing step across multiple alternative methods</em></li>
 </ol>
 <p>For a quick start on bias correction, refer to our <a href="./python/README.html">pipeline guide</a>.</p>
+<p>Our work is however, just like climate data, intended to be dynamic, and we welcome collaboration from researchers who wish to further our aims!</p>
 </section>
 <section id="documentation" class="level1" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> Documentation</h1>
@@ -391,7 +390,6 @@ ul.task-list li input[type="checkbox"] {
 <h2 data-number="3.2" class="anchored" data-anchor-id="to-use-clim-recal-programmatically"><span class="header-section-number">3.2</span> To use <code>clim-recal</code> programmatically</h2>
 <ul>
 <li>There are extensive <a href="docs/reference"><code>API Reference</code></a> within the python code.</li>
-<li>Comments within <code>R</code> scripts</li>
 </ul>
 </section>
 <section id="to-contribute-to-clim-recal" class="level2" data-number="3.3">
@@ -403,37 +401,22 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="the-datasets" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> The Datasets</h1>
-<section id="ukcp18" class="level2" data-number="4.1">
-<h2 data-number="4.1" class="anchored" data-anchor-id="ukcp18"><span class="header-section-number">4.1</span> UKCP18</h2>
-<p>The <a href="https://www.metoffice.gov.uk/research/approach/collaboration/ukcp">UK Climate Projections 2018 (UKCP18)</a> dataset offers insights into the potential climate changes in the UK. UKCP18 is an advancement of the UKCP09 projections and delivers the latest evaluations of the UK’s possible climate alterations in land and marine regions throughout the 21st century. This crucial information aids in future Climate Change Risk Assessments and supports the UK’s adaptation to climate change challenges and opportunities as per the National Adaptation Programme.</p>
+<section id="ukcp18-cpm" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="ukcp18-cpm"><span class="header-section-number">4.1</span> UKCP18-CPM</h2>
+<p>The <a href="https://www.metoffice.gov.uk/research/approach/collaboration/ukcp">UK Climate Projections 2018 (UKCP18)</a> dataset offers insights into the potential climate changes in the UK. UKCP18 is an advancement of the UKCP09 projections and delivers the latest evaluations of the UK’s possible climate alterations in land and marine regions throughout the 21st century. This crucial information aids in future Climate Change Risk Assessments and supports the UK’s adaptation to climate change challenges and opportunities as per the National Adaptation Programme. We make use of the <a href="https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf">Convection Permitting Model (CPM)</a>. This dataset represents a much finer resolution of climate model (2.2km grid) than typical climate-models, representing a step forward in the ability to simulate small scale behavior (in particular ‘atmospheric convection’), and the influence of mountains, coastlines and urban areas. As a result, the CPM provides access to credible climate information important for small-scale weather features and also on local (kilometre) scale; which is particularly important for improving our understanding of climate change in cities.</p>
+<p>The UKCP18-CPM is comprised of 12 ensemble members (or runs). In addition to run 1, we selected the runs which represented the mean, 2nd highest and 2nd lowest daily tasmax values across the whole sequence (runs 5, 6, 7 &amp; 8) to provide users with enough uncertainty in their estimates to appropriately assess bias correction methods.</p>
 </section>
 <section id="hads" class="level2" data-number="4.2">
 <h2 data-number="4.2" class="anchored" data-anchor-id="hads"><span class="header-section-number">4.2</span> HADS</h2>
 <p><a href="https://www.metoffice.gov.uk/research/climate/maps-and-data/data/haduk-grid/haduk-grid">HadUK-Grid</a> is a comprehensive collection of climate data for the UK, compiled from various land surface observations across the country. This data is organized into a uniform grid to ensure consistent coverage throughout the UK at up to 1km x 1km resolution. The dataset, spanning from 1836 to the present, includes a variety of climate variables such as air temperature, precipitation, sunshine, and wind speed, available on daily, monthly, seasonal, and annual timescales.</p>
 </section>
 </section>
-<section id="why-bias-correction" class="level1" data-number="5">
-<h1 data-number="5"><span class="header-section-number">5</span> Why Bias Correction?</h1>
-<p>Regional climate models contain systematic errors, or biases in their output <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Biases arise in RCMs for a number of reasons, such as the assumptions in the general circulation models (GCMs), and in the downscaling process from GCM to RCM.</p>
-<p>Researchers, policy-makers and other stakeholders wishing to use publicly available RCMs need to consider a range of “bias correction” methods (sometimes referred to as “bias adjustment” or “recalibration”). Bias correction methods offer a means of adjusting the outputs of RCM in a manner that might better reflect future climate change signals whilst preserving the natural and internal variability of climate <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
-<p>Part of the <code>clim-recal</code> project is to review several bias correction methods. This work is ongoing and you can find our initial <a href="https://docs.google.com/spreadsheets/d/18LIc8omSMTzOWM60aFNv1EZUl1qQN_DG8HFy1_0NdWk/edit?usp=sharing">taxonomy here</a>. When we’ve completed our literature review, it will be submitted for publication in an open peer-reviewed journal.</p>
-<p>Our work is however, just like climate data, intended to be dynamic, and we are in the process of setting up a pipeline for researchers creating new methods of bias correction to be able to submit their methods for inclusion on in the <code>clim-recal</code> repository.</p>
-</section>
-<section id="contributing" class="level1" data-number="6">
-<h1 data-number="6"><span class="header-section-number">6</span> Contributing</h1>
-<p>If you have suggestions on the repository, or would like to include a new method (see below) or library, please - raise an <a href="https://github.com/alan-turing-institute/clim-recal/issues">issue</a> - <a href="mailto:clim-recal@turing.ac.uk">get in touch</a> - see our <a href="./docs/contributing.html">contributing</a> section, which includes details on contriubting to the documentation.</p>
+<section id="contributing" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Contributing</h1>
+<p>If you have suggestions on the repository, please: - raise an <a href="https://github.com/alan-turing-institute/clim-recal/issues">issue</a> - <a href="mailto:clim-recal@turing.ac.uk">get in touch</a> - see our <a href="./docs/contributing.html">contributing</a> section, which includes details on contriubting to the documentation.</p>
 <p>All are welcome and appreciated.</p>
-</section>
-<section id="future-plans" class="level1" data-number="7">
-<h1 data-number="7"><span class="header-section-number">7</span> Future plans</h1>
-<ul>
-<li><strong>Finish refactor for BC</strong>: The infrastructure for testing bias correction methods needs some reworking and documentation.</li>
-<li><strong>Release BC results</strong>: Provide results from example BC runs.</li>
-<li><strong>More BC Methods</strong>: Further bias correction of UKCP18 products. <em>This is planned for a future release and is not available yet.</em></li>
-<li><strong>Pipeline for adding new methods</strong>: <em>This is planned for a future release and is not available yet.</em></li>
-</ul>
-<section id="acknowledgements" class="level2" data-number="7.1">
-<h2 data-number="7.1" class="anchored" data-anchor-id="acknowledgements"><span class="header-section-number">7.1</span> Acknowledgements</h2>
+<section id="acknowledgements" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="acknowledgements"><span class="header-section-number">5.1</span> Acknowledgements</h2>
 <p>Prior to 12th September 2024 we included a reference to the <a href="https://github.com/btschwertfeger/python-cmethods">python-cmethods</a> library, written by Benjamin Thomas Schwertfeger.</p>
 <p>This was via a git submodule which targeted https://github.com/alan-turing-institute/python-cmethods, itself a fork of the original library.</p>
 <p>Inadvertently, we did not identify that the license for the <code>python-cmethods</code> library (GPL3) is not compatible with the license for this package (MIT). We apologise for this mistake and have taken the following actions to resolve it:</p>
@@ -444,8 +427,8 @@ ul.task-list li input[type="checkbox"] {
 <li>Added the citation below.</li>
 </ul>
 </section>
-<section id="citation" class="level2" data-number="7.2">
-<h2 data-number="7.2" class="anchored" data-anchor-id="citation"><span class="header-section-number">7.2</span> Citation</h2>
+<section id="citations" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="citations"><span class="header-section-number">5.2</span> Citations</h2>
 <p><strong>python-cmethods</strong>: Benjamin T. Schwertfeger. (2024). btschwertfeger/python-cmethods: v2.3.0 (v2.3.0). Zenodo. https://doi.org/10.5281/zenodo.12168002</p>
 
 
