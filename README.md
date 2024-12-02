@@ -32,7 +32,7 @@ The `clim-recal` pipeline addresses this by providing preprocessed data, includi
     *This includes reprojecting, resampling & splitting the data prior to bias correction*
 
 
-For a quick start on bias correction, refer to our [pipeline guide](python/README.md).
+For a quick start on installing and running the pipeline, refer to our [pipeline guide](python/README.md).
 
 Our work is however, just like climate data, intended to be dynamic, and we welcome collaboration from researchers who wish to further our aims!
 
