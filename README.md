@@ -4,7 +4,7 @@
 ![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
 ![CI](https://github.com/alan-turing-institute/clim-recal/actions/workflows/ci.yaml/badge.svg)
 
-Welcome to `clim-recal`, a specialised resource which provides a data-processing pipeline for extracting parts of the **UK Climate Projections 2018 Convection Permitting model (UKCP18-CPM)** in order to apply and assess **bias correction methods** via adjustment to and comaprison with the **Had-UK grid**.
+Welcome to `clim-recal`, a specialised resource which provides a data-processing pipeline for extracting parts of the **UK Climate Projections 2018 Convection Permitting model (UKCP18-CPM)** in order to apply and assess **bias correction methods** via adjustment to and comparison with the **HadUK-Grid**.
 
 
 `clim-recal:`
