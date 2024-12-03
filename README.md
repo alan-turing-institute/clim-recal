@@ -22,7 +22,8 @@ Bias correction methods offer a means of adjusting the outputs of RCM in a manne
 
 However, in order to apply and assess these methods, the climate model of interest needs to be overlaid to corresponding observation data. This can be a time-consuming and laborious process where data is spatially and temporally very granular.
 
-The `clim-recal` pipeline addresses this by providing preprocessed data, including the innovative [UKCP18-CPM datasets](# The Datasets), to facilitate the assessment of these methods on aligned, reprojected data, without requiring the whole (very large) dataset.
+
+The `clim-recal` pipeline addresses this by providing preprocessed data, including the innovative [UKCP18-CPM datasets](#the-datasets), to facilitate the assessment of these methods on aligned, reprojected data, without requiring the whole (very large) dataset. 
 
 `clim-recal` is a data-processing pipeline, with the following steps:
 
@@ -60,9 +61,19 @@ We are in the process of developing comprehensive documentation for our code bas
 
 ## UKCP18-CPM
 The [UK Climate Projections 2018 (UKCP18)](https://www.metoffice.gov.uk/research/approach/collaboration/ukcp) dataset offers insights into the potential climate changes in the UK. UKCP18 is an advancement of the UKCP09 projections and delivers the latest evaluations of the UK's possible climate alterations in land and marine regions throughout the 21st century. This crucial information aids in future Climate Change Risk Assessments and supports the UK’s adaptation to climate change challenges and opportunities as per the National Adaptation Programme.
-We make use of the [Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf). This dataset represents a much finer resolution of climate model (2.2km grid) than typical climate-models, representing a step forward in the ability to simulate small scale behavior (in particular 'atmospheric convection'), and the influence of mountains, coastlines and urban areas. As a result, the CPM provides access to credible climate information important for small-scale weather features and also on local (kilometre) scale; which is particularly important for improving our understanding of climate change in cities.
 
-The UKCP18-CPM is comprised of 12 ensemble members (or runs). In addition to run 1, we selected the runs which represented the mean, 2nd highest and 2nd lowest daily tasmax values across the whole sequence (runs 5, 6, 7 & 8) to provide users with enough uncertainty in their estimates to appropriately assess bias correction methods.
+We make use of the [Convection Permitting Model (CPM)](https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf). This dataset represents a much finer spatial resolution of climate model (2.2km grid) than typical climate-models, representing a step forward in the ability to simulate small scale behavior (in particular 'atmospheric convection'), and the influence of mountains, coastlines and urban areas. As a result, the CPM provides access to credible climate information important for small-scale weather features and also on local (kilometre) scale; which is particularly important for improving our understanding of climate change in cities. 
+
+The UKCP18-CPM represents a high-emission scenario (RCP 8.5).
+
+The UKCP18-CPM is comprised of 12 ensemble members (or runs), driven by the same 12km Regional Climate Model (Strand 3 12km RCM ensemble). In addition to run 1, we selected the following runs:
+
+- Run 05: Represents the ensemble member with the second lowest mean annual tasmax of all ensembles members 
+- Run 06: Represents the ensemble member with the second highest mean annual tasmax of all ensembles members
+- Run 07 & Run 08: Represent the ensemble members with the average mean annual tasmax of all ensemble members
+
+We believe that this combination will provide users with enough uncertainty in their estimates to appropriately assess bias correction methods. 
+
 
 ## HADS
 [HadUK-Grid](https://www.metoffice.gov.uk/research/climate/maps-and-data/data/haduk-grid/haduk-grid) is a comprehensive collection of climate data for the UK, compiled from various land surface observations across the country. This data is organized into a uniform grid to ensure consistent coverage throughout the UK at up to 1km x 1km resolution. The dataset, spanning from 1836 to the present, includes a variety of climate variables such as air temperature, precipitation, sunshine, and wind speed, available on daily, monthly, seasonal, and annual timescales.
@@ -73,7 +84,7 @@ The UKCP18-CPM is comprised of 12 ensemble members (or runs). In addition to run
 If you have suggestions on the repository, please:
 - raise an [issue](https://github.com/alan-turing-institute/clim-recal/issues)
 - [get in touch](mailto:clim-recal@turing.ac.uk)
-- see our [contributing](docs/contributing.md) section, which includes details on contriubting to the documentation.
+- see our [contributing](docs/contributing.md) section, which includes details on contributing to the documentation.
 
 All are welcome and appreciated.
 
