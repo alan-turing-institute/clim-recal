@@ -382,16 +382,16 @@ ul.task-list li input[type="checkbox"] {
 <h2 data-number="2" class="anchored" data-anchor-id="crops"><span class="header-section-number">2</span> Crops</h2>
 <section id="hads" class="level3" data-number="2.1">
 <h3 data-number="2.1" class="anchored" data-anchor-id="hads"><span class="header-section-number">2.1</span> HADS</h3>
-<p>For a given region <code>&lt;REGION&gt;</code> (either <code>scotland</code>, <code>glasgow</code>, <code>manchester</code> or <code>london</code>), for measurement <code>&lt;MEASURE&gt;</code> (either <code>tasmax</code>, <code>tasmin</code> or <code>pr</code>), the monthly data can be downloaded and decompressed with:</p>
+<p>For a given region <code>&lt;REGION&gt;</code> (either <code>Scotland</code>, <code>Glasgow</code>, <code>Manchester</code> or <code>London</code>), for measurement <code>&lt;MEASURE&gt;</code> (either <code>tasmax</code>, <code>tasmin</code> or <code>pr</code>), the monthly data can be downloaded and decompressed with:</p>
 <pre class="shell"><code>grep -iE "crop.*hads.*&lt;REGION&gt;.*&lt;MEASURE&gt;.*&lt;RUN&gt;_[0-9]{8}-[0-9]{8}.*" data-v1.0.txt | xargs -n 1 curl -O; gunzip *.nc.gz</code></pre>
 <p>For example, for region is <code>manchester</code>, measure is <code>tasmax</code>:</p>
 <pre class="shell"><code>grep -iE ".*crop.*hads.*manchester.*tasmax.*_[0-9]{8}-[0-9]{8}\.nc\.gz" data-v1.0.txt | xargs -n 1 curl -O; gunzip *.nc.gz</code></pre>
 </section>
 <section id="cpm-1" class="level3" data-number="2.2">
 <h3 data-number="2.2" class="anchored" data-anchor-id="cpm-1"><span class="header-section-number">2.2</span> CPM</h3>
-<p>For a given region <code>&lt;REGION&gt;</code> (either <code>scotland</code>, <code>glasgow</code>, <code>manchester</code> or <code>london</code>), for measurement <code>&lt;MEASURE&gt;</code> (either <code>tasmax</code>, <code>tasmin</code> or <code>pr</code>), for run <code>&lt;RUN&gt;</code> (either <code>01</code>, <code>05</code>, <code>06</code>, <code>07</code>, <code>08</code>), the yearly data can be downloaded and decompressed with:</p>
+<p>For a given region <code>&lt;REGION&gt;</code> (either <code>Scotland</code>, <code>Glasgow</code>, <code>Manchester</code> or <code>London</code>), for measurement <code>&lt;MEASURE&gt;</code> (either <code>tasmax</code>, <code>tasmin</code> or <code>pr</code>), for run <code>&lt;RUN&gt;</code> (either <code>01</code>, <code>05</code>, <code>06</code>, <code>07</code>, <code>08</code>), the yearly data can be downloaded and decompressed with:</p>
 <pre class="shell"><code>grep -iE "crop.*cpm.*&lt;REGION&gt;.*&lt;MEASURE&gt;.*&lt;RUN&gt;_[0-9]{8}-[0-9]{8}.*" data-v1.0.txt | xargs -n 1 curl -O; gunzip *.nc.gz</code></pre>
-<p>For example, for region <code>manchester</code>, measure <code>tasmax</code>, run <code>01</code>:</p>
+<p>For example, for region <code>Manchester</code>, measure <code>tasmax</code>, run <code>01</code>:</p>
 <pre class="shell"><code>grep -iE ".*crop.*cpm.*manchester.*tasmax.*01_[0-9]{8}-[0-9]{8}\.nc\.gz" data-v1.0.txt | xargs -n 1 curl -O; gunzip *.nc.gz</code></pre>
 
 

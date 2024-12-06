@@ -365,7 +365,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Regional climate models (RCMs) contain systematic errors, or biases in their output <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Biases arise in RCMs for a number of reasons, such as the assumptions in the general circulation models (GCMs), and in the downscaling process from GCM to RCM.</p>
 <p>Researchers, policy-makers and other stakeholders wishing to use publicly available RCMs need to consider a range of “bias correction” methods (sometimes referred to as “bias adjustment” or “recalibration”). Bias correction methods offer a means of adjusting the outputs of RCM in a manner that might better reflect future climate change signals whilst preserving the natural and internal variability of climate <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
 <p>However, in order to apply and assess these methods, the climate model of interest needs to be overlaid to corresponding observation data. This can be a time-consuming and laborious process where data is spatially and temporally very granular.</p>
-<p>The <code>clim-recal</code> pipeline addresses this by providing preprocessed data, including the innovative <a href="#%20The%20Datasets">UKCP18-CPM datasets</a>, to facilitate the assessment of these methods on aligned, reprojected data, without requiring the whole (very large) dataset.</p>
+<p>The <code>clim-recal</code> pipeline addresses this by providing preprocessed data, including the innovative <a href="#the-datasets">UKCP18-CPM datasets</a>, to facilitate the assessment of these methods on aligned, reprojected data, without requiring the whole (very large) dataset.</p>
 <p><code>clim-recal</code> is a data-processing pipeline, with the following steps:</p>
 <ol type="1">
 <li><strong>Set-up &amp; data download</strong> <em>We provide custom scripts to facilitate download of data</em></li>
@@ -403,8 +403,16 @@ ul.task-list li input[type="checkbox"] {
 <h1 data-number="4"><span class="header-section-number">4</span> The Datasets</h1>
 <section id="ukcp18-cpm" class="level2" data-number="4.1">
 <h2 data-number="4.1" class="anchored" data-anchor-id="ukcp18-cpm"><span class="header-section-number">4.1</span> UKCP18-CPM</h2>
-<p>The <a href="https://www.metoffice.gov.uk/research/approach/collaboration/ukcp">UK Climate Projections 2018 (UKCP18)</a> dataset offers insights into the potential climate changes in the UK. UKCP18 is an advancement of the UKCP09 projections and delivers the latest evaluations of the UK’s possible climate alterations in land and marine regions throughout the 21st century. This crucial information aids in future Climate Change Risk Assessments and supports the UK’s adaptation to climate change challenges and opportunities as per the National Adaptation Programme. We make use of the <a href="https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf">Convection Permitting Model (CPM)</a>. This dataset represents a much finer resolution of climate model (2.2km grid) than typical climate-models, representing a step forward in the ability to simulate small scale behavior (in particular ‘atmospheric convection’), and the influence of mountains, coastlines and urban areas. As a result, the CPM provides access to credible climate information important for small-scale weather features and also on local (kilometre) scale; which is particularly important for improving our understanding of climate change in cities.</p>
-<p>The UKCP18-CPM is comprised of 12 ensemble members (or runs). In addition to run 1, we selected the runs which represented the mean, 2nd highest and 2nd lowest daily tasmax values across the whole sequence (runs 5, 6, 7 &amp; 8) to provide users with enough uncertainty in their estimates to appropriately assess bias correction methods.</p>
+<p>The <a href="https://www.metoffice.gov.uk/research/approach/collaboration/ukcp">UK Climate Projections 2018 (UKCP18)</a> dataset offers insights into the potential climate changes in the UK. UKCP18 is an advancement of the UKCP09 projections and delivers the latest evaluations of the UK’s possible climate alterations in land and marine regions throughout the 21st century. This crucial information aids in future Climate Change Risk Assessments and supports the UK’s adaptation to climate change challenges and opportunities as per the National Adaptation Programme.</p>
+<p>We make use of the <a href="https://www.metoffice.gov.uk/pub/data/weather/uk/ukcp18/science-reports/UKCP-Convection-permitting-model-projections-report.pdf">Convection Permitting Model (CPM)</a>. This dataset represents a much finer spatial resolution of climate model (2.2km grid) than typical climate-models, representing a step forward in the ability to simulate small scale behavior (in particular ‘atmospheric convection’), and the influence of mountains, coastlines and urban areas. As a result, the CPM provides access to credible climate information important for small-scale weather features and also on local (kilometre) scale; which is particularly important for improving our understanding of climate change in cities.</p>
+<p>The UKCP18-CPM represents a high-emission scenario (RCP 8.5).</p>
+<p>The UKCP18-CPM is comprised of 12 ensemble members (or runs), driven by the same 12km Regional Climate Model (Strand 3 12km RCM ensemble). In addition to run 1, we selected the following runs:</p>
+<ul>
+<li>Run 05: Represents the ensemble member with the second lowest mean annual tasmax of all ensembles members</li>
+<li>Run 06: Represents the ensemble member with the second highest mean annual tasmax of all ensembles members</li>
+<li>Run 07 &amp; Run 08: Represent the ensemble members with the average mean annual tasmax of all ensemble members</li>
+</ul>
+<p>We believe that this combination will provide users with enough uncertainty in their estimates to appropriately assess bias correction methods.</p>
 </section>
 <section id="hads" class="level2" data-number="4.2">
 <h2 data-number="4.2" class="anchored" data-anchor-id="hads"><span class="header-section-number">4.2</span> HADS</h2>
@@ -413,7 +421,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="contributing" class="level1" data-number="5">
 <h1 data-number="5"><span class="header-section-number">5</span> Contributing</h1>
-<p>If you have suggestions on the repository, please: - raise an <a href="https://github.com/alan-turing-institute/clim-recal/issues">issue</a> - <a href="mailto:clim-recal@turing.ac.uk">get in touch</a> - see our <a href="./docs/contributing.html">contributing</a> section, which includes details on contriubting to the documentation.</p>
+<p>If you have suggestions on the repository, please: - raise an <a href="https://github.com/alan-turing-institute/clim-recal/issues">issue</a> - <a href="mailto:clim-recal@turing.ac.uk">get in touch</a> - see our <a href="./docs/contributing.html">contributing</a> section, which includes details on contributing to the documentation.</p>
 <p>All are welcome and appreciated.</p>
 <section id="acknowledgements" class="level2" data-number="5.1">
 <h2 data-number="5.1" class="anchored" data-anchor-id="acknowledgements"><span class="header-section-number">5.1</span> Acknowledgements</h2>
