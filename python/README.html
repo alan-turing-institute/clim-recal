@@ -167,6 +167,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Download Datasets</span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/reproducibility.qmd" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reproducibility</span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../R/README.md" class="sidebar-item-text sidebar-link">
@@ -243,29 +249,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
- <span class="menu-text">Debiasing</span></a>
+ <span class="menu-text">Utilities</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/reference/clim_recal.debiasing.debias_wrapper.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Wrapper</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
- <span class="menu-text">Utilities</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../docs/reference/clim_recal.utils.core.html" class="sidebar-item-text sidebar-link">
@@ -302,22 +291,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
  <span class="menu-text">Appendix</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../docs/cpm_projection.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">CPM Projection Analysis</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../notebooks/cpm_projection_diff_plots.html" class="sidebar-item-text sidebar-link">
@@ -340,7 +329,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/deprecated_pipeline.html" class="sidebar-item-text sidebar-link">
+  <a href="../docs/deprecated_pipeline.qmd" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Deprecated</span></a>
   </div>
 </li>
@@ -357,7 +346,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation"><span class="header-section-number">1</span> Installation</a></li>
-  <li><a href="#pipeline" id="toc-pipeline" class="nav-link" data-scroll-target="#pipeline"><span class="header-section-number">2</span> Pipeline</a>
+  <li><a href="#data-preparation-pipeline" id="toc-data-preparation-pipeline" class="nav-link" data-scroll-target="#data-preparation-pipeline"><span class="header-section-number">2</span> Data Preparation Pipeline</a>
   <ul class="collapse">
   <li><a href="#download-uk-met-office-data" id="toc-download-uk-met-office-data" class="nav-link" data-scroll-target="#download-uk-met-office-data"><span class="header-section-number">2.1</span> Download UK Met Office data</a></li>
   <li><a href="#aligning-hads-and-cpm-uk-data" id="toc-aligning-hads-and-cpm-uk-data" class="nav-link" data-scroll-target="#aligning-hads-and-cpm-uk-data"><span class="header-section-number">2.2</span> Aligning HADs and CPM UK data</a></li>
@@ -378,15 +367,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>If the <code>python</code> <code>clim-recal</code> package is installed, some of the components can be used via the command line. For details run:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> clim-recal <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="pipeline" class="level1" data-number="2">
-<h1 data-number="2"><span class="header-section-number">2</span> Pipeline</h1>
-<p>There are three core steps we hope to implement in our <code>python</code> <code>clim-recal</code> package:</p>
+<section id="data-preparation-pipeline" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Data Preparation Pipeline</h1>
+<p>The <code>python</code> <code>clim-recal</code> package supports two main functions:</p>
 <ol type="1">
-<li>Download UK Met Office <code>observation</code> and <code>projection</code> data</li>
-<li>Convert that data to aligned spatial time series grids for debiasing</li>
-<li>Facilitate running and comparing debiasing methods</li>
+<li>Downloads the UK Met Office <code>observation</code> and <code>projection</code> data</li>
+<li>Converts that data to aligned spatial time series grids for debiasing</li>
 </ol>
-<p>We currently provide the the following coverted and aligned files in our <a href="../docs/download.html">Download Datasets</a> page:</p>
+<p>We currently provide the the following converted and aligned files in our <a href="../docs/download.html">Download Datasets</a> page:</p>
 <ul>
 <li>Maximum temparture: <code>tasmax</code></li>
 <li>Maximum temparture: <code>tasmin</code></li>
@@ -464,20 +452,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <p>To align them we:</p>
 <ol type="1">
-<li>Interpolate RCP8.5 to standard gregorian calendar via the <code>nearest</code> method<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.</li>
+<li>Interpolate RCP8.5 to standard Gregorian calendar via the <code>nearest</code> method<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.</li>
 <li>Reproject RCP8.5 to British National Grid Coordinate structure.</li>
-<li>Resample UKHAD to to 2.2 km</li>
+<li>Resample UKHAD to a 2.2 km grid.</li>
 <li>Reproject UKHAD bounds to align with RCP8.5</li>
 </ol>
 <p>Links to these files are in the <a href="../docs/download.html">Download Datasets</a> section.</p>
 </section>
 <section id="running-debiasing-methods" class="level2" data-number="2.3">
 <h2 data-number="2.3" class="anchored" data-anchor-id="running-debiasing-methods"><span class="header-section-number">2.3</span> Running debiasing methods</h2>
-<p>Preliminary work in this process is in the <a href="../docs/reference/clim_recal.debiasing.debias_wrapper.html"><code>clim_recal/debiasing</code></a> section. We are at present assessing future options for this, likely via either</p>
-<ul>
-<li><a href="https://ibicus.readthedocs.io/en/latest/"><code>ibicus</code></a></li>
-<li><a href="https://pypi.org/project/python-cmethods/"><code>python-cmethods</code></a></li>
-</ul>
+<p>Once the data is aligned, it is ready for you to run your choice of debiasing methods on it.</p>
 
 
 </section>
