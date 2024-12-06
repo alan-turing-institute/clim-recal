@@ -38,13 +38,13 @@ For a given region `<REGION>` (either `Scotland`, `Glasgow`, `Manchester` or `Lo
 ```shell
 grep -iE "crop.*hads.*<REGION>.*<MEASURE>.*<RUN>_[0-9]{8}-[0-9]{8}.*" data-v1.0.txt | xargs -n 1 curl -O; gunzip *.nc.gz
 ```
-For example, for region is `Manchester`, measure is `tasmax`:
+For example, for region is `manchester`, measure is `tasmax`:
 ```shell
 grep -iE ".*crop.*hads.*manchester.*tasmax.*_[0-9]{8}-[0-9]{8}\.nc\.gz" data-v1.0.txt | xargs -n 1 curl -O; gunzip *.nc.gz
 ```
 
 ### CPM
-For a given region `<REGION>` (either `Scotland`, `Glasgow`, `Manchester` or `London`), for measurement `<MEASURE>` (either `tasmax`, `tasmin` or `pr`), for run `<RUN>` (either `01`, `05`, `06`, `07`, `08`), the yearly data can be downloaded and decompressed with:
+For a given region `<REGION>`  (either `Scotland`, `Glasgow`, `Manchester` or `London`), for measurement `<MEASURE>` (either `tasmax`, `tasmin` or `pr`), for run `<RUN>` (either `01`, `05`, `06`, `07`, `08`), the yearly data can be downloaded and decompressed with:
 ```shell
 grep -iE "crop.*cpm.*<REGION>.*<MEASURE>.*<RUN>_[0-9]{8}-[0-9]{8}.*" data-v1.0.txt | xargs -n 1 curl -O; gunzip *.nc.gz
 ```
