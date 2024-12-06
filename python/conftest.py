@@ -11,8 +11,7 @@ from coverage_badge.__main__ import main as gen_cov_badge
 from xarray import DataArray, Dataset, open_dataset
 from xarray.core.types import T_Dataset
 
-from clim_recal.config import ClimRecalConfig
-from clim_recal.debiasing.debias_wrapper import RegionOptions
+from clim_recal.config import ClimRecalConfig, RegionOptions
 from clim_recal.resample import CPM_OUTPUT_LOCAL_PATH, HADS_OUTPUT_LOCAL_PATH
 from clim_recal.utils.core import (
     ISO_DATE_FORMAT_STR,
@@ -29,12 +28,6 @@ from clim_recal.utils.xarray import (
     cpm_reproject_with_standard_calendar,
 )
 from tests.utils import (
-    CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT,
-    CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT,
-    CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT,
-    CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT,
-    CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT,
-    CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT,
     CPM_CONVERTED_TASMAX_1980_FILE,
     CPM_RAW_TASMAX_1980_FILE,
     CPM_RAW_TASMAX_EXAMPLE_PATH,
@@ -88,11 +81,6 @@ def obs_folder_files_count_correct() -> int:
 def preprocess_out_folder_files_count_correct() -> int:
     """Return `PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT`."""
     return PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT
-
-
-@pytest.fixture
-def cli_preprocess_default_command_str_correct() -> str:
-    return CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
 
 
 @pytest.fixture
@@ -439,14 +427,11 @@ def clim_runner(
         # Todo: refactor to more easily specify `local_cache`
         assert not local_cache
         return ClimRecalConfig(
-            preprocess_out_folder=tmp_path,
             regions=regions,
             output_path=test_runs_output_path,
-            # cpm_for_coord_alignment=tasmax_cpm_1980_converted_path,
         )
     except (FileExistsError, AssertionError):
         return ClimRecalConfig(
-            preprocess_out_folder=tmp_path,
             regions=regions,
             output_path=test_runs_output_path,
             hads_input_path=local_hads_cache_path,
@@ -506,34 +491,13 @@ def doctest_auto_fixtures(
     glasgow_epsg_27700_bounds: BoundsTupleType,
     glasgow_shape_file_path: Path,
     test_runs_output_path: Path,
-    # resample_test_cpm_output_path: Path,
-    # resample_test_hads_output_path: Path,
     glasgow_example_cropped_cpm_rainfall_path: Path,
-    # clim_runner: ClimRecalConfig,
 ) -> None:
     """Elements to add to default `doctest` namespace."""
-    doctest_namespace["CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT"] = (
-        CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT
-    )
-    doctest_namespace["CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT"] = (
-        CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT
-    )
-    doctest_namespace["CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT"] = (
-        CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
-    )
     doctest_namespace["MOD_FOLDER_FILES_COUNT_CORRECT"] = MOD_FOLDER_FILES_COUNT_CORRECT
     doctest_namespace["OBS_FOLDER_FILES_COUNT_CORRECT"] = OBS_FOLDER_FILES_COUNT_CORRECT
     doctest_namespace["PREPROCESS_OUT_FOLDER_FILES_COUNT_CORRECT"] = (
         preprocess_out_folder_files_count_correct
-    )
-    doctest_namespace["CLI_CMEHTODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT"] = (
-        CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
-    )
-    doctest_namespace["CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT"] = (
-        CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT
-    )
-    doctest_namespace["CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT"] = (
-        CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT
     )
     doctest_namespace["TEST_AUTH_CSV_PATH"] = TEST_AUTH_CSV_FILE_NAME
     doctest_namespace["is_platform_darwin"] = is_platform_darwin()
@@ -554,8 +518,6 @@ def doctest_auto_fixtures(
     doctest_namespace["glasgow_epsg_27700_bounds"] = glasgow_epsg_27700_bounds
     doctest_namespace["glasgow_shape_file_path"] = glasgow_shape_file_path
     doctest_namespace["test_runs_output_path"] = test_runs_output_path
-    # doctest_namespace["resample_test_hads_output_path"] = resample_test_hads_output_path
-    # doctest_namespace["resample_test_cpm_output_path"] = resample_test_cpm_output_path
     doctest_namespace["mount_doctest_skip_message"] = MOUNT_DOCTEST_SKIP_MESSAGE
     doctest_namespace["mount_or_cache_doctest_skip_message"] = (
         MOUNT_OR_CACHE_DOCTEST_SKIP_MESSAGE
@@ -563,7 +525,6 @@ def doctest_auto_fixtures(
     doctest_namespace["glasgow_example_cropped_cpm_rainfall_path"] = (
         glasgow_example_cropped_cpm_rainfall_path
     )
-    # doctest_namespace["clim_runner"] = clim_runner
 
 
 def pytest_sessionfinish(session, exitstatus):

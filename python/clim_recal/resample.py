@@ -20,8 +20,6 @@ from tqdm.rich import trange
 from xarray import Dataset
 from xarray.core.types import T_Dataset
 
-from clim_recal.debiasing.debias_wrapper import VariableOptions
-
 from .utils.core import climate_data_mount_path, console, multiprocess_execute
 from .utils.data import (
     CPM_END_DATE,
@@ -57,10 +55,12 @@ CLIMATE_DATA_MOUNT_PATH: Path = climate_data_mount_path()
 
 CFCalendarSTANDARD: Final[str] = "standard"
 
-# RESAMPLING_OUTPUT_PATH: Final[PathLike] = (
-#    CLIMATE_DATA_MOUNT_PATH / "CPM-365/andys-two-gdal-step-approach/resample"
-# )
-RESAMPLING_OUTPUT_PATH: Final[PathLike] = "/datadrive/clim-recal-results/cropped"
+# TODO: This is path is problematic. See https://github.com/alan-turing-institute/clim-recal/issues/171
+# RESAMPLING_OUTPUT_PATH: Final[PathLike] = "/datadrive/clim-recal-results/cropped"
+RESAMPLING_OUTPUT_PATH: Final[PathLike] = (
+    CLIMATE_DATA_MOUNT_PATH / "CPM-365/andys-two-gdal-step-approach/resample"
+)
+
 RAW_HADS_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/HadsUKgrid"
 RAW_CPM_PATH: Final[PathLike] = CLIMATE_DATA_MOUNT_PATH / "Raw/UKCP2.2"
 RAW_HADS_TASMAX_PATH: Final[PathLike] = RAW_HADS_PATH / "tasmax/day"

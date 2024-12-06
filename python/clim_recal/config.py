@@ -1,14 +1,13 @@
 import subprocess
 import warnings
 from dataclasses import dataclass, field
-from os import PathLike, chdir, cpu_count
+from os import PathLike, cpu_count
 from pathlib import Path
 from typing import Any, Final, Sequence, TypedDict
 
 from osgeo import gdal
-from tqdm import TqdmExperimentalWarning, tqdm
+from tqdm import TqdmExperimentalWarning
 
-from .debiasing.debias_wrapper import BaseRunConfig, RunConfig, RunConfigType
 from .resample import (
     CPM_OUTPUT_LOCAL_PATH,
     HADS_OUTPUT_LOCAL_PATH,
@@ -36,6 +35,20 @@ class ClimRecalRunsConfigType(TypedDict):
     variables: Sequence[VariableOptions]
     runs: Sequence[RunOptions]
     methods: Sequence[MethodOptions]
+
+
+@dataclass
+class BaseRunConfig:
+    """Manage creating command line scripts to run `debiasing` `cli`."""
+
+
+@dataclass
+class RunConfig(BaseRunConfig):
+    """Manage creating command line scripts to run `debiasing` `cli`."""
+
+
+class RunConfigType(TypedDict):
+    """Parameters needed for a model run."""
 
 
 ClimRecalRunResultsType = dict[RunConfig, dict[str, subprocess.CompletedProcess]]
@@ -364,72 +377,4 @@ class ClimRecalConfig(BaseRunConfig):
     @property
     def _base_run_config(self) -> RunConfig:
         """Retun a base `RunConfig` from `self` attributes."""
-        return RunConfig(
-            command_dir=self.command_dir,
-            variable=self._first_conf_variable,
-            run=self._first_conf_run,
-            region=self._first_conf_region,
-            method=self._first_conf_method,
-            run_prefix=self.run_prefix,
-            preprocess_data_file=self.preprocess_data_file,
-            run_cmethods_file=self.run_cmethods_file,
-            data_path=self.data_path,
-            mod_folder=self.mod_folder,
-            obs_folder=self.obs_folder,
-            preprocess_out_folder=self.preprocess_out_folder,
-            cmethods_out_folder=self.cmethods_out_folder,
-            calib_date_start=self.calib_date_start,
-            calib_date_end=self.calib_date_end,
-            valid_date_start=self.valid_date_start,
-            valid_date_end=self.valid_date_end,
-            processors=self.processors,
-            date_format_str=self.date_format_str,
-            date_split_str=self.date_split_str,
-        )
-
-    def run_models(self) -> ClimRecalRunResultsType:
-        """Run all specified models.
-
-        Examples
-        --------
-        >>> clim_runner: ClimRecalConfig = getfixture('clim_runner')
-        >>> runs: dict[tuple, dict] = clim_runner.run_models()
-        >>> pprint(tuple(runs.keys()))
-        (('Glasgow', 'tasmax', '05', 'quantile_delta_mapping'),
-         ('Manchester', 'tasmax', '05', 'quantile_delta_mapping'))
-        """
-        initial_folder: Path = Path().resolve()
-        chdir(self._base_run_config.command_path)
-        run_results: ClimRecalRunResultsType = {}
-
-        for model_config in tqdm(self.model_configs):
-            preprocess_run: subprocess.CompletedProcess = subprocess.run(
-                self._base_run_config.to_cli_preprocess_tuple_strs(
-                    variable=model_config["variable"],
-                    run=model_config["run"],
-                    region=model_config["region"],
-                ),
-                capture_output=True,
-                text=True,
-            )
-            cmethods_run: subprocess.CompletedProcess = subprocess.run(
-                self._base_run_config.to_cli_run_cmethods_tuple_strs(
-                    region=model_config["region"],
-                    run=model_config["run"],
-                    variable=model_config["variable"],
-                    method=model_config["method"],
-                ),
-                capture_output=True,
-                text=True,
-            )
-            run_results[tuple(model_config.values())] = {
-                "preprocess_run": preprocess_run,
-                "cmethods_run": cmethods_run,
-            }
-        chdir(initial_folder)
-        return run_results
-
-    @property
-    def command_path(self) -> Path:
-        """Return command path relative to running tests."""
-        return (Path() / self.command_dir).absolute()
+        return RunConfig()

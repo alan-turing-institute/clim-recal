@@ -14,18 +14,6 @@ from pandas import to_datetime
 from xarray import DataArray
 from xarray.core.types import T_DataArray, T_DataArrayOrSet
 
-from clim_recal.debiasing.debias_wrapper import (
-    CALIB_DATES_STR_DEFAULT,
-    CMETHODS_FILE_NAME,
-    CMETHODS_OUT_FOLDER_DEFAULT,
-    DATA_PATH_DEFAULT,
-    MOD_FOLDER_DEFAULT,
-    OBS_FOLDER_DEFAULT,
-    PREPROCESS_FILE_NAME,
-    PREPROCESS_OUT_FOLDER_DEFAULT,
-    PROCESSORS_DEFAULT,
-    VALID_DATES_STR_DEFAULT,
-)
 from clim_recal.resample import RAW_CPM_PATH, RAW_CPM_TASMAX_PATH, RAW_HADS_TASMAX_PATH
 from clim_recal.utils.core import (
     CPM_YEAR_DAYS,
@@ -34,16 +22,11 @@ from clim_recal.utils.core import (
     NORMAL_YEAR_DAYS,
     DateType,
     date_range_generator,
-    iter_to_tuple_strs,
 )
 from clim_recal.utils.data import (
     THREE_CITY_CENTRE_COORDS,
     HadUKGrid,
-    MethodOptions,
-    RegionOptions,
-    RunOptions,
     UKCPLocalProjections,
-    VariableOptions,
 )
 
 logger = getLogger(__name__)
@@ -130,66 +113,6 @@ XARRAY_SKIP_2_FROM_8_DAYS: Final[tuple[str, str]] = (
 )
 TEST_AUTH_CSV_FILE_NAME: Final[Path] = Path("test_auth.csv")
 
-CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str | Path, ...]] = (
-    "python",
-    PREPROCESS_FILE_NAME,
-    "--mod",
-    DATA_PATH_DEFAULT / MOD_FOLDER_DEFAULT / RegionOptions.default(),
-    "--obs",
-    DATA_PATH_DEFAULT / OBS_FOLDER_DEFAULT / RegionOptions.default(),
-    "-v",
-    VariableOptions.default(),
-    "-r",
-    RunOptions.default(),
-    "--out",
-    (
-        DATA_PATH_DEFAULT
-        / PREPROCESS_OUT_FOLDER_DEFAULT
-        / RegionOptions.default()
-        / RunOptions.default()
-        / VariableOptions.default()
-    ),
-    "--calib_dates",
-    CALIB_DATES_STR_DEFAULT,
-    "--valid_dates",
-    VALID_DATES_STR_DEFAULT,
-)
-
-CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT: Final[tuple[str, ...]] = (
-    iter_to_tuple_strs(CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT)
-)
-
-CLI_PREPROCESS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = " ".join(
-    CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
-)
-
-CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT: Final[tuple[str | Path | int, ...]] = (
-    "python",
-    CMETHODS_FILE_NAME,
-    "--input_data_folder",
-    CLI_PREPROCESS_DEFAULT_COMMAND_TUPLE_CORRECT[11],
-    "--out",
-    (
-        DATA_PATH_DEFAULT
-        / CMETHODS_OUT_FOLDER_DEFAULT
-        / RegionOptions.default()
-        / RunOptions.default()
-    ).resolve(),
-    "--method",
-    MethodOptions.default(),
-    "-v",
-    VariableOptions.default(),
-    "-p",
-    PROCESSORS_DEFAULT,
-)
-
-CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT: Final[tuple[str, ...]] = (
-    iter_to_tuple_strs(CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_CORRECT)
-)
-
-CLI_CMETHODS_DEFAULT_COMMAND_STR_CORRECT: Final[str] = " ".join(
-    CLI_CMETHODS_DEFAULT_COMMAND_TUPLE_STR_CORRECT
-)
 
 MOD_FOLDER_FILES_COUNT_CORRECT: Final[int] = 1478
 OBS_FOLDER_FILES_COUNT_CORRECT: Final[int] = MOD_FOLDER_FILES_COUNT_CORRECT
